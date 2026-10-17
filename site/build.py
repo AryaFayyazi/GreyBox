@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC, DIST = ROOT / "site/src", ROOT / "site/dist"
 R = ROOT / "results"
 REPO = "https://github.com/AryaFayyazi/GreyBox"
-CODE_PUBLIC = False          # link locks/preregistrations to the code repo only once it is published
+CODE_PUBLIC = True           # link locks/preregistrations to the code repo only once it is published
 NAV = [("index.html", "Overview"), ("train.html", "Train a monitor"), ("monitor.html", "Claude, live replay"),
        ("results.html", "Evidence"), ("docs.html", "Docs"), ("paper.html", "Paper")]
 
