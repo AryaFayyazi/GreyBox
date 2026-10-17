@@ -18,5 +18,6 @@ docker build -t greybox-reader --build-arg READER=1 -f deploy/Dockerfile .
 docker run --gpus all -p 8000:8000 -v $PWD/models:/models -e GB_MONITOR_PROBE=/models/reader_probe.joblib greybox-reader
 ```
 
-The first request downloads Qwen/Qwen3-8B from Hugging Face. Act on `escalate`, not on `p_unsafe`. Each `stream`
+Get a probe first: `curl -LO https://github.com/AryaFayyazi/GreyBox/releases/download/v0.2.0/reader_probe_cape_agentdojo.joblib`
+into `./models/` (and point `GB_MONITOR_PROBE` at it). The first request downloads Qwen/Qwen3-8B from Hugging Face. Act on `escalate`, not on `p_unsafe`. Each `stream`
 calibrates its own frozen cut from its first 500 actions.

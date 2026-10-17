@@ -37,9 +37,10 @@ if tm.escalate(system_prompt, user_task, history, action):    # the cut learned 
 <code>TextMonitor().fit(steps, labels)</code>; score with <code>tm.score(...)</code>.</p>
 
 <h2>The reader monitor (GPU, robust to new tasks)</h2>
+<pre>curl -LO https://github.com/AryaFayyazi/GreyBox/releases/download/v0.2.0/reader_probe_cape_agentdojo.joblib</pre>
 <pre>from graybox.monitor import ReaderMonitor, QuantileGate, Step
 
-mon = ReaderMonitor.load("reader_probe.joblib")    # downloads Qwen/Qwen3-8B on first use
+mon = ReaderMonitor.load("reader_probe_cape_agentdojo.joblib")    # downloads Qwen/Qwen3-8B on first use
 gate = QuantileGate(budget=0.05)                    # escalate the riskiest 5% of this agent's actions
 gate.fit(past_scores)                               # optional: warm up on trusted past traffic
 p = mon.score(system_prompt, user_task, history, action)
@@ -49,8 +50,15 @@ if gate(p):
   transfer: on Claude a 0.5 cut caught 3% of violations. <code>QuantileGate</code> sets its cut at the top <i>budget</i> of the first 500
   actions it sees (no labels), then freezes it, so a burst of malicious actions cannot raise it. It escalates everything until it has seen
   100 actions. Call <code>gate.recalibrate()</code> when the agent, its tools or its policy change.</div>
-<p><code>reader_probe.joblib</code> (4.3 MB) was trained on 17,623 labelled steps of the open Gemma-4 agent on CAPE-Bench. It learned
-CAPE-Bench's policies: retrain it on yours (features from <code>mon.features(prompt)</code>, then the same scikit-learn pipeline).</p>
+<p>Two probes are in <a href="https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0">release v0.2.0</a> (4.3 MB each, with SHA-256
+checksums; load them with the scikit-learn version given there):</p>
+<ul>
+<li><code>reader_probe.joblib</code>: 17,623 labelled steps of the open Gemma-4 agent on CAPE-Bench.</li>
+<li><code>reader_probe_cape_agentdojo.joblib</code>: the same, plus 3,455 labelled AgentDojo calls of two open agents. On a closed agent's
+AgentDojo calls it scored 0.922 (zero-shot judge 0.787; T14).</li>
+</ul>
+<p>Both learned the policies in their training data. For another type of policy, add labelled steps of it: features from
+<code>mon.features(prompt)</code>, then the same scikit-learn pipeline.</p>
 
 <h2>HTTP API (self-hosted)</h2>
 <pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --port 8000   # CPU only

@@ -31,6 +31,9 @@ if tm.escalate(system_prompt, user_task, history, ("send_message", args)):
     hold_for_review()
 ```
 
+The reader's probes are in [release v0.2.0](https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0):
+`reader_probe.joblib` (CAPE-Bench) and `reader_probe_cape_agentdojo.joblib` (CAPE-Bench and prompt injection).
+
 For the reader, use `QuantileGate` to set the review threshold. It takes the top 5% of the agent's first 500
 actions, then it freezes the threshold. Do not use the raw probability: it does not transfer between agents.
 
