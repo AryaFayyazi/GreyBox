@@ -1,4 +1,4 @@
-\begin{thebibliography}{19}
+\begin{thebibliography}{20}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -82,6 +82,12 @@ Pacchiardi, L., Chan, A.~J., Mindermann, S., Moscovitz, I., Pan, A.~Y., Gal, Y.,
 \bibitem[Sam et~al.(2025)Sam, Finzi, and Kolter]{sam2025quere}
 Sam, D., Finzi, M., and Kolter, J.~Z.
 \newblock Predicting the performance of black-box {LLM}s through follow-up queries, 2025.
+
+\bibitem[Wang(2026)]{wang2026memory}
+Wang, A.
+\newblock You could have invented transformers from memory.
+\newblock Blog post, 15 October 2026, 2026.
+\newblock URL \url{https://alexwang.ai/posts/associative-memory/}.
 
 \bibitem[Zhou \& Klindt(2026)Zhou and Klindt]{zhou2026identifiabilities}
 Zhou, J. and Klindt, D.

@@ -279,6 +279,11 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
     map (0.664), although its alpha was chosen on fresh data (optimistic). The probe on the MLP replica scores 0.982
     (ridge 0.987). This nonlinear map does not recover the remaining variance; with 5,492 training steps the linear
     map is the better estimator.
+  - By transcript length (exploratory; scripts/88d, results/t1/t15_by_context_exploratory.json). An associative-memory
+    view of attention (Wang, 2026, blog) predicts more interference with more stored tokens. Fresh R² by quintile of
+    context length: 0.693, 0.669, 0.649, 0.589, 0.478. The probe on the replica stays at the true-state level in every
+    bin (0.997/0.996 to 0.991/0.991). Overall replication degrades with length; the part that decides a violation does
+    not. Caveat: longer contexts also differ in content, and per-bin R² has different denominators.
 - **T14 result (2026-10-17 05:54 PDT).** CPU; threads pinned to 1. Test: T13b's 3,925 GPT calls (36 injected).
   - Within-suite AUROC by k labelled AgentDojo calls of open agents (mean over draws): 0 → 0.840; 100 → 0.858;
     400 → 0.881; 3,455 → 0.922. Judge: 0.787.
