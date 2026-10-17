@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs · Grey Box</title><meta name="description" content="Install, deploy and evaluate Grey Box agent monitors: Python SDK, HTTP API, self-hosting, data format, limits.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
+</head><body>
+<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="train.html">Train a monitor</a><a href="monitor.html">Claude, live replay</a><a href="results.html">Evidence</a><a href="docs.html" aria-current=page>Docs</a><a href="paper.html">Paper</a></nav></div></header>
+<main><div class="wrap">
+<!--title: Docs-->
+<!--desc: Install, deploy and evaluate Grey Box agent monitors: Python SDK, HTTP API, self-hosting, data format, limits.-->
+<h1>Docs</h1>
+<p class="lede">Grey Box scores an agent's proposed action before it executes, from the transcript alone. Two monitors share one
+interface. Pick by how much your deployment differs from your labelled data.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>Text monitor (<code>TextMonitor</code>)</th><th>Reader monitor (<code>ReaderMonitor</code>)</th></tr></thead>
+<tbody>
+<tr><td>What it is</td><td>TF-IDF on context and action + logistic regression</td><td>Qwen3-8B reads the transcript; a linear probe on its activations</td></tr>
+<tr><td>Hardware, latency</td><td class="n">CPU or browser; 0.18 ms per action</td><td class="n">1 GPU (≈16 GB); 41 ms per action</td></tr>
+<tr><td>Cost per action</td><td class="n">≈ $0</td><td class="n">your GPU time</td></tr>
+<tr><td>Same tools and policies as training</td><td>as good as the reader (Claude: 0.997 vs 0.991)</td><td>0.99</td></tr>
+<tr><td>Unseen task families</td><td>0.950</td><td>0.969</td></tr>
+<tr><td>Unseen benchmark (AgentDojo)</td><td>0.50 (chance)</td><td>0.78</td></tr>
+<tr><td>Train on your labels</td><td>in the browser (<a href="train.html">trainer</a>) or Python</td><td>Python (features + scikit-learn)</td></tr>
+</tbody></table></div>
+<p class="muted" style="margin-top:8px">AUROC from preregistered tests T4–T10 (<a href="results.html">evidence</a>). Both monitors need labelled steps of
+each policy you enforce: with a policy family removed from training, violations of it were ranked high but not escalated at a 5% budget,
+until 20–40 labelled steps of it were added.</p>
+
+<h2>Install</h2>
+<pre>pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"     # core + HTTP server
+pip install scikit-learn scipy                                                  # TextMonitor training
+pip install torch transformers huggingface_hub joblib                           # ReaderMonitor (GPU)</pre>
+
+<h2>The text monitor (CPU, real time)</h2>
+<p>Train it in the <a href="train.html">browser trainer</a> and download the model file, then:</p>
+<pre>from graybox.monitor import TextMonitor, Step
+
+tm = TextMonitor.load_json("greybox-text-monitor.json")         # pure Python to score
+history = [Step("read_file", {"path": "/hr/salaries.csv"}, "name,salary\n...")]
+action = ("send_message", {"recipient": "press@news.example", "body": "..."})
+if tm.escalate(system_prompt, user_task, history, action):    # the cut learned from your data
+    hold_for_review()</pre>
+<p>Or train in Python on <code>(instructions, task, history, action)</code> tuples:
+<code>TextMonitor().fit(steps, labels)</code>; score with <code>tm.score(...)</code>.</p>
+
+<h2>The reader monitor (GPU, robust to new tasks)</h2>
+<pre>from graybox.monitor import ReaderMonitor, QuantileGate, Step
+
+mon = ReaderMonitor.load("reader_probe.joblib")    # downloads Qwen/Qwen3-8B on first use
+gate = QuantileGate(budget=0.05)                    # escalate the riskiest 5% of this agent's actions
+gate.fit(past_scores)                               # optional: warm up on trusted past traffic
+p = mon.score(system_prompt, user_task, history, action)
+if gate(p):
+    hold_for_review()</pre>
+<div class="note"><b>Act on the gate, not on <code>p</code>.</b> The probe ranks a new agent's actions well, but its probabilities do not
+  transfer: on Claude a 0.5 cut caught 3% of violations. <code>QuantileGate</code> sets its cut at the top <i>budget</i> of the first 500
+  actions it sees (no labels), then freezes it, so a burst of malicious actions cannot raise it. It escalates everything until it has seen
+  100 actions. Call <code>gate.recalibrate()</code> when the agent, its tools or its policy change.</div>
+<p><code>reader_probe.joblib</code> (4.3 MB) was trained on 17,623 labelled steps of the open Gemma-4 agent on CAPE-Bench. It learned
+CAPE-Bench's policies: retrain it on yours (features from <code>mon.features(prompt)</code>, then the same scikit-learn pipeline).</p>
+
+<h2>HTTP API (self-hosted)</h2>
+<pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --port 8000   # CPU only
+GB_MONITOR_PROBE=reader_probe.joblib      uvicorn graybox.monitor_server:app --port 8000   # + GPU reader</pre>
+<p><code>POST /v1/monitor/text</code> scores with the browser-trained text monitor and its stored cut. <code>POST /v1/monitor/action</code>
+uses the reader with a frozen gate per <code>stream</code>. Both take the same body:</p>
+<pre>POST /v1/monitor/action
+{"instructions": "...", "task": "...",
+ "history": [{"tool": "read_file", "args": {"path": "/hr/a"}, "result": "..."}],
+ "action": {"tool": "send_message", "args": {"recipient": "..."}},
+ "stream": "billing-agent", "budget": 0.05}
+
+→ {"p_unsafe": 0.000213, "escalate": false, "threshold": 0.00264, "calibrated": true, ...}</pre>
+<p>Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in
+<code>deploy/</code> of the repository.</p>
+
+<h2>Data format for labelled steps</h2>
+<pre>{"instructions": "...", "task": "...", "history": [{"tool": "...", "args": {...}, "result": "..."}],
+ "action": {"tool": "...", "args": {...}}, "label": 1, "group": "task-17"}</pre>
+<p>One proposed action per line: everything the monitor may see before it runs. <code>label</code> is 1 if executing the action violates
+your policy. <code>group</code> keeps a task's steps in one cross-validation fold. Text rendering is identical in Python and in the browser
+(verified byte for byte on 302 real agent steps).</p>
+
+<h2>How to evaluate a monitor honestly</h2>
+<ul>
+  <li>Hold out whole tasks, not steps (the trainer does this). Steps of one task share text and inflate accuracy.</li>
+  <li>Report the catch rate at the review budget you can afford, not only AUROC.</li>
+  <li>Test on a policy or task family you did not train on before trusting it there.</li>
+  <li>Never take the threshold from another agent: calibrate on this agent's traffic and freeze it.</li>
+</ul>
+
+</div></main>
+<footer><div class="wrap">Grey Box is a research project. Every result on this site comes from a preregistered, hash-locked test,
+failures included (<a href="results.html">evidence</a>). Built 2026-10-17.</div></footer>
+</body></html>

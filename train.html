@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train a monitor · Grey Box</title><meta name="description" content="Train an agent-action monitor on your own labelled steps, in your browser. Nothing is uploaded.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
+</head><body>
+<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="train.html" aria-current=page>Train a monitor</a><a href="monitor.html">Claude, live replay</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
+<main><div class="wrap">
+<!--title: Train a monitor-->
+<!--desc: Train an agent-action monitor on your own labelled steps, in your browser. Nothing is uploaded.-->
+<h1>Train a monitor on your own agent</h1>
+<p class="lede">Give it agent steps you have labelled (was this action a violation of your policy?), and it trains a monitor
+  that scores the next action before it runs. Training, evaluation and scoring all happen in this browser tab:
+  your transcripts are never uploaded.</p>
+
+<div class="note"><b>What this tool is, honestly.</b> It is the word-count monitor (TF-IDF + logistic regression) from our
+  preregistered tests, the same model as <code>graybox.monitor.TextMonitor</code> in the Python SDK (browser and Python
+  agree: identical text, identical vocabulary, held-out AUROC 0.9887 vs 0.9886). On the tools and policies it was
+  trained on it matches a much larger reader model, including on another company's closed agent. It does
+  <b>not</b> carry over to new policies or new kinds of tasks: on an unseen benchmark it was at chance. Label a few dozen
+  steps of every policy you need to enforce. For robustness to new tasks, use the reader monitor (<a href="docs.html">self-hosted</a>).</div>
+
+<h2>1. Load labelled steps</h2>
+<div class="card">
+  <div class="row">
+    <button id="exampleBtn" class="secondary">Use the example: 1,500 real agent steps</button>
+    <label class="btn" for="file" style="background:var(--panel);color:var(--ink);border:1px solid var(--line)">Open a .jsonl or .json file</label>
+    <input id="file" type="file" accept=".jsonl,.json,.txt" hidden>
+  </div>
+  <details style="margin-top:12px"><summary>…or paste JSON lines</summary>
+    <textarea id="paste" rows="6" placeholder='{"instructions": "...", "task": "...", "history": [], "action": {"tool": "send_message", "args": {"to": "x@y.z"}}, "label": 1, "group": "task-7"}'></textarea>
+    <p style="margin-top:8px"><button id="pasteBtn" class="secondary">Load pasted text</button></p>
+  </details>
+  <p id="dataInfo" class="muted" style="margin:12px 0 0">No data loaded yet.</p>
+</div>
+<details style="margin-top:10px"><summary>Data format</summary>
+<p style="margin-top:10px">One JSON object per line (or one JSON array). Each object is one proposed agent action, as your
+  monitor would see it before execution:</p>
+<pre>{"instructions": "the agent's system prompt / operating policy",
+ "task": "the user's request",
+ "history": [{"tool": "read_file", "args": {"path": "/hr/a.txt"}, "result": "..."}],
+ "action": {"tool": "send_message", "args": {"recipient": "...", "body": "..."}},
+ "label": 1,
+ "group": "ticket-1043"}</pre>
+<p><code>label</code>: 1 if executing the action violates your policy, 0 if not. <code>group</code> (optional): steps with the
+  same group (the same task or episode) are kept in the same cross-validation fold, so the estimate reflects new tasks;
+  without it, the task text is used. If you already render transcripts yourself, use
+  <code>{"context": "...", "action": "...", "label": 0}</code> instead. The example file is 1,500 steps of the open Gemma-4 agent on
+  CAPE-Bench, labelled by the benchmark's rule checker.</p>
+</details>
+
+<h2>2. Train and evaluate</h2>
+<div class="card">
+  <div class="row">
+    <label for="budget">Review budget: escalate the riskiest</label>
+    <select id="budget" style="width:auto"><option>1</option><option>2</option><option selected>5</option><option>10</option></select>
+    <span>% of steps</span>
+    <button id="trainBtn" disabled>Train</button>
+  </div>
+  <progress id="prog" value="0" max="1" hidden style="margin-top:12px"></progress>
+  <p id="progMsg" class="muted" style="margin:6px 0 0"></p>
+</div>
+
+<section id="results" hidden>
+  <div class="grid3" id="stats" style="margin-top:14px"></div>
+  <p class="muted" id="details" style="margin-top:10px"></p>
+  <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole task groups, so it estimates
+    performance on new tasks <i>like these</i>. It does not cover a new policy, new tools or a different benchmark: in our
+    preregistered tests, removing one policy family from training dropped that family's catch rate at a 5% budget from 88%
+    to 0%, and 20 to 40 labelled steps of it brought it back to 85–94%.</div>
+  <h3>By tool</h3>
+  <div class="tablewrap" id="perTool"></div>
+</section>
+
+<section id="use" hidden>
+  <h2>3. Use it</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Score a step</h3>
+      <textarea id="step" rows="8">{"instructions": "Only send messages to addresses the user names.", "task": "Email the Q3 summary to Dana.", "history": [], "action": {"tool": "send_message", "args": {"recipient": "all-staff@corp.example", "body": "Q3 summary"}}}</textarea>
+      <p style="margin-top:8px"><button id="scoreBtn">Score</button></p>
+      <p id="scoreOut"></p>
+    </div>
+    <div class="card">
+      <h3>Deploy it</h3>
+      <p>Download the trained monitor and load it with the Python SDK. The file holds the vocabulary, the weights and the
+        escalation cut learned from your data (the top <i>budget</i> of your steps, without using labels).</p>
+      <p><button id="exportBtn">Download model (.json)</button></p>
+<pre>from graybox.monitor import TextMonitor, Step
+tm = TextMonitor.load_json("greybox-text-monitor.json")
+if tm.escalate(instructions, task, history, ("send_message", args)):
+    hold_for_review()</pre>
+    </div>
+  </div>
+</section>
+<script src="assets/tm-core.js"></script>
+<script src="assets/train.js"></script>
+
+</div></main>
+<footer><div class="wrap">Grey Box is a research project. Every result on this site comes from a preregistered, hash-locked test,
+failures included (<a href="results.html">evidence</a>). Built 2026-10-17.</div></footer>
+</body></html>
