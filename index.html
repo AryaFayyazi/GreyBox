@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
 </head><body>
-<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html" aria-current=page>Overview</a><a href="train.html">Train a monitor</a><a href="monitor.html">Claude, live replay</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
+<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html" aria-current=page>Overview</a><a href="train.html">Train a monitor</a><a href="monitor.html">Agent replay</a><a href="chat.html">Chat grey box</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
 <main><div class="wrap">
 <h1>Monitor AI agents that you cannot open.</h1>
 <p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
@@ -17,8 +17,9 @@ preregistered, hash-locked test. We show the failures too.</p>
 replica, computed from the transcript only. (c, d) Two closed agents, replicated in the same way: we never saw their weights. Red: policy
 violations. In every agent they occupy their own region.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
-  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
-    use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
+  <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
+    format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
+    logs stay in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
   <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
     agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
   <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
@@ -31,6 +32,9 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
   66% of the variance of an open agent's hidden state. A probe trained on the true state scores
   0.987 on the replica and 0.984 on the true state.</p></div>
+<div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of a closed agent (GPT-6-luna, 500 scenarios,
+  each with and without the gate). A blocked action did not run, and the agent was told that a human would review it. Episodes with an
+  executed violation fell from 6.6% to 0.2%. The agent did not route around a block. Each check took 89 ms.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC 0.994 vs 0.979).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught 96%
