@@ -8,3 +8,9 @@ site/dist/
 prototype/
 greybox_prototype.tar.gz
 Latent recovery black box LLMs.md
+paper/*.aux
+paper/*.log
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.blg
+paper/*.out

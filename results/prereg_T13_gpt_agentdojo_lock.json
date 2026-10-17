@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-17T05:13:38-07:00",
+ "sha256": {
+  "docs/prereg_T13_gpt_agentdojo.md": "5f77ae59ff648f37a43c36c32233e9da199bbed30eb42120b56869ecb8ec8eb1",
+  "scripts/83_gpt_agentdojo.py": "4fb8a28307e7561b94cd5fb6ce8975a606eeaabb2317a7d414d1c8207a069d2f",
+  "scripts/84_t13_gpt_agentdojo.py": "2a91fc3b7c23089816b27438173247ce64cd9276d01f1233d9058b6a0254d902"
+ }
+}

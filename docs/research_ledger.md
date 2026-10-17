@@ -894,3 +894,7 @@ Dated log of every experiment, decision and correction. Newest last.
   it (v1 kept in docs/paper_abstract_v1.md).
 - **Bookkeeping**: the record table had 16 rows outside the table; they are moved back. Fixed the monitor page's
   horizontal scroll (tag wrapping). The trainer now shows the budget ceiling and the precision.
+- **T11 recorded**: G1, G2 and G3 all pass on GPT-6-luna. **T12 recorded**: H1 fails as preregistered; the held-out
+  credentials policy transferred with 0 labels. The interpretation (policy similarity) is labelled a hypothesis.
+- Paper: section 4.6 rewritten around the decomposition, plus Figure 6 (policy coverage). Introduction, related work
+  and Appendix A.4b added. The site is redeployed, the code pushed, CI green. OpenAI spend $0.81 of $5.

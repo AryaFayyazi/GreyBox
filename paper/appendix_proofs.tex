@@ -1,0 +1,18 @@
+\textbf{Setting.} $Z_t$ are all tokens that the agent read or wrote up to step $t$; $V_t$ is the visible part and $H_t$ the hidden part; $A_t$ is the proposed action; $W$ are world facts that the agent did not observe. An internal representation is $\phi=\Phi(Z;\theta)$, a deterministic function of the tokens (numerical noise in a batch is independent of everything else).
+
+\textbf{Proposition 3 (behavioural sufficiency).} Let $Y=g(\tau)$ be defined by the future $\tau$ that the agent and the environment generate from context $x$, and let $\phi(x)$ carry no information about the future sampling noise given $x$. Then $\pi^*(x)=P(Y=1\mid x)$ has a maximal ROC curve and a minimal risk under every strictly proper score among all forecasts $f(\phi(x))$.
+
+\emph{Proof.} By the assumption and the tower property, $E[Y\mid\phi(X)]=E[\pi^*(X)\mid\phi(X)]$. Under a strictly proper score, the Bayes act given $\sigma(X)$ is $\pi^*(X)$, and $\sigma(\phi(X))\subseteq\sigma(X)$; less information cannot raise the expected score. For the ROC curve, the Neyman--Pearson lemma gives the most powerful test of each size as a threshold on the likelihood ratio, which is a strictly increasing function of $\pi^*$; every test based on $f(\phi(X))$ is a test based on $X$. $\square$
+
+\textbf{Proposition 1 in the main text (access is not information).} (i) $\phi_t$ is $\sigma(Z_t)$-measurable, so $\sigma(Z_t,\phi_t)=\sigma(Z_t)$, and Proposition 3 with $X=Z_t$ gives the first claim. (ii) The Bayes log loss of predicting $Y$ from a $\sigma$-field $\mathcal G$ is the conditional entropy $H(Y\mid\mathcal G)$; thus $H(Y\mid V_t)-H(Y\mid V_t,H_t)=I(Y;H_t\mid V_t)$. $\square$
+
+\textbf{Corollary 1 in the main text (the proposed action is sufficient).} Let $Z^-$ be the tokens before the action is sampled, $A_t=a(Z^-,\xi)$ with sampling noise $\xi\indep(Z^-,W)$, $W\indep Z^-\mid V_t$, and $Y=g(A_t,V_t,W)$.
+\begin{enumerate}
+\item From $W\indep Z^-\mid V_t$ and $\xi\indep(Z^-,W)$: $W\indep(Z^-,\xi)\mid V_t$.
+\item $A_t$ is a function of $(Z^-,\xi)$, so $W\indep(Z^-,A_t)\mid V_t$.
+\item By weak union, $W\indep Z^-\mid(V_t,A_t)$.
+\item $Y$ is a function of $(A_t,V_t,W)$, so $Y\indep Z^-\mid(V_t,A_t)$, that is, $P(Y\mid Z^-,A_t)=P(Y\mid V_t,A_t)$.
+\item A monitor that reads internals at or before the action uses $\phi=\Phi(Z^-)$, with $\sigma(\phi)\subseteq\sigma(Z^-)\subseteq\sigma(Z^-,A_t)$. By step 4 the Bayes predictor given $\sigma(Z^-,A_t)$ equals the one given $(V_t,A_t)$, and less information cannot help (Proposition 3). $\square$
+\end{enumerate}
+The inequality can be strict: if $A_t$ is random given $Z^-$ and $Y$ depends on which action is sampled, a probe that reads before the action must average over the actions.
+The assumption on $W$ fails only if the internals hold information about the world that is not in the tokens, which cannot happen for a model whose only input is its token history.

@@ -1,0 +1,99 @@
+\begin{thebibliography}{19}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arditi et~al.(2024)Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee, and Nanda]{arditi2024refusal}
+Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery, N., Gurnee, W., and Nanda, N.
+\newblock Refusal in language models is mediated by a single direction, 2024.
+
+\bibitem[Baker et~al.(2025)Baker, Huizinga, Gao, Dou, Guan, Madry, Zaremba, Pachocki, and Farhi]{baker2025monitoring}
+Baker, B., Huizinga, J., Gao, L., Dou, Z., Guan, M.~Y., Madry, A., Zaremba, W., Pachocki, J., and Farhi, D.
+\newblock Monitoring reasoning models for misbehavior and the risks of promoting obfuscation.
+\newblock \emph{arXiv preprint arXiv:2503.11926}, 2025.
+
+\bibitem[Burns et~al.(2023)Burns, Ye, Klein, and Steinhardt]{burns2023ccs}
+Burns, C., Ye, H., Klein, D., and Steinhardt, J.
+\newblock Discovering latent knowledge in language models without supervision.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2023.
+
+\bibitem[Carlini et~al.(2024)]{carlini2024stealing}
+Carlini, N. et~al.
+\newblock Stealing part of a production language model, 2024.
+\newblock VERIFY author list.
+
+\bibitem[Chen et~al.(2025)Chen, Benton, Radhakrishnan, Uesato, Denison, Schulman, Somani, Hase, Wagner, Roger, Mikulik, Bowman, Leike, Kaplan, and Perez]{chen2025reasoning}
+Chen, Y., Benton, J., Radhakrishnan, A., Uesato, J., Denison, C., Schulman, J., Somani, A., Hase, P., Wagner, M., Roger, F., Mikulik, V., Bowman, S.~R., Leike, J., Kaplan, J., and Perez, E.
+\newblock Reasoning models don't always say what they think.
+\newblock \emph{arXiv preprint arXiv:2505.05410}, 2025.
+
+\bibitem[Conti et~al.(2026)Conti, Sharf, Jain, Yan, et~al.]{conti2026hermeneutics}
+Conti, Sharf, Jain, Yan, et~al.
+\newblock Model hermeneutics: Monitoring closed-weight models with open-weight internals.
+\newblock LessWrong, 30 September 2026, 2026.
+\newblock VERIFY full author names.
+
+\bibitem[Cooney et~al.(2026)Cooney, Africa, and Irving]{cooney2026didyoulie}
+Cooney, A., Africa, D., and Irving, G.
+\newblock ``did you lie?'' evaluating lie detectors across scale and belief-verified model organisms, 2026.
+
+\bibitem[Debenedetti et~al.(2024)Debenedetti, Zhang, Balunovi{\'c}, Beurer-Kellner, Fischer, and Tram{\`e}r]{debenedetti2024agentdojo}
+Debenedetti, E., Zhang, J., Balunovi{\'c}, M., Beurer-Kellner, L., Fischer, M., and Tram{\`e}r, F.
+\newblock {AgentDojo}: A dynamic environment to evaluate prompt injection attacks and defenses for {LLM} agents.
+\newblock In \emph{Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)}, 2024.
+
+\bibitem[Fayyazi et~al.(2026)]{fayyazi2026cape}
+Fayyazi, A. et~al.
+\newblock The agent knew: Internal states forecast unauthorized actions and stop them, and the lies that follow, 2026.
+\newblock VERIFY author list.
+
+\bibitem[Finlayson et~al.(2024)Finlayson, Ren, and Swayamdipta]{finlayson2024logits}
+Finlayson, M., Ren, X., and Swayamdipta, S.
+\newblock Logits of {API}-protected {LLM}s leak proprietary information, 2024.
+
+\bibitem[Goldowsky-Dill et~al.(2025)Goldowsky-Dill, Chughtai, Heimersheim, and Hobbhahn]{goldowskydill2025probes}
+Goldowsky-Dill, N., Chughtai, B., Heimersheim, S., and Hobbhahn, M.
+\newblock Detecting strategic deception with linear probes.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine Learning (ICML)}, volume 267 of \emph{PMLR}, pp.\  19755--19786, 2025.
+
+\bibitem[Greenblatt et~al.(2024)Greenblatt, Shlegeris, Sachan, and Roger]{greenblatt2024control}
+Greenblatt, R., Shlegeris, B., Sachan, K., and Roger, F.
+\newblock {AI} control: Improving safety despite intentional subversion.
+\newblock In \emph{Proceedings of the 41st International Conference on Machine Learning (ICML)}, 2024.
+
+\bibitem[Hines et~al.(2024)Hines, Lopez, Hall, Zarfati, Zunger, and Kiciman]{hines2024spotlighting}
+Hines, K., Lopez, G., Hall, M., Zarfati, F., Zunger, Y., and Kiciman, E.
+\newblock Defending against indirect prompt injection attacks with spotlighting, 2024.
+
+\bibitem[Korbak et~al.(2025)Korbak, Balesni, Barnes, Bengio, Benton, Bloom, Chen, Cooney, Dafoe, Dragan, Emmons, Evans, Farhi, Greenblatt, Hendrycks, Hobbhahn, Hubinger, Irving, Jenner, Kokotajlo, Krakovna, Legg, Lindner, Luan, Madry, Michael, Nanda, Orr, Pachocki, Perez, Phuong, Roger, Saxe, Shlegeris, Soto, Steinberger, Wang, Zaremba, Baker, Shah, and Mikulik]{korbak2025cot}
+Korbak, T., Balesni, M., Barnes, E., Bengio, Y., Benton, J., Bloom, J., Chen, M., Cooney, A., Dafoe, A., Dragan, A., Emmons, S., Evans, O., Farhi, D., Greenblatt, R., Hendrycks, D., Hobbhahn, M., Hubinger, E., Irving, G., Jenner, E., Kokotajlo, D., Krakovna, V., Legg, S., Lindner, D., Luan, D., Madry, A., Michael, J., Nanda, N., Orr, D., Pachocki, J., Perez, E., Phuong, M., Roger, F., Saxe, J., Shlegeris, B., Soto, M., Steinberger, E., Wang, J., Zaremba, W., Baker, B., Shah, R., and Mikulik, V.
+\newblock Chain of thought monitorability: A new and fragile opportunity for {AI} safety.
+\newblock \emph{arXiv preprint arXiv:2507.11473}, 2025.
+
+\bibitem[Levy et~al.(2026)Levy, Goldberg, and {Cooper Stickland}]{levy2026forecasting}
+Levy, Goldberg, and {Cooper Stickland}.
+\newblock Forecasting future behavior as a learning task, 2026.
+\newblock VERIFY full author names.
+
+\bibitem[Marks \& Tegmark(2023)Marks and Tegmark]{marks2023geometry}
+Marks, S. and Tegmark, M.
+\newblock The geometry of truth: Emergent linear structure in large language model representations of true/false datasets, 2023.
+
+\bibitem[Pacchiardi et~al.(2024)Pacchiardi, Chan, Mindermann, Moscovitz, Pan, Gal, Evans, and Brauner]{pacchiardi2024liar}
+Pacchiardi, L., Chan, A.~J., Mindermann, S., Moscovitz, I., Pan, A.~Y., Gal, Y., Evans, O., and Brauner, J.
+\newblock How to catch an {AI} liar: Lie detection in black-box {LLM}s by asking unrelated questions.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem[Sam et~al.(2025)]{sam2025quere}
+Sam, D. et~al.
+\newblock Predicting the performance of black-box {LLM}s through self-queries, 2025.
+\newblock VERIFY title and authors.
+
+\bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyejo, Song, Fredrikson, Kolter, and Hendrycks]{zou2023repe}
+Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., Pan, A., Yin, X., Mazeika, M., Dombrowski, A.-K., Goel, S., Li, N., Byun, M.~J., Wang, Z., Mallen, A., Basart, S., Koyejo, S., Song, D., Fredrikson, M., Kolter, J.~Z., and Hendrycks, D.
+\newblock Representation engineering: A top-down approach to {AI} transparency.
+\newblock \emph{arXiv preprint arXiv:2310.01405}, 2023.
+
+\end{thebibliography}

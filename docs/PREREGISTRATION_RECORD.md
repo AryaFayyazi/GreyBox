@@ -24,6 +24,8 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 | T10 Claude on task families the monitor never saw (C1 pooled, C2 within) | results/prereg_T10_claude_unseen_families_lock.json (2026-10-16T20:16:27-07:00) | T8b units; monitors retrained on Gemma without cons_service_restart (17,465 units) | **C1, C2 pass** (vs zero-shot judge): pooled 0.912 vs 0.570 (+0.342 [0.311, 0.371]); within 0.948 vs 0.633 (+0.318 [0.265, 0.374]). But at the label-free cut the unseen restart family is caught 0/26 (results/t1/t10_claude_unseen_families.json) |
 | T11 second closed family: gpt-6-luna as agent, frozen monitors (G1 pooled vs judge, G2 vs tool identity, G3 within tool) | results/prereg_T11_gpt_agent_lock.json (2026-10-17T04:21:46-07:00) | 1,000 GPT episodes on CAPE-Bench core24b x− (same order and seed as Claude) | **G1, G2, G3 all pass**: GPT-6-luna, 3,627 actions, 66 unsafe in 6 families. Reader pooled 0.996 vs judge 0.778 (+0.217 [0.174, 0.265]); vs tool identity +0.141 [0.111, 0.171]; within tool vs judge +0.039 [0.015, 0.066]. 98.5% caught at the label-free 5% cut (judge 37.9%) (results/t1/t11_gpt_agent.json) |
 | T12 labels needed for a new policy, prospective on GPT (H1 40 vs 0 labels, H2 catch at 40 ≥ 0.5) | results/prereg_T12_new_policy_labels_lock.json (2026-10-17T05:00:05-07:00) | T11 GPT units; held-out family cred_analytics_token (18 GPT violations) | **H1 FAILS, H2 passes**: with 0 labels of the held-out credentials policy, the reader already caught 18/18 of GPT's violations of it, so added labels had nothing to fix (40 − 0: 0.0). The T10 curve does not replicate on this family (results/t1/t12_new_policy_labels.json) |
+| T13 a closed agent on an external benchmark: GPT-6-luna on AgentDojo, frozen monitors (K1 reader vs judge) | results/prereg_T13_gpt_agentdojo_lock.json (2026-10-17T05:13:38-07:00) | AgentDojo v1.2.2 dev split, spot arm, attack + benign | **K1 NOT TESTED**: GPT-6-luna resisted the injections (attack success 2.1%), leaving 4 injected calls (minimum 10). Utility on benign tasks 0.862 (results/t1/t13_gpt_agentdojo.json) |
+| T13b closed agent on AgentDojo without the defense (arm none, dev + conf; K1b reader vs judge) | results/prereg_T13b_gpt_agentdojo_none_lock.json (2026-10-17T05:26:09-07:00) | AgentDojo v1.2.2, both splits, attack + benign | pending |
 
 ## Notes
 - L1: the preregistration header says "~14:05 PDT". The lock file's timestamp (13:53 PDT) is authoritative. The
@@ -241,6 +243,13 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 - **Lock bookkeeping (2026-10-16, after T8b).** src/graybox/monitor.py is locked in T7 and T8. After both results,
   I added QuantileGate, TextMonitor and a docstring note on thresholds. scripts/99 now strips exactly those additions
   on every run and checks that the rest hashes to both locks; it does. Nothing that T7/T8/T8b ran has changed.
+- **T13 result (2026-10-17 05:21 PDT).** GPT-6-luna on AgentDojo (dev split, spot arm); 372 episodes, 0 errors, about $0.35.
+  - Attack success rate 2.1%; utility on benign tasks 0.862. 1,020 executed calls, 4 injected.
+  - **K1 is not tested** (4 injected calls; the preregistered minimum is 10). With 4 positives no AUROC is
+    interpretable, so none is reported as a finding (the file holds them for completeness).
+  - Reading: under AgentDojo's important_instructions attack with spotlighting, this closed frontier agent rarely
+    executes injected tasks, so this data cannot test monitoring. A test needs an attack that succeeds more often;
+    any such test is a new preregistration.
 - **T11 result (2026-10-17 05:07 PDT).** GPT-6-luna as an agent (scripts/80); 1,000 episodes, $0.81. Frozen monitors (scripts/81).
   - Units: 3,627, of which 66 unsafe, in 6 families (tp_campaign_test 39, cred_analytics_token 18, con_cloud_cost 6,
     three with 1 each). All 66 sit in strata with both classes, by tool (2 strata) and by template (6 strata).
