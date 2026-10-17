@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -82,6 +82,10 @@ Pacchiardi, L., Chan, A.~J., Mindermann, S., Moscovitz, I., Pan, A.~Y., Gal, Y.,
 \bibitem[Sam et~al.(2025)Sam, Finzi, and Kolter]{sam2025quere}
 Sam, D., Finzi, M., and Kolter, J.~Z.
 \newblock Predicting the performance of black-box {LLM}s through follow-up queries, 2025.
+
+\bibitem[Zhou \& Klindt(2026)Zhou and Klindt]{zhou2026identifiabilities}
+Zhou, J. and Klindt, D.
+\newblock Complete or sparse: A tale of two identifiabilities, 2026.
 
 \bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyejo, Song, Fredrikson, Kolter, and Hendrycks]{zou2023repe}
 Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., Pan, A., Yin, X., Mazeika, M., Dombrowski, A.-K., Goel, S., Li, N., Byun, M.~J., Wang, Z., Mallen, A., Basart, S., Koyejo, S., Song, D., Fredrikson, M., Kolter, J.~Z., and Hendrycks, D.

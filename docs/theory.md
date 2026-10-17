@@ -109,6 +109,14 @@ A_t = a(Z⁻, ξ), with sampling noise ξ independent of (Z⁻, W).
   information cannot help), its Bayes risk is at least that of the (V_t, A_t) monitor. The inequality can be strict
   when A_t is random given Z⁻ and Y depends on A_t. ∎
 
+**Relation to identifiability of representations.** Zhou and Klindt (2026, arXiv 2610.20851) show that latents made
+identifiable by supervised training are recovered by encoders that are linear in them when the representation is
+complete, and only through sparsity (compressed sensing) when it is undercomplete. Proposition 4 (gauge) is the
+output-side counterpart: from outputs alone, hidden coordinates are identified only up to the function-preserving
+group. T15's linear map between two models that read the same tokens follows the complete case. A check of the
+undercomplete case (a nonlinear map) is exploratory (scripts/88c): a one-hidden-layer MLP replicates less than the
+linear map (R² 0.558 vs 0.664), so the data give no sign that the linear replica is limited by the map.
+
 **What remains is statistics.** For a trained transcript monitor m, the excess log loss over the best white-box
 monitor at the decision point is:
 

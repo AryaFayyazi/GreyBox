@@ -42,6 +42,9 @@ for call in reply.tool_calls or []:                                   # OpenAI; 
     result = run_tool(call) if v.allow else v.block_message
 ```
 
+Train the stronger reader monitor on your own labels with one command on a GPU:
+`python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib`.
+
 The browser trainer imports OpenAI and Anthropic agent logs, lets you label actions (a review queue shows the riskiest
 first), and trains the monitor. Its importer and the guard build the same steps as our research pipeline (979/979 GPT
 and 373/373 Claude units identical; `results/tool/`).

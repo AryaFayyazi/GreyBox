@@ -1,0 +1,11 @@
+{
+ "command": "python -m graybox.train_reader site/dist/data/example_gpt_openai.jsonl",
+ "actions": 1515,
+ "violations": 67,
+ "groups": 300,
+ "folds": 5,
+ "cv_auroc": 0.9944,
+ "caught_at_5pct": 0.9851,
+ "seconds_on_one_gpu": 89,
+ "job": 3909
+}

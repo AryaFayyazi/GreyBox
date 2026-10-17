@@ -118,7 +118,7 @@ Let $Y=g(A_t,V_t,W)$ with $W\indep Z_t^-\mid V_t$, where $Z_t^-$ are the tokens 
 \end{corollary}
 
 Proofs are in \cref{app:proofs}.
-\Cref{prop:gauge} says what a grey box can target: a behavioural state, or a state defined up to a learned map.
+\Cref{prop:gauge} says what a grey box can target: a behavioural state, or a state defined up to a learned map. It is the output-side counterpart of identifiability results for representations: latents that supervised training makes identifiable are recovered by encoders that are linear in them when the representation is complete \citep{zhou2026identifiabilities}, which is why we use a linear map between two models that read the same tokens.
 \Cref{prop:access} says why a replica is possible: the hidden state is a function of tokens that an outside model can also read.
 \Cref{cor:action} says when nothing is lost: a probe read before the action must also predict which action the agent samples; a monitor that reads the action does not.
 It does not cover labels about later behaviour or about beliefs; for later behaviour, the rollout forecast dominates every readout of the state (\cref{app:proofs}).
@@ -182,7 +182,7 @@ On eight open chat models, the answers recover the hidden state better than a te
 On Gemma-4, where the true state is known, we fit a ridge map from the reader's latent space to the agent's hidden state at the decision point (5 layers, top 128 principal components, 80.5\% of the variance) on development steps.
 On 12{,}128 fresh steps, the replica reconstructs 66.4\% of the variance from the transcript alone; text features reconstruct 58.6\% ($+0.079$ [0.075, 0.083]; \cref{fig:replica}).
 A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]): white-box readouts work on the replica.
-The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies.
+The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies. A nonlinear map (an MLP) replicates less than the linear one (0.558 vs 0.664, exploratory), as expected when the reader represents the agent's main latents completely \citep{zhou2026identifiabilities}.
 
 \begin{figure*}[t]
 \centering
@@ -275,6 +275,7 @@ A live viewer shows a closed chat model's interrogation state in a 3D space shar
 \textbf{Probes on internals} read truth, refusal and deception \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}; CAPE probes an agent before each action \citep{fayyazi2026cape}.
 \textbf{Chain-of-thought monitors} catch reward hacking that action-only monitors miss \citep{baker2025monitoring,korbak2025cot,chen2025reasoning}; \cref{cor:action} says that for labels that the action and the visible facts decide, the reasoning adds nothing once the monitor sees the action.
 \textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}; we show that the threshold must come from the monitored agent's own traffic.
+\textbf{Identifiability.} Hidden coordinates are identifiable only up to transformations that leave the function unchanged; supervised learning identifies latents linearly when the representation is complete and through sparsity otherwise \citep{zhou2026identifiabilities}. Our gauge result applies the same logic to an observer who sees only outputs.
 \textbf{Black-box access} recovers parts of a model from logits \citep{carlini2024stealing,finlayson2024logits}, detects lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, forecasts behaviour from traces \citep{levy2026forecasting}, and probes closed transcripts with open readers \citep{conti2026hermeneutics}.
 We add the identifiability and sufficiency theory, a direct test that the reader replicates the hidden state, closed agents from two providers, live prevention, and a preregistered test of each claim.
 

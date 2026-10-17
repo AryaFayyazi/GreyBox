@@ -273,6 +273,12 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
     recoverable from text. The TXT alpha is at the grid edge.
   - Sensitivity (exploratory; scripts/88b, results/t1/t15_txt_alpha_exploratory.json): a smaller alpha makes TXT worse
     (R² 0.508 at 0.1, 0.256 at 0.01), so alpha = 1 was its best. E1 does not depend on the grid edge.
+  - Nonlinear map (exploratory; scripts/88c, results/t1/t15_nonlinear_map_exploratory.json). Motivated by Zhou and
+    Klindt (2026, arXiv 2610.20851): if the reader were undercomplete for the agent's latents, a nonlinear map should
+    do better. An MLP (one hidden layer of 1,024 units) gives fresh R² 0.557–0.558 at every alpha, below the ridge
+    map (0.664), although its alpha was chosen on fresh data (optimistic). The probe on the MLP replica scores 0.982
+    (ridge 0.987). This nonlinear map does not recover the remaining variance; with 5,492 training steps the linear
+    map is the better estimator.
 - **T14 result (2026-10-17 05:54 PDT).** CPU; threads pinned to 1. Test: T13b's 3,925 GPT calls (36 injected).
   - Within-suite AUROC by k labelled AgentDojo calls of open agents (mean over draws): 0 → 0.840; 100 → 0.858;
     400 → 0.881; 3,455 → 0.922. Judge: 0.787.

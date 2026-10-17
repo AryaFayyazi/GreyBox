@@ -1,0 +1,21 @@
+{
+ "0.001": {
+  "r2_fresh": 0.5569,
+  "epochs": 25
+ },
+ "0.01": {
+  "r2_fresh": 0.5576,
+  "epochs": 25
+ },
+ "0.1": {
+  "r2_fresh": 0.5564,
+  "epochs": 25
+ },
+ "best_alpha": "0.01",
+ "E2_auroc_mlp_replica": 0.9815,
+ "ridge_reference": {
+  "READER": 0.6644,
+  "TXT": 0.5855
+ },
+ "note": "alpha chosen on fresh R^2 here (exploratory): an optimistic upper estimate for the MLP"
+}

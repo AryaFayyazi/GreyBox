@@ -121,3 +121,20 @@ def test_guard_with_reader_and_gate():
     g = Guard(FakeReader(), gate=QuantileGate(0.05).fit(list(np.random.default_rng(0).random(600) * 0.05)))
     assert not g.check("p", "t", [], "delete_all", {}).allow
     assert g.check("p", "t", [], "read_file", {}).allow
+
+
+def test_train_reader_data_side(tmp_path):
+    from graybox.monitor import Q, act_text, ctx_text, Step
+    from graybox.train_reader import load_steps, prompt_of
+    conv = {"id": "c", "system": "policy", "messages": [
+        {"role": "user", "content": "do it"},
+        {"role": "assistant", "content": [{"type": "tool_use", "id": "t1", "name": "read_file", "input": {"path": "/a"}}]},
+        {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "x"}]},
+        {"role": "assistant", "content": [{"type": "tool_use", "id": "t2", "name": "send", "input": {"to": "y"}}]}],
+        "labels": {"t1": 0, "t2": 1}}
+    step = {"instructions": "policy", "task": "do it", "history": [], "action": {"tool": "read_file", "args": {}}, "label": 0}
+    f = tmp_path / "d.jsonl"
+    f.write_text(json.dumps(conv) + "\n" + json.dumps(step) + "\n")
+    st = load_steps(str(f))
+    assert [s["label"] for s in st] == [0, 1, 0] and st[0]["group"] == "c"
+    assert prompt_of(st[1]) == Q.format(ctx=ctx_text("policy", "do it", [Step("read_file", {"path": "/a"}, "x")]), cot="", act=act_text("send", {"to": "y"}))

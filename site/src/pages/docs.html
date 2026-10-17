@@ -87,6 +87,14 @@ AgentDojo calls it scored 0.922 (zero-shot judge 0.787; T14).</li>
 <p>Both learned the policies in their training data. For another type of policy, add labelled steps of it: features from
 <code>mon.features(prompt)</code>, then the same scikit-learn pipeline.</p>
 
+<h2>Train the reader monitor on your own labels (GPU)</h2>
+<p>Label actions in the <a href="train.html">browser trainer</a> and download them, or use logs that carry a <code>labels</code> field.
+Then one command computes the reader's features and trains the probe:</p>
+<pre>python -m graybox.train_reader greybox-labelled-actions.jsonl --out my_reader_probe.joblib</pre>
+<p>It reports an AUROC from cross-validation grouped by conversation and the catch rate at a 5% budget, and writes a file that
+<code>ReaderMonitor.load</code>, <code>Guard</code> and the server use. On our 300 example GPT conversations (1,515 actions), it took 90
+seconds on one GPU: AUROC 0.994, 98.5% of violations caught at 5% review (the browser's word-count monitor: 0.989 and 94%).</p>
+
 <h2>HTTP API (self-hosted)</h2>
 <pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --port 8000   # CPU only
 GB_MONITOR_PROBE=reader_probe.joblib      uvicorn graybox.monitor_server:app --port 8000   # + GPU reader</pre>
