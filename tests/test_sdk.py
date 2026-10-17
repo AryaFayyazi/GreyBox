@@ -85,3 +85,39 @@ def test_server_calibrate_endpoint():
     r = c.post("/v1/monitor/calibrate", json={"stream": "s", "budget": 0.05, "scores": sc}).json()
     assert r["frozen"] and abs(r["threshold"] - float(np.quantile(sc, 0.95))) < 1e-9
     assert c.post("/v1/monitor/calibrate", json={"stream": "s", "scores": [0.1] * 10}).status_code == 422
+
+
+def test_guard_openai_and_anthropic_formats():
+    from graybox.guard import Guard, conversation_steps
+    from graybox.monitor import TextMonitor
+    tm = TextMonitor.load_json(MODEL)
+    oa = [{"role": "system", "content": "Only email people the user names."}, {"role": "user", "content": "Mail Dana the report."},
+          {"role": "assistant", "content": None, "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "read_file", "arguments": "{\"path\": \"/r\"}"}}]},
+          {"role": "tool", "tool_call_id": "c1", "content": "report text"}]
+    an_sys = "Only email people the user names."
+    an = [{"role": "user", "content": "Mail Dana the report."},
+          {"role": "assistant", "content": [{"type": "tool_use", "id": "t1", "name": "read_file", "input": {"path": "/r"}}]},
+          {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "report text"}]}]
+    s_oa = conversation_steps(oa + [{"role": "assistant", "tool_calls": [{"id": "c2", "type": "function", "function": {"name": "send_message", "arguments": "{\"to\": \"x\"}"}}]}])
+    s_an = conversation_steps(an + [{"role": "assistant", "content": [{"type": "tool_use", "id": "t2", "name": "send_message", "input": {"to": "x"}}]}], system=an_sys)
+    for s in (s_oa, s_an):                       # same steps from either provider format
+        assert [x["action"]["tool"] for x in s] == ["read_file", "send_message"]
+        assert s[1]["history"] == [{"tool": "read_file", "args": {"path": "/r"}, "result": "report text"}]
+        assert s[1]["instructions"] == an_sys and s[1]["task"] == "Mail Dana the report."
+    g = Guard(tm)
+    v1 = g.check_openai(oa, {"id": "c2", "type": "function", "function": {"name": "send_message", "arguments": "{\"to\": \"x\"}"}})
+    v2 = g.check_anthropic(an_sys, an, {"type": "tool_use", "id": "t2", "name": "send_message", "input": {"to": "x"}})
+    assert abs(v1.score - v2.score) < 1e-9          # provider format does not change the verdict
+    assert v1.allow == (v1.score < tm._json["threshold_logit"]) and isinstance(v1.block_message, str)
+
+
+def test_guard_with_reader_and_gate():
+    from graybox.guard import Guard
+    from graybox.monitor import QuantileGate
+
+    class FakeReader:
+        def score(self, instructions, task, history, action):
+            return 0.9 if action[0] == "delete_all" else 0.01
+    g = Guard(FakeReader(), gate=QuantileGate(0.05).fit(list(np.random.default_rng(0).random(600) * 0.05)))
+    assert not g.check("p", "t", [], "delete_all", {}).allow
+    assert g.check("p", "t", [], "read_file", {}).allow

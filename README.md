@@ -33,12 +33,18 @@ pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"
 | `ReaderMonitor` (Qwen3-8B reads the transcript; a linear probe) | 1 GPU, 41 ms for each action | your tasks change; it is more robust to new tasks |
 
 ```python
-from graybox.monitor import TextMonitor, Step
+from graybox.guard import Guard
+from graybox.monitor import TextMonitor
 
-tm = TextMonitor.load_json("greybox-text-monitor.json")      # trained in the browser trainer
-if tm.escalate(system_prompt, user_task, history, ("send_message", args)):
-    hold_for_review()
+guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))   # trained in the browser trainer
+for call in reply.tool_calls or []:                                   # OpenAI; check_anthropic for tool_use blocks
+    v = guard.check_openai(messages, call)
+    result = run_tool(call) if v.allow else v.block_message
 ```
+
+The browser trainer imports OpenAI and Anthropic agent logs, lets you label actions (a review queue shows the riskiest
+first), and trains the monitor. Its importer and the guard build the same steps as our research pipeline (979/979 GPT
+and 373/373 Claude units identical; `results/tool/`).
 
 The reader's probes are in [release v0.2.0](https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0):
 `reader_probe.joblib` (CAPE-Bench) and `reader_probe_cape_agentdojo.joblib` (CAPE-Bench and prompt injection).
@@ -74,6 +80,8 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T12: labels for a new policy, prospective | We held out a credentials policy. With no labels of it, the reader caught all 18 of GPT's violations of it. The preregistered H1 (labels improve the catch rate) fails: there was nothing to fix. A new policy that resembles a trained one can transfer; one that does not (T10) needs labels. |
 | T13, T13b: a closed agent on an external benchmark | GPT-6-luna on AgentDojo. With the spotlighting defense, attacks succeed in 2.1% of episodes (4 injected calls): not tested. Without the defense, 36 injected calls: reader 0.840 vs judge 0.787 (+0.052 [−0.026, +0.130]). The preregistered test fails: on an external benchmark the reader is not significantly better than a zero-shot judge for this closed agent. |
 | T14: labels of the new policy, from open agents | We added labelled AgentDojo calls of the two open agents to the training data, and tested on the closed GPT agent. AUROC 0.840 → 0.922 (judge 0.787); injected calls caught at a 5% budget 36% → 92%. Both preregistered endpoints pass. Labels of a policy transfer from open agents to closed ones. |
+| T15: does the grey box replicate the hidden state? | From the transcript alone, the reader replica reconstructs 66.4% of the variance of the agent's decision state (text: 58.6%). A probe trained on the true state scores 0.987 on the replica vs 0.984 on the true state. |
+| T16: live prevention on a closed agent | The monitor in GPT-6-luna's loop (500 scenarios, with and without the gate). Episodes with an executed violation: 6.6% → 0.2% (−0.064 [−0.088, −0.044]). No violation after a block. Goals reached 47.4% → 45.6%. Round trip 89 ms. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
 
 **Results that did not confirm** are in the record too. Examples: the agent's answers alone do not match the

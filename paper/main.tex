@@ -257,7 +257,7 @@ A blocked action does not run; the agent is told that it went to a human.
 \section{The tool}
 \label{sec:tool}
 We release an SDK, a monitoring server and a website (links in the camera-ready version).
-On the website, a user trains a monitor on their own labelled steps in the browser, gets a cross-validated accuracy over held-out tasks, a frozen review threshold and the catch rate at their budget, and scores new actions; the data stay in the browser.
+On the website, a user imports their agent's logs (OpenAI or Anthropic tool-calling format), labels actions, trains a monitor in the browser, and gets a cross-validated accuracy over held-out conversations, a frozen review threshold and the catch rate at their budget; the logs stay in the browser. A review queue ranks the unlabelled actions by risk: on 300 GPT-6-luna conversations with half of them labelled, its first 25 actions were all violations (base rate 4.7\%), and its first 43 held 92\% of the violations. A guard places the monitor in an OpenAI or Anthropic tool loop.
 The browser and Python give byte-identical text on 302 real agent steps and the same held-out AUROC (0.9887 vs 0.9886).
 The text monitor takes 0.18~ms per action; the reader takes 41~ms on one GPU, and the server round trip in the loop of a closed agent was \LATENCY.
 A live viewer shows a closed chat model's interrogation state in a 3D space shared with open models, at about \$0.001 per turn.

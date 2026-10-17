@@ -1,0 +1,20 @@
+{
+ "gpt_openai": {
+  "conversations": 300,
+  "units_checked": 979,
+  "identical_with_label": 979,
+  "browser_format": "openai",
+  "browser_steps": 1515,
+  "python_steps": 1515,
+  "browser_python_identical": 1515
+ },
+ "claude_anthropic": {
+  "conversations": 150,
+  "units_checked": 373,
+  "identical_with_label": 373,
+  "browser_format": "anthropic",
+  "browser_steps": 572,
+  "python_steps": 572,
+  "browser_python_identical": 572
+ }
+}

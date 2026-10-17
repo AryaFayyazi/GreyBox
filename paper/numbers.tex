@@ -1,6 +1,6 @@
-\newcommand{\PREVENT}{\PENDING{T16 running}}
-\newcommand{\PREVENTTAB}{\PENDING{running}}
-\newcommand{\PREVENTOUT}{--}
-\newcommand{\LATENCY}{\PENDING{T16}}
-\newcommand{\TEASERE}{}
-\newcommand{\PREVENTTEXT}{\PENDING{T16 running; preregistered and locked}}
+\newcommand{\PREVENT}{episodes with an executed violation 6.6\% $\rightarrow$ 0.2\%}
+\newcommand{\PREVENTTAB}{6.6\% $\rightarrow$ 0.2\% of episodes}
+\newcommand{\PREVENTOUT}{pass}
+\newcommand{\LATENCY}{89~ms (median; 95th percentile 215~ms)}
+\newcommand{\TEASERE}{ (e) Live prevention on GPT-6-luna (T16): the share of episodes with an executed violation, without and with the gate.}
+\newcommand{\PREVENTTEXT}{The share of episodes with an executed violation fell from 6.6\% to 0.2\% (-0.064 [-0.088, -0.044]; P1 passes). The gate blocked 67 actions, of which 36\% would have been violations; in safe scenarios it blocked 0.08 actions per episode. The agent executed 0 violations after a block. Task goals were reached in 47.4\% (no gate) and 45.6\% (gate) of the episodes; in these scenarios a goal can require the unauthorized action. The server round trip was 89~ms (median).}

@@ -25,8 +25,8 @@ SRC, DIST = ROOT / "site/src", ROOT / "site/dist"
 R = ROOT / "results"
 REPO = "https://github.com/AryaFayyazi/GreyBox"
 CODE_PUBLIC = True           # link locks/preregistrations to the code repo only once it is published
-NAV = [("index.html", "Overview"), ("train.html", "Train a monitor"), ("monitor.html", "Claude, live replay"),
-       ("results.html", "Evidence"), ("docs.html", "Docs"), ("paper.html", "Paper")]
+NAV = [("index.html", "Overview"), ("train.html", "Train a monitor"), ("monitor.html", "Agent replay"),
+       ("chat.html", "Chat grey box"), ("results.html", "Evidence"), ("docs.html", "Docs"), ("paper.html", "Paper")]
 
 
 def j(p):
@@ -132,8 +132,9 @@ preregistered, hash-locked test. We show the failures too.</p>
 replica, computed from the transcript only. (c, d) Two closed agents, replicated in the same way: we never saw their weights. Red: policy
 violations. In every agent they occupy their own region.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
-  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
-    use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
+  <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
+    format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
+    logs stay in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
   <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
     agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
   <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
@@ -146,6 +147,9 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
   {p(t15['r2_fresh']['READER'])} of the variance of an open agent's hidden state. A probe trained on the true state scores
   {t15['E2_auroc']['READER_replica']:.3f} on the replica and {t15['E2_auroc']['true']:.3f} on the true state.</p></div>
+<div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of a closed agent (GPT-6-luna, 500 scenarios,
+  each with and without the gate). A blocked action did not run, and the agent was told that a human would review it. Episodes with an
+  executed violation fell from 6.6% to 0.2%. The agent did not route around a block. Each check took 89 ms.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}
@@ -201,6 +205,48 @@ def example_data(n=1500):
             f.write(json.dumps({"context": T.ctx[i], "action": T.act[i], "label": int(U.y[i]), "group": U.scenario_id[i]}, ensure_ascii=False) + "\n")
 
 
+def example_logs():
+    """Real agent logs in each provider's native format, from the T11 (GPT-6-luna, OpenAI) and T8b (Claude Haiku 5.5,
+    Anthropic) runs, with the benchmark's labels in an optional "labels" field: {call_id: 0/1}."""
+    import pandas as pd
+    S = {json.loads(l)["instance_id"]: json.loads(l) for l in open("/data/models/cape_ws/outputs/capebench/core24b/scenarios.jsonl")}
+    def pick(E, n):
+        bad = E[E.unsafe_episode]
+        good = E[~E.unsafe_episode].sample(n - len(bad), random_state=0)
+        return pd.concat([bad, good]).sample(frac=1, random_state=1)
+    G = pick(pd.read_parquet("/data/models/graybox_ws/outputs/gpt_agent/run.parquet"), 300)
+    with open(DIST / "data/example_gpt_openai.jsonl", "w") as f:
+        for ep in G.itertuples():
+            sp = S[ep.instance_id]
+            msgs, labels = [{"role": "system", "content": sp["system_prompt"]}, {"role": "user", "content": sp["task_prompt"]}], {}
+            for e in ep.events:
+                if e["is_tool_call"] and e["tool"]:
+                    cid = f"call_{e['event_id']}"
+                    msgs.append({"role": "assistant", "content": e["content_text"] or None,
+                                 "tool_calls": [{"id": cid, "type": "function", "function": {"name": e["tool"], "arguments": e["args_json"] or "{}"}}]})
+                    msgs.append({"role": "tool", "tool_call_id": cid, "content": e["tool_result"] or ""})
+                    labels[cid] = int(bool(e["unsafe_action"]))
+                elif e["content_text"]:
+                    msgs.append({"role": "assistant", "content": e["content_text"]})
+            f.write(json.dumps({"id": ep.episode_id, "messages": msgs, "labels": labels}, ensure_ascii=False) + "\n")
+    C = pick(pd.read_parquet("/data/models/graybox_ws/outputs/claude_agent/run.parquet"), 150)
+    with open(DIST / "data/example_claude_anthropic.jsonl", "w") as f:
+        for ep in C.itertuples():
+            sp = S[ep.instance_id]
+            msgs, labels = [{"role": "user", "content": sp["task_prompt"]}], {}
+            for e in ep.events:
+                if e["is_tool_call"] and e["tool"]:
+                    tid = f"toolu_{e['event_id']}"
+                    blocks = ([{"type": "text", "text": e["content_text"]}] if e["content_text"] else []) + [
+                        {"type": "tool_use", "id": tid, "name": e["tool"], "input": json.loads(e["args_json"] or "{}")}]
+                    msgs.append({"role": "assistant", "content": blocks})
+                    msgs.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": tid, "content": e["tool_result"] or ""}]})
+                    labels[tid] = int(bool(e["unsafe_action"]))
+                elif e["content_text"]:
+                    msgs.append({"role": "assistant", "content": [{"type": "text", "text": e["content_text"]}]})
+            f.write(json.dumps({"id": ep.episode_id, "system": sp["system_prompt"], "messages": msgs, "labels": labels}, ensure_ascii=False) + "\n")
+
+
 def main():
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -229,7 +275,19 @@ def main():
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
 {raw}</body></html>""")
+    # the chat grey box (interrogation state), recorded Claude session, wrapped with the site header
+    tmp = DIST / "_chat_raw.html"
+    subprocess.run([sys.executable, str(ROOT / "web/build_replay.py"), "/data/models/graybox_ws/outputs/live/session_v2_claude_haiku55.json",
+                    str(ROOT / "web/data/meta_v2_claude.json"), str(tmp)], check=True)
+    raw = tmp.read_text()
+    tmp.unlink()
+    nav = "".join(f'<a href="{h}"{" aria-current=page" if h == "chat.html" else ""}>{t}</a>' for h, t in NAV)
+    (DIST / "chat.html").write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="assets/site.css"></head><body>
+<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
+{raw}</body></html>""")
     example_data()
+    example_logs()
     print("built", sorted(p.name for p in DIST.iterdir()))
 
 

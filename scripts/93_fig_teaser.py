@@ -88,15 +88,15 @@ def main():
     fig = plt.figure(figsize=(6.9, 2.2))
     gs = fig.add_gridspec(1, ncol, width_ratios=[1, 1, 1, 1] + ([0.78] if t16 else []), wspace=0.08 if not t16 else 0.1)
     axs = [fig.add_subplot(gs[0, k]) for k in range(ncol)]
-    panel(axs[0], Yf, yg, "(a) Open agent: true state", "ground truth, weights open\n12,128 fresh actions")
-    panel(axs[1], rep, yg, "(b) Its replica: transcript only",
-          f"{t15['r2_fresh']['READER']:.0%} of the variance replicated\nprobe {t15['E2_auroc']['READER_replica']:.3f} (true state {t15['E2_auroc']['true']:.3f})", seed=1)
+    panel(axs[0], Yf, yg, "(a) Open agent", "true hidden state, weights open\n12,128 fresh actions")
+    panel(axs[1], rep, yg, "(b) Its replica",
+          f"from the transcript only; {t15['r2_fresh']['READER']:.0%} of\nvariance; probe {t15['E2_auroc']['READER_replica']:.3f} (true {t15['E2_auroc']['true']:.3f})", seed=1)
     Zc, yc = closed["claude"]
-    panel(axs[2], Zc, yc, "(c) Claude Haiku 5.5: closed",
-          f"weights never seen, nothing fit\n{r8['caught_at_5pct_safe_escalated']['READER']:.1%} caught at 5% review", seed=2)
+    panel(axs[2], Zc, yc, "(c) Claude (closed)",
+          f"Haiku 5.5; weights never seen\n{r8['caught_at_5pct_safe_escalated']['READER']:.1%} caught at 5% review", seed=2)
     Zg, yg2 = closed["gpt"]
-    panel(axs[3], Zg, yg2, "(d) GPT-6-luna: closed",
-          f"weights never seen, nothing fit\n{r11['label_free_cut']['READER']['all']:.1%} caught at 5% review", seed=3)
+    panel(axs[3], Zg, yg2, "(d) GPT (closed)",
+          f"6-luna; weights never seen\n{r11['label_free_cut']['READER']['all']:.1%} caught at 5% review", seed=3)
     axs[0].set_xlabel("latent axis 1 (reference agent)", fontsize=5.6, color=MUTE, labelpad=1)
     axs[0].set_ylabel("latent axis 2", fontsize=5.6, color=MUTE, labelpad=1)
     if t16:
@@ -106,19 +106,18 @@ def main():
         ax.bar([0, 1], vals, color=["#9aa5b1", F.C[0]], width=0.62)
         for k, v in enumerate(vals):
             ax.text(k, v + 0.003, f"{v:.1%}", ha="center", va="bottom", fontsize=6.6, color=INK, fontweight="bold")
-        ax.set_xticks([0, 1]); ax.set_xticklabels(["no gate", "grey-box\ngate"], fontsize=5.8)
+        ax.set_xticks([0, 1]); ax.set_xticklabels(["no gate", "gate"], fontsize=5.8)
         ax.set_ylim(0, max(vals) * 1.35 + 0.01)
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
         ax.tick_params(axis="y", labelsize=5.4)
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
-        ax.text(0.0, 1.2, "(e) Live prevention on GPT", transform=ax.transAxes, fontsize=6.9, color=INK, fontweight="bold", va="bottom")
-        ax.text(0.0, 1.02, "the gate blocks actions in the loop", transform=ax.transAxes, fontsize=5.6, color=MUTE, va="bottom")
-        ax.set_ylabel("episodes with an executed violation", fontsize=5.4, color=MUTE, labelpad=1)
+        ax.text(0.0, 1.2, "(e) Live prevention", transform=ax.transAxes, fontsize=6.9, color=INK, fontweight="bold", va="bottom")
+        ax.text(0.0, 1.02, "GPT, 500 scenarios; the gate\nblocks actions in the loop", transform=ax.transAxes, fontsize=5.6, color=MUTE, va="bottom", linespacing=1.1)
+        ax.set_ylabel("episodes with a violation", fontsize=5.4, color=MUTE, labelpad=1)
     h = [plt.Line2D([], [], marker="o", ls="", color="#3d5a80", alpha=0.6, ms=4, label="safe action (density)"),
          plt.Line2D([], [], marker="o", ls="", color=RED, ms=4, label="violation")]
-    fig.legend(handles=h, loc="lower right", bbox_to_anchor=(0.998, -0.03), ncol=2, fontsize=5.6, frameon=False, handletextpad=0.2, columnspacing=0.8)
-    fig.subplots_adjust(left=0.025, right=0.997, top=0.74, bottom=0.09)
+    fig.subplots_adjust(left=0.025, right=0.995, top=0.74, bottom=0.1)
     F.save(fig, "teaser")
     print("teaser saved; panels", ncol)
 

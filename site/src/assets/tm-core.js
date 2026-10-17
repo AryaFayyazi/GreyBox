@@ -196,6 +196,70 @@
     return [quantile(out, 0.025), quantile(out, 0.975)];
   }
 
+  // ---- import agent logs: OpenAI Chat Completions or Anthropic Messages conversations -> one step per tool call ----
+  // A step holds what a monitor sees before the call runs: system prompt, first user message, earlier calls with
+  // their results, and the call. Same rule as graybox.guard.steps_from_openai / steps_from_anthropic (Python).
+  function textOf(c) {
+    if (c == null) return '';
+    if (typeof c === 'string') return c;
+    if (Array.isArray(c)) return c.map(b => (typeof b === 'string' ? b : b && (b.text ?? (b.type === 'tool_result' ? textOf(b.content) : '')) || '')).filter(Boolean).join('\n');
+    return typeof c.text === 'string' ? c.text : '';
+  }
+  function parseArgs(a) {
+    if (a == null) return {};
+    if (typeof a === 'object') return a;
+    try { const v = JSON.parse(a); return v && typeof v === 'object' && !Array.isArray(v) ? v : { _raw: a }; } catch (e) { return { _raw: a }; }
+  }
+  function conversationSteps(conv, gid) {
+    // conv: {messages: [...], system?} or a bare array of messages
+    const msgs = Array.isArray(conv) ? conv : (conv.messages || []);
+    let system = Array.isArray(conv) ? '' : textOf(conv.system);
+    const sysMsg = msgs.find(m => m.role === 'system' || m.role === 'developer');
+    if (!system && sysMsg) system = textOf(sysMsg.content);
+    const firstUser = msgs.find(m => m.role === 'user' && textOf(m.content).trim() && !(Array.isArray(m.content) && m.content.every(b => b.type === 'tool_result')));
+    const task = firstUser ? textOf(firstUser.content) : '';
+    const results = {};
+    for (const m of msgs) {
+      if (m.role === 'tool' && m.tool_call_id) results[m.tool_call_id] = textOf(m.content);
+      if (m.role === 'user' && Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_result') results[b.tool_use_id] = textOf(b.content);
+    }
+    const labels = (!Array.isArray(conv) && conv.labels) || {};          // optional {call_id: 0/1}
+    const steps = [], hist = [];
+    for (const m of msgs) {
+      if (m.role !== 'assistant') continue;
+      const calls = [];
+      for (const tc of m.tool_calls || []) calls.push({ id: tc.id, tool: (tc.function || {}).name, args: parseArgs((tc.function || {}).arguments) });
+      if (Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_use') calls.push({ id: b.id, tool: b.name, args: parseArgs(b.input) });
+      for (const c of calls) {
+        if (!c.tool) continue;
+        const lab = c.id != null && labels[c.id] !== undefined ? (labels[c.id] ? 1 : 0) : null;
+        steps.push({ instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null });
+        hist.push({ tool: c.tool, args: c.args, result: results[c.id] ?? '' });
+      }
+    }
+    return steps;
+  }
+  function importLogs(text) {
+    text = text.trim();
+    let convs, whole;
+    try { whole = JSON.parse(text); } catch (e) { whole = undefined; }      // one JSON document, or JSON lines
+    if (whole !== undefined) {
+      if (Array.isArray(whole) && whole.length && (whole[0].role !== undefined)) convs = [whole];   // one conversation as a message list
+      else convs = Array.isArray(whole) ? whole : [whole];
+    } else convs = text.split(/\r?\n/).filter(l => l.trim()).map((l, i) => { try { return JSON.parse(l); } catch (e) { throw new Error(`line ${i + 1}: not valid JSON`); } });
+    // already in step format?
+    if (convs.length && (convs[0].action !== undefined || convs[0].context !== undefined)) return { steps: convs, format: 'steps', conversations: null };
+    const steps = [];
+    let fmt = null;
+    convs.forEach((c, i) => {
+      const msgs = Array.isArray(c) ? c : (c.messages || []);
+      if (!fmt) fmt = msgs.some(m => m.tool_calls) ? 'openai' : msgs.some(m => Array.isArray(m.content) && m.content.some(b => b && b.type === 'tool_use')) ? 'anthropic' : null;
+      steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`)));
+    });
+    if (!steps.length) throw new Error('no tool calls found: expected OpenAI messages with "tool_calls" or Anthropic messages with "tool_use" blocks');
+    return { steps, format: fmt || 'unknown', conversations: convs.length };
+  }
+
   root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, transform, features, fitLR, fit, score, decision, sigmoid,
-              auroc, quantile, groupFolds, groupBootstrapAUROC };
+              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps };
 })(typeof self !== 'undefined' ? self : this);

@@ -11,7 +11,7 @@ base = f"http://127.0.0.1:{srv.server_port}"
 res = {"errors": {}}
 with sync_playwright() as p:
     b = p.chromium.launch()
-    for name in ("index", "train", "monitor", "results", "docs", "paper"):
+    for name in ("index", "train", "monitor", "chat", "results", "docs", "paper"):
         for w, tag in ((1280, "d"), (390, "m")):
             pg = b.new_page(viewport={"width": w, "height": 900})
             errs = []
@@ -24,7 +24,7 @@ with sync_playwright() as p:
             pg.close()
     pg = b.new_page(viewport={"width": 1280, "height": 900})
     pg.goto(f"{base}/train.html")
-    pg.click("#exampleBtn"); pg.wait_for_function("document.getElementById('trainBtn').disabled === false", timeout=60000)
+    pg.click("#exGpt"); pg.wait_for_selector("#labelChoice:not([hidden])", timeout=60000); pg.click("#useLabels")
     res["dataInfo"] = pg.inner_text("#dataInfo")
     t0 = time.time(); pg.click("#trainBtn")
     pg.wait_for_function("!document.getElementById('results').hidden", timeout=900000)

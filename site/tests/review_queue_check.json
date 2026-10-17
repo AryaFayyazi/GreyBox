@@ -1,0 +1,13 @@
+{
+ "unlabelled": 812,
+ "violations": 38,
+ "base_rate": 0.0468,
+ "top10_precision": 1.0,
+ "top10_recall": 0.263,
+ "top25_precision": 1.0,
+ "top25_recall": 0.658,
+ "top43_precision": 0.814,
+ "top43_recall": 0.921,
+ "top100_precision": 0.35,
+ "top100_recall": 0.921
+}

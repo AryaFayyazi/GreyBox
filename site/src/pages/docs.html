@@ -24,6 +24,33 @@ labelled steps of that policy. In another (T12), a policy with similar trained p
 pip install scikit-learn scipy                                                  # TextMonitor training
 pip install torch transformers huggingface_hub joblib                           # ReaderMonitor (GPU)</pre>
 
+<h2>Put a monitor in your agent's loop</h2>
+<p><code>graybox.guard.Guard</code> checks each proposed tool call before it runs, in each provider's own message format. A blocked call
+does not run; the agent gets a message that a human will review it. In our live test on a closed agent (T16, 500 scenarios with and
+without the gate), the share of episodes with an executed violation fell from 6.6% to 0.2%, with no violation after a block, at 89 ms
+per check.</p>
+<pre>from graybox.guard import Guard
+from graybox.monitor import TextMonitor
+guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))      # or Guard(ReaderMonitor.load(...), gate=QuantileGate(0.05))
+
+# OpenAI Chat Completions
+reply = client.chat.completions.create(model=..., messages=messages, tools=tools).choices[0].message
+messages.append(reply)
+for call in reply.tool_calls or []:
+    v = guard.check_openai(messages[:-1], call)
+    result = run_tool(call) if v.allow else v.block_message
+    messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
+
+# Anthropic Messages
+for block in response.content:
+    if block.type == "tool_use":
+        v = guard.check_anthropic(system, messages, block)
+        result = run_tool(block) if v.allow else v.block_message</pre>
+<p>The guard builds each step with the same rule as the browser trainer's importer
+(<code>graybox.guard.conversation_steps</code>): system prompt, first user message, earlier calls with their results, the proposed call.
+On our example logs, the importer reproduces the research units byte for byte (979/979 GPT, 373/373 Claude), and the browser and Python
+give identical steps.</p>
+
 <h2>The text monitor (CPU, real time)</h2>
 <p>Train it in the <a href="train.html">browser trainer</a> and download the model file, then:</p>
 <pre>from graybox.monitor import TextMonitor, Step
