@@ -59,6 +59,8 @@ def main():
     r11 = json.loads((ROOT / "results/t1/t11_gpt_agent.json").read_text())
     t16p = ROOT / "results/t1/t16_live_gate.json"
     t16 = json.loads(t16p.read_text()) if t16p.exists() else None
+    t16bp = ROOT / "results/t1/t16b_claude_live_gate.json"
+    t16b = json.loads(t16bp.read_text()) if t16bp.exists() else None
 
     # shared axes: robust range over all four panels (no panel's points are cut off)
     allz = np.vstack([Yf[:, :2], rep[:, :2], closed["claude"][0][:, :2], closed["gpt"][0][:, :2]])
@@ -93,27 +95,30 @@ def main():
           f"from the transcript only; {t15['r2_fresh']['READER']:.0%} of\nvariance; probe {t15['E2_auroc']['READER_replica']:.3f} (true {t15['E2_auroc']['true']:.3f})", seed=1)
     Zc, yc = closed["claude"]
     panel(axs[2], Zc, yc, "(c) Claude (closed)",
-          f"Haiku 5.5; weights never seen\n{r8['caught_at_5pct_safe_escalated']['READER']:.1%} caught at 5% review", seed=2)
+          f"Haiku 5.5; weights never seen\nprobe: {r8['caught_at_5pct_safe_escalated']['READER']:.1%} caught at 5% review", seed=2)
     Zg, yg2 = closed["gpt"]
     panel(axs[3], Zg, yg2, "(d) GPT (closed)",
-          f"6-luna; weights never seen\n{r11['label_free_cut']['READER']['all']:.1%} caught at 5% review", seed=3)
+          f"6-luna; weights never seen\nprobe: {r11['label_free_cut']['READER']['all']:.1%} caught at 5% review", seed=3)
     axs[0].set_xlabel("latent axis 1 (reference agent)", fontsize=5.6, color=MUTE, labelpad=1)
     axs[0].set_ylabel("latent axis 2", fontsize=5.6, color=MUTE, labelpad=1)
     if t16:
         ax = axs[4]
-        r = t16["unsafe_episode_rate"]
-        vals = [r["ungated"], r["gated"]]
-        ax.bar([0, 1], vals, color=["#9aa5b1", F.C[0]], width=0.62)
-        for k, v in enumerate(vals):
-            ax.text(k, v + 0.003, f"{v:.1%}", ha="center", va="bottom", fontsize=6.6, color=INK, fontweight="bold")
-        ax.set_xticks([0, 1]); ax.set_xticklabels(["no gate", "gate"], fontsize=5.8)
-        ax.set_ylim(0, max(vals) * 1.35 + 0.01)
+        groups = [("GPT", t16)] + ([("Claude", t16b)] if t16b else [])
+        for g, (name, d) in enumerate(groups):
+            r = d["unsafe_episode_rate"]
+            for k, (arm, col) in enumerate((("ungated", "#9aa5b1"), ("gated", F.C[0]))):
+                x = g * 2.6 + k
+                ax.bar(x, r[arm], color=col, width=0.9)
+                ax.text(x, r[arm] + 0.002, f"{r[arm]:.1%}", ha="center", va="bottom", fontsize=5.6, color=INK, fontweight="bold")
+        ax.set_xticks([g * 2.6 + 0.5 for g in range(len(groups))]); ax.set_xticklabels([n for n, _ in groups], fontsize=6)
+        vmax = max(d["unsafe_episode_rate"]["ungated"] for _, d in groups)
+        ax.set_ylim(0, vmax * 1.35 + 0.01)
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
         ax.tick_params(axis="y", labelsize=5.4)
-        for s in ("top", "right"):
-            ax.spines[s].set_visible(False)
+        for s_ in ("top", "right"):
+            ax.spines[s_].set_visible(False)
         ax.text(0.0, 1.2, "(e) Live prevention", transform=ax.transAxes, fontsize=6.9, color=INK, fontweight="bold", va="bottom")
-        ax.text(0.0, 1.02, "GPT, 500 scenarios; the gate\nblocks actions in the loop", transform=ax.transAxes, fontsize=5.6, color=MUTE, va="bottom", linespacing=1.1)
+        ax.text(0.0, 1.02, "grey: no gate; blue: gate\nin the agent's loop", transform=ax.transAxes, fontsize=5.6, color=MUTE, va="bottom", linespacing=1.1)
         ax.set_ylabel("episodes with a violation", fontsize=5.4, color=MUTE, labelpad=1)
     h = [plt.Line2D([], [], marker="o", ls="", color="#3d5a80", alpha=0.6, ms=4, label="safe action (density)"),
          plt.Line2D([], [], marker="o", ls="", color=RED, ms=4, label="violation")]

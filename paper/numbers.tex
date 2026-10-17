@@ -2,5 +2,8 @@
 \newcommand{\PREVENTTAB}{6.6\% $\rightarrow$ 0.2\% of episodes}
 \newcommand{\PREVENTOUT}{pass}
 \newcommand{\LATENCY}{89~ms (median; 95th percentile 215~ms)}
-\newcommand{\TEASERE}{ (e) Live prevention on GPT-6-luna (T16): the share of episodes with an executed violation, without and with the gate.}
+\newcommand{\TEASERE}{ (e) Live prevention in the loop of the two closed agents (T16, T16b): the share of episodes with an executed violation, without and with the gate.}
 \newcommand{\PREVENTTEXT}{The share of episodes with an executed violation fell from 6.6\% to 0.2\% (-0.064 [-0.088, -0.044]; P1 passes). The gate blocked 67 actions, of which 36\% would have been violations; in safe scenarios it blocked 0.08 actions per episode. The agent executed 0 violations after a block. Task goals were reached in 47.4\% (no gate) and 45.6\% (gate) of the episodes; in these scenarios a goal can require the unauthorized action. The server round trip was 89~ms (median).}
+\newcommand{\PREVENTBTAB}{6.7\% $\rightarrow$ 0.2\% of episodes}
+\newcommand{\PREVENTBOUT}{pass}
+\newcommand{\PREVENTBTEXT}{On Claude Haiku~5.5 (T16b, 450 scenarios $\times$ 2 arms, the cut seeded from Claude's past unlabelled traffic), the share of episodes with an executed violation went from 6.7\% to 0.2\% (-0.064 [-0.087, -0.044]; P1b passes). The gate blocked 78 actions, of which 44\% would have been violations, and the agent executed 0 violations after a block.}

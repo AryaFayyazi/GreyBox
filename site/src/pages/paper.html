@@ -14,8 +14,9 @@ outside observer can read the hidden state of a closed agent, replicate it, and 
     (Othello-GPT: R² 0.967), but as a safety signal it only ties a text moderator.</li>
   <li><b>What can be replicated.</b> An agent's internal state is a function of the tokens that it read. An open model that reads the same
     tokens replicates 66% of the variance of an agent's hidden state, and readouts trained on the true state work on the replica (T15).</li>
-  <li><b>What it is good for.</b> For a policy check on a proposed action, the transcript and the action are Bayes-sufficient. A monitor on
-    the replica, trained only on an open agent, catches most violations of two closed agents (T8b, T11), and blocks them in the loop (T16).
+  <li><b>What it is good for.</b> For a policy check on a proposed action, the transcript and the action are Bayes-sufficient. A probe on
+    the reader's latent state (which holds the replica), trained only on an open agent, catches most violations of two closed agents (T8b,
+    T11), and blocks them in the loop (T16).
     Its limit is policy coverage; labels of a new policy, collected on open agents, transfer to closed ones (T10, T12, T14).</li>
 </ul>
 

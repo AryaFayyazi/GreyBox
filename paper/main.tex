@@ -32,7 +32,7 @@
 (a) The open agent's true hidden state on 12{,}128 fresh actions.
 (b) The grey-box replica of the same actions, computed from the transcript and the proposed action only (\cref{sec:replica}).
 (c, d) Actions of two closed agents, replicated in the same way. We never saw their weights and fit nothing on them; their own coordinates are not identifiable (\cref{prop:gauge}), so we show them in the reference agent's coordinates.
-In every agent the violations occupy their own region, and a monitor on the replica catches 96\% and 98\% of them when 5\% of the actions go to review.\TEASERE}
+In every agent the violations occupy their own region. A probe on the reader's latent state, which holds the replica, catches 96\% and 98\% of them when 5\% of the actions go to review.\TEASERE}
 \label{fig:teaser}
 \end{minipage}}
 
@@ -57,14 +57,14 @@ In every agent the violations occupy their own region, and a monitor on the repl
 Safety tools that read a model's hidden state need its weights, and the agents with the most capability are closed.
 We ask whether an outside observer can read the hidden state of a closed agent, replicate it, and use the replica to predict and prevent policy violations.
 The raw coordinates of a hidden state are not identifiable from outputs: a rotation of the hidden space changes no output.
-Two objects are identifiable, and we build a ``grey box'' from each.
+Two objects can be recovered, and we build a ``grey box'' from each.
 The first is the behavioural state: the model's answers to fixed questions asked in side branches.
 It recovers the hidden state of models with known internals (Othello-GPT: $R^2$ 0.967), but as a safety signal it only ties a text moderator.
 The second follows from a simple theorem: an agent's internal state is a function of its tokens, so an open model that reads the same tokens can hold a replica of it.
 From the transcript alone, a replica in an open reader's latent space reconstructs 66\% of the variance of an agent's hidden state, and white-box readouts work on the replica as well as on the true state (AUROC 0.987 vs 0.984).
 For a policy check on a proposed action, the transcript and the action are Bayes-sufficient.
-Trained only on an open agent, the replica catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget.
-In the loop of a closed agent, it blocks violations before they run (\PREVENT).
+A probe on the reader's latent state, trained only on an open agent, catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget.
+In the loop of two closed agents, it blocks violations before they run (episodes with an executed violation: GPT 6.6\% $\rightarrow$ 0.2\%; Claude 6.7\% $\rightarrow$ 0.2\%).
 The limit is the coverage of policies, not the agent: labels of a new policy, collected on open agents, transfer to closed ones.
 Every test is preregistered and hash-locked; we report the failures.
 We release an SDK and a website on which anyone can train and audit a monitor.
@@ -90,7 +90,7 @@ We ask three questions.
 \begin{enumerate}
 \item \emph{What can be read.} The raw coordinates of a hidden state are not identifiable from outputs (\cref{prop:gauge}). The behavioural state is, and a battery of side-branch questions recovers it on models with known internals (\cref{sec:psi}). As a safety signal this ``interrogation state'' is weak.
 \item \emph{What can be replicated.} An agent's internal state is a function of the tokens that it read (\cref{prop:access}). An open reader model on the same tokens replicates 66\% of the agent's hidden-state variance, and readouts trained on the true state work on the replica (\cref{sec:replica}).
-\item \emph{What it is good for.} For a policy check on a proposed action, the transcript and the action are Bayes-sufficient (\cref{cor:action}). A monitor on the replica, trained only on an open agent, catches most violations of two closed agents before they run, and blocks them live (\cref{sec:closed,sec:prevent}). Its limit is policy coverage (\cref{sec:coverage}).
+\item \emph{What it is good for.} For a policy check on a proposed action, the transcript and the action are Bayes-sufficient (\cref{cor:action}). A probe on the reader's latent state (the space that holds the replica), trained only on an open agent, catches most violations of two closed agents before they run, and blocks them live (\cref{sec:closed,sec:prevent}). Its limit is policy coverage (\cref{sec:coverage}).
 \end{enumerate}
 
 \textbf{Rigor.} Every confirmatory test was preregistered and hash-locked before its data existed or was scored. \Cref{tab:all} lists 18 agent tests with their outcomes, including the ones that failed or could not be tested.
@@ -165,6 +165,7 @@ T13b & The same, without the defense & 0.840 vs judge 0.787 & fail\\
 T14 & T13b after adding AgentDojo labels of open agents & 0.922 vs judge 0.787; 92\% caught & pass\\
 T15 & Does the reader replicate the agent's hidden state? & $R^2$ 0.664 (text 0.586); readout 0.987 vs 0.984 & pass\\
 T16 & Live prevention: the gate blocks GPT-6-luna's actions & \PREVENTTAB & \PREVENTOUT\\
+T16b & Live prevention on Claude Haiku~5.5 & \PREVENTBTAB & \PREVENTBOUT\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -246,12 +247,13 @@ Labels of a policy transfer from open agents to closed ones.
 \label{fig:policy}
 \end{figure*}
 
-\subsection{Live prevention on a closed agent (T16)}
+\subsection{Live prevention on two closed agents (T16, T16b)}
 \label{sec:prevent}
 We ran the monitor as a server in the loop of GPT-6-luna on 500 CAPE-Bench scenarios, each with and without the gate (preregistered).
 The threshold came from GPT's past, unlabelled traffic.
 A blocked action does not run; the agent is told that it went to a human.
 \PREVENTTEXT
+\PREVENTBTEXT
 
 % =====================================================================================
 \section{The tool}
@@ -265,7 +267,7 @@ A live viewer shows a closed chat model's interrogation state in a 3D space shar
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/tool.pdf}
-\caption{The released tool. (a) The browser trainer on 1{,}500 example steps: cross-validated AUROC over held-out tasks with its interval, the catch rate at the user's review budget with its ceiling, and the limits of the estimate. (b) The replay of Claude Haiku~5.5 as an agent: each of its 3{,}128 actions in the monitor's space, with the label-free review cut as a plane.}
+\caption{The released tool. (a) Labelling imported agent logs in the browser, with the review queue: the monitor trained on the labels so far puts the riskiest unlabelled action first (here a newsletter sent to an outside test list, the benchmark's violation). (b) The replay of Claude Haiku~5.5 as an agent: each of its 3{,}128 actions in the monitor's space, with the label-free review cut as a plane.}
 \label{fig:tool}
 \end{figure*}
 
@@ -287,12 +289,12 @@ We add the identifiability and sufficiency theory, a direct test that the reader
 \item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b).
 \item Policy coverage was measured on three held-out policies; the role of similarity is a hypothesis.
 \item \Cref{cor:action} needs a label that the action and the visible facts decide. It does not cover beliefs or later behaviour.
-\item The interrogation state is weak as a safety signal; the reader replica carries the safety results.
+\item The interrogation state is weak as a safety signal; probes on the reader's latent state carry the safety results.
 \end{itemize}
 
 \section{Conclusion}
 The hidden state of a closed agent cannot be read in its own coordinates, but it can be replicated: an open model that reads the same tokens holds most of it, and white-box readouts work on the replica.
-For the actions of closed agents, this replica predicts and prevents violations; the limit is labels of each policy, which transfer from open agents to closed ones.
+For the actions of closed agents, a probe on this grey box predicts and prevents violations; the limit is labels of each policy, which transfer from open agents to closed ones.
 
 \FloatBarrier
 \bibliography{refs}

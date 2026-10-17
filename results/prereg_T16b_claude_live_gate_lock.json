@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-17T12:16:02-07:00",
+ "sha256": {
+  "docs/prereg_T16b_claude_live_gate.md": "4bfdad05fe8863b9d5605b6934677cd5d83c2a8964fbce2e891014da22c1b3e2",
+  "scripts/94_t16b_claude_live_gate.py": "83c013a950b9891f2558de3191d08f75d3f76e47c8f02680a984313b3cbcd0b6",
+  "scripts/95_t16b_analysis.py": "f660e663d3f4650e48af9b2aab849c6a7fd275d6aa8de6b3a3251c8b7b936268"
+ }
+}

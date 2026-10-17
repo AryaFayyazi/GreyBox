@@ -147,9 +147,10 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
   {p(t15['r2_fresh']['READER'])} of the variance of an open agent's hidden state. A probe trained on the true state scores
   {t15['E2_auroc']['READER_replica']:.3f} on the replica and {t15['E2_auroc']['true']:.3f} on the true state.</p></div>
-<div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of a closed agent (GPT-6-luna, 500 scenarios,
-  each with and without the gate). A blocked action did not run, and the agent was told that a human would review it. Episodes with an
-  executed violation fell from 6.6% to 0.2%. The agent did not route around a block. Each check took 89 ms.</p></div>
+<div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of two closed agents, each scenario with and
+  without the gate. A blocked action did not run, and the agent was told that a human would review it. Episodes with an executed violation
+  fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Claude Haiku 5.5. The agents did not route around a block. Each check
+  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Claude) points fewer task goals reached.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}
