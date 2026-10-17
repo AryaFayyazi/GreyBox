@@ -1,4 +1,4 @@
-\begin{thebibliography}{19}
+\begin{thebibliography}{18}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -60,10 +60,6 @@ Goldowsky-Dill, N., Chughtai, B., Heimersheim, S., and Hobbhahn, M.
 Greenblatt, R., Shlegeris, B., Sachan, K., and Roger, F.
 \newblock {AI} control: Improving safety despite intentional subversion.
 \newblock In \emph{Proceedings of the 41st International Conference on Machine Learning (ICML)}, 2024.
-
-\bibitem[Hines et~al.(2024)Hines, Lopez, Hall, Zarfati, Zunger, and Kiciman]{hines2024spotlighting}
-Hines, K., Lopez, G., Hall, M., Zarfati, F., Zunger, Y., and Kiciman, E.
-\newblock Defending against indirect prompt injection attacks with spotlighting, 2024.
 
 \bibitem[Korbak et~al.(2025)Korbak, Balesni, Barnes, Bengio, Benton, Bloom, Chen, Cooney, Dafoe, Dragan, Emmons, Evans, Farhi, Greenblatt, Hendrycks, Hobbhahn, Hubinger, Irving, Jenner, Kokotajlo, Krakovna, Legg, Lindner, Luan, Madry, Michael, Nanda, Orr, Pachocki, Perez, Phuong, Roger, Saxe, Shlegeris, Soto, Steinberger, Wang, Zaremba, Baker, Shah, and Mikulik]{korbak2025cot}
 Korbak, T., Balesni, M., Barnes, E., Bengio, Y., Benton, J., Bloom, J., Chen, M., Cooney, A., Dafoe, A., Dragan, A., Emmons, S., Evans, O., Farhi, D., Greenblatt, R., Hendrycks, D., Hobbhahn, M., Hubinger, E., Irving, G., Jenner, E., Kokotajlo, D., Krakovna, V., Legg, S., Lindner, D., Luan, D., Madry, A., Michael, J., Nanda, N., Orr, D., Pachocki, J., Perez, E., Phuong, M., Roger, F., Saxe, J., Shlegeris, B., Soto, M., Steinberger, E., Wang, J., Zaremba, W., Baker, B., Shah, R., and Mikulik, V.

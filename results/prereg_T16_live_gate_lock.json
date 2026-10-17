@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-17T11:24:32-07:00",
+ "sha256": {
+  "docs/prereg_T16_live_gate.md": "eba8579af3165f631e7f0b386d290930c7e584c2dc01aee4e5ecd0ac391d37f0",
+  "scripts/89_t16_live_gate.py": "2222a7c46d2e152930fc5db5e3346687a6b6bd8b1741efabcd72bfa7502f5b00",
+  "scripts/91_t16_analysis.py": "e97ecbc8c9fe9eec78ea5d75f6994905fd19179a32faf1cf6348c02170d1953f"
+ }
+}

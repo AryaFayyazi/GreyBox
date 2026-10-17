@@ -92,6 +92,8 @@ Brackets are 95% bootstrap confidence intervals.</div>
 <div class="tablewrap"><table><thead><tr><th>Test</th><th>Outcome</th><th>Result</th><th>Data</th><th>Locked</th></tr></thead>
 <tbody>{''.join(trs)}</tbody></table></div>
 <h2>Figures</h2>
+<figure><img src="figures/replica.png" alt="True hidden state vs grey-box replica" loading="lazy"><figcaption>The agent's true hidden state (a)
+and its replica from the transcript (b), on fresh steps; (c) the variance replicated per principal component (T15, preregistered).</figcaption></figure>
 <figure><img src="figures/generalization.png" alt="AUROC of monitors under increasing shift" loading="lazy"><figcaption>Monitoring an agent's next
 action from its transcript, under increasing shift: trained reader (blue), trained bag-of-words (hollow square), zero-shot 70B judge (green),
 the agent's own internals (orange). The two Claude rows rest on one stratum (136 actions, 26 violations).</figcaption></figure>
@@ -114,6 +116,7 @@ def index_page():
     t4, t8, t9, t10 = j("t1/t4_reader.json"), j("t1/t8b_claude_all_actions.json"), j("t1/t9_text_baseline.json"), j("t1/t10_claude_unseen_families.json")
     t2, br = j("t1/t2_time.json"), j("t1/t8b_breakdown_exploratory.json")
     t11 = j("t1/t11_gpt_agent.json")
+    t15 = j("t1/t15_latent_replication.json")
     lab = j("t1/t10_new_policy_labels_exploratory.json")["by_n"]
     gate = j("t1/t8b_calibration_exploratory.json")["gate_eval_76c"]
     par = json.loads((ROOT / "site/tests/parity_result.json").read_text())
@@ -124,6 +127,10 @@ def index_page():
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
 proposed action. It does not need the model's weights, so it works on closed models. Each claim on this site comes from a
 preregistered, hash-locked test. We show the failures too.</p>
+<figure style="margin:20px 0 6px"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, and replicas of two closed agents" loading="eager">
+<figcaption><b>Seeing inside closed agents.</b> All panels share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
+replica, computed from the transcript only. (c, d) Two closed agents, replicated in the same way: we never saw their weights. Red: policy
+violations. In every agent they occupy their own region.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
     use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
@@ -135,6 +142,10 @@ preregistered, hash-locked test. We show the failures too.</p>
 
 <h2>What we found</h2>
 <div class="grid2">
+<div class="card"><h3>The grey box replicates the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
+  So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
+  {p(t15['r2_fresh']['READER'])} of the variance of an open agent's hidden state. A probe trained on the true state scores
+  {t15['E2_auroc']['READER_replica']:.3f} on the replica and {t15['E2_auroc']['true']:.3f} on the true state.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}

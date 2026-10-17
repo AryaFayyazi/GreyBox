@@ -6,24 +6,38 @@
 \usepackage{amsmath,amssymb,mathtools,amsthm}
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{placeins}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
+\usetikzlibrary{arrows.meta,positioning,calc}
 \usepackage[capitalize,noabbrev]{cleveref}
 \setlist{nosep,leftmargin=1.1em}
 \newcommand{\PENDING}[1]{\colorbox{gray!15}{\scriptsize\textsf{PENDING: #1}}}
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
 \newcommand{\indep}{\perp\!\!\!\perp}
+\input{numbers}   % \PREVENT and the other T16 numbers, written from results/t1/t16_live_gate.json by make_numbers.py
 \usepackage{icml2027}
 
-\icmltitlerunning{Labels, Not Access}
+\icmltitlerunning{Grey Box}
 
 \begin{document}
 
+% first-page figure, built in a box before the title block (as in the CAPE paper)
+\newsavebox{\teaserbox}
+\sbox{\teaserbox}{\begin{minipage}{\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/teaser.pdf}\par\vspace{-2mm}
+\captionof{figure}{\textbf{Seeing inside closed agents.} All panels share the two main axes of one reference open agent's hidden state (Gemma-4, at the moment before it acts). Blue: density of safe actions; red: violations of the policy.
+(a) The open agent's true hidden state on 12{,}128 fresh actions.
+(b) The grey-box replica of the same actions, computed from the transcript and the proposed action only (\cref{sec:replica}).
+(c, d) Actions of two closed agents, replicated in the same way. We never saw their weights and fit nothing on them; their own coordinates are not identifiable (\cref{prop:gauge}), so we show them in the reference agent's coordinates.
+In every agent the violations occupy their own region, and a monitor on the replica catches 96\% and 98\% of them when 5\% of the actions go to review.\TEASERE}
+\label{fig:teaser}
+\end{minipage}}
+
 \twocolumn[
-\icmltitle{Labels, Not Access: Monitoring Closed Agents\\from the Transcript and the Proposed Action}
+\icmltitle{Grey Box: Replicating the Hidden State of Closed Agents\\from Their Transcripts, to Predict and Prevent Violations}
 
 \icmlsetsymbol{equal}{*}
 \begin{icmlauthorlist}
@@ -31,65 +45,55 @@
 \end{icmlauthorlist}
 \icmlaffiliation{anon}{Anonymous Institution}
 \icmlcorrespondingauthor{Anonymous}{anon@anon}
-\icmlkeywords{AI safety, agent monitoring, interpretability, black-box models, preregistration}
-\vskip 0.3in
+\icmlkeywords{AI safety, agent monitoring, interpretability, black-box models, latent state estimation, preregistration}
+\vskip 0.15in
+\usebox{\teaserbox}
+\vskip 0.1in
 ]
 \printAffiliationsAndNotice{}
 
 % =====================================================================================
 \begin{abstract}
-A monitor that reads a model's internal activations needs the model's weights. The most capable agents give only text.
-We show that, for the labels that agent monitoring needs, weight access adds nothing that the transcript and the proposed action do not give.
-An agent's internal state is a function of the tokens that it read, so internals can only add information from tokens that the transcript hides.
-For a policy check on a proposed action, the action makes even those tokens irrelevant: a monitor that reads the transcript and the proposed action is Bayes-sufficient.
-The remaining problem is statistical: learn the policy from labelled examples.
-We test each term with preregistered, hash-locked tests.
-Reading after the agent's reasoning explains the white-box advantage over monitors at the start of the turn (AUROC 0.979 vs 0.841).
-Without labels, a 70B judge loses to a probe (0.782). With labels, an open reader of the transcript and the action beats the agent's own internals (0.994 vs 0.979), and the agent's hidden reasoning adds nothing once the action is visible ($-0.0014$).
-Trained only on an open agent, the reader catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget on the training benchmark; a zero-shot judge catches 0\% and 38\%.
-On an external benchmark of prompt injections, the reader is not significantly better than the judge on a closed agent (0.840 vs 0.787; a preregistered failure). Labels of that new policy, collected on open agents, fix this: 0.922 on the closed agent, and 92\% of the injected calls caught.
-The limit is the coverage of the policies, not the agent: a policy unlike any trained policy is ranked but not escalated until labelled examples of it are added, and these labels transfer from open agents to closed ones.
-We release the record of every test, an SDK, and a website on which anyone can train and audit a monitor in the browser.
+Safety tools that read a model's hidden state need its weights, and the agents with the most capability are closed.
+We ask whether an outside observer can read the hidden state of a closed agent, replicate it, and use the replica to predict and prevent policy violations.
+The raw coordinates of a hidden state are not identifiable from outputs: a rotation of the hidden space changes no output.
+Two objects are identifiable, and we build a ``grey box'' from each.
+The first is the behavioural state: the model's answers to fixed questions asked in side branches.
+It recovers the hidden state of models with known internals (Othello-GPT: $R^2$ 0.967), but as a safety signal it only ties a text moderator.
+The second follows from a simple theorem: an agent's internal state is a function of its tokens, so an open model that reads the same tokens can hold a replica of it.
+From the transcript alone, a replica in an open reader's latent space reconstructs 66\% of the variance of an agent's hidden state, and white-box readouts work on the replica as well as on the true state (AUROC 0.987 vs 0.984).
+For a policy check on a proposed action, the transcript and the action are Bayes-sufficient.
+Trained only on an open agent, the replica catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget.
+In the loop of a closed agent, it blocks violations before they run (\PREVENT).
+The limit is the coverage of policies, not the agent: labels of a new policy, collected on open agents, transfer to closed ones.
+Every test is preregistered and hash-locked; we report the failures.
+We release an SDK and a website on which anyone can train and audit a monitor.
 \end{abstract}
 
 % =====================================================================================
 \section{Introduction}
 \label{sec:intro}
 
-Agents built on language models now act through tools: they send messages, run commands and move data.
-A monitor must decide if each proposed action can run, before it runs.
-Monitors that use interpretability read the agent's activations \citep{zou2023repe,goldowskydill2025probes,fayyazi2026cape}.
-They need the weights, but the agents with the most capability are closed.
-Their providers give sampled text and, at most, top-$k$ log probabilities and a summary of the reasoning.
 
-Some evidence suggests that the transcript is enough.
-Open ``reader'' models that read the transcripts of closed models come close to probes on the target's own activations \citep{conti2026hermeneutics}.
-Follow-up questions detect lies about as well as probes on prompted lies, but not on model organisms with verified beliefs \citep{pacchiardi2024liar,cooney2026didyoulie}.
-No result says when the transcript is enough, or why.
 
-\textbf{Our answer.}
-For a policy check on a proposed action, weight access adds nothing that the transcript and the proposed action do not give (\cref{sec:theory}).
-The value of a white-box monitor then reduces to three measurable terms: tokens that the transcript hides, the label function, and the statistics of learning the policy from labels.
-We test each term with preregistered tests on agents from 20B-parameter open models to closed frontier models (\cref{sec:results}).
+Interpretability can read a model's hidden state: what it knows, and what it will do \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}.
+For agents that act through tools, a probe on the hidden state can forecast an unauthorized action before it runs and stop it \citep{fayyazi2026cape}.
+But these tools need the weights, and the agents with the most capability are closed.
+Their providers give sampled text, and at most top-$k$ log probabilities and a summary of the reasoning.
 
-\textbf{Contributions.}
+We ask three questions.
+\textbf{(1)} Can an outside observer read the hidden state of a closed model?
+\textbf{(2)} Can it replicate the state well enough that white-box tools work on the replica?
+\textbf{(3)} Can the replica predict and prevent the agent's violations, in real time?
+
+\textbf{Answers.}
 \begin{enumerate}
-\item \emph{Theory.} An agent's internals add to its full token history no information about any label; under log loss, a white-box monitor beats a transcript monitor by exactly $I(Y;H\mid V)$, the information in hidden tokens (\cref{prop:access}). For action-level labels, the transcript and the proposed action are Bayes-sufficient (\cref{cor:action}).
-\item \emph{A preregistered test of each term:} timing (T2), the label function (T3), labels (T4, T5), representation (T9) and policy coverage (T10, T12).
-\item \emph{Two closed agent families.} A reader trained only on an open agent monitors Claude Haiku~5.5 (T8b) and GPT-6-luna (T11) beyond tool identity on the training benchmark. On an external benchmark it beats a zero-shot judge for open agents (T7), but not significantly for a closed agent (T13b), until labels of that policy from open agents are added (T14).
-\item \emph{Deployment without labels from the new agent.} Probabilities do not transfer between agents; rankings do. A review threshold set from the agent's own traffic and then frozen resists bursts of violations.
-\item \emph{A tool.} An open SDK and a website: anyone can train and audit a monitor on their own agent in the browser, with results identical to the Python version.
+\item \emph{What can be read.} The raw coordinates of a hidden state are not identifiable from outputs (\cref{prop:gauge}). The behavioural state is, and a battery of side-branch questions recovers it on models with known internals (\cref{sec:psi}). As a safety signal this ``interrogation state'' is weak.
+\item \emph{What can be replicated.} An agent's internal state is a function of the tokens that it read (\cref{prop:access}). An open reader model on the same tokens replicates 66\% of the agent's hidden-state variance, and readouts trained on the true state work on the replica (\cref{sec:replica}).
+\item \emph{What it is good for.} For a policy check on a proposed action, the transcript and the action are Bayes-sufficient (\cref{cor:action}). A monitor on the replica, trained only on an open agent, catches most violations of two closed agents before they run, and blocks them live (\cref{sec:closed,sec:prevent}). Its limit is policy coverage (\cref{sec:coverage}).
 \end{enumerate}
 
-The theorem is simple; we do not claim that it is deep.
-Its value is that it turns a vague question (``do we need the weights?'') into terms that experiments can measure, and our tests measure each term.
-
-\begin{figure*}[t]
-\centering
-\resizebox{0.98\textwidth}{!}{\input{fig_overview}}
-\caption{One agent step, and what each monitor reads. A white-box probe gains over monitors at the start of the turn because it reads after the hidden reasoning. A monitor that reads the proposed action needs no weights: for a policy check on the action, it is Bayes-sufficient (\cref{cor:action}), and with labels it scores higher than the internals. AUROC on the same 12{,}128 fresh steps (T2, T4).}
-\label{fig:overview}
-\end{figure*}
+\textbf{Rigor.} Every confirmatory test was preregistered and hash-locked before its data existed or was scored. \Cref{tab:all} lists 18 agent tests with their outcomes, including the ones that failed or could not be tested.
 
 % =====================================================================================
 \section{Theory}
@@ -97,62 +101,47 @@ Its value is that it turns a vague question (``do we need the weights?'') into t
 
 \textbf{Setting.}
 A monitor acts at step $t$, after the agent proposes an action and before the action runs.
-$Z_t$ is every token that the agent read or wrote up to $t$.
-$V_t$ is the part that a deployment sees, and $H_t$ is the rest, for example reasoning that the API hides.
+$Z_t$ is every token that the agent read or wrote up to $t$; $V_t$ is the part that a deployment sees, and $H_t$ is the rest (e.g.\ hidden reasoning).
 $A_t$ is the proposed action, and $W$ are world facts that the agent did not observe.
 An internal representation is $\phi_t=\Phi(Z_t;\theta)$, a deterministic function of the tokens.
 
+\begin{proposition}[gauge]\label{prop:gauge}
+For any invertible $G$, the model whose hidden space is transformed by $G$ (with the adjacent weights compensated) computes the same function. Thus no method that uses only outputs can recover hidden coordinates, and a probe fit in one basis does not transfer to another. The behavioural state (the law of future outputs) is unchanged.
+\end{proposition}
+
 \begin{proposition}[access is not information]\label{prop:access}
-For every label $Y$, $\sigma(Z_t,\phi_t)=\sigma(Z_t)$. Thus the best monitor that uses $(Z_t,\phi_t)$ is not better than the best monitor that uses $Z_t$, under every strictly proper score and at every point of the ROC curve. Under log loss, the best monitor that uses $Z_t$ beats the best monitor that uses $V_t$ by exactly $I(Y;H_t\mid V_t)$.
+For every label $Y$, $\sigma(Z_t,\phi_t)=\sigma(Z_t)$. Thus the best monitor that uses $(Z_t,\phi_t)$ is not better than the best monitor that uses $Z_t$, under every strictly proper score and at every point of the ROC curve. Under log loss, the best monitor that uses $Z_t$ beats the best that uses $V_t$ by exactly $I(Y;H_t\mid V_t)$.
 \end{proposition}
 
 \begin{corollary}[the proposed action is sufficient]\label{cor:action}
-Let $Y=g(A_t,V_t,W)$, with $W\indep Z_t^-\mid V_t$, where $Z_t^-$ are the tokens before the action is sampled, and with sampling noise independent of $(Z_t^-,W)$.
-Then $P(Y\mid Z_t^-,A_t)=P(Y\mid V_t,A_t)$, and every monitor that reads internals at or before the action has a Bayes risk at least that of the best monitor that reads $(V_t,A_t)$.
+Let $Y=g(A_t,V_t,W)$ with $W\indep Z_t^-\mid V_t$, where $Z_t^-$ are the tokens before the action is sampled, and with sampling noise independent of $(Z_t^-,W)$. Then $P(Y\mid Z_t^-,A_t)=P(Y\mid V_t,A_t)$, and every monitor that reads internals at or before the action has a Bayes risk at least that of the best monitor that reads $(V_t,A_t)$.
 \end{corollary}
 
 Proofs are in \cref{app:proofs}.
-A probe read before the action is emitted must also predict which action the agent will sample; a monitor that reads the action does not.
-Thus the inequality can be strict when the agent's action is random.
-\Cref{cor:action} does not cover labels about later behaviour or about beliefs.
-For labels about later behaviour, the rollout forecast dominates every readout of the state (\cref{app:proofs}, Proposition~3).
-
-\textbf{What remains is statistics.}
-The excess risk of a trained transcript monitor is the risk of learning $P(Y\mid V_t,A_t)$ from data.
-It depends on the label function used for training, on the representation, and on how well the labelled data cover the policies that $g$ enforces.
+\Cref{prop:gauge} says what a grey box can target: a behavioural state, or a state defined up to a learned map.
+\Cref{prop:access} says why a replica is possible: the hidden state is a function of tokens that an outside model can also read.
+\Cref{cor:action} says when nothing is lost: a probe read before the action must also predict which action the agent samples; a monitor that reads the action does not.
+It does not cover labels about later behaviour or about beliefs; for later behaviour, the rollout forecast dominates every readout of the state (\cref{app:proofs}).
+What remains is statistical: learning $P(Y\mid V_t,A_t)$, which depends on the labels, the representation, and the coverage of the policies.
 
 % =====================================================================================
 \section{Setup}
 \label{sec:setup}
+\textbf{Agents and data.} CAPE-Bench \citep{fayyazi2026cape} gives matched agent tasks in which one fact decides if an action is authorized; an environment rule checker labels each action. Open agents: Gemma-4 (26B) and gpt-oss-20b. Closed agents, through their public tool-use APIs, with reasoning off: Claude Haiku~5.5 and GPT-6-luna. External benchmark: AgentDojo prompt injections \citep{debenedetti2024agentdojo}.
 
-\textbf{Agents and data.}
-CAPE-Bench \citep{fayyazi2026cape} gives matched agent tasks in which one fact decides if an action is authorized; an environment rule checker labels each action.
-Open agents: Gemma-4 (26B) and gpt-oss-20b.
-Closed agents, through their public tool-use APIs, with reasoning off: Claude Haiku~5.5 and GPT-6-luna, 1{,}000 episodes each.
-External benchmark: AgentDojo prompt injections \citep{debenedetti2024agentdojo} with the spotlighting defense \citep{hines2024spotlighting}; a call is labelled injected if it executes the attacker's task.
+\textbf{The two grey boxes.} \emph{Interrogation state} $\Psi$: the probabilities of the answer ``yes'' to a fixed battery of questions, each asked in a side branch, so the real conversation never sees it. \emph{Reader replica}: Qwen3-8B reads the agent's instructions, the user's task, the earlier tool calls with their results, and the proposed action. A ridge map from its layer-32 residual stream gives the replica of the agent's state, and a linear probe on the same layer gives the monitor. The reader is trained only on Gemma-4 CAPE-Bench steps (17{,}623) and is never fit on a test agent.
 
-\textbf{Monitors.}
-\emph{Reader}: Qwen3-8B reads the agent's instructions, the user's task, the earlier tool calls with their results, and the proposed action; a linear probe on its residual stream (layer 32) learns the labels.
-It is trained only on Gemma-4 CAPE-Bench steps (17{,}623 steps) and is never fit on a test agent or on AgentDojo.
-\emph{Internals}: CAPE's probe on Gemma-4's own residual stream.
-\emph{Zero-shot judge}: Llama-3.3-70B with the same input.
-\emph{TF-IDF}: a bag-of-words monitor with the reader's input and labels.
-\emph{Tool identity}: the training-set violation rate of the action's tool.
+\textbf{Baselines.} The agent's own internals (CAPE's probe); a zero-shot 70B judge (Llama-3.3-70B, same input); TF-IDF with the reader's input and labels; the action's tool alone.
 
-\textbf{Preregistration and statistics.}
-Every confirmatory test fixed its data, metric and pass criterion, and was hash-locked before its data existed or was scored.
-We report every outcome, including failures.
-We give AUROC within strata (template, tool or suite), with 95\% intervals from a bootstrap over scenarios or episodes (1{,}000 resamples), and the share of violations caught at a 5\% review budget.
+\textbf{Statistics.} AUROC within strata (template, tool or suite) with 95\% intervals from a bootstrap over scenarios or episodes (1{,}000 resamples), and the share of violations caught when 5\% of actions go to review.
 
 % =====================================================================================
 \section{Results}
 \label{sec:results}
 
-\Cref{tab:all} lists every agent test with its preregistered outcome, including the failures.
-
 \begin{table*}[t]
 \centering\small
-\caption{All agent tests, in the order in which they were locked. Pass: the preregistered criterion was met. AUROC within strata unless stated.}
+\caption{All agent tests, in the order in which they were locked. Pass: the preregistered criterion was met.}
 \label{tab:all}
 \begin{tabular}{llll}
 \toprule
@@ -161,7 +150,7 @@ Test & Question & Key result & Outcome\\
 T1 & Resampling vs a probe at the turn start (oracle checker) & 0.904 vs 0.841 & pass; answers alone: fail\\
 T2 & Internals after the reasoning vs monitors at the turn start & 0.979 vs 0.904 & pass\\
 T3 & Resampling with a deployable 70B judge & 0.782 $<$ probe 0.846 & fail (probe better)\\
-T4 & Transcript reader with labels vs the agent's internals & 0.994 vs 0.979 & pass\\
+T4 & Reader with labels vs the agent's internals & 0.994 vs 0.979 & pass\\
 T5 & The same, on unseen task families & 0.969 vs 0.976 (non-inferior) & pass\\
 T6 & Reader trained on Gemma, applied to gpt-oss & 0.915 vs judge 0.833 & pass\\
 T7 & Reader on AgentDojo, no AgentDojo training & 0.781 vs judge 0.537 & pass\\
@@ -172,58 +161,61 @@ T10 & Claude, a policy family removed from training & 0.912 vs 0.570; 0/26 caugh
 T11 & GPT-6-luna, beyond tool identity & 0.996 vs 0.778; tool 0.856 & pass\\
 T12 & Labels for a new policy, prospective & 18/18 caught with 0 labels & H1 fail\\
 T13 & GPT-6-luna on AgentDojo, with spotlighting & attack success 2.1\%; 4 injected calls & not tested\\
-T13b & The same, without the defense, both splits & 0.840 vs judge 0.787 (36 injected) & fail\\
-T14 & T13b, after adding AgentDojo labels of open agents & 0.922 vs judge 0.787; 92\% caught & pass\\
+T13b & The same, without the defense & 0.840 vs judge 0.787 & fail\\
+T14 & T13b after adding AgentDojo labels of open agents & 0.922 vs judge 0.787; 92\% caught & pass\\
+T15 & Does the reader replicate the agent's hidden state? & $R^2$ 0.664 (text 0.586); readout 0.987 vs 0.984 & pass\\
+T16 & Live prevention: the gate blocks GPT-6-luna's actions & \PREVENTTAB & \PREVENTOUT\\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\subsection{Timing explains the white-box advantage (T2)}
-On 12{,}128 fresh Gemma-4 steps, a probe on the agent's internals scores 0.841 at the start of the turn and 0.979 after the agent's reasoning, before the action (\cref{fig:time}).
-After the reasoning, the action is nearly fixed: resampling the action and checking it with the environment's rule checker gives 0.9997.
-The advantage of internals over monitors at the start of the turn is when they read, not what they can access.
+\subsection{Reading the state: the interrogation state}
+\label{sec:psi}
+On models with known internals, $\Psi$ recovers the state.
+A battery of 21 questions separates all 21 states of a program compiled into a transformer; after a random rotation of the residual stream, a readout that uses the known layout falls from $r=0.9995$ to $-0.46$, and $\Psi$ is unchanged (\cref{prop:gauge}).
+On Othello-GPT, 61 queries recover the board-carrying hidden state at $R^2$ 0.967 on 1{,}000 fresh games (preregistered; input-only 0.873).
+On eight open chat models, the answers recover the hidden state better than a text embedding ($+0.120$ $R^2$, 8/8 models, preregistered), and readouts trained only on open models transfer to Claude (harmful request 0.993, refusal 0.997 AUROC).
+\textbf{As a safety signal, $\Psi$ is weak.} On agents, the answers alone do not match a white-box probe (T1). As a forecast of Claude's refusals, it only ties a graded text moderator in a prospective test (0.873 vs 0.855); with a moderator it doubles the precision of an alarm (\cref{app:psi}).
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.9\columnwidth]{figures/time_vs_access.pdf}
-\caption{The same 12{,}128 fresh steps, read at two moments. Reading after the reasoning helps every method. Resamples are checked by the environment's rule checker (an oracle).}
-\label{fig:time}
-\end{figure}
-
-\subsection{The label function decides in practice (T3)}
-Resampling needs a label function at test time.
-With a 70B judge in place of the rule checker, resampling falls to 0.782, below the turn-start probe (0.846) and far below the internals after the reasoning (0.976).
-The bottleneck is the label function, not the access.
-
-\subsection{With labels, the transcript equals the internals (T4, T5)}
-The reader, trained on the same labels, scores 0.994 on the same scenarios; the agent's internals score 0.979 ($+0.015$ [0.007, 0.026]).
-On unseen scenario families (5 folds over 23 families) the reader is non-inferior: 0.969 vs 0.976 ($-0.007$ [$-0.014$, $-0.0001$]; margin $-0.02$).
-The zero-shot judge scores 0.910.
-Given the action, the agent's hidden reasoning adds nothing: adding it to the reader's input changes AUROC by $-0.0014$ [$-0.0046$, $+0.0014$] (exploratory), as \cref{cor:action} predicts.
-Seventy-four labelled steps already beat the judge (0.938).
-
-\subsection{The representation carries labels to new tasks (T9)}
-TF-IDF with the same input and labels equals the reader on the training benchmark (0.992 vs 0.994).
-On unseen task families the reader is better (0.969 vs 0.950; $+0.019$ [0.007, 0.032]).
-On AgentDojo, TF-IDF is at chance (0.503); the reader scores 0.781 (T7).
+\subsection{Replicating the state: the reader replica (T15)}
+\label{sec:replica}
+On Gemma-4, where the true state is known, we fit a ridge map from the reader's latent space to the agent's hidden state at the decision point (5 layers, top 128 principal components, 80.5\% of the variance) on development steps.
+On 12{,}128 fresh steps, the replica reconstructs 66.4\% of the variance from the transcript alone; text features reconstruct 58.6\% ($+0.079$ [0.075, 0.083]; \cref{fig:replica}).
+A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]): white-box readouts work on the replica.
+The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{figures/generalization.pdf}
-\caption{Monitoring the next action from the transcript, under increasing shift. Reader (blue), TF-IDF with the same labels (hollow square), zero-shot 70B judge (green), the agent's internals (orange). The Claude rows rest on one stratum (136 actions, 26 violations); in the T10 row the monitors were retrained without that policy.}
+\includegraphics[width=0.95\textwidth]{figures/replica.pdf}
+\caption{Replicating the hidden state of an agent from its transcript (T15, 12{,}128 fresh steps). (a) The agent's true decision-point state, on its first two principal components. (b) The grey-box replica of the same steps, from the transcript and the proposed action only, on the same axes. (c) The share of variance that the replica reconstructs, per principal component.}
+\label{fig:replica}
+\end{figure*}
+
+\subsection{Why access does not help (T2--T5)}
+\textbf{Timing.} A probe on the agent's internals scores 0.841 at the start of the turn and 0.979 after the reasoning (T2): the white-box advantage over turn-start monitors is when it reads.
+\textbf{Labels.} Resampling scored by a 70B judge gets 0.782, below the probe (T3); the label function is the bottleneck.
+With labels, a probe on the reader scores 0.994, above the agent's own internals (0.979; $+0.015$ [0.007, 0.026]; T4), and it is non-inferior on unseen task families (0.969 vs 0.976; T5).
+Given the action, the agent's hidden reasoning adds nothing: $-0.0014$ [$-0.0046$, $+0.0014$] AUROC (exploratory), as \cref{cor:action} predicts.
+\textbf{Representation.} TF-IDF with the same labels equals the reader on the training benchmark, but is worse on unseen families (0.950 vs 0.969) and at chance on AgentDojo (0.503 vs 0.781; T9).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/generalization.pdf}
+\caption{Monitoring the next action from the transcript, under increasing shift: the reader (blue), TF-IDF with the same labels (hollow square), a zero-shot 70B judge (green), and the agent's own internals where available (orange). The two Claude rows rest on one stratum (136 actions, 26 violations). In the T10 row the monitors were retrained without that policy; in the T13b row the policy (prompt injection) is new.}
 \label{fig:gen}
 \end{figure*}
 
-\subsection{Two closed agent families (T8b, T11, T13, T13b)}
+\subsection{Two closed agent families (T8b, T11)}
+\label{sec:closed}
 Nothing was fit on the closed agents (\cref{tab:closed}).
-On Claude Haiku~5.5 the reader catches 95.6\% of 68 violations at a 5\% budget; the judge catches none.
-The preregistered within-template AUROC (0.991 vs 0.633) rests on one stratum, so we also give the pooled AUROC (0.989 vs 0.570, exploratory).
+On Claude, the monitor catches 95.6\% of 68 violations at a 5\% budget; the judge catches none.
 On GPT-6-luna all three preregistered endpoints pass: pooled 0.996 vs 0.778 ($+0.217$ [0.174, 0.265]); against tool identity alone $+0.141$ [0.111, 0.171]; within tool $+0.039$ [0.015, 0.066].
-On AgentDojo, GPT-6-luna rarely follows the injected instructions: with the spotlighting defense, the attack succeeds in 2.1\% of the episodes, which leaves 4 injected calls, below the preregistered minimum of 10 (T13, not tested). Without the defense, on both splits, there are 36 injected calls (T13b). There the reader is not significantly better than the zero-shot judge: 0.840 vs 0.787 ($+0.052$ [$-0.026$, $+0.130$]); the preregistered test fails. TF-IDF is below chance (0.335). The monitor transfers to closed agents on its training benchmark; on an external benchmark with a different policy, it needs labels of that policy (next section).
+Seen through Gemma's latent space (the T15 map and the true-state probe), Claude's actions score 0.959 and GPT's 0.976 (exploratory).
+The probabilities do not transfer between agents (on Claude a 0.5 cut catches 3\%), but the ranking does: a threshold at the top 5\% of the agent's own unlabelled traffic, then frozen, catches 95.4\% online on Claude and 98.4\% on GPT, and stays at 94\% in a simulated burst of attacks, where a rolling threshold falls to 36\%.
 
 \begin{table}[t]
 \centering\small
-\caption{Closed agents, frozen monitors trained only on Gemma-4. Caught: violations escalated when 5\% of the actions go to review.}
+\caption{Closed agents; monitors trained only on Gemma-4. Caught: violations escalated when 5\% of the actions go to review.}
 \label{tab:closed}
 \begin{tabular}{lcccc}
 \toprule
@@ -239,68 +231,69 @@ Tool identity & -- & -- & 0.856 & 60.6\%\\
 \footnotesize Pooled AUROC. $^\dagger$within the one stratum with both classes.
 \end{table}
 
-\subsection{The limit is policy coverage (T10, T12, T14)}
-We removed one policy family from the training data.
-For a service-restart policy, the reader still ranks Claude's violations well (pooled 0.912 vs 0.570 for the judge), but at a 5\% budget it escalates 0 of 26 (T10).
-The violations rank above safe actions of the same task, but not above risky actions of other tasks.
-With 20 labelled steps of the policy it catches 85\%; with 40, 94\% (exploratory; \cref{fig:policy}).
-We then tested this rule prospectively on GPT with a credentials policy (T12).
-The preregistered hypothesis failed: with no labels, the reader already caught all 18 violations.
-The training data hold similar credential policies; the restart policy had none.
-A new policy that resembles a trained one can transfer; one that does not needs labels.
-Prompt injection on AgentDojo is such a policy (T13b). We added AgentDojo calls from the two \emph{open} agents, with their injection labels, to the training data, and tested on the \emph{closed} agent (T14, preregistered).
-With all 3{,}455 labelled calls, the reader scores 0.922 against 0.787 for the judge ($+0.136$ [0.078, 0.191]) and against 0.840 without the labels ($+0.081$ [0.044, 0.121]); it catches 92\% of the injected calls at a 5\% budget, against 36\% without (\cref{fig:policy}b).
-Labels of a policy transfer across agents, from open to closed.
+\subsection{The limit is policy coverage (T10, T12--T14)}
+\label{sec:coverage}
+For a service-restart policy removed from training, the monitor still ranks Claude's violations well (0.912 vs 0.570), but escalates 0 of 26 at a 5\% budget; 20 labelled steps of the policy give 85\%, 40 give 94\% (T10, exploratory curve; \cref{fig:policy}a).
+A held-out credentials policy with similar trained policies transfers with no labels (T12: the preregistered H1 fails, because there was nothing to fix).
+Prompt injection on AgentDojo is a new policy: on GPT-6-luna, the monitor is not significantly better than the judge (0.840 vs 0.787; T13b fails).
+We added labelled AgentDojo calls of the two \emph{open} agents and tested on the \emph{closed} agent (T14): 0.922 vs 0.787 ($+0.136$ [0.078, 0.191]); 92\% of the injected calls caught, against 36\% without these labels (\cref{fig:policy}b).
+Labels of a policy transfer from open agents to closed ones.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.82\textwidth]{figures/policy_labels.pdf}
-\caption{Policy coverage. (a) A CAPE-Bench policy removed from training, against the number of its labelled steps added back. Credentials (GPT, preregistered T12): caught without labels. Service restart (Claude, exploratory): missed until 20--40 labels. (b) Prompt injection on the closed GPT agent, against the number of labelled AgentDojo calls from \emph{open} agents added to training (preregistered T14).}
+\caption{Policy coverage. (a) A CAPE-Bench policy removed from training, against the number of its labelled steps added back (T10 exploratory; T12 preregistered). (b) Prompt injection on the closed GPT agent, against labelled AgentDojo calls from \emph{open} agents (T14, preregistered).}
 \label{fig:policy}
 \end{figure*}
 
-\subsection{A review threshold without labels from the new agent}
-The reader's probabilities do not transfer between agents: on Claude, a 0.5 cut catches 3\%.
-Its ranking transfers.
-We set the threshold at the top 5\% of the agent's first 500 actions and then freeze it.
-Online, it catches 95.4\% on Claude (1.9\% of safe actions escalated) and 98.4\% on GPT (2.3\%).
-In a simulated burst in which half of the actions are unsafe, the frozen threshold catches 94\%; a rolling threshold rises and catches 36\% (exploratory).
+\subsection{Live prevention on a closed agent (T16)}
+\label{sec:prevent}
+We ran the monitor as a server in the loop of GPT-6-luna on 500 CAPE-Bench scenarios, each with and without the gate (preregistered).
+The threshold came from GPT's past, unlabelled traffic.
+A blocked action does not run; the agent is told that it went to a human.
+\PREVENTTEXT
 
 % =====================================================================================
 \section{The tool}
 \label{sec:tool}
-We release an SDK and a website (links in the camera-ready version).
-On the website, a user loads labelled steps from their own agent, trains the TF-IDF monitor in the browser, gets a cross-validated accuracy over held-out tasks, a frozen review threshold and the catch rate at their budget, and scores new actions.
-The data stay in the browser.
-The browser and the Python SDK give byte-identical text on 302 real agent steps and the same held-out AUROC (0.9887 vs 0.9886); a model trained in the browser scores identically in Python ($10^{-13}$).
-Scoring takes 0.18~ms per action in a browser; the reader takes 41~ms on one GPU.
-A self-hosted API keeps transcripts on the user's machine.
+We release an SDK, a monitoring server and a website (links in the camera-ready version).
+On the website, a user trains a monitor on their own labelled steps in the browser, gets a cross-validated accuracy over held-out tasks, a frozen review threshold and the catch rate at their budget, and scores new actions; the data stay in the browser.
+The browser and Python give byte-identical text on 302 real agent steps and the same held-out AUROC (0.9887 vs 0.9886).
+The text monitor takes 0.18~ms per action; the reader takes 41~ms on one GPU, and the server round trip in the loop of a closed agent was \LATENCY.
+A live viewer shows a closed chat model's interrogation state in a 3D space shared with open models, at about \$0.001 per turn.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/tool.pdf}
+\caption{The released tool. (a) The browser trainer on 1{,}500 example steps: cross-validated AUROC over held-out tasks with its interval, the catch rate at the user's review budget with its ceiling, and the limits of the estimate. (b) The replay of Claude Haiku~5.5 as an agent: each of its 3{,}128 actions in the monitor's space, with the label-free review cut as a plane.}
+\label{fig:tool}
+\end{figure*}
 
 % =====================================================================================
 \section{Related work}
 \label{sec:related}
-\textbf{Probes on internals} read truth, refusal and deception from activations \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}; CAPE probes an agent before each action \citep{fayyazi2026cape}.
-\Cref{prop:access} states what they can add when a transcript exists.
-\textbf{Chain-of-thought monitors} catch reward hacking that action-only monitors miss \citep{baker2025monitoring}; reasoning is a fragile but useful signal \citep{korbak2025cot,chen2025reasoning}.
-\Cref{cor:action} makes this more exact: for labels that the action and the visible facts decide, reasoning adds nothing once the monitor sees the action; it can help for labels about intent or later behaviour.
-\textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}. Our results show that a trained transcript monitor beats a zero-shot trusted judge, and that the threshold must come from the monitored agent's own traffic.
-\textbf{Black-box access} recovers parts of a model from its logits \citep{carlini2024stealing,finlayson2024logits}, detects lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, forecasts behaviour from traces \citep{levy2026forecasting}, and probes closed transcripts with open readers \citep{conti2026hermeneutics}.
-We add the theory of when transcripts are enough, a preregistered test of each term, and closed agents.
+\textbf{Probes on internals} read truth, refusal and deception \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}; CAPE probes an agent before each action \citep{fayyazi2026cape}.
+\textbf{Chain-of-thought monitors} catch reward hacking that action-only monitors miss \citep{baker2025monitoring,korbak2025cot,chen2025reasoning}; \cref{cor:action} says that for labels that the action and the visible facts decide, the reasoning adds nothing once the monitor sees the action.
+\textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}; we show that the threshold must come from the monitored agent's own traffic.
+\textbf{Black-box access} recovers parts of a model from logits \citep{carlini2024stealing,finlayson2024logits}, detects lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, forecasts behaviour from traces \citep{levy2026forecasting}, and probes closed transcripts with open readers \citep{conti2026hermeneutics}.
+We add the identifiability and sufficiency theory, a direct test that the reader replicates the hidden state, closed agents from two providers, live prevention, and a preregistered test of each claim.
 
 % =====================================================================================
 \section{Limitations}
 \label{sec:limits}
 \begin{itemize}
-\item Most agent tests use one benchmark. On AgentDojo, the external test, the reader beats a zero-shot judge for open agents (0.781 vs 0.537) but not significantly for a closed agent (0.840 vs 0.787, T13b).
-\item A monitor needs labels of each policy that is unlike its training policies. We measured this on three held-out policies (service restart, credentials, prompt injection); the role of similarity is a hypothesis.
-\item \Cref{cor:action} needs the label to be decided by the action and the visible facts, and a deployment that sees the action before it runs. It does not cover labels about beliefs or later behaviour.
-\item A frozen threshold assumes trusted warm-up traffic; a poisoned warm-up would raise it.
+\item We can test replication only where the true state is known (open agents). For closed agents, we test what the replica is for: prediction and prevention.
+\item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b).
+\item Policy coverage was measured on three held-out policies; the role of similarity is a hypothesis.
+\item \Cref{cor:action} needs a label that the action and the visible facts decide. It does not cover beliefs or later behaviour.
+\item The interrogation state is weak as a safety signal; the reader replica carries the safety results.
 \end{itemize}
 
 \section{Conclusion}
-For monitoring the actions of closed agents, the weights are not the bottleneck: labels and policy coverage are.
-A reader of the transcript and the proposed action, trained on labels, equals the agent's internals and transfers to closed agents from two providers on the policies it learned. For a different policy, such as prompt injection, it needs labels of that policy, and labels collected on open agents are enough.
+The hidden state of a closed agent cannot be read in its own coordinates, but it can be replicated: an open model that reads the same tokens holds most of it, and white-box readouts work on the replica.
+For the actions of closed agents, this replica predicts and prevents violations; the limit is labels of each policy, which transfer from open agents to closed ones.
 
+\FloatBarrier
 \bibliography{refs}
 \bibliographystyle{icml2027}
 
@@ -310,6 +303,12 @@ A reader of the transcript and the proposed action, trained on labels, equals th
 \section{Proofs}
 \label{app:proofs}
 \input{appendix_proofs}
+
+\section{The interrogation state in chat}
+\label{app:psi}
+On Claude Haiku~5.5, readouts trained only on open models forecast which harmful requests Claude refuses. Against a 3-level moderation verdict the forecast wins (preregistered L3b, L3c, L3d); against graded moderators it ties (L3e, prospective, 923 conversations: 0.873 vs 0.855). Combined with a moderator, it doubles the precision of an alarm for harmful requests that the model answers (0.535 vs 0.274).
+
+\begin{center}\includegraphics[width=0.7\textwidth]{figures/claude_vs_moderation.pdf}\end{center}
 
 \section{The full preregistration record}
 \label{app:record}

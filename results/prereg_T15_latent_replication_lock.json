@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T11:21:27-07:00",
+ "sha256": {
+  "docs/prereg_T15_latent_replication.md": "ffb37d4be58ca9f2645661d4a1cd659675b7ab49149f1a41281b6e9d87abad2e",
+  "scripts/88_t15_latent_replication.py": "873c7121f563d7107b3d1d832831e3a834110c57ae598b1477a5158d7648ece9"
+ }
+}

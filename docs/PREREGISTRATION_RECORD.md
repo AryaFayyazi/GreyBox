@@ -27,6 +27,8 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 | T13 a closed agent on an external benchmark: GPT-6-luna on AgentDojo, frozen monitors (K1 reader vs judge) | results/prereg_T13_gpt_agentdojo_lock.json (2026-10-17T05:13:38-07:00) | AgentDojo v1.2.2 dev split, spot arm, attack + benign | **K1 NOT TESTED**: GPT-6-luna resisted the injections (attack success 2.1%), leaving 4 injected calls (minimum 10). Utility on benign tasks 0.862 (results/t1/t13_gpt_agentdojo.json) |
 | T13b closed agent on AgentDojo without the defense (arm none, dev + conf; K1b reader vs judge) | results/prereg_T13b_gpt_agentdojo_none_lock.json (2026-10-17T05:26:09-07:00) | AgentDojo v1.2.2, both splits, attack + benign | **K1b FAILS**: 36 injected calls; reader 0.840 vs zero-shot judge 0.787 within suite (+0.052 [−0.026, +0.130]). TF-IDF 0.335. At the benign-call 5% cut: reader 36%, judge 53% (results/t1/t13b_gpt_agentdojo_none.json) |
 | T14 labels of the new policy from open agents, tested on the closed agent (L1 vs judge, L2 vs no labels) | results/prereg_T14_agentdojo_labels_lock.json (2026-10-17T05:52:53-07:00) | train: CAPE-Bench + k AgentDojo calls of open agents (T7); test: GPT AgentDojo calls (T13b) | **L1, L2 pass**: with AgentDojo labels from open agents, the reader on GPT's AgentDojo calls scores 0.922 vs judge 0.787 (+0.136 [0.078, 0.191]) and vs no labels +0.081 [0.044, 0.121]; caught at the benign 5% cut 36% → 92% (results/t1/t14_agentdojo_labels.json) |
+| T15 latent replication: does the reader replicate the agent's hidden state? (E1 R² vs text, E2 readouts on the replica) | results/prereg_T15_latent_replication_lock.json (2026-10-17T11:21:27-07:00) | Gemma-4 decision-point states, 5,493 dev / 12,130 fresh steps | **E1, E2 pass**: from the transcript alone, the reader replica reconstructs 66.4% of the agent's decision-state variance (top 128 PCs; text 58.6%; +0.079 [0.075, 0.083]); a probe trained on TRUE states scores 0.987 on the replica vs 0.984 on the true state (+0.003 [−0.002, +0.007]) (results/t1/t15_latent_replication.json) |
+| T16 live prevention on a closed agent: the monitor blocks GPT-6-luna's escalated actions in the loop (P1 violation episodes, gated − ungated) | results/prereg_T16_live_gate_lock.json (2026-10-17T11:24:32-07:00) | 500 CAPE-Bench scenarios × 2 arms, GPT-6-luna | pending |
 
 ## Notes
 - L1: the preregistration header says "~14:05 PDT". The lock file's timestamp (13:53 PDT) is authoritative. The
@@ -244,6 +246,22 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 - **Lock bookkeeping (2026-10-16, after T8b).** src/graybox/monitor.py is locked in T7 and T8. After both results,
   I added QuantileGate, TextMonitor and a docstring note on thresholds. scripts/99 now strips exactly those additions
   on every run and checks that the rest hashes to both locks; it does. Nothing that T7/T8/T8b ran has changed.
+- **T15 result (2026-10-17 11:28 PDT).** Gemma-4 decision-point states (5 layers × 2,816), 5,492 development / 12,128 fresh steps.
+  The 128 PCs keep 80.5% of the standardized variance.
+  - Ridge alpha by grouped CV: READER 1,000; TXT 1, which is the lower edge of the grid.
+  - Fresh R² (128 PCs): READER 0.664, TXT 0.586. **E1 passes** (+0.079 [0.075, 0.083]).
+  - Full-space R² per layer: READER 0.51–0.54; TXT 0.44–0.48.
+  - E2: a probe trained on true development states gives 0.984 on true fresh states, 0.987 on the READER replica and
+    0.983 on the TXT replica. **E2 passes** (replica − true +0.003 [−0.002, +0.007]).
+  - Exploratory: the map and the probe applied to closed agents, "seen through Gemma's latent space". Claude pooled
+    AUROC 0.959 (44% caught at the label-free 5% cut); GPT 0.976 (70%). Direct reader probes do better on both (0.989,
+    0.996).
+  - Reading (fixed in advance): the reader's latent state is a replica of the agent's hidden state, from the
+    transcript alone, good enough that white-box readouts work on it.
+  - Caveats: a text replica also supports the readout (0.983), so the safety-relevant part of the state is largely
+    recoverable from text. The TXT alpha is at the grid edge.
+  - Sensitivity (exploratory; scripts/88b, results/t1/t15_txt_alpha_exploratory.json): a smaller alpha makes TXT worse
+    (R² 0.508 at 0.1, 0.256 at 0.01), so alpha = 1 was its best. E1 does not depend on the grid edge.
 - **T14 result (2026-10-17 05:54 PDT).** CPU; threads pinned to 1. Test: T13b's 3,925 GPT calls (36 injected).
   - Within-suite AUROC by k labelled AgentDojo calls of open agents (mean over draws): 0 → 0.840; 100 → 0.858;
     400 → 0.881; 3,455 → 0.922. Judge: 0.787.

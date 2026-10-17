@@ -10,6 +10,7 @@ GET  /v1/health
 from __future__ import annotations
 
 import os
+import threading
 import time
 
 from fastapi import FastAPI, HTTPException
@@ -19,6 +20,7 @@ from .monitor import QuantileGate, Step, TextMonitor
 
 app = FastAPI(title="Grey Box monitor", version="0.2")
 _STATE: dict = {"gates": {}}
+_READER_LOCK = threading.Lock()      # one forward pass at a time on the GPU model
 
 
 class StepIn(BaseModel):
@@ -60,6 +62,23 @@ def monitor_text(req: ActionRequest):
             "note": "text monitor: reliable on the tools and policies it was trained on; retrain for new ones"}
 
 
+class CalibrateRequest(BaseModel):
+    stream: str = "default"
+    budget: float = Field(0.05, gt=0, lt=1)
+    scores: list[float] = Field(..., description="reader p_unsafe scores of this agent's past actions (no labels)")
+
+
+@app.post("/v1/monitor/calibrate")
+def calibrate(req: CalibrateRequest):
+    """Seed a stream's escalation cut from past unlabelled traffic: the cut is the (1 - budget) quantile of all given
+    scores, frozen at once. Replaces the stream's gate."""
+    if len(req.scores) < 100:
+        raise HTTPException(422, "need at least 100 past scores")
+    g = QuantileGate(req.budget, warmup=len(req.scores), min_seen=100).fit(req.scores)
+    _STATE["gates"][(req.stream, req.budget)] = g
+    return {"stream": req.stream, "budget": req.budget, "threshold": g.threshold, "frozen": g.frozen, "n": len(req.scores)}
+
+
 @app.post("/v1/monitor/action")
 def monitor_action(req: ActionRequest):
     path = os.environ.get("GB_MONITOR_PROBE")
@@ -69,9 +88,11 @@ def monitor_action(req: ActionRequest):
         from .monitor import ReaderMonitor
         _STATE["reader"] = ReaderMonitor.load(path)
     t0 = time.perf_counter()
-    p = _STATE["reader"].score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
-    g = _STATE["gates"].setdefault((req.stream, req.budget), QuantileGate(req.budget))
-    t = g.threshold
-    return {"p_unsafe": round(p, 6), "escalate": g(p), "threshold": t, "calibrated": t is not None, "frozen": g.frozen,
+    with _READER_LOCK:
+        p = _STATE["reader"].score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
+        g = _STATE["gates"].setdefault((req.stream, req.budget), QuantileGate(req.budget))
+        t = g.threshold
+        esc = g(p)
+    return {"p_unsafe": round(p, 6), "escalate": esc, "threshold": t, "calibrated": t is not None, "frozen": g.frozen,
             "ms": round(1000 * (time.perf_counter() - t0), 1),
             "note": "p_unsafe ranks actions but is not calibrated on a new agent; act on 'escalate'"}

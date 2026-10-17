@@ -74,3 +74,14 @@ def test_monitor_server_without_torch():
     r = c.post("/v1/monitor/text", json={"instructions": "p", "task": "t", "action": {"tool": "send_message", "args": {"to": "y"}}}).json()
     assert set(r) >= {"score", "escalate", "threshold"}
     assert c.post("/v1/monitor/action", json={"instructions": "p", "task": "t", "action": {"tool": "x"}}).status_code == 503 or os.environ.get("GB_MONITOR_PROBE")
+
+
+def test_server_calibrate_endpoint():
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from graybox import monitor_server
+    c = TestClient(monitor_server.app)
+    sc = list(np.random.default_rng(2).random(400))
+    r = c.post("/v1/monitor/calibrate", json={"stream": "s", "budget": 0.05, "scores": sc}).json()
+    assert r["frozen"] and abs(r["threshold"] - float(np.quantile(sc, 0.95))) < 1e-9
+    assert c.post("/v1/monitor/calibrate", json={"stream": "s", "scores": [0.1] * 10}).status_code == 422

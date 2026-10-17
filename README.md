@@ -2,6 +2,15 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
+**Replicating the hidden state of closed agents from their transcripts, to predict and prevent violations.**
+
+![Seeing inside closed agents](results/figures/teaser.png)
+
+An agent's internal state is a function of the tokens that it read. So an open model that reads the same tokens can
+hold a replica of it. From the transcript alone, the replica reconstructs 66% of the variance of an agent's hidden
+state, and readouts trained on the true state work on the replica (T15). We use the replica to predict and block
+policy violations of closed agents before they run.
+
 Grey Box monitors AI agents that you cannot open. It decides if an agent's next action must go to a human
 **before the action runs**. It reads only the data that every deployment can see: the agent's instructions, the
 user's task, the earlier tool results and the proposed action. It does not need the model's weights, so it works on

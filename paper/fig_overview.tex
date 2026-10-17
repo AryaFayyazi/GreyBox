@@ -1,16 +1,141 @@
-% Overview: one agent step and what each monitor reads (numbers: T2, T4 on 12,128 fresh Gemma-4 steps)
-\begin{tikzpicture}[font=\footnotesize, >=Stealth,
-  box/.style={draw, rounded corners=2pt, minimum height=7mm, align=center, inner sep=3pt},
-  mon/.style={draw, rounded corners=2pt, fill=#1!10, align=left, inner sep=3pt, text width=4.35cm}]
-\node[box, fill=gray!10, minimum width=3.4cm] (V) at (0,0) {Visible transcript $V_t$\\[-1pt]\scriptsize instructions, task, tool results};
-\node[box, fill=orange!12, minimum width=2.5cm, right=2mm of V] (H) {Hidden reasoning $H_t$\\[-1pt]\scriptsize not returned by the API};
-\node[box, fill=blue!10, minimum width=2.3cm, right=2mm of H] (A) {Proposed action $A_t$\\[-1pt]\scriptsize tool + arguments};
-\node[box, fill=red!8, minimum width=1.6cm, right=11mm of A] (E) {Executes};
-\draw[->, thick] (V) -- (H); \draw[->, thick] (H) -- (A); \draw[->, thick, dashed] (A) -- node[above, font=\scriptsize, yshift=1pt]{monitor} (E);
-\node[mon=gray, below=7mm of V.south west, anchor=north west] (m1) {\textbf{Turn-start monitors} read $V_t$ only.\\ probe on internals 0.841; 16 resamples (oracle) 0.904};
-\node[mon=orange, right=3mm of m1] (m2) {\textbf{Internals after the reasoning} read $\phi(V_t,H_t)$, before $A_t$ is sampled.\\ probe 0.979: needs the weights};
-\node[mon=blue, right=3mm of m2] (m3) {\textbf{Transcript + proposed action} read $(V_t,A_t)$.\\ trained reader 0.994: no weights; Bayes-sufficient (Cor.~1)};
-\draw[gray, ->] (m1.north) -- (m1.north |- V.south);
-\draw[orange!80!black, ->] (m2.north) -- (H.south);
-\draw[blue!70!black, ->] (m3.north) -- (A.south);
+% Overview figure: the grey box of a closed agent. Numbers: T4, T8b, T11, T15, T16 (filled from results by the build).
+\begin{tikzpicture}[font=\sffamily\footnotesize, >=Stealth, line cap=round, line join=round]
+\definecolor{cAgent}{HTML}{3B4A5A}\definecolor{cGrey}{HTML}{7F8C8D}\definecolor{cRead}{HTML}{2A6FD0}
+\definecolor{cOk}{HTML}{1E8449}\definecolor{cBad}{HTML}{C0392B}\definecolor{cWarm}{HTML}{E67E22}\definecolor{cPaper}{HTML}{FDFCF7}
+
+% ---------------------------------------------------------------- 1. the closed agent (black box)
+\begin{scope}[shift={(0,0)}]
+  \fill[black!85, rounded corners=6pt] (-1.55,-1.55) rectangle (1.55,1.55);
+  \fill[black!70, rounded corners=6pt] (-1.45,-1.45) rectangle (1.45,1.45);
+  % robot
+  \draw[white, line width=0.9pt] (0,0.95) -- (0,1.2); \fill[cWarm] (0,1.26) circle (0.08);
+  \fill[white!92!black, rounded corners=4pt] (-0.62,0.25) rectangle (0.62,0.95);
+  \fill[cRead!70!white] (-0.3,0.62) circle (0.11); \fill[cRead!70!white] (0.3,0.62) circle (0.11);
+  \fill[black] (-0.3,0.62) circle (0.04); \fill[black] (0.3,0.62) circle (0.04);
+  \draw[black!70, line width=0.8pt] (-0.22,0.38) .. controls (0,0.3) .. (0.22,0.38);
+  \fill[white!92!black, rounded corners=4pt] (-0.48,-0.75) rectangle (0.48,0.18);
+  \fill[cWarm!80] (-0.18,-0.25) rectangle (0.18,-0.05);
+  \draw[white!92!black, line width=2.2pt] (-0.48,-0.1) -- (-0.82,-0.42); \draw[white!92!black, line width=2.2pt] (0.48,-0.1) -- (0.82,-0.42);
+  % hidden state inside (gears / question marks)
+  \node[cWarm!90, font=\bfseries\large] at (-1.05,1.05) {?}; \node[cWarm!90, font=\bfseries] at (1.05,-1.1) {?};
+  % padlock
+  \begin{scope}[shift={(1.3,1.3)}]
+    \draw[black!60, line width=1.6pt] (-0.13,0.06) arc (180:0:0.13 and 0.17);
+    \fill[cWarm, rounded corners=1.5pt] (-0.2,-0.17) rectangle (0.2,0.09); \fill[black!70] (0,-0.03) circle (0.035);
+  \end{scope}
+  \node[align=center, font=\sffamily\small\bfseries] at (0,-1.95) {Closed agent};
+  \node[align=center, text=black!60] at (0,-2.33) {weights and reasoning hidden};
+\end{scope}
+
+% ---------------------------------------------------------------- 2. what any deployment sees
+\begin{scope}[shift={(3.35,0.45)}]
+  % transcript document
+  \fill[cPaper, draw=black!40, rounded corners=1.5pt] (-0.75,-0.6) -- (-0.75,0.95) -- (0.5,0.95) -- (0.75,0.7) -- (0.75,-0.6) -- cycle;
+  \draw[black!40] (0.5,0.95) -- (0.5,0.7) -- (0.75,0.7);
+  \foreach \y/\w in {0.62/1.1,0.42/0.9,0.22/1.15,0.02/0.7,-0.18/1.05,-0.38/0.85} \draw[black!35, line width=1.2pt] (-0.6,\y) -- ++(\w,0);
+  \node[align=center] at (0,1.2) {\bfseries Transcript $V_t$};
+  % proposed action card
+  \begin{scope}[shift={(0,-1.55)}]
+    \fill[cRead!8, draw=cRead, rounded corners=3pt] (-1.0,-0.38) rectangle (1.0,0.38);
+    % envelope icon
+    \draw[cRead, line width=0.8pt, fill=white] (-0.85,-0.16) rectangle (-0.45,0.14); \draw[cRead, line width=0.8pt] (-0.85,0.14) -- (-0.65,-0.02) -- (-0.45,0.14);
+    \node[anchor=west, font=\ttfamily\tiny, align=left] at (-0.38,0) {send\_message\\[-1pt]to: all-staff};
+    \node[align=center] at (0,-0.62) {\bfseries Proposed action $A_t$};
+  \end{scope}
+\end{scope}
+\draw[->, line width=1.1pt, black!55] (1.6,0.7) -- (2.55,0.7);
+\draw[->, line width=1.1pt, black!55] (1.6,-0.9) -- (2.45,-1.1);
+
+% ---------------------------------------------------------------- 3. the grey box: open reader + replica of the hidden state
+\begin{scope}[shift={(6.55,0)}]
+  \fill[cRead!6, draw=cRead!60, line width=0.9pt, rounded corners=6pt] (-1.45,-1.55) rectangle (1.45,1.55);
+  \fill[white, opacity=0.6] (-1.35,1.15) -- (-0.6,1.45) -- (-1.35,1.45) -- cycle;   % glass glint
+  % neural network
+  \foreach \i/\y in {1/0.9,2/0.45,3/0,4/-0.45,5/-0.9} {\coordinate (a\i) at (-0.95,\y);}
+  \foreach \i/\y in {1/0.68,2/0.22,3/-0.22,4/-0.68} {\coordinate (b\i) at (-0.25,\y);}
+  \foreach \i/\y in {1/0.45,2/0,3/-0.45} {\coordinate (c\i) at (0.45,\y);}
+  \foreach \i in {1,...,5} \foreach \j in {1,...,4} \draw[cRead!35, line width=0.35pt] (a\i) -- (b\j);
+  \foreach \i in {1,...,4} \foreach \j in {1,...,3} \draw[cRead!35, line width=0.35pt] (b\i) -- (c\j);
+  \foreach \i in {1,...,5} \fill[cRead!60] (a\i) circle (0.07);
+  \foreach \i in {1,...,4} \fill[cRead!80] (b\i) circle (0.075);
+  \foreach \i in {1,...,3} \fill[cRead] (c\i) circle (0.08);
+  % layer highlight -> latent
+  \draw[cWarm, line width=1pt, rounded corners=3pt] (0.3,-0.65) rectangle (0.6,0.65);
+  \node[cWarm, font=\sffamily\scriptsize] at (0.45,0.85) {layer 32};
+  \node[align=center, font=\sffamily\small\bfseries] at (0,-1.95) {Grey box};
+  \node[align=center, text=black!60] at (0,-2.33) {an open reader, same tokens};
+\end{scope}
+\draw[->, line width=1.1pt, black!55] (4.2,0.4) -- (5.05,0.4);
+\draw[->, line width=1.1pt, black!55] (4.4,-1.1) -- (5.05,-0.7);
+
+% latent replica cloud
+\begin{scope}[shift={(9.55,0.15)}]
+  \draw[black!25, ->] (-1.1,-1.05) -- (1.15,-1.05); \draw[black!25, ->] (-1.1,-1.05) -- (-1.1,1.15); \draw[black!25, ->] (-1.1,-1.05) -- (-1.55,-1.45);
+  \pgfmathsetseed{7}
+  \foreach \k in {1,...,70} {\pgfmathsetmacro{\x}{rand*0.55-0.25}\pgfmathsetmacro{\y}{rand*0.5-0.1}\fill[black!35] (\x,\y) circle (0.035);}
+  \foreach \k in {1,...,14} {\pgfmathsetmacro{\x}{0.6+rand*0.18}\pgfmathsetmacro{\y}{0.55+rand*0.2}\fill[cBad] (\x,\y) circle (0.045);}
+  \draw[cBad, dashed, line width=0.7pt] (0.6,0.55) ellipse (0.33 and 0.3);
+  \draw[cRead, line width=1pt] (0.15,1.05) -- (0.85,-0.75);
+  \node[align=center, font=\sffamily\small\bfseries] at (0,-1.75) {Replica of the hidden state};
+  \node[align=center, text=black!60] at (0,-2.13) {\REPLICA};
+\end{scope}
+\draw[->, line width=1.1pt, black!55] (8.05,0.15) -- (8.5,0.15);
+
+% ---------------------------------------------------------------- 4. readout and gate
+\begin{scope}[shift={(12.55,0.35)}]
+  % gauge
+  \draw[black!30, line width=4pt] (-0.75,0.2) arc (180:0:0.75);
+  \draw[cOk, line width=4pt] (-0.75,0.2) arc (180:120:0.75); \draw[cWarm, line width=4pt] ($(0,0.2)+(120:0.75)$) arc (120:55:0.75);
+  \draw[cBad, line width=4pt] ($(0,0.2)+(55:0.75)$) arc (55:0:0.75);
+  \draw[black, line width=1.3pt, ->] (0,0.2) -- ++(40:0.62); \fill[black] (0,0.2) circle (0.06);
+  \node at (0,-0.05) {\bfseries risk};
+  \node[align=center, text=black!60, font=\sffamily\scriptsize] at (0,1.15) {frozen review cut, no labels};
+  \draw[->, line width=1pt, black!55] (0,-0.25) -- (0,-0.68);
+  % shield gate
+  \begin{scope}[shift={(0,-1.25)}]
+    \fill[cRead!15, draw=cRead, line width=1pt] (0,0.5) .. controls (0.38,0.5) and (0.48,0.42) .. (0.48,0.3) -- (0.48,-0.05) .. controls (0.48,-0.3) and (0.2,-0.45) .. (0,-0.55)
+      .. controls (-0.2,-0.45) and (-0.48,-0.3) .. (-0.48,-0.05) -- (-0.48,0.3) .. controls (-0.48,0.42) and (-0.38,0.5) .. (0,0.5);
+    \draw[cRead, line width=1.6pt] (-0.2,0) -- (-0.05,-0.15) -- (0.22,0.18);
+    \node[align=center, font=\sffamily\small\bfseries] at (0,-0.85) {Gate};
+  \end{scope}
+\end{scope}
+\draw[->, line width=1.1pt, black!55] (10.75,0.35) -- (11.7,0.35);
+
+% outcomes
+\begin{scope}[shift={(15.2,0.75)}]
+  \fill[cOk!12, draw=cOk, rounded corners=3pt] (-1.15,-0.32) rectangle (1.15,0.32);
+  \draw[cOk, line width=1.4pt] (-0.75,0) -- (-0.62,-0.13) -- (-0.4,0.13);
+  \node[anchor=west] at (-0.3,0) {\bfseries runs};
+\end{scope}
+\begin{scope}[shift={(15.2,-0.75)}]
+  \fill[cBad!10, draw=cBad, rounded corners=3pt] (-1.15,-0.42) rectangle (1.15,0.42);
+  % stop sign
+  \fill[cBad] (-0.85,0) +(22.5:0.2) -- +(67.5:0.2) -- +(112.5:0.2) -- +(157.5:0.2) -- +(202.5:0.2) -- +(247.5:0.2) -- +(292.5:0.2) -- +(337.5:0.2) -- cycle;
+  \draw[white, line width=1pt] (-0.93,0) -- (-0.77,0);
+  % person
+  \fill[black!70] (0.88,0.17) circle (0.09); \fill[black!70] (0.73,-0.3) .. controls (0.73,0.05) and (1.03,0.05) .. (1.03,-0.3) -- cycle;
+  \node[anchor=center, align=center, font=\sffamily\scriptsize] at (0.02,0) {\bfseries blocked\\[-2pt]to a human};
+\end{scope}
+\draw[->, line width=1.1pt, cOk] (13.05,-0.9) .. controls (13.55,-0.4) and (13.55,0.75) .. (14.0,0.75);
+\draw[->, line width=1.1pt, cBad] (13.05,-0.9) .. controls (13.5,-0.9) .. (14.0,-0.75);
+\node[align=center, text=black!60, font=\sffamily\scriptsize] at (15.2,-1.65) {\PREVENT};
+
+% ---------------------------------------------------------------- bottom band: the theorem and its terms
+\begin{scope}[shift={(7.6,-3.35)}]
+  \fill[black!4, rounded corners=5pt] (-8.15,-0.62) rectangle (8.45,0.62);
+  \node[anchor=west, align=left, text width=5.1cm, font=\sffamily\scriptsize] at (-8.0,0) {\textbf{\footnotesize Theorem.} Internals are a function of the tokens. For a policy check on the action, the transcript and the action $(V_t, A_t)$ are Bayes-sufficient.};
+  \begin{scope}[shift={(-2.5,0)}]
+    \draw[black!70, line width=1pt, fill=white] (0,0) circle (0.24); \draw[black!70, line width=1pt] (0,0) -- (0,0.15) (0,0) -- (0.11,-0.05);
+    \node[anchor=west, align=left, font=\sffamily\scriptsize] at (0.32,0) {\textbf{\footnotesize Timing}\\[-1pt]probes read after the reasoning};
+  \end{scope}
+  \begin{scope}[shift={(1.85,0)}]
+    \fill[cWarm!25, draw=cWarm, line width=0.9pt] (-0.25,-0.17) -- (0.12,-0.17) -- (0.27,0) -- (0.12,0.17) -- (-0.25,0.17) -- cycle; \fill[white] (0.1,0) circle (0.04);
+    \node[anchor=west, align=left, font=\sffamily\scriptsize] at (0.35,0) {\textbf{\footnotesize Labels}\\[-1pt]trained, not zero-shot};
+  \end{scope}
+  \begin{scope}[shift={(5.05,0)}]
+    \fill[cOk!20, draw=cOk, line width=0.9pt] (-0.27,-0.18) -- (-0.09,-0.1) -- (0.09,-0.18) -- (0.27,-0.1) -- (0.27,0.18) -- (0.09,0.1) -- (-0.09,0.18) -- (-0.27,0.1) -- cycle;
+    \draw[cOk, line width=0.6pt] (-0.09,-0.1) -- (-0.09,0.18) (0.09,-0.18) -- (0.09,0.1);
+    \node[anchor=west, align=left, font=\sffamily\scriptsize] at (0.35,0) {\textbf{\footnotesize Policy coverage}\\[-1pt]labels of each type of policy};
+  \end{scope}
+\end{scope}
 \end{tikzpicture}

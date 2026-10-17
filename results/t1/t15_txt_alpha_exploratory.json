@@ -1,0 +1,10 @@
+{
+ "0.1": {
+  "r2_fresh": 0.5083,
+  "E2_auroc_txt_replica": 0.9829
+ },
+ "0.01": {
+  "r2_fresh": 0.2556,
+  "E2_auroc_txt_replica": 0.9712
+ }
+}
