@@ -24,9 +24,9 @@ interface. Pick by how much your deployment differs from your labelled data.</p>
 <tr><td>Unseen benchmark (AgentDojo)</td><td>0.50 (chance)</td><td>0.78</td></tr>
 <tr><td>Train on your labels</td><td>in the browser (<a href="train.html">trainer</a>) or Python</td><td>Python (features + scikit-learn)</td></tr>
 </tbody></table></div>
-<p class="muted" style="margin-top:8px">AUROC from preregistered tests T4–T10 (<a href="results.html">evidence</a>). Both monitors need labelled steps of
-each policy you enforce: with a policy family removed from training, violations of it were ranked high but not escalated at a 5% budget,
-until 20–40 labelled steps of it were added.</p>
+<p class="muted" style="margin-top:8px">AUROC from preregistered tests T4–T12 (<a href="results.html">evidence</a>). A monitor can miss a policy that is not like the policies in
+its training data. In one test (T10), the monitor ranked such violations high but escalated none at a 5% budget, until we added 20–40
+labelled steps of that policy. In another (T12), a policy with similar trained policies transferred with no labels.</p>
 
 <h2>Install</h2>
 <pre>pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"     # core + HTTP server

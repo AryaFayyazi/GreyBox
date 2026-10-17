@@ -10,16 +10,18 @@
 <!--title: Train a monitor-->
 <!--desc: Train an agent-action monitor on your own labelled steps, in your browser. Nothing is uploaded.-->
 <h1>Train a monitor on your own agent</h1>
-<p class="lede">Give it agent steps you have labelled (was this action a violation of your policy?), and it trains a monitor
-  that scores the next action before it runs. Training, evaluation and scoring all happen in this browser tab:
-  your transcripts are never uploaded.</p>
+<p class="lede">Give the trainer agent steps that you labelled: did this action break your policy? It trains a monitor
+  that scores the next action before the action runs. Training, evaluation and scoring all occur in this browser tab.
+  The page does not upload your transcripts.</p>
 
-<div class="note"><b>What this tool is, honestly.</b> It is the word-count monitor (TF-IDF + logistic regression) from our
-  preregistered tests, the same model as <code>graybox.monitor.TextMonitor</code> in the Python SDK (browser and Python
-  agree: identical text, identical vocabulary, held-out AUROC 0.9887 vs 0.9886). On the tools and policies it was
-  trained on it matches a much larger reader model, including on another company's closed agent. It does
-  <b>not</b> carry over to new policies or new kinds of tasks: on an unseen benchmark it was at chance. Label a few dozen
-  steps of every policy you need to enforce. For robustness to new tasks, use the reader monitor (<a href="docs.html">self-hosted</a>).</div>
+<div class="note"><b>What this tool is.</b> It is the word-count monitor (TF-IDF and logistic regression) from our
+  preregistered tests. It is the same model as <code>graybox.monitor.TextMonitor</code> in the Python SDK: the browser and
+  Python give identical text, an identical vocabulary and the same held-out AUROC (0.9887 vs 0.9886).
+  <ul style="margin:6px 0 0">
+  <li>On the tools and policies of its training data, it is equal to a much larger reader model, also on a closed agent from another company.</li>
+  <li>It does <b>not</b> transfer to new policies or new types of task. On a benchmark that it did not see, it was at chance.</li>
+  <li>Label a few dozen steps of each policy that you must enforce. For robustness to new tasks, use the reader monitor (<a href="docs.html">self-hosted</a>).</li>
+  </ul></div>
 
 <h2>1. Load labelled steps</h2>
 <div class="card">
@@ -65,10 +67,10 @@
 <section id="results" hidden>
   <div class="grid3" id="stats" style="margin-top:14px"></div>
   <p class="muted" id="details" style="margin-top:10px"></p>
-  <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole task groups, so it estimates
-    performance on new tasks <i>like these</i>. It does not cover a new policy, new tools or a different benchmark: in our
-    preregistered tests, removing one policy family from training dropped that family's catch rate at a 5% budget from 88%
-    to 0%, and 20 to 40 labelled steps of it brought it back to 85–94%.</div>
+  <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole task groups. Thus it estimates
+    the performance on new tasks <i>of the same type</i>. It does not cover a new policy, new tools or a different benchmark. In
+    our tests, we removed one policy family from the training data. The catch rate for that family at a 5% budget fell
+    from 88% to 0%. With 20 to 40 labelled steps of that policy, it came back to 85–94%.</div>
   <h3>By tool</h3>
   <div class="tablewrap" id="perTool"></div>
 </section>

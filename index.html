@@ -7,48 +7,52 @@
 </head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html" aria-current=page>Overview</a><a href="train.html">Train a monitor</a><a href="monitor.html">Claude, live replay</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
 <main><div class="wrap">
-<h1>Monitor AI agents you can't open.</h1>
-<p class="lede">Grey Box decides whether an AI agent's next action should go to a human <i>before it runs</i>, reading only
-what every deployment can see: the agent's instructions, the user's task, earlier tool results and the proposed action.
-It needs no access to the model's weights, so it works on closed models. Every claim here comes from a preregistered,
-hash-locked test, failures included.</p>
+<h1>Monitor AI agents that you cannot open.</h1>
+<p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
+the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
+proposed action. It does not need the model's weights, so it works on closed models. Each claim on this site comes from a
+preregistered, hash-locked test. We show the failures too.</p>
 <div class="grid3" style="margin:22px 0 8px">
-  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent (or our
-    example), get an honest held-out accuracy and a review threshold, score new actions. Nothing is uploaded.</p><a class="go" href="train.html">Open the trainer →</a></div>
-  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real Claude Haiku 5.5 agent episodes, with the
-    risk assigned to each action before it ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
-  <div class="card"><div class="label">Deploy</div><h3>Run it on your own infrastructure</h3><p>A Python SDK and an HTTP API: a free CPU monitor
-    (0.18 ms per action in a browser) and a GPU reader monitor (41 ms per action).</p><a class="go" href="docs.html">Read the docs →</a></div>
+  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
+    use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
+  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
+    agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
+  <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
+    takes 0.18 ms for each action in a browser. The GPU reader monitor takes 41 ms.</p><a class="go" href="docs.html">Read the docs →</a></div>
 </div>
 
 <h2>What we found</h2>
 <div class="grid2">
-<div class="card"><h3>Labels, not access</h3><p>A small open model that reads the transcript, trained on labelled examples, matches the
-  agent's own internal activations (AUROC 0.994 vs 0.979). Trained only on an open agent,
-  it caught 96% of a closed frontier agent's violations (Claude Haiku 5.5) with 5% of actions sent to review. A zero-shot
-  70B judge caught 0%.</p></div>
-<div class="card"><h3>Time, not access</h3><p>White-box probes look better than transcript monitors mainly because they read later: after
-  the model's hidden reasoning, the action is nearly decided (probe 0.979 after reasoning vs 0.841 before it).
-  A monitor that sees the proposed action gets the same advantage.</p></div>
-<div class="card"><h3>The policy is the limit, not the agent</h3><p>For a policy family the monitor never saw, it still ranked Claude's
-  violations above safe actions (AUROC 0.912 vs judge 0.570), but escalated none of
-  them at a 5% budget. Adding 20 labelled steps of that policy brought it to 85%, and 40 to
-  94%. Label a few dozen steps of each policy you enforce.</p></div>
-<div class="card"><h3>Simple monitors suffice, until the task changes</h3><p>A word-count classifier trained on the same labels matches the
-  reader in distribution (Claude: 0.997 vs 0.991). On a new benchmark of prompt
-  injections it fell to chance (0.50), where the reader held 0.78.</p></div>
-<div class="card"><h3>Set the review threshold on your own traffic</h3><p>A monitor's probabilities do not transfer between agents (a
-  0.5 cut caught 3% on Claude); its ranking does. Escalating the top 5% of the agent's own first 500 actions, then freezing that cut,
-  caught 95% online and held at
-  94% when half of a later burst was malicious. A rolling cut fell to
+<div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
+  equal to or better than the agent's own internal activations (AUROC 0.994 vs 0.979).
+  We trained it only on an open agent. On two closed agents, with 5% of the actions sent to review, it caught 96%
+  (Claude Haiku 5.5) and 98% (GPT-6-luna) of the violations. A zero-shot 70B judge caught
+  0% and 38%.</p></div>
+<div class="card"><h3>Why access does not help: a theorem</h3><p>An agent's internal state is a function of the tokens that it read.
+  For the label "does this action break the policy?", a monitor that reads the transcript and the proposed action is
+  Bayes-sufficient. Internals read at or before the action cannot do better. White-box probes win against turn-start
+  monitors only because they read later (probe 0.979 after the reasoning, 0.841 before it).</p></div>
+<div class="card"><h3>The limit is the policy, not the agent</h3><p>We removed a policy family from the training data. A credentials
+  policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
+  service-restart policy without similar ones did not: the monitor ranked Claude's violations well (AUROC
+  0.912) but escalated none at a 5% budget. With 20 labelled steps it caught
+  85%; with 40, 94%. Label a few dozen steps of each new
+  type of policy.</p></div>
+<div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
+  the reader on the training benchmark (Claude: 0.997 vs 0.991).
+  On a new benchmark of prompt injections it fell to chance (0.50). The reader stayed at
+  0.78.</p></div>
+<div class="card"><h3>Set the review threshold from your own traffic</h3><p>A monitor's probabilities do not transfer between agents: a
+  0.5 cut caught 3% on Claude. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
+  threshold. It caught 95% online. When half of a later burst was
+  malicious, it still caught 94%. A rolling threshold caught
   36%.</p></div>
-<div class="card"><h3>Chat: forecasting refusals</h3><p>Asking a model about a conversation in a side branch forecasts whether it will refuse.
-  On Claude it ties a strong graded moderator at ranking refusals, and combined with one it doubles the precision of a
-  "harmful request answered" alarm. It is not a better content filter.</p></div>
+<div class="card"><h3>Chat: forecast a refusal</h3><p>We ask a model about a conversation in a side branch. The answers forecast if the
+  model will refuse. On Claude this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
+  precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench) and one closed agent family so far (a second, GPT, is under a locked test); the external test
-(AgentDojo) is weaker (AUROC 0.78). Monitors must be trained on labelled steps of the policies they enforce. The chat
-readouts recover what behaviour reveals, not a model's hidden beliefs. See <a href="results.html">the full evidence</a>.</div>
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT). The external test (AgentDojo) gives a lower score (AUROC 0.78). A monitor needs labelled steps of each
+policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
 
 </div></main>
 <footer><div class="wrap">Grey Box is a research project. Every result on this site comes from a preregistered, hash-locked test,
