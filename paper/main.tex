@@ -8,6 +8,8 @@
 \usepackage{longtable}
 \usepackage{xcolor}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage[capitalize,noabbrev]{cleveref}
 \setlist{nosep,leftmargin=1.1em}
 \newcommand{\PENDING}[1]{\colorbox{gray!15}{\scriptsize\textsf{PENDING: #1}}}
@@ -44,7 +46,8 @@ The remaining problem is statistical: learn the policy from labelled examples.
 We test each term with preregistered, hash-locked tests.
 Reading after the agent's reasoning explains the white-box advantage over monitors at the start of the turn (AUROC 0.979 vs 0.841).
 Without labels, a 70B judge loses to a probe (0.782). With labels, an open reader of the transcript and the action beats the agent's own internals (0.994 vs 0.979), and the agent's hidden reasoning adds nothing once the action is visible ($-0.0014$).
-Trained only on an open agent, the reader catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget; a zero-shot judge catches 0\% and 38\%.
+Trained only on an open agent, the reader catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget on the training benchmark; a zero-shot judge catches 0\% and 38\%.
+On an external benchmark of prompt injections, the reader is not significantly better than the judge on a closed agent (0.840 vs 0.787; a preregistered failure).
 The limit is the coverage of the policies: a policy unlike any trained policy is ranked but not escalated until 20 to 40 labelled examples are added.
 We release the record of every test, an SDK, and a website on which anyone can train and audit a monitor in the browser.
 \end{abstract}
@@ -73,13 +76,20 @@ We test each term with preregistered tests on agents from 20B-parameter open mod
 \begin{enumerate}
 \item \emph{Theory.} An agent's internals add to its full token history no information about any label; under log loss, a white-box monitor beats a transcript monitor by exactly $I(Y;H\mid V)$, the information in hidden tokens (\cref{prop:access}). For action-level labels, the transcript and the proposed action are Bayes-sufficient (\cref{cor:action}).
 \item \emph{A preregistered test of each term:} timing (T2), the label function (T3), labels (T4, T5), representation (T9) and policy coverage (T10, T12).
-\item \emph{Two closed agent families.} A reader trained only on an open agent monitors Claude Haiku~5.5 (T8b) and GPT-6-luna (T11) beyond tool identity, and transfers to an external benchmark (T7, T13).
+\item \emph{Two closed agent families.} A reader trained only on an open agent monitors Claude Haiku~5.5 (T8b) and GPT-6-luna (T11) beyond tool identity on the training benchmark. On an external benchmark it beats a zero-shot judge for open agents (T7), but not significantly for a closed agent (T13b).
 \item \emph{Deployment without labels from the new agent.} Probabilities do not transfer between agents; rankings do. A review threshold set from the agent's own traffic and then frozen resists bursts of violations.
 \item \emph{A tool.} An open SDK and a website: anyone can train and audit a monitor on their own agent in the browser, with results identical to the Python version.
 \end{enumerate}
 
 The theorem is simple; we do not claim that it is deep.
 Its value is that it turns a vague question (``do we need the weights?'') into terms that experiments can measure, and our tests measure each term.
+
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{\input{fig_overview}}
+\caption{One agent step, and what each monitor reads. A white-box probe gains over monitors at the start of the turn because it reads after the hidden reasoning. A monitor that reads the proposed action needs no weights: for a policy check on the action, it is Bayes-sufficient (\cref{cor:action}), and with labels it scores higher than the internals. AUROC on the same 12{,}128 fresh steps (T2, T4).}
+\label{fig:overview}
+\end{figure*}
 
 % =====================================================================================
 \section{Theory}
@@ -162,7 +172,7 @@ T10 & Claude, a policy family removed from training & 0.912 vs 0.570; 0/26 caugh
 T11 & GPT-6-luna, beyond tool identity & 0.996 vs 0.778; tool 0.856 & pass\\
 T12 & Labels for a new policy, prospective & 18/18 caught with 0 labels & H1 fail\\
 T13 & GPT-6-luna on AgentDojo, with spotlighting & attack success 2.1\%; 4 injected calls & not tested\\
-T13b & The same, without the defense, both splits & \PENDING{running} & --\\
+T13b & The same, without the defense, both splits & 0.840 vs judge 0.787 (36 injected) & fail\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -203,12 +213,12 @@ On AgentDojo, TF-IDF is at chance (0.503); the reader scores 0.781 (T7).
 \label{fig:gen}
 \end{figure*}
 
-\subsection{Two closed agent families (T8b, T11, T13)}
+\subsection{Two closed agent families (T8b, T11, T13, T13b)}
 Nothing was fit on the closed agents (\cref{tab:closed}).
 On Claude Haiku~5.5 the reader catches 95.6\% of 68 violations at a 5\% budget; the judge catches none.
 The preregistered within-template AUROC (0.991 vs 0.633) rests on one stratum, so we also give the pooled AUROC (0.989 vs 0.570, exploratory).
 On GPT-6-luna all three preregistered endpoints pass: pooled 0.996 vs 0.778 ($+0.217$ [0.174, 0.265]); against tool identity alone $+0.141$ [0.111, 0.171]; within tool $+0.039$ [0.015, 0.066].
-On AgentDojo, GPT-6-luna rarely follows the injected instructions: with the spotlighting defense, the attack succeeds in 2.1\% of the episodes, which leaves 4 injected calls, below the preregistered minimum of 10 (T13, not tested). A test without the defense on both splits is locked and running (T13b: \PENDING{running}).
+On AgentDojo, GPT-6-luna rarely follows the injected instructions: with the spotlighting defense, the attack succeeds in 2.1\% of the episodes, which leaves 4 injected calls, below the preregistered minimum of 10 (T13, not tested). Without the defense, on both splits, there are 36 injected calls (T13b). There the reader is not significantly better than the zero-shot judge: 0.840 vs 0.787 ($+0.052$ [$-0.026$, $+0.130$]); the preregistered test fails. TF-IDF is below chance (0.335). The monitor transfers to closed agents on its training benchmark; on an external benchmark with a different policy, it needs labels of that policy, as \cref{sec:results} shows for policy coverage.
 
 \begin{table}[t]
 \centering\small
@@ -278,7 +288,7 @@ We add the theory of when transcripts are enough, a preregistered test of each t
 \section{Limitations}
 \label{sec:limits}
 \begin{itemize}
-\item Most agent tests use one benchmark. AgentDojo, the external test, gives lower scores (0.781 for open agents).
+\item Most agent tests use one benchmark. On AgentDojo, the external test, the reader beats a zero-shot judge for open agents (0.781 vs 0.537) but not significantly for a closed agent (0.840 vs 0.787, T13b).
 \item A monitor needs labels of each policy that is unlike its training policies. We measured this on two held-out policies only.
 \item \Cref{cor:action} needs the label to be decided by the action and the visible facts, and a deployment that sees the action before it runs. It does not cover labels about beliefs or later behaviour.
 \item A frozen threshold assumes trusted warm-up traffic; a poisoned warm-up would raise it.
@@ -286,7 +296,7 @@ We add the theory of when transcripts are enough, a preregistered test of each t
 
 \section{Conclusion}
 For monitoring the actions of closed agents, the weights are not the bottleneck: labels and policy coverage are.
-A reader of the transcript and the proposed action, trained on labels, equals the agent's internals and transfers to closed agents from two providers.
+A reader of the transcript and the proposed action, trained on labels, equals the agent's internals and transfers to closed agents from two providers on the policies it learned. For a different policy, such as prompt injection, it needs labels of that policy.
 
 \bibliography{refs}
 \bibliographystyle{icml2027}

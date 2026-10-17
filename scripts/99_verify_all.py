@@ -124,6 +124,10 @@ def numbers():
     d = j("t1/t12_new_policy_labels.json")
     if d:
         rows.append(("T12 new-policy labels: H1/H2 pass; caught at n=0..40", (d["H1_pass"], d["H2_pass"], {n: v["F_caught"] for n, v in d["curve"].items()})))
+    for name, f in (("T13 GPT AgentDojo (spot)", "t1/t13_gpt_agentdojo.json"), ("T13b GPT AgentDojo (none)", "t1/t13b_gpt_agentdojo_none.json")):
+        d = j(f)
+        if d:
+            rows.append((name, {k: d.get(k) for k in ("n_injected", "attack_success_rate", "auroc_within_suite", "K1_not_tested", "K1b_READER_minus_Jact", "K1b_pass") if k in d}))
     d = j("t1/t8b_calibration_exploratory.json")
     if d:
         rows.append(("T8b calibration (exploratory): 0.5 cut / online gate", (d["READER"]["at_0.5"], d["online_QuantileGate_budget0.05"]["run_order"])))

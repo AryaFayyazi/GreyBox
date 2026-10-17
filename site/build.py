@@ -137,7 +137,7 @@ preregistered, hash-locked test. We show the failures too.</p>
 <div class="grid2">
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
-  We trained it only on an open agent. On two closed agents, with 5% of the actions sent to review, it caught {p(c8['READER'])}
+  We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}
   (Claude Haiku 5.5) and {p(t11['label_free_cut']['READER']['all'])} (GPT-6-luna) of the violations. A zero-shot 70B judge caught
   {p(c8['J_act'])} and {p(t11['label_free_cut']['J_act']['all'])}.</p></div>
 <div class="card"><h3>Why access does not help: a theorem</h3><p>An agent's internal state is a function of the tokens that it read.
@@ -163,7 +163,8 @@ preregistered, hash-locked test. We show the failures too.</p>
   model will refuse. On Claude this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
   precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT). The external test (AgentDojo) gives a lower score (AUROC 0.78). A monitor needs labelled steps of each
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT). On an external benchmark of
+prompt injections, the reader beat a zero-shot judge for open agents, but not significantly for a closed agent (AUROC 0.840 vs 0.787). The external test (AgentDojo) gives a lower score (AUROC 0.78). A monitor needs labelled steps of each
 policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
 """
     return page("index.html", "Monitor AI agents you can't open", "Grey Box: pre-execution monitoring for closed AI agents, with preregistered evidence.", body)

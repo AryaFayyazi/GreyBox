@@ -135,6 +135,7 @@ def fig_generalization():
     t9 = json.loads((R / "t1/t9_text_baseline.json").read_text())
     t10 = json.loads((R / "t1/t10_claude_unseen_families.json").read_text())
     t11 = json.loads((R / "t1/t11_gpt_agent.json").read_text())
+    t13b = json.loads((R / "t1/t13b_gpt_agentdojo_none.json").read_text())
     tx = {k: t9[k]["auroc"]["TXT"] for k in ("T4_same_scenarios", "T5_unseen_families", "T6_gptoss", "T7_agentdojo", "T8b_claude")}
     rows = [("Same scenarios (Gemma)", t4["READER_act"], t4["J_act"], t4["I_dec"], tx["T4_same_scenarios"]),
             ("Unseen task families (Gemma)", t5["READER_family"], t5["J_act"], t5["AGENT_family"], tx["T5_unseen_families"]),
@@ -142,8 +143,9 @@ def fig_generalization():
             ("External benchmark (AgentDojo)", t7["per_actor"]["pooled"]["READER"], t7["per_actor"]["pooled"]["J_act"], None, tx["T7_agentdojo"]),
             ("Closed agent, Claude (1 stratum, 26 viol.)", t8["READER"], t8["J_act"], None, tx["T8b_claude"]),
             ("Claude, policy family unseen (T10)", t10["auroc_within"]["READER_lofo"], t10["auroc_within"]["J_act"], None, t10["auroc_within"]["TXT_lofo"]),
-            ("Second closed agent, GPT (T11)", t11["auroc_within_template"]["READER"], t11["auroc_within_template"]["J_act"], None, t11["auroc_within_template"]["TXT"])]
-    fig, ax = plt.subplots(figsize=(5.8, 4.1))
+            ("Second closed agent, GPT (T11)", t11["auroc_within_template"]["READER"], t11["auroc_within_template"]["J_act"], None, t11["auroc_within_template"]["TXT"]),
+            ("GPT on AgentDojo, no defense (T13b)", t13b["auroc_within_suite"]["READER"], t13b["auroc_within_suite"]["J_act"], None, t13b["auroc_within_suite"]["TXT"])]
+    fig, ax = plt.subplots(figsize=(5.8, 4.5))
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     for i, (name, r, j, w, t) in enumerate(rows[::-1]):
         ax.plot([min(j, t), max(r, t)], [i, i], color=GRID, lw=3, zorder=1)
@@ -154,7 +156,7 @@ def fig_generalization():
             ax.plot(w, i, "D", color=C[1], ms=6, mec="white", mew=1.2, zorder=5)
         ax.text(1.012, i, f"{r:.3f}", va="center", fontsize=8, color=INK)
     ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=8.5, color=INK)
-    ax.set_xlim(0.48, 1.06); ax.set_xlabel("AUROC, unsafe action (within template; within suite for AgentDojo)")
+    ax.set_xlim(0.28, 1.06); ax.set_xlabel("AUROC, unsafe action (within template; within suite for AgentDojo)")
     ax.set_title("Trained transcript reader (blue), trained bag-of-words (hollow square), zero-shot\njudge (green); agent's own internals (orange) where available",
                  loc="left", fontsize=9, color=INK)
     save(fig, "generalization")

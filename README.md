@@ -60,6 +60,7 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T10: a policy that the monitor never saw | The reader still ranks the violations well (pooled 0.912; judge 0.570). But at a 5% budget it escalates 0 of 26 violations. With 20 to 40 labelled examples of that policy, it catches 85% to 94% (exploratory). |
 | T11: a second closed family (GPT) | GPT-6-luna, 3,627 actions, 66 violations in 6 families. Pooled AUROC 0.996 (judge 0.778; tool identity alone 0.856). Within tool 0.994 (judge 0.956). At a 5% budget it catches 98.5% (judge 37.9%). All three preregistered endpoints pass. |
 | T12: labels for a new policy, prospective | We held out a credentials policy. With no labels of it, the reader caught all 18 of GPT's violations of it. The preregistered H1 (labels improve the catch rate) fails: there was nothing to fix. A new policy that resembles a trained one can transfer; one that does not (T10) needs labels. |
+| T13, T13b: a closed agent on an external benchmark | GPT-6-luna on AgentDojo. With the spotlighting defense, attacks succeed in 2.1% of episodes (4 injected calls): not tested. Without the defense, 36 injected calls: reader 0.840 vs judge 0.787 (+0.052 [−0.026, +0.130]). The preregistered test fails: on an external benchmark the reader is not significantly better than a zero-shot judge for this closed agent. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
 
 **Results that did not confirm** are in the record too. Examples: the agent's answers alone do not match the
@@ -67,7 +68,8 @@ white-box probe (T1, F3), and resampling scored by an LLM judge loses to the pro
 
 ## Limits
 
-- Most agent tests use one benchmark, CAPE-Bench. The external test (AgentDojo) gives a lower score (0.78).
+- Most agent tests use one benchmark, CAPE-Bench. On the external test (AgentDojo), the reader beats a zero-shot judge
+  for open agents (0.78 vs 0.54), but not significantly for a closed agent (0.840 vs 0.787, T13b).
 - A monitor can miss a policy that is not like the policies in its training data (T10). Label a few dozen steps of
   each such policy. A policy that is like a trained one can transfer without labels (T12).
 - Corollary 3 applies to action-level labels. It does not apply to labels about later behaviour or about beliefs.

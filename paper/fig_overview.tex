@@ -1,0 +1,16 @@
+% Overview: one agent step and what each monitor reads (numbers: T2, T4 on 12,128 fresh Gemma-4 steps)
+\begin{tikzpicture}[font=\footnotesize, >=Stealth,
+  box/.style={draw, rounded corners=2pt, minimum height=7mm, align=center, inner sep=3pt},
+  mon/.style={draw, rounded corners=2pt, fill=#1!10, align=left, inner sep=3pt, text width=4.35cm}]
+\node[box, fill=gray!10, minimum width=3.4cm] (V) at (0,0) {Visible transcript $V_t$\\[-1pt]\scriptsize instructions, task, tool results};
+\node[box, fill=orange!12, minimum width=2.5cm, right=2mm of V] (H) {Hidden reasoning $H_t$\\[-1pt]\scriptsize not returned by the API};
+\node[box, fill=blue!10, minimum width=2.3cm, right=2mm of H] (A) {Proposed action $A_t$\\[-1pt]\scriptsize tool + arguments};
+\node[box, fill=red!8, minimum width=1.6cm, right=11mm of A] (E) {Executes};
+\draw[->, thick] (V) -- (H); \draw[->, thick] (H) -- (A); \draw[->, thick, dashed] (A) -- node[above, font=\scriptsize, yshift=1pt]{monitor} (E);
+\node[mon=gray, below=7mm of V.south west, anchor=north west] (m1) {\textbf{Turn-start monitors} read $V_t$ only.\\ probe on internals 0.841; 16 resamples (oracle) 0.904};
+\node[mon=orange, right=3mm of m1] (m2) {\textbf{Internals after the reasoning} read $\phi(V_t,H_t)$, before $A_t$ is sampled.\\ probe 0.979: needs the weights};
+\node[mon=blue, right=3mm of m2] (m3) {\textbf{Transcript + proposed action} read $(V_t,A_t)$.\\ trained reader 0.994: no weights; Bayes-sufficient (Cor.~1)};
+\draw[gray, ->] (m1.north) -- (m1.north |- V.south);
+\draw[orange!80!black, ->] (m2.north) -- (H.south);
+\draw[blue!70!black, ->] (m3.north) -- (A.south);
+\end{tikzpicture}

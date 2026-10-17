@@ -20,8 +20,10 @@ statistical: learn the policy from labelled examples.
 - Labels are necessary. A 70B judge that scores resampled actions without labels gets 0.782, less than a probe.
   An open reader model, trained on labels, reads the transcript and the proposed action and gets 0.994. This is more
   than the agent's own internals (0.979).
-- The reader transfers to closed agents. We trained it only on an open agent. At a 5% review budget it catches 96%
-  of the violations of Claude Haiku 5.5 and 98% of those of GPT-6-luna. A zero-shot judge catches 0% and 38%.
+- The reader transfers to closed agents on the training benchmark. We trained it only on an open agent. At a 5%
+  review budget it catches 96% of the violations of Claude Haiku 5.5 and 98% of those of GPT-6-luna. A zero-shot
+  judge catches 0% and 38%. On an external benchmark of prompt injections, the reader is not significantly better
+  than the judge on a closed agent (0.840 vs 0.787; a preregistered failure).
 - The limits are statistical:
   - A bag-of-words monitor with the same labels is equal to the reader on the training benchmark. On a new
     benchmark it falls to chance (0.50; reader 0.78).
