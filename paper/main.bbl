@@ -19,21 +19,20 @@ Burns, C., Ye, H., Klein, D., and Steinhardt, J.
 \newblock Discovering latent knowledge in language models without supervision.
 \newblock In \emph{International Conference on Learning Representations (ICLR)}, 2023.
 
-\bibitem[Carlini et~al.(2024)]{carlini2024stealing}
-Carlini, N. et~al.
+\bibitem[Carlini et~al.(2024)Carlini, Paleka, Dvijotham, Steinke, Hayase, Cooper, Lee, Jagielski, Nasr, Conmy, Yona, Wallace, Rolnick, and Tram{\`e}r]{carlini2024stealing}
+Carlini, N., Paleka, D., Dvijotham, K.~D., Steinke, T., Hayase, J., Cooper, A.~F., Lee, K., Jagielski, M., Nasr, M., Conmy, A., Yona, I., Wallace, E., Rolnick, D., and Tram{\`e}r, F.
 \newblock Stealing part of a production language model, 2024.
-\newblock VERIFY author list.
 
 \bibitem[Chen et~al.(2025)Chen, Benton, Radhakrishnan, Uesato, Denison, Schulman, Somani, Hase, Wagner, Roger, Mikulik, Bowman, Leike, Kaplan, and Perez]{chen2025reasoning}
 Chen, Y., Benton, J., Radhakrishnan, A., Uesato, J., Denison, C., Schulman, J., Somani, A., Hase, P., Wagner, M., Roger, F., Mikulik, V., Bowman, S.~R., Leike, J., Kaplan, J., and Perez, E.
 \newblock Reasoning models don't always say what they think.
 \newblock \emph{arXiv preprint arXiv:2505.05410}, 2025.
 
-\bibitem[Conti et~al.(2026)Conti, Sharf, Jain, Yan, et~al.]{conti2026hermeneutics}
-Conti, Sharf, Jain, Yan, et~al.
+\bibitem[{conti} et~al.(2026){conti}, {ShivamR}, Sharf, {jain18ayush}, and {johnyan}]{conti2026hermeneutics}
+{conti}, {ShivamR}, Sharf, J., {jain18ayush}, and {johnyan}.
 \newblock Model hermeneutics: Monitoring closed-weight models with open-weight internals.
 \newblock LessWrong, 30 September 2026, 2026.
-\newblock VERIFY full author names.
+\newblock URL \url{https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open}.
 
 \bibitem[Cooney et~al.(2026)Cooney, Africa, and Irving]{cooney2026didyoulie}
 Cooney, A., Africa, D., and Irving, G.
@@ -44,10 +43,9 @@ Debenedetti, E., Zhang, J., Balunovi{\'c}, M., Beurer-Kellner, L., Fischer, M., 
 \newblock {AgentDojo}: A dynamic environment to evaluate prompt injection attacks and defenses for {LLM} agents.
 \newblock In \emph{Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)}, 2024.
 
-\bibitem[Fayyazi et~al.(2026)]{fayyazi2026cape}
-Fayyazi, A. et~al.
+\bibitem[Fayyazi et~al.(2026)Fayyazi, Kamal, and Pedram]{fayyazi2026cape}
+Fayyazi, A., Kamal, M., and Pedram, M.
 \newblock The agent knew: Internal states forecast unauthorized actions and stop them, and the lies that follow, 2026.
-\newblock VERIFY author list.
 
 \bibitem[Finlayson et~al.(2024)Finlayson, Ren, and Swayamdipta]{finlayson2024logits}
 Finlayson, M., Ren, X., and Swayamdipta, S.
@@ -73,9 +71,8 @@ Korbak, T., Balesni, M., Barnes, E., Bengio, Y., Benton, J., Bloom, J., Chen, M.
 \newblock \emph{arXiv preprint arXiv:2507.11473}, 2025.
 
 \bibitem[Levy et~al.(2026)Levy, Goldberg, and {Cooper Stickland}]{levy2026forecasting}
-Levy, Goldberg, and {Cooper Stickland}.
+Levy, M., Goldberg, Y., and {Cooper Stickland}, A.
 \newblock Forecasting future behavior as a learning task, 2026.
-\newblock VERIFY full author names.
 
 \bibitem[Marks \& Tegmark(2023)Marks and Tegmark]{marks2023geometry}
 Marks, S. and Tegmark, M.
@@ -86,10 +83,9 @@ Pacchiardi, L., Chan, A.~J., Mindermann, S., Moscovitz, I., Pan, A.~Y., Gal, Y.,
 \newblock How to catch an {AI} liar: Lie detection in black-box {LLM}s by asking unrelated questions.
 \newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
 
-\bibitem[Sam et~al.(2025)]{sam2025quere}
-Sam, D. et~al.
-\newblock Predicting the performance of black-box {LLM}s through self-queries, 2025.
-\newblock VERIFY title and authors.
+\bibitem[Sam et~al.(2025)Sam, Finzi, and Kolter]{sam2025quere}
+Sam, D., Finzi, M., and Kolter, J.~Z.
+\newblock Predicting the performance of black-box {LLM}s through follow-up queries, 2025.
 
 \bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyejo, Song, Fredrikson, Kolter, and Hendrycks]{zou2023repe}
 Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., Pan, A., Yin, X., Mazeika, M., Dombrowski, A.-K., Goel, S., Li, N., Byun, M.~J., Wang, Z., Mallen, A., Basart, S., Koyejo, S., Song, D., Fredrikson, M., Kolter, J.~Z., and Hendrycks, D.
