@@ -4,34 +4,38 @@
 
 ## Abstract
 
-Safety monitors that read a model's internals need its weights, but the most capable agents expose only text. We show
-that, for the labels agent monitoring is about (would this proposed action violate the policy, given what the agent
-has seen?), weight access adds nothing that a monitor cannot get from the transcript and the proposed action:
-- An agent's internals are a function of the tokens it has read. Their only possible advantage is tokens the
-  transcript hides.
-- For action-level labels, the proposed action makes even those irrelevant.
-- What remains is statistics: learning the policy from labelled examples.
+A monitor that reads a model's internal activations needs the model's weights. The most capable agents give only
+text. We ask what a monitor of a closed agent can know, and what it needs.
 
-A series of preregistered, hash-locked tests checks each part:
-- **Timing, not access.** Reading after the agent's reasoning explains why white-box probes beat turn-start monitors
-  (0.979 vs 0.841 AUROC).
-- **Labels.** Without them, a 70B judge scoring resampled actions loses to a probe (0.782). With them, an open reader
-  of the transcript and proposed action beats the agent's own internals (0.994 vs 0.979).
-- **Closed agents.** Trained only on an open agent, the reader catches 96% of a closed frontier agent's violations
-  (Claude Haiku 5.5) at a 5% review budget, where a zero-shot judge catches 0%.
-- **The limits are statistical too.**
-  - A bag-of-words monitor trained on the same labels matches the reader in distribution, but falls to chance on a
-    new benchmark (0.50 vs 0.78).
-  - For a policy family absent from training, the reader still ranks violations well (0.912), but escalates none until
-    20–40 labelled examples are added.
-- **Deployment without labels from the new agent.** A review threshold set from the agent's own unlabelled traffic,
-  then frozen, catches 95% of violations online, and stays robust to bursts of violations that defeat a rolling one.
+**Theory.** An agent's internal state is a function of the tokens that the agent read. Thus, internals give no
+information that the full token history does not give. A white-box monitor can only win with tokens that the
+transcript hides, for example private reasoning. Our main label is action-level: "does this proposed action break the
+policy, given the facts that the agent saw?" For this label, a monitor that reads the transcript and the proposed
+action is Bayes-sufficient. No white-box monitor at or before the action can do better. The remaining problem is
+statistical: learn the policy from labelled examples.
 
-On chat models, answers to side-branch questions recover the behavioural state of models with known internals and
-transfer to Claude. As a refusal forecast, though, they only tie a graded moderator.
+**Evidence.** We test each part with preregistered, hash-locked tests:
+- Timing explains the white-box advantage. A probe that reads after the agent's reasoning scores 0.979 AUROC; at the
+  start of the turn it scores 0.841.
+- Labels are necessary. A 70B judge that scores resampled actions without labels gets 0.782, less than a probe.
+  An open reader model, trained on labels, reads the transcript and the proposed action and gets 0.994. This is more
+  than the agent's own internals (0.979).
+- The reader transfers to a closed agent. We trained it only on an open agent. At a 5% review budget it catches 96%
+  of the violations of Claude Haiku 5.5. A zero-shot judge catches 0%.
+- The limits are statistical:
+  - A bag-of-words monitor with the same labels is equal to the reader on the training benchmark. On a new
+    benchmark it falls to chance (0.50; reader 0.78).
+  - For a policy family that is not in the training data, the reader ranks the violations well (0.912). But it
+    escalates none of them until we add 20 to 40 labelled examples of that policy.
+- No labels from the new agent are necessary. We set the review threshold from the agent's own unlabelled traffic,
+  then freeze it. It catches 95% of violations online. A burst of violations does not move it; a rolling threshold
+  fails in a burst.
 
-We release the full preregistration record (failures included), an SDK, and a website where anyone can train and
-audit a monitor on their own agent in the browser.
+**Chat.** Answers to side-branch questions recover the behavioural state of models with known internals, and transfer
+to Claude. As a refusal forecast they only tie a graded moderator.
+
+**Release.** We release the preregistration record with all failures, an SDK, and a website. On the website, anyone
+can train and audit a monitor for their own agent in the browser.
 
 ## 1. Introduction
 

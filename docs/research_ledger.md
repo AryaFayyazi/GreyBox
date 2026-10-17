@@ -888,7 +888,7 @@ Dated log of every experiment, decision and correction. Newest last.
     a browser-exported model scored in Python to within 1e-13; 0.175 ms per step.
   - Live end-to-end test: training on 1,500 steps takes 4.5 s.
 - **Lean self-host server** (graybox.monitor_server): installs and starts without torch; text endpoint 0.1–0.25 ms per
-  request. The Dockerfile is untested on this host (no docker).
+  request. The Dockerfile has no docker on this host, but GitHub CI builds it and passes a smoke test (run 39029573502).
 - **Theory**: Proposition 10 / Corollary 3 (docs/theory.md T6). For action-level labels, transcript + proposed action is
   Bayes-sufficient against any white-box monitor at or before the decision point. The abstract is rewritten around
   it (v1 kept in docs/paper_abstract_v1.md).
