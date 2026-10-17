@@ -148,8 +148,9 @@ preregistered, hash-locked test. We show the failures too.</p>
   policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
   service-restart policy without similar ones did not: the monitor ranked Claude's violations well (AUROC
   {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught
-  {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])}. Label a few dozen steps of each new
-  type of policy.</p></div>
+  {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])}. Labels from open agents work for closed
+  ones: on prompt injections, labelled calls of open agents raised the catch rate on a closed agent from 36% to 92%. Label steps of each
+  new type of policy.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
   the reader on the training benchmark (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
   On a new benchmark of prompt injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}). The reader stayed at
@@ -163,8 +164,9 @@ preregistered, hash-locked test. We show the failures too.</p>
   model will refuse. On Claude this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
   precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT). On an external benchmark of
-prompt injections, the reader beat a zero-shot judge for open agents, but not significantly for a closed agent (AUROC 0.840 vs 0.787). The external test (AgentDojo) gives a lower score (AUROC 0.78). A monitor needs labelled steps of each
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT).
+On an external benchmark of prompt injections, the reader without labels of that policy was not significantly better than a zero-shot judge on
+a closed agent (AUROC 0.840 vs 0.787); with labelled calls from open agents it reached 0.922. A monitor needs labelled steps of each type of
 policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
 """
     return page("index.html", "Monitor AI agents you can't open", "Grey Box: pre-execution monitoring for closed AI agents, with preregistered evidence.", body)

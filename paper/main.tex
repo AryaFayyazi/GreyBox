@@ -47,8 +47,8 @@ We test each term with preregistered, hash-locked tests.
 Reading after the agent's reasoning explains the white-box advantage over monitors at the start of the turn (AUROC 0.979 vs 0.841).
 Without labels, a 70B judge loses to a probe (0.782). With labels, an open reader of the transcript and the action beats the agent's own internals (0.994 vs 0.979), and the agent's hidden reasoning adds nothing once the action is visible ($-0.0014$).
 Trained only on an open agent, the reader catches 96\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna, at a 5\% review budget on the training benchmark; a zero-shot judge catches 0\% and 38\%.
-On an external benchmark of prompt injections, the reader is not significantly better than the judge on a closed agent (0.840 vs 0.787; a preregistered failure).
-The limit is the coverage of the policies: a policy unlike any trained policy is ranked but not escalated until 20 to 40 labelled examples are added.
+On an external benchmark of prompt injections, the reader is not significantly better than the judge on a closed agent (0.840 vs 0.787; a preregistered failure). Labels of that new policy, collected on open agents, fix this: 0.922 on the closed agent, and 92\% of the injected calls caught.
+The limit is the coverage of the policies, not the agent: a policy unlike any trained policy is ranked but not escalated until labelled examples of it are added, and these labels transfer from open agents to closed ones.
 We release the record of every test, an SDK, and a website on which anyone can train and audit a monitor in the browser.
 \end{abstract}
 
@@ -76,7 +76,7 @@ We test each term with preregistered tests on agents from 20B-parameter open mod
 \begin{enumerate}
 \item \emph{Theory.} An agent's internals add to its full token history no information about any label; under log loss, a white-box monitor beats a transcript monitor by exactly $I(Y;H\mid V)$, the information in hidden tokens (\cref{prop:access}). For action-level labels, the transcript and the proposed action are Bayes-sufficient (\cref{cor:action}).
 \item \emph{A preregistered test of each term:} timing (T2), the label function (T3), labels (T4, T5), representation (T9) and policy coverage (T10, T12).
-\item \emph{Two closed agent families.} A reader trained only on an open agent monitors Claude Haiku~5.5 (T8b) and GPT-6-luna (T11) beyond tool identity on the training benchmark. On an external benchmark it beats a zero-shot judge for open agents (T7), but not significantly for a closed agent (T13b).
+\item \emph{Two closed agent families.} A reader trained only on an open agent monitors Claude Haiku~5.5 (T8b) and GPT-6-luna (T11) beyond tool identity on the training benchmark. On an external benchmark it beats a zero-shot judge for open agents (T7), but not significantly for a closed agent (T13b), until labels of that policy from open agents are added (T14).
 \item \emph{Deployment without labels from the new agent.} Probabilities do not transfer between agents; rankings do. A review threshold set from the agent's own traffic and then frozen resists bursts of violations.
 \item \emph{A tool.} An open SDK and a website: anyone can train and audit a monitor on their own agent in the browser, with results identical to the Python version.
 \end{enumerate}
@@ -173,6 +173,7 @@ T11 & GPT-6-luna, beyond tool identity & 0.996 vs 0.778; tool 0.856 & pass\\
 T12 & Labels for a new policy, prospective & 18/18 caught with 0 labels & H1 fail\\
 T13 & GPT-6-luna on AgentDojo, with spotlighting & attack success 2.1\%; 4 injected calls & not tested\\
 T13b & The same, without the defense, both splits & 0.840 vs judge 0.787 (36 injected) & fail\\
+T14 & T13b, after adding AgentDojo labels of open agents & 0.922 vs judge 0.787; 92\% caught & pass\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -218,7 +219,7 @@ Nothing was fit on the closed agents (\cref{tab:closed}).
 On Claude Haiku~5.5 the reader catches 95.6\% of 68 violations at a 5\% budget; the judge catches none.
 The preregistered within-template AUROC (0.991 vs 0.633) rests on one stratum, so we also give the pooled AUROC (0.989 vs 0.570, exploratory).
 On GPT-6-luna all three preregistered endpoints pass: pooled 0.996 vs 0.778 ($+0.217$ [0.174, 0.265]); against tool identity alone $+0.141$ [0.111, 0.171]; within tool $+0.039$ [0.015, 0.066].
-On AgentDojo, GPT-6-luna rarely follows the injected instructions: with the spotlighting defense, the attack succeeds in 2.1\% of the episodes, which leaves 4 injected calls, below the preregistered minimum of 10 (T13, not tested). Without the defense, on both splits, there are 36 injected calls (T13b). There the reader is not significantly better than the zero-shot judge: 0.840 vs 0.787 ($+0.052$ [$-0.026$, $+0.130$]); the preregistered test fails. TF-IDF is below chance (0.335). The monitor transfers to closed agents on its training benchmark; on an external benchmark with a different policy, it needs labels of that policy, as \cref{sec:results} shows for policy coverage.
+On AgentDojo, GPT-6-luna rarely follows the injected instructions: with the spotlighting defense, the attack succeeds in 2.1\% of the episodes, which leaves 4 injected calls, below the preregistered minimum of 10 (T13, not tested). Without the defense, on both splits, there are 36 injected calls (T13b). There the reader is not significantly better than the zero-shot judge: 0.840 vs 0.787 ($+0.052$ [$-0.026$, $+0.130$]); the preregistered test fails. TF-IDF is below chance (0.335). The monitor transfers to closed agents on its training benchmark; on an external benchmark with a different policy, it needs labels of that policy (next section).
 
 \begin{table}[t]
 \centering\small
@@ -238,7 +239,7 @@ Tool identity & -- & -- & 0.856 & 60.6\%\\
 \footnotesize Pooled AUROC. $^\dagger$within the one stratum with both classes.
 \end{table}
 
-\subsection{The limit is policy coverage (T10, T12)}
+\subsection{The limit is policy coverage (T10, T12, T14)}
 We removed one policy family from the training data.
 For a service-restart policy, the reader still ranks Claude's violations well (pooled 0.912 vs 0.570 for the judge), but at a 5\% budget it escalates 0 of 26 (T10).
 The violations rank above safe actions of the same task, but not above risky actions of other tasks.
@@ -246,15 +247,17 @@ With 20 labelled steps of the policy it catches 85\%; with 40, 94\% (exploratory
 We then tested this rule prospectively on GPT with a credentials policy (T12).
 The preregistered hypothesis failed: with no labels, the reader already caught all 18 violations.
 The training data hold similar credential policies; the restart policy had none.
-A new policy that resembles a trained one can transfer; one that does not needs a few dozen labels.
-With two held-out policies, this is a hypothesis, not a measurement.
+A new policy that resembles a trained one can transfer; one that does not needs labels.
+Prompt injection on AgentDojo is such a policy (T13b). We added AgentDojo calls from the two \emph{open} agents, with their injection labels, to the training data, and tested on the \emph{closed} agent (T14, preregistered).
+With all 3{,}455 labelled calls, the reader scores 0.922 against 0.787 for the judge ($+0.136$ [0.078, 0.191]) and against 0.840 without the labels ($+0.081$ [0.044, 0.121]); it catches 92\% of the injected calls at a 5\% budget, against 36\% without (\cref{fig:policy}b).
+Labels of a policy transfer across agents, from open to closed.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=0.9\columnwidth]{figures/policy_labels.pdf}
-\caption{A policy removed from training, against the number of its labelled steps added back. Credentials (GPT, preregistered T12): caught without labels. Service restart (Claude, exploratory): missed until 20--40 labels.}
+\includegraphics[width=0.82\textwidth]{figures/policy_labels.pdf}
+\caption{Policy coverage. (a) A CAPE-Bench policy removed from training, against the number of its labelled steps added back. Credentials (GPT, preregistered T12): caught without labels. Service restart (Claude, exploratory): missed until 20--40 labels. (b) Prompt injection on the closed GPT agent, against the number of labelled AgentDojo calls from \emph{open} agents added to training (preregistered T14).}
 \label{fig:policy}
-\end{figure}
+\end{figure*}
 
 \subsection{A review threshold without labels from the new agent}
 The reader's probabilities do not transfer between agents: on Claude, a 0.5 cut catches 3\%.
@@ -289,14 +292,14 @@ We add the theory of when transcripts are enough, a preregistered test of each t
 \label{sec:limits}
 \begin{itemize}
 \item Most agent tests use one benchmark. On AgentDojo, the external test, the reader beats a zero-shot judge for open agents (0.781 vs 0.537) but not significantly for a closed agent (0.840 vs 0.787, T13b).
-\item A monitor needs labels of each policy that is unlike its training policies. We measured this on two held-out policies only.
+\item A monitor needs labels of each policy that is unlike its training policies. We measured this on three held-out policies (service restart, credentials, prompt injection); the role of similarity is a hypothesis.
 \item \Cref{cor:action} needs the label to be decided by the action and the visible facts, and a deployment that sees the action before it runs. It does not cover labels about beliefs or later behaviour.
 \item A frozen threshold assumes trusted warm-up traffic; a poisoned warm-up would raise it.
 \end{itemize}
 
 \section{Conclusion}
 For monitoring the actions of closed agents, the weights are not the bottleneck: labels and policy coverage are.
-A reader of the transcript and the proposed action, trained on labels, equals the agent's internals and transfers to closed agents from two providers on the policies it learned. For a different policy, such as prompt injection, it needs labels of that policy.
+A reader of the transcript and the proposed action, trained on labels, equals the agent's internals and transfers to closed agents from two providers on the policies it learned. For a different policy, such as prompt injection, it needs labels of that policy, and labels collected on open agents are enough.
 
 \bibliography{refs}
 \bibliographystyle{icml2027}

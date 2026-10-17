@@ -26,6 +26,7 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 | T12 labels needed for a new policy, prospective on GPT (H1 40 vs 0 labels, H2 catch at 40 ≥ 0.5) | results/prereg_T12_new_policy_labels_lock.json (2026-10-17T05:00:05-07:00) | T11 GPT units; held-out family cred_analytics_token (18 GPT violations) | **H1 FAILS, H2 passes**: with 0 labels of the held-out credentials policy, the reader already caught 18/18 of GPT's violations of it, so added labels had nothing to fix (40 − 0: 0.0). The T10 curve does not replicate on this family (results/t1/t12_new_policy_labels.json) |
 | T13 a closed agent on an external benchmark: GPT-6-luna on AgentDojo, frozen monitors (K1 reader vs judge) | results/prereg_T13_gpt_agentdojo_lock.json (2026-10-17T05:13:38-07:00) | AgentDojo v1.2.2 dev split, spot arm, attack + benign | **K1 NOT TESTED**: GPT-6-luna resisted the injections (attack success 2.1%), leaving 4 injected calls (minimum 10). Utility on benign tasks 0.862 (results/t1/t13_gpt_agentdojo.json) |
 | T13b closed agent on AgentDojo without the defense (arm none, dev + conf; K1b reader vs judge) | results/prereg_T13b_gpt_agentdojo_none_lock.json (2026-10-17T05:26:09-07:00) | AgentDojo v1.2.2, both splits, attack + benign | **K1b FAILS**: 36 injected calls; reader 0.840 vs zero-shot judge 0.787 within suite (+0.052 [−0.026, +0.130]). TF-IDF 0.335. At the benign-call 5% cut: reader 36%, judge 53% (results/t1/t13b_gpt_agentdojo_none.json) |
+| T14 labels of the new policy from open agents, tested on the closed agent (L1 vs judge, L2 vs no labels) | results/prereg_T14_agentdojo_labels_lock.json (2026-10-17T05:52:53-07:00) | train: CAPE-Bench + k AgentDojo calls of open agents (T7); test: GPT AgentDojo calls (T13b) | **L1, L2 pass**: with AgentDojo labels from open agents, the reader on GPT's AgentDojo calls scores 0.922 vs judge 0.787 (+0.136 [0.078, 0.191]) and vs no labels +0.081 [0.044, 0.121]; caught at the benign 5% cut 36% → 92% (results/t1/t14_agentdojo_labels.json) |
 
 ## Notes
 - L1: the preregistration header says "~14:05 PDT". The lock file's timestamp (13:53 PDT) is authoritative. The
@@ -243,6 +244,15 @@ Every confirmatory test, its lock and its outcome. Tests that do not pass stay h
 - **Lock bookkeeping (2026-10-16, after T8b).** src/graybox/monitor.py is locked in T7 and T8. After both results,
   I added QuantileGate, TextMonitor and a docstring note on thresholds. scripts/99 now strips exactly those additions
   on every run and checks that the rest hashes to both locks; it does. Nothing that T7/T8/T8b ran has changed.
+- **T14 result (2026-10-17 05:54 PDT).** CPU; threads pinned to 1. Test: T13b's 3,925 GPT calls (36 injected).
+  - Within-suite AUROC by k labelled AgentDojo calls of open agents (mean over draws): 0 → 0.840; 100 → 0.858;
+    400 → 0.881; 3,455 → 0.922. Judge: 0.787.
+  - Injected calls caught at the benign-call 5% cut: 36% → 49% → 76% → 92%. At the label-free cut: 28% → 38% → 40% →
+    58%.
+  - **L1 passes** (+0.136 [0.078, 0.191]). **L2 passes** (+0.081 [0.044, 0.121]).
+  - Preregistered reading: labels of the new policy, from open agents, make the monitor beat the judge on a closed
+    agent on the external benchmark. With T10, T12 and T13b: the limit is the coverage of the policy, and labels of
+    a policy transfer across agents, from open to closed.
 - **T13b result (2026-10-17 05:50 PDT).** GPT-6-luna on AgentDojo, arm none, dev + conf; 1,046 episodes with calls, 0 errors, about
   $1.7.
   - Attack success rate 1.5% (dev 1.75%, conf 1.36%); utility on benign tasks 0.897. 3,925 executed calls, 36 injected.

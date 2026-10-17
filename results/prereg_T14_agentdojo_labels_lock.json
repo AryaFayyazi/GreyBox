@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T05:52:53-07:00",
+ "sha256": {
+  "docs/prereg_T14_agentdojo_labels.md": "2f454e7b70450e3f29d4009829f66b4226bf01c9db192662585074d902befc7e",
+  "scripts/87_t14_agentdojo_labels.py": "8d86cb5f30382040d60efe14c77acf8b45d03e7b7be01ac3340dda27b5d3394d"
+ }
+}

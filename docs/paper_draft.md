@@ -467,8 +467,12 @@ reads after the agent proposes the action and before the action runs.
   - The preregistered H1 fails: with no labels of that policy, the reader already catches 18 of 18 violations. Labels
     had nothing to fix.
   - The training data hold sibling credential policies; the restart policy had no close sibling.
+- T13b: prompt injection on AgentDojo is such a policy. On the closed GPT agent, the reader trained only on
+  CAPE-Bench is not significantly better than the judge (0.840 vs 0.787; preregistered failure).
+- T14 (preregistered): we add the labelled AgentDojo calls of the two open agents to the training data, and test on the
+  closed agent. AUROC 0.840 → 0.922 (judge 0.787; +0.136 [0.078, 0.191]); caught at a 5% budget 36% → 92%.
 - *Reading.* A monitor transfers to a new policy that resembles a trained policy. It can miss a policy that does not.
-  Label a few dozen steps of each policy that differs from the training data (Figure 6).
+  Labels of the policy fix this, and they transfer across agents, from open to closed (Figure 6).
 
 **A review threshold without labels from the new agent (exploratory).**
 - The reader's probabilities do not transfer between agents: on Claude, a 0.5 cut catches 3%. Its ranking transfers.

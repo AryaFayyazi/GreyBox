@@ -163,11 +163,13 @@ def fig_generalization():
 
 
 def fig_policy_labels():
-    """Catch rate (label-free 5% cut) of a policy family absent from training, vs labelled steps of it added back.
-    Claude, cons_service_restart: T10 follow-up (exploratory, scripts/79b). GPT, cred_analytics_token: T12 (preregistered)."""
+    """(a) A CAPE-Bench policy family absent from training, vs labelled steps of it added back (T10 exploratory, T12).
+    (b) Prompt injection on the closed GPT agent (AgentDojo), vs labelled AgentDojo calls of open agents added (T14)."""
     t10 = j_or_none("t1/t10_new_policy_labels_exploratory.json")
     t12 = j_or_none("t1/t12_new_policy_labels.json")
-    fig, ax = plt.subplots(figsize=(4.8, 3.2))
+    t14 = j_or_none("t1/t14_agentdojo_labels.json")
+    fig, axs = plt.subplots(1, 2, figsize=(8.6, 3.2))
+    ax = axs[0]
     ax.grid(color=GRID, lw=0.6); ax.set_axisbelow(True)
     if t10:
         xs = [int(n) for n in t10["by_n"] if int(n) <= 40]
@@ -176,15 +178,31 @@ def fig_policy_labels():
     if t12:
         xs = [int(n) for n in t12["curve"]]
         ax.plot(xs, [t12["curve"][str(n)]["F_caught"] for n in xs], color=C[0], lw=2.2, marker="o", ms=6, mec="white", mew=1.2,
-                label="GPT, credentials policy (T12, preregistered)")
-        h2 = t12["H2_caught40"]
-        ax.errorbar([40], [h2[0]], yerr=[[h2[0] - h2[1]], [h2[2] - h2[0]]], color=C[0], capsize=3, lw=1.2)
-    ax.set_xlabel("Labelled steps of the new policy added to training")
-    ax.set_ylabel("Violations of that policy caught\n(5% of actions reviewed)")
+                label="GPT, credentials policy (T12)")
+    ax.set_xlabel("Labelled steps of the new policy added")
+    ax.set_ylabel("Violations caught (5% reviewed)")
     ax.set_ylim(-0.03, 1.03); ax.set_xticks([0, 5, 10, 20, 40])
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
-    ax.legend(fontsize=7.5, frameon=False, loc="lower right")
-    ax.set_title("A policy absent from training: missed or caught, by similarity", loc="left", fontsize=9.5, color=INK)
+    ax.legend(fontsize=7, frameon=False, loc="lower right")
+    ax.set_title("(a) A CAPE-Bench policy absent from training", loc="left", fontsize=9, color=INK)
+    ax = axs[1]
+    ax.grid(color=GRID, lw=0.6); ax.set_axisbelow(True)
+    if t14:
+        ks = [int(k) for k in t14["curve"]]
+        xp = [max(k, 30) for k in ks]                       # k = 0 drawn at the left edge, labelled "0"
+        ax.plot(xp, [t14["curve"][str(k)]["caught_benign5"] for k in ks], color=C[0], lw=2.2, marker="o", ms=6, mec="white", mew=1.2,
+                label="trained reader (T14)")
+        ax.set_xscale("log"); ax.set_xticks(xp); ax.set_xticklabels([str(k) for k in ks])
+        ax.minorticks_off()
+        ax.annotate(f"AUROC {t14['curve'][str(ks[0])]['auroc']:.2f}", (xp[0], t14["curve"][str(ks[0])]["caught_benign5"]), xytext=(6, -12), textcoords="offset points", fontsize=7.5, color=INK)
+        ax.annotate(f"AUROC {t14['curve'][str(ks[-1])]['auroc']:.2f}\n(judge {t14['judge_auroc']:.2f})", (xp[-1], t14["curve"][str(ks[-1])]["caught_benign5"]),
+                    xytext=(-66, -44), textcoords="offset points", fontsize=7.5, color=INK)
+    ax.set_xlabel("Labelled AgentDojo calls from open agents")
+    ax.set_ylabel("Injected calls caught (5% reviewed)")
+    ax.set_ylim(-0.03, 1.03)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
+    ax.set_title("(b) Prompt injection on a closed agent (GPT)", loc="left", fontsize=9, color=INK)
+    fig.tight_layout()
     save(fig, "policy_labels")
 
 

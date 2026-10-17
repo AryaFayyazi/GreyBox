@@ -1,0 +1,43 @@
+{
+ "test_calls": 3925,
+ "test_injected": 36,
+ "judge_auroc": 0.7867,
+ "curve": {
+  "0": {
+   "auroc": 0.8404,
+   "caught_benign5": 0.3611,
+   "caught_labelfree5": 0.2778,
+   "draws": 1
+  },
+  "100": {
+   "auroc": 0.8576,
+   "caught_benign5": 0.4944,
+   "caught_labelfree5": 0.3778,
+   "draws": 5
+  },
+  "400": {
+   "auroc": 0.8812,
+   "caught_benign5": 0.7556,
+   "caught_labelfree5": 0.4,
+   "draws": 5
+  },
+  "3455": {
+   "auroc": 0.9217,
+   "caught_benign5": 0.9167,
+   "caught_labelfree5": 0.5833,
+   "draws": 1
+  }
+ },
+ "L1_full_minus_judge": [
+  0.1355,
+  0.0782,
+  0.1905
+ ],
+ "L2_full_minus_zero": [
+  0.0813,
+  0.044,
+  0.121
+ ],
+ "L1_pass": true,
+ "L2_pass": true
+}
