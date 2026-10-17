@@ -125,6 +125,8 @@ The second term is the usual excess risk of learning P(Y | V_t, A_t). It is driv
   resampling. After the reasoning, I_dec reaches 0.979: reading later closes most of the gap.
 - **T4, T5 (Corollary 3):** a reader of (V_t, A_t) trained on the same labels matches or beats the agent's internals
   read just before the action (0.994 vs 0.979; 0.969 vs 0.976 on unseen families).
+- **Corollary 3 directly (exploratory; scripts/69b):** adding the agent's hidden reasoning H_t to the reader's input,
+  given the action, changes AUROC by −0.0014 [−0.0046, +0.0014]. That is I(Y; H_t | V_t, A_t) ≈ 0, as predicted.
 - **T3 (label function):** with an LLM judge in place of g, judge-scored resampling falls below the probe (0.782).
   The bottleneck is the label function.
 - **T9, T10 (estimation and coverage):** a bag-of-words learner matches the reader in distribution and fails under

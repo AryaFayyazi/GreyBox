@@ -118,6 +118,12 @@ def numbers():
     d = j("l3/l3c_graded_reanalysis.json")
     if d:
         rows.append(("L3c graded re-analysis: E1 diff vs QG / LG", (d["qg_p"]["E1_refusal"]["diff"], d["qg_p"]["E1_refusal"]["ci95"], d["lg_p"]["E1_refusal"]["diff"], d["lg_p"]["E1_refusal"]["ci95"])))
+    d = j("t1/t11_gpt_agent.json")
+    if d:
+        rows.append(("T11 GPT: G1/G2/G3 pass; pooled AUROC; caught at 5%", (d["G1_pass"], d["G2_pass"], d["G3_pass"], d["auroc_pooled"], d["label_free_cut"]["READER"]["all"])))
+    d = j("t1/t12_new_policy_labels.json")
+    if d:
+        rows.append(("T12 new-policy labels: H1/H2 pass; caught at n=0..40", (d["H1_pass"], d["H2_pass"], {n: v["F_caught"] for n, v in d["curve"].items()})))
     d = j("t1/t8b_calibration_exploratory.json")
     if d:
         rows.append(("T8b calibration (exploratory): 0.5 cut / online gate", (d["READER"]["at_0.5"], d["online_QuantileGate_budget0.05"]["run_order"])))

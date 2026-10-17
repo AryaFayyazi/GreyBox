@@ -16,7 +16,7 @@ than the full transcript does. What white-box access buys is narrower:</p>
     an open reader model with a linear probe, reading only the transcript, matches the agent's own internals (T4, T5), transfers to other
     agents including a closed frontier one (T6, T8b), and to an external benchmark (T7).</li>
   <li><b>The policy is the limit.</b> A bag-of-words classifier on the same labels matches the reader in distribution but fails on new tasks
-    and benchmarks (T9). For a policy family never seen in training, even the reader ranks violations well but escalates none at a 5% budget,
+    and benchmarks (T9). A policy absent from training transfers when it resembles a trained one (T12), and can be missed when it does not,
     until a few dozen labelled examples are added (T10).</li>
 </ul>
 <p>For chat, a model's answers to side-branch questions recover its behavioural state on models with known internals (a compiled program,
@@ -26,7 +26,7 @@ refusals, and in combination with one they double the precision of an alarm for 
 <h2>How the evidence was produced</h2>
 <ul>
   <li>Every confirmatory test was written down and hash-locked before its data was collected or scored; deviations and failures are reported.</li>
-  <li>Agents: Gemma-4 and gpt-oss (open), Claude Haiku 5.5 (closed, through its public API) on CAPE-Bench; a second closed family (GPT-6-luna) is being tested under a locked preregistration (T11); AgentDojo for
+  <li>Agents: Gemma-4 and gpt-oss (open), Claude Haiku 5.5 and GPT-6-luna (closed, through their public APIs) on CAPE-Bench; AgentDojo for
     prompt injection.</li>
   <li>Uncertainty: cluster bootstrap over scenarios (agents) or conversations (chat), 1,000–2,000 resamples.</li>
 </ul>

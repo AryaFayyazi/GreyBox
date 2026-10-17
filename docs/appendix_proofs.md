@@ -93,7 +93,7 @@ The AUROC of π̂_K counts misordered pairs (ties at ½), so in expectation over
 AUROC(π̂_K) ≥ AUROC(π*) − E_pairs[exp(−KΔ²/2)], where the expectation runs over the positive–negative pairs that π*
 orders correctly. ∎
 
-**Corollary (one-step labels).** If Y = 1{next token ∈ A}, then π*(x) = Σ_{a∈A} p(a | x), which one logprob call
+**Corollary 1 (one-step labels).** If Y = 1{next token ∈ A}, then π*(x) = Σ_{a∈A} p(a | x), which one logprob call
 returns exactly when A is inside the returned top-k. By (i) and (ii), no probe can beat it.
 
 ## A.4 Selection (Proposition 4)
@@ -110,6 +110,43 @@ A forecaster trained on selected units can then exceed the AUROC of π* on those
   negatives over-represent contexts where W = 0 is likely. A forecaster that predicts W from X separates the selected
   classes beyond π*.
 - CAPE's negative units "turns of episodes that never violate" are of this kind. ∎
+
+## A.4b Access is not information (Proposition 5, Corollary 2)
+
+**Setting.**
+- Z_t is every token that the agent read or wrote up to step t.
+- V_t is the visible part, and H_t the hidden part (for example, reasoning that the API does not return).
+- A_t is the proposed action, and W are the world facts that the agent did not observe.
+- An internal representation is φ = Φ(Z; θ), a deterministic function of the tokens (assumption A1).
+
+**Proposition 5.** For every label Y: (i) σ(Z_t, φ_t) = σ(Z_t). Thus the best monitor that uses (Z_t, φ_t) is not
+better than the best monitor that uses Z_t, under any strictly proper score and at any point of the ROC. (ii) Under
+log loss, the best monitor that uses Z_t beats the best monitor that uses V_t by exactly I(Y; H_t | V_t).
+
+*Proof.* (i) φ_t is σ(Z_t)-measurable, so it adds no events. Then apply Proposition 3 (less information cannot
+help) with X = Z_t. (ii) The Bayes log loss of predicting Y from a σ-field G is the conditional entropy H(Y | G).
+Then H(Y | V_t) − H(Y | V_t, H_t) = I(Y; H_t | V_t). ∎
+
+**Corollary 2.** Suppose that:
+- Y = g(A_t, V_t, W);
+- W ⟂ Z⁻ | V_t, where Z⁻ are the tokens before the action is sampled;
+- A_t = a(Z⁻, ξ), with sampling noise ξ independent of (Z⁻, W).
+
+Then (i) P(Y | Z⁻, A_t) = P(Y | V_t, A_t). (ii) Every monitor that uses φ = Φ(Z⁻) has a Bayes risk at least that of
+the best monitor that uses (V_t, A_t), under any strictly proper score.
+
+*Proof.*
+1. From W ⟂ Z⁻ | V_t and ξ ⟂ (Z⁻, W), we get W ⟂ (Z⁻, ξ) | V_t.
+2. A_t is a function of (Z⁻, ξ). Hence W ⟂ (Z⁻, A_t) | V_t.
+3. By weak union, W ⟂ Z⁻ | (V_t, A_t).
+4. Y is a function of (A_t, V_t, W). Hence Y ⟂ Z⁻ | (V_t, A_t). This is (i).
+5. For (ii): σ(φ) ⊆ σ(Z⁻) ⊆ σ(Z⁻, A_t). By (i), the Bayes predictor given σ(Z⁻, A_t) equals the one given (V_t, A_t).
+   Less information cannot help (Proposition 3). ∎
+
+**Remark.** The inequality in (ii) can be strict. Suppose A_t is random given Z⁻, and Y depends on which action is
+sampled. Then a probe that reads before the action must average over the actions, but a monitor that reads A_t does
+not. The assumption on W fails when the internals hold information about the world that is not in the tokens. That
+cannot happen for a model whose only input is its token history.
 
 ## A.5 Fisher–Rao coordinates and noise (Proposition 6)
 

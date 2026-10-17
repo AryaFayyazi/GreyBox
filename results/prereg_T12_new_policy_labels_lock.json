@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T05:00:05-07:00",
+ "sha256": {
+  "docs/prereg_T12_new_policy_labels.md": "82dcc4035716d332865a9739750bb283c4b4b7e9e985f2e012e447c25af676f7",
+  "scripts/82_t12_new_policy_labels.py": "a32e7d127acb448d3f6056ee9b0d5f6d3b5925e37365197f9079aa2f3472bc19"
+ }
+}

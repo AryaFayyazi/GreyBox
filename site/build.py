@@ -99,6 +99,9 @@ the agent's own internals (orange). The two Claude rows rest on one stratum (136
 the agent's turn and after its reasoning. Reading later helps every method; access alone does not.</figcaption></figure>
 <figure><img src="figures/label_efficiency.png" alt="Label efficiency" loading="lazy"><figcaption>Reader accuracy against the number of labelled
 training actions.</figcaption></figure>
+<figure><img src="figures/policy_labels.png" alt="Policy coverage" loading="lazy"><figcaption>A policy family removed from training. A credentials
+policy with similar trained policies transferred with no labels (GPT, T12). A service-restart policy without them was missed until 20–40
+labelled steps were added (Claude, T10, exploratory).</figcaption></figure>
 <figure><img src="figures/claude_vs_moderation.png" alt="Refusal forecast vs moderation" loading="lazy"><figcaption>Chat: which harmful requests
 Claude refuses. The forecast beats a 3-level moderation verdict and ties graded moderators.</figcaption></figure>
 <figure><img src="figures/guard_tradeoff.png" alt="Guard trade-off" loading="lazy"><figcaption>A resampling guard, with samples scored by the
@@ -110,53 +113,58 @@ environment's own rule checker (an oracle; not deployable: with an LLM judge as 
 def index_page():
     t4, t8, t9, t10 = j("t1/t4_reader.json"), j("t1/t8b_claude_all_actions.json"), j("t1/t9_text_baseline.json"), j("t1/t10_claude_unseen_families.json")
     t2, br = j("t1/t2_time.json"), j("t1/t8b_breakdown_exploratory.json")
+    t11 = j("t1/t11_gpt_agent.json")
     lab = j("t1/t10_new_policy_labels_exploratory.json")["by_n"]
     gate = j("t1/t8b_calibration_exploratory.json")["gate_eval_76c"]
     par = json.loads((ROOT / "site/tests/parity_result.json").read_text())
     p = lambda x: f"{100 * x:.0f}%"  # noqa: E731
     c8 = t8["caught_at_5pct_safe_escalated"]
-    body = f"""<h1>Monitor AI agents you can't open.</h1>
-<p class="lede">Grey Box decides whether an AI agent's next action should go to a human <i>before it runs</i>, reading only
-what every deployment can see: the agent's instructions, the user's task, earlier tool results and the proposed action.
-It needs no access to the model's weights, so it works on closed models. Every claim here comes from a preregistered,
-hash-locked test, failures included.</p>
+    body = f"""<h1>Monitor AI agents that you cannot open.</h1>
+<p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
+the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
+proposed action. It does not need the model's weights, so it works on closed models. Each claim on this site comes from a
+preregistered, hash-locked test. We show the failures too.</p>
 <div class="grid3" style="margin:22px 0 8px">
-  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent (or our
-    example), get an honest held-out accuracy and a review threshold, score new actions. Nothing is uploaded.</p><a class="go" href="train.html">Open the trainer →</a></div>
-  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real Claude Haiku 5.5 agent episodes, with the
-    risk assigned to each action before it ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
-  <div class="card"><div class="label">Deploy</div><h3>Run it on your own infrastructure</h3><p>A Python SDK and an HTTP API: a free CPU monitor
-    ({par['js_score_ms_per_step']:.2f} ms per action in a browser) and a GPU reader monitor (41 ms per action).</p><a class="go" href="docs.html">Read the docs →</a></div>
+  <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
+    use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
+  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
+    agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
+  <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
+    takes {par['js_score_ms_per_step']:.2f} ms for each action in a browser. The GPU reader monitor takes 41 ms.</p><a class="go" href="docs.html">Read the docs →</a></div>
 </div>
 
 <h2>What we found</h2>
 <div class="grid2">
-<div class="card"><h3>Labels, not access</h3><p>A small open model that reads the transcript, trained on labelled examples, matches the
-  agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}). Trained only on an open agent,
-  it caught {p(c8['READER'])} of a closed frontier agent's violations (Claude Haiku 5.5) with 5% of actions sent to review. A zero-shot
-  70B judge caught {p(c8['J_act'])}.</p></div>
-<div class="card"><h3>Time, not access</h3><p>White-box probes look better than transcript monitors mainly because they read later: after
-  the model's hidden reasoning, the action is nearly decided (probe {t2['auroc']['I_dec']:.3f} after reasoning vs {t2['auroc']['WB_ts']:.3f} before it).
-  A monitor that sees the proposed action gets the same advantage.</p></div>
-<div class="card"><h3>The policy is the limit, not the agent</h3><p>For a policy family the monitor never saw, it still ranked Claude's
-  violations above safe actions (AUROC {t10['auroc_pooled']['READER_lofo']:.3f} vs judge {t10['auroc_pooled']['J_act']:.3f}), but escalated none of
-  them at a 5% budget. Adding {list(lab)[3]} labelled steps of that policy brought it to {p(lab['20']['cons_service_restart'])}, and {list(lab)[4]} to
-  {p(lab['40']['cons_service_restart'])}. Label a few dozen steps of each policy you enforce.</p></div>
-<div class="card"><h3>Simple monitors suffice, until the task changes</h3><p>A word-count classifier trained on the same labels matches the
-  reader in distribution (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}). On a new benchmark of prompt
-  injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}), where the reader held {t9['T7_agentdojo']['auroc']['READER']:.2f}.</p></div>
-<div class="card"><h3>Set the review threshold on your own traffic</h3><p>A monitor's probabilities do not transfer between agents (a
-  0.5 cut caught 3% on Claude); its ranking does. Escalating the top 5% of the agent's own first 500 actions, then freezing that cut,
-  caught {p(gate['online']['frozen_default']['run_order']['caught_after_100'])} online and held at
-  {p(gate['burst']['rate_0.5']['frozen_default']['caught'])} when half of a later burst was malicious. A rolling cut fell to
+<div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
+  equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
+  We trained it only on an open agent. On two closed agents, with 5% of the actions sent to review, it caught {p(c8['READER'])}
+  (Claude Haiku 5.5) and {p(t11['label_free_cut']['READER']['all'])} (GPT-6-luna) of the violations. A zero-shot 70B judge caught
+  {p(c8['J_act'])} and {p(t11['label_free_cut']['J_act']['all'])}.</p></div>
+<div class="card"><h3>Why access does not help: a theorem</h3><p>An agent's internal state is a function of the tokens that it read.
+  For the label "does this action break the policy?", a monitor that reads the transcript and the proposed action is
+  Bayes-sufficient. Internals read at or before the action cannot do better. White-box probes win against turn-start
+  monitors only because they read later (probe {t2['auroc']['I_dec']:.3f} after the reasoning, {t2['auroc']['WB_ts']:.3f} before it).</p></div>
+<div class="card"><h3>The limit is the policy, not the agent</h3><p>We removed a policy family from the training data. A credentials
+  policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
+  service-restart policy without similar ones did not: the monitor ranked Claude's violations well (AUROC
+  {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught
+  {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])}. Label a few dozen steps of each new
+  type of policy.</p></div>
+<div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
+  the reader on the training benchmark (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
+  On a new benchmark of prompt injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}). The reader stayed at
+  {t9['T7_agentdojo']['auroc']['READER']:.2f}.</p></div>
+<div class="card"><h3>Set the review threshold from your own traffic</h3><p>A monitor's probabilities do not transfer between agents: a
+  0.5 cut caught 3% on Claude. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
+  threshold. It caught {p(gate['online']['frozen_default']['run_order']['caught_after_100'])} online. When half of a later burst was
+  malicious, it still caught {p(gate['burst']['rate_0.5']['frozen_default']['caught'])}. A rolling threshold caught
   {p(gate['burst']['rate_0.5']['rolling5000']['caught'])}.</p></div>
-<div class="card"><h3>Chat: forecasting refusals</h3><p>Asking a model about a conversation in a side branch forecasts whether it will refuse.
-  On Claude it ties a strong graded moderator at ranking refusals, and combined with one it doubles the precision of a
-  "harmful request answered" alarm. It is not a better content filter.</p></div>
+<div class="card"><h3>Chat: forecast a refusal</h3><p>We ask a model about a conversation in a side branch. The answers forecast if the
+  model will refuse. On Claude this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
+  precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench) and one closed agent family so far (a second, GPT, is under a locked test); the external test
-(AgentDojo) is weaker (AUROC 0.78). Monitors must be trained on labelled steps of the policies they enforce. The chat
-readouts recover what behaviour reveals, not a model's hidden beliefs. See <a href="results.html">the full evidence</a>.</div>
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude, GPT). The external test (AgentDojo) gives a lower score (AUROC 0.78). A monitor needs labelled steps of each
+policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
 """
     return page("index.html", "Monitor AI agents you can't open", "Grey Box: pre-execution monitoring for closed AI agents, with preregistered evidence.", body)
 

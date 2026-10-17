@@ -134,14 +134,16 @@ def fig_generalization():
     t8 = json.loads((R / "t1/t8b_claude_all_actions.json").read_text())["auroc"]
     t9 = json.loads((R / "t1/t9_text_baseline.json").read_text())
     t10 = json.loads((R / "t1/t10_claude_unseen_families.json").read_text())
+    t11 = json.loads((R / "t1/t11_gpt_agent.json").read_text())
     tx = {k: t9[k]["auroc"]["TXT"] for k in ("T4_same_scenarios", "T5_unseen_families", "T6_gptoss", "T7_agentdojo", "T8b_claude")}
     rows = [("Same scenarios (Gemma)", t4["READER_act"], t4["J_act"], t4["I_dec"], tx["T4_same_scenarios"]),
             ("Unseen task families (Gemma)", t5["READER_family"], t5["J_act"], t5["AGENT_family"], tx["T5_unseen_families"]),
             ("Another agent (gpt-oss)", t6["READER_from_gemma"], t6["J_act"], None, tx["T6_gptoss"]),
             ("External benchmark (AgentDojo)", t7["per_actor"]["pooled"]["READER"], t7["per_actor"]["pooled"]["J_act"], None, tx["T7_agentdojo"]),
             ("Closed agent, Claude (1 stratum, 26 viol.)", t8["READER"], t8["J_act"], None, tx["T8b_claude"]),
-            ("Claude, policy family unseen (T10)", t10["auroc_within"]["READER_lofo"], t10["auroc_within"]["J_act"], None, t10["auroc_within"]["TXT_lofo"])]
-    fig, ax = plt.subplots(figsize=(5.8, 3.7))
+            ("Claude, policy family unseen (T10)", t10["auroc_within"]["READER_lofo"], t10["auroc_within"]["J_act"], None, t10["auroc_within"]["TXT_lofo"]),
+            ("Second closed agent, GPT (T11)", t11["auroc_within_template"]["READER"], t11["auroc_within_template"]["J_act"], None, t11["auroc_within_template"]["TXT"])]
+    fig, ax = plt.subplots(figsize=(5.8, 4.1))
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     for i, (name, r, j, w, t) in enumerate(rows[::-1]):
         ax.plot([min(j, t), max(r, t)], [i, i], color=GRID, lw=3, zorder=1)
@@ -158,10 +160,42 @@ def fig_generalization():
     save(fig, "generalization")
 
 
+def fig_policy_labels():
+    """Catch rate (label-free 5% cut) of a policy family absent from training, vs labelled steps of it added back.
+    Claude, cons_service_restart: T10 follow-up (exploratory, scripts/79b). GPT, cred_analytics_token: T12 (preregistered)."""
+    t10 = j_or_none("t1/t10_new_policy_labels_exploratory.json")
+    t12 = j_or_none("t1/t12_new_policy_labels.json")
+    fig, ax = plt.subplots(figsize=(4.8, 3.2))
+    ax.grid(color=GRID, lw=0.6); ax.set_axisbelow(True)
+    if t10:
+        xs = [int(n) for n in t10["by_n"] if int(n) <= 40]
+        ax.plot(xs, [t10["by_n"][str(n)]["cons_service_restart"] for n in xs], color=C[1], lw=2, ls="--", marker="o", ms=6, mec="white", mew=1.2,
+                label="Claude, restart policy (T10, exploratory)")
+    if t12:
+        xs = [int(n) for n in t12["curve"]]
+        ax.plot(xs, [t12["curve"][str(n)]["F_caught"] for n in xs], color=C[0], lw=2.2, marker="o", ms=6, mec="white", mew=1.2,
+                label="GPT, credentials policy (T12, preregistered)")
+        h2 = t12["H2_caught40"]
+        ax.errorbar([40], [h2[0]], yerr=[[h2[0] - h2[1]], [h2[2] - h2[0]]], color=C[0], capsize=3, lw=1.2)
+    ax.set_xlabel("Labelled steps of the new policy added to training")
+    ax.set_ylabel("Violations of that policy caught\n(5% of actions reviewed)")
+    ax.set_ylim(-0.03, 1.03); ax.set_xticks([0, 5, 10, 20, 40])
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
+    ax.legend(fontsize=7.5, frameon=False, loc="lower right")
+    ax.set_title("A policy absent from training: missed or caught, by similarity", loc="left", fontsize=9.5, color=INK)
+    save(fig, "policy_labels")
+
+
+def j_or_none(p):
+    q = R / p
+    return json.loads(q.read_text()) if q.exists() else None
+
+
 if __name__ == "__main__":
     fig_generalization()
     fig_label_efficiency()
     fig_time()
     fig_guard()
     fig_claude()
+    fig_policy_labels()
     print("wrote", sorted(p.name for p in OUT.glob("*.png")))
