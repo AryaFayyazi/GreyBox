@@ -12,6 +12,10 @@
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
 proposed action. It does not need the model's weights, so it works on closed models. Each claim on this site comes from a
 preregistered, hash-locked test. We show the failures too.</p>
+<figure style="margin:20px 0 6px"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, and replicas of two closed agents" loading="eager">
+<figcaption><b>Seeing inside closed agents.</b> All panels share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
+replica, computed from the transcript only. (c, d) Two closed agents, replicated in the same way: we never saw their weights. Red: policy
+violations. In every agent they occupy their own region.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Train a monitor in your browser</h3><p>Load labelled steps from your agent, or
     use our example. Get a held-out accuracy and a review threshold. Score new actions. Your data stays in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
@@ -23,6 +27,10 @@ preregistered, hash-locked test. We show the failures too.</p>
 
 <h2>What we found</h2>
 <div class="grid2">
+<div class="card"><h3>The grey box replicates the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
+  So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
+  66% of the variance of an open agent's hidden state. A probe trained on the true state scores
+  0.987 on the replica and 0.984 on the true state.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC 0.994 vs 0.979).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught 96%

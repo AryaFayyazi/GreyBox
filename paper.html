@@ -9,28 +9,24 @@
 <main><div class="wrap">
 <!--title: Paper-->
 <!--desc: Labels, not access: what a black box reveals about its hidden state, and how to monitor closed agents.-->
-<h1>Labels, not access</h1>
-<p class="lede">What a black box reveals about its hidden state, and how to monitor closed agents.</p>
+<h1>Grey Box</h1>
+<p class="lede">Replicating the hidden state of closed agents from their transcripts, to predict and prevent violations.</p>
 <p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
+<figure><img src="figures/teaser.png" alt="Seeing inside closed agents" loading="eager"></figure>
 
 <h2>Summary</h2>
-<p>Safety monitors that read a model's internals need its weights, but the most capable agents expose only text. We ask what
-outputs reveal about a model's hidden state, and what monitoring a closed agent actually requires.</p>
-<p><b>A model's internals are computed from the text it has read.</b> So they cannot carry more information about a future violation
-than the full transcript does. What white-box access buys is narrower:</p>
+<p>Safety tools that read a model's hidden state need its weights, and the agents with the most capability are closed. We ask whether an
+outside observer can read the hidden state of a closed agent, replicate it, and use the replica to predict and prevent violations.</p>
 <ul>
-  <li><b>Seeing hidden tokens.</b> After an agent's private reasoning its action is nearly fixed. Internals read at that moment beat every
-    monitor that reads before it, and a monitor that reads the proposed action recovers the advantage (T2).</li>
-  <li><b>A good representation, which needs labels.</b> Without labels, a 70B judge scoring resampled actions loses to a probe (T3). With labels,
-    an open reader model with a linear probe, reading only the transcript, matches the agent's own internals (T4, T5), transfers to other
-    agents including a closed frontier one (T6, T8b), and to an external benchmark (T7).</li>
-  <li><b>The policy is the limit.</b> A bag-of-words classifier on the same labels matches the reader in distribution but fails on new tasks
-    and benchmarks (T9). A policy absent from training transfers when it resembles a trained one (T12), and can be missed when it does not,
-    until a few dozen labelled examples are added (T10).</li>
+  <li><b>What can be read.</b> The raw coordinates of a hidden state are not identifiable from outputs: a rotation of the hidden space
+    changes no output. The behavioural state is identifiable. A battery of side-branch questions recovers it on models with known internals
+    (Othello-GPT: R² 0.967), but as a safety signal it only ties a text moderator.</li>
+  <li><b>What can be replicated.</b> An agent's internal state is a function of the tokens that it read. An open model that reads the same
+    tokens replicates 66% of the variance of an agent's hidden state, and readouts trained on the true state work on the replica (T15).</li>
+  <li><b>What it is good for.</b> For a policy check on a proposed action, the transcript and the action are Bayes-sufficient. A monitor on
+    the replica, trained only on an open agent, catches most violations of two closed agents (T8b, T11), and blocks them in the loop (T16).
+    Its limit is policy coverage; labels of a new policy, collected on open agents, transfer to closed ones (T10, T12, T14).</li>
 </ul>
-<p>For chat, a model's answers to side-branch questions recover its behavioural state on models with known internals (a compiled program,
-Othello-GPT, eight open chat models) and transfer to Claude. As a safety signal they tie a strong graded moderator at forecasting
-refusals, and in combination with one they double the precision of an alarm for harmful requests that get answered.</p>
 
 <h2>How the evidence was produced</h2>
 <ul>
