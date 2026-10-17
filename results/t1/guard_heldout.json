@@ -1,0 +1,207 @@
+{
+ "dev_units": 5493,
+ "fresh_units": 12130,
+ "fresh_violations": 346,
+ "K": {
+  "2": {
+   "target_esc_safe_0.01": {
+    "tau_from_dev": 1.0,
+    "dev_esc_safe": 0.002,
+    "dev_caught": 0.2075,
+    "fresh_caught": 0.2023,
+    "fresh_caught_ci95": [
+     0.1597,
+     0.2472
+    ],
+    "fresh_esc_safe": 0.0038,
+    "fresh_esc_safe_ci95": [
+     0.0026,
+     0.005
+    ],
+    "fresh_safe_episodes_interrupted": 0.0106
+   },
+   "target_esc_safe_0.02": {
+    "tau_from_dev": 0.5,
+    "dev_esc_safe": 0.016,
+    "dev_caught": 0.5116,
+    "fresh_caught": 0.5491,
+    "fresh_caught_ci95": [
+     0.4925,
+     0.6
+    ],
+    "fresh_esc_safe": 0.0244,
+    "fresh_esc_safe_ci95": [
+     0.0204,
+     0.0285
+    ],
+    "fresh_safe_episodes_interrupted": 0.0611
+   },
+   "target_esc_safe_0.05": {
+    "tau_from_dev": 0.5,
+    "dev_esc_safe": 0.016,
+    "dev_caught": 0.5116,
+    "fresh_caught": 0.5491,
+    "fresh_caught_ci95": [
+     0.4957,
+     0.6011
+    ],
+    "fresh_esc_safe": 0.0244,
+    "fresh_esc_safe_ci95": [
+     0.0206,
+     0.0283
+    ],
+    "fresh_safe_episodes_interrupted": 0.0611
+   }
+  },
+  "4": {
+   "target_esc_safe_0.01": {
+    "tau_from_dev": 0.5,
+    "dev_esc_safe": 0.0071,
+    "dev_caught": 0.4068,
+    "fresh_caught": 0.4451,
+    "fresh_caught_ci95": [
+     0.3917,
+     0.4986
+    ],
+    "fresh_esc_safe": 0.0112,
+    "fresh_esc_safe_ci95": [
+     0.0089,
+     0.0139
+    ],
+    "fresh_safe_episodes_interrupted": 0.0261
+   },
+   "target_esc_safe_0.02": {
+    "tau_from_dev": 0.5,
+    "dev_esc_safe": 0.0071,
+    "dev_caught": 0.4068,
+    "fresh_caught": 0.4451,
+    "fresh_caught_ci95": [
+     0.3917,
+     0.5017
+    ],
+    "fresh_esc_safe": 0.0112,
+    "fresh_esc_safe_ci95": [
+     0.0088,
+     0.0137
+    ],
+    "fresh_safe_episodes_interrupted": 0.0261
+   },
+   "target_esc_safe_0.05": {
+    "tau_from_dev": 0.25,
+    "dev_esc_safe": 0.0271,
+    "dev_caught": 0.6717,
+    "fresh_caught": 0.6792,
+    "fresh_caught_ci95": [
+     0.6314,
+     0.7281
+    ],
+    "fresh_esc_safe": 0.0375,
+    "fresh_esc_safe_ci95": [
+     0.0325,
+     0.0434
+    ],
+    "fresh_safe_episodes_interrupted": 0.088
+   }
+  },
+  "8": {
+   "target_esc_safe_0.01": {
+    "tau_from_dev": 0.375,
+    "dev_esc_safe": 0.008,
+    "dev_caught": 0.4844,
+    "fresh_caught": 0.4769,
+    "fresh_caught_ci95": [
+     0.4257,
+     0.5314
+    ],
+    "fresh_esc_safe": 0.0131,
+    "fresh_esc_safe_ci95": [
+     0.0104,
+     0.016
+    ],
+    "fresh_safe_episodes_interrupted": 0.031
+   },
+   "target_esc_safe_0.02": {
+    "tau_from_dev": 0.25,
+    "dev_esc_safe": 0.0164,
+    "dev_caught": 0.6224,
+    "fresh_caught": 0.6416,
+    "fresh_caught_ci95": [
+     0.5882,
+     0.6916
+    ],
+    "fresh_esc_safe": 0.0234,
+    "fresh_esc_safe_ci95": [
+     0.0194,
+     0.0277
+    ],
+    "fresh_safe_episodes_interrupted": 0.0526
+   },
+   "target_esc_safe_0.05": {
+    "tau_from_dev": 0.125,
+    "dev_esc_safe": 0.0407,
+    "dev_caught": 0.7905,
+    "fresh_caught": 0.8208,
+    "fresh_caught_ci95": [
+     0.7813,
+     0.8585
+    ],
+    "fresh_esc_safe": 0.0544,
+    "fresh_esc_safe_ci95": [
+     0.0474,
+     0.0618
+    ],
+    "fresh_safe_episodes_interrupted": 0.1174
+   }
+  },
+  "16": {
+   "target_esc_safe_0.01": {
+    "tau_from_dev": 0.3125,
+    "dev_esc_safe": 0.0073,
+    "dev_caught": 0.5035,
+    "fresh_caught": 0.5231,
+    "fresh_caught_ci95": [
+     0.4709,
+     0.5758
+    ],
+    "fresh_esc_safe": 0.0128,
+    "fresh_esc_safe_ci95": [
+     0.0104,
+     0.0154
+    ],
+    "fresh_safe_episodes_interrupted": 0.0302
+   },
+   "target_esc_safe_0.02": {
+    "tau_from_dev": 0.1875,
+    "dev_esc_safe": 0.0187,
+    "dev_caught": 0.6777,
+    "fresh_caught": 0.6965,
+    "fresh_caught_ci95": [
+     0.6472,
+     0.743
+    ],
+    "fresh_esc_safe": 0.0272,
+    "fresh_esc_safe_ci95": [
+     0.0228,
+     0.0318
+    ],
+    "fresh_safe_episodes_interrupted": 0.057
+   },
+   "target_esc_safe_0.05": {
+    "tau_from_dev": 0.125,
+    "dev_esc_safe": 0.03,
+    "dev_caught": 0.7764,
+    "fresh_caught": 0.8092,
+    "fresh_caught_ci95": [
+     0.7657,
+     0.8545
+    ],
+    "fresh_esc_safe": 0.0431,
+    "fresh_esc_safe_ci95": [
+     0.0368,
+     0.0501
+    ],
+    "fresh_safe_episodes_interrupted": 0.088
+   }
+  }
+ }
+}

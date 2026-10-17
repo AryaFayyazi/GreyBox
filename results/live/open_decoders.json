@@ -1,0 +1,52 @@
+{
+ "gemma3_4b": {
+  "layer": 26,
+  "R2_top32_weighted": 0.6476,
+  "display_axis_corr": [
+   0.9047,
+   0.8625,
+   0.8751
+  ],
+  "n_test": 672
+ },
+ "llama31_8b": {
+  "layer": 24,
+  "R2_top32_weighted": 0.6836,
+  "display_axis_corr": [
+   0.9747,
+   0.9172,
+   0.9062
+  ],
+  "n_test": 672
+ },
+ "mistral7b": {
+  "layer": 24,
+  "R2_top32_weighted": 0.6449,
+  "display_axis_corr": [
+   0.9474,
+   0.8807,
+   0.8818
+  ],
+  "n_test": 672
+ },
+ "phi4mini": {
+  "layer": 24,
+  "R2_top32_weighted": 0.6966,
+  "display_axis_corr": [
+   0.9525,
+   0.9256,
+   0.8975
+  ],
+  "n_test": 672
+ },
+ "qwen3_8b": {
+  "layer": 27,
+  "R2_top32_weighted": 0.7267,
+  "display_axis_corr": [
+   0.9283,
+   0.9271,
+   0.9053
+  ],
+  "n_test": 672
+ }
+}

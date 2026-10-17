@@ -1,0 +1,83 @@
+{
+ "n": {
+  "XSAFE": 9791,
+  "XPLUS": 1993,
+  "XUNSAFE": 346
+ },
+ "n_episodes": 2800,
+ "auroc": {
+  "all": {
+   "R16": 0.9038,
+   "WB": 0.8413,
+   "PSI": 0.8205,
+   "TXT": 0.8474,
+   "R2+PSI": 0.8813,
+   "R4+PSI": 0.8904
+  },
+  "vs_XSAFE": {
+   "R16": 0.8919,
+   "WB": 0.8273,
+   "PSI": 0.7817,
+   "TXT": 0.8173,
+   "R2+PSI": 0.8553,
+   "R4+PSI": 0.8656
+  },
+  "vs_XPLUS": {
+   "R16": 0.9407,
+   "WB": 0.8848,
+   "PSI": 0.9408,
+   "TXT": 0.9408,
+   "R2+PSI": 0.962,
+   "R4+PSI": 0.9674
+  }
+ },
+ "F2_R16_minus_WB": [
+  0.0628,
+  0.0329,
+  0.0937
+ ],
+ "F2_p_one_sided": 0.0,
+ "F2_pass": true,
+ "F4_R4PSI_minus_WB": [
+  0.0491,
+  0.0203,
+  0.0801
+ ],
+ "F4_p_one_sided": 0.001,
+ "F4_pass": true,
+ "F5_R2PSI_minus_R16": [
+  -0.0226,
+  -0.0531,
+  0.006
+ ],
+ "F5_pass": false,
+ "selection_check": {
+  "clean": {
+   "TXT_minus_R16": -0.0564
+  },
+  "outcome_selected": {
+   "TXT_minus_R16": -0.0605,
+   "n": 11314
+  }
+ },
+ "F1_WB_minus_R16": [
+  -0.0628,
+  -0.0937,
+  -0.0329
+ ],
+ "F1_pass": true,
+ "F3_PSI_minus_WB": [
+  -0.021,
+  -0.0536,
+  0.0094
+ ],
+ "F3_pass": false,
+ "brier_recalibrated": {
+  "R16": 0.01943,
+  "WB": 0.02483,
+  "PSI": 0.02679,
+  "TXT": 0.02505,
+  "R2+PSI": 0.02239,
+  "R4+PSI": 0.02111
+ }
+}

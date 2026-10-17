@@ -1,0 +1,65 @@
+{
+ "auroc": {
+  "all": {
+   "PSI_self": 0.9161,
+   "TXT": 0.9186,
+   "WB_self_L14": 0.8786,
+   "WB_self_L18": 0.8903,
+   "WB_self_L21": 0.8927,
+   "WB_self_L24": 0.8789,
+   "WB_self_L26": 0.8827,
+   "WB_self_L29": 0.8909,
+   "PSI_reader_qwen3_8b": 0.8769,
+   "RP_qwen3_8b_L17": 0.8875,
+   "RP_qwen3_8b_L21": 0.8742,
+   "RP_qwen3_8b_L25": 0.8671,
+   "RP_qwen3_8b_L29": 0.8614,
+   "RP_qwen3_8b_L31": 0.8635,
+   "RP_qwen3_8b_L35": 0.8648
+  },
+  "vs_XOTHER": {
+   "PSI_self": 0.8136,
+   "TXT": 0.8292,
+   "WB_self_L14": 0.8168,
+   "WB_self_L18": 0.831,
+   "WB_self_L21": 0.8415,
+   "WB_self_L24": 0.8183,
+   "WB_self_L26": 0.8267,
+   "WB_self_L29": 0.8271,
+   "PSI_reader_qwen3_8b": 0.7862,
+   "RP_qwen3_8b_L17": 0.8382,
+   "RP_qwen3_8b_L21": 0.8134,
+   "RP_qwen3_8b_L25": 0.8055,
+   "RP_qwen3_8b_L29": 0.7917,
+   "RP_qwen3_8b_L31": 0.8025,
+   "RP_qwen3_8b_L35": 0.8039
+  },
+  "vs_XPLUS": {
+   "PSI_self": 0.9532,
+   "TXT": 0.9509,
+   "WB_self_L14": 0.9009,
+   "WB_self_L18": 0.9117,
+   "WB_self_L21": 0.9113,
+   "WB_self_L24": 0.9009,
+   "WB_self_L26": 0.903,
+   "WB_self_L29": 0.914,
+   "PSI_reader_qwen3_8b": 0.9098,
+   "RP_qwen3_8b_L17": 0.9054,
+   "RP_qwen3_8b_L21": 0.8962,
+   "RP_qwen3_8b_L25": 0.8895,
+   "RP_qwen3_8b_L29": 0.8866,
+   "RP_qwen3_8b_L31": 0.8857,
+   "RP_qwen3_8b_L35": 0.8869
+  }
+ },
+ "PSI_self_minus_RP_qwen3_8b_L17": [
+  0.0292,
+  0.0139,
+  0.0442
+ ],
+ "PSI_self_minus_WB_self_L21": [
+  0.0235,
+  0.0055,
+  0.0409
+ ]
+}

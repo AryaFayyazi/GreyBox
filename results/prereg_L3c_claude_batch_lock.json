@@ -1,0 +1,12 @@
+{
+ "locked_at": "2026-10-16T09:29:27-07:00",
+ "sha256": {
+  "docs/prereg_L3c_claude_batch.md": "760c99014cc5b8713786fe5cb62cda6b3272905627bd185fd2285cbdf90ff320",
+  "src/graybox/batch.py": "e940d805a8db1275e2d43007a5e63f7933dcfcbc046c7ab7b0ec11035eeac3b2",
+  "scripts/39_live_v2_readouts.py": "0094d2ced66747e73f3c0acaf7e1ad4147a5da5389c5a4a5f278cd85ba670732",
+  "scripts/47_batch_battery.py": "5c9ac05d711ac44af5d95ed96ee2755ea9d374f239ef4c651fa096dfaff0540c",
+  "scripts/50_claude_batch.py": "80820f013dfb0e278b2a34512c6078130eafda4d4eb5becb97192ede632faf72",
+  "scripts/51_claude_batch_analysis.py": "3183c55602aa596b21568a747326d4f78fff6e05c17a89c82b40b3cde11e52af",
+  "scripts/52_judge_claude_batch.py": "442247c45e95be8cdb3563aa708046f50aa5aa921aebd0e8e3d88b4722894f89"
+ }
+}

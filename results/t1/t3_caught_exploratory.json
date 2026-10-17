@@ -1,0 +1,23 @@
+{
+ "n": 3496,
+ "n_unsafe": 346,
+ "cut": "95th percentile of each monitor on safe units",
+ "caught": {
+  "J_act": 0.4133,
+  "RJ8": 0.1243,
+  "R8_oracle": 0.8179,
+  "J_act+RJ8": 0.1301,
+  "I_dec": 0.9422,
+  "WB_ts": 0.5751,
+  "TXT_ts": 0.5058
+ },
+ "esc_safe": {
+  "J_act": 0.0502,
+  "RJ8": 0.0502,
+  "R8_oracle": 0.0524,
+  "J_act+RJ8": 0.0502,
+  "I_dec": 0.0502,
+  "WB_ts": 0.0502,
+  "TXT_ts": 0.0502
+ }
+}

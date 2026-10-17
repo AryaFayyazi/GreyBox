@@ -1,0 +1,9 @@
+{
+ "locked_at": "2026-10-15T23:59:52-07:00",
+ "sha256": {
+  "docs/prereg_L3_claude.md": "d9acf6d7fa08c98883d7c46a1dfb357513416f43adf88145a39a50cdba342fcf",
+  "scripts/32_claude_l3.py": "fbdbdf80cab5d18d70e0e82e05e7de2cce66c3a153a3c3e17ac9ae11ae1de0d9",
+  "scripts/33_claude_l3_analysis.py": "9c154703034f0701a0f2d0b0407c7d5c24581ce3277b23b3004d17025ba92098",
+  "/data/models/graybox_ws/models/live/readouts.npz": "8cc15dbbe0c33f29cd8cc4605e328c072c1c591ce196ac586c025dcf022446ab"
+ }
+}

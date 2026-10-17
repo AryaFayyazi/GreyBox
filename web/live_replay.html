@@ -1,0 +1,171 @@
+<title>Grey Box Live Session</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: conversation | shared answer space (3D) | readouts + hidden-state check. Copper = this conversation. */
+:root {
+  --bg: #e9ecef; --panel: #f7f8f9; --ink: #1b2126; --mute: #5d6873; --line: #c9d0d6;
+  --est: #c4692c; --flag: #b13f2a; --c1: #3f6fa8; --c2: #8a5aa6; --c3: #3f8f7a; --c4: #a8873f; --c5: #b13f2a; --c6: #6b7b8c;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec7a5f; --c1: #7aa3d6; --c2: #b48ad0; --c3: #6cc0a8; --c4: #d2b36c; --c5: #ec7a5f; --c6: #9aa9b8; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec7a5f; --c1: #7aa3d6; --c2: #b48ad0; --c3: #6cc0a8; --c4: #d2b36c; --c5: #ec7a5f; --c6: #9aa9b8; color-scheme: dark; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--display); margin: 0; }
+.app { height: 100%; box-sizing: border-box; display: grid; gap: 12px; grid-template-columns: 340px minmax(0, 1fr) 360px;
+  grid-template-rows: auto minmax(0, 1fr); padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+h1 { font: 760 22px/1.1 var(--display); font-stretch: 78%; margin: 0; }
+header p { margin: 0; color: var(--mute); max-width: 88ch; }
+.col { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.label { font: 600 11px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.msgs { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.turn { border-radius: 6px; cursor: pointer; padding: 2px; }
+.turn.on { outline: 2px solid var(--est); }
+.turn:focus-visible { outline: 2px solid var(--est); }
+.msg { padding: 7px 10px; border-radius: 6px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { background: var(--bg); margin-left: 16%; }
+.msg.bot { border: 1px solid var(--line); margin-top: 4px; max-height: 5.6em; overflow: hidden; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.chip { font: 600 10.5px var(--mono); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--flag); color: var(--flag); }
+.stage { position: relative; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); overflow: hidden; min-height: 300px; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; }
+.legend { position: absolute; left: 12px; top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--mute); max-width: 75%; pointer-events: none; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.note { position: absolute; left: 12px; right: 12px; bottom: 8px; font-size: 11.5px; color: var(--mute); pointer-events: none; }
+.meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; margin-top: 10px; }
+.meter .name { font-weight: 600; }
+.meter .val { font: 600 13px var(--mono); font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--bg); position: relative; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--est); }
+.bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .55; }
+.meter.flag .val { color: var(--flag); } .meter.flag .bar i { background: var(--flag); }
+.trust { grid-column: 1 / -1; font-size: 11.5px; color: var(--mute); }
+.hid { position: relative; height: 220px; margin-top: 8px; }
+#c2 { position: absolute; inset: 0; width: 100%; height: 100%; }
+.small { font-size: 12px; color: var(--mute); margin-top: 6px; }
+button { font: 600 13px var(--display); border-radius: 4px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 6px 10px; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
+.caveat { border-left: 3px solid var(--flag); padding-left: 10px; font-size: 12.5px; }
+@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 50vh auto; height: auto; } .col { overflow: visible; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Grey Box Live: a recorded session</h1>
+    <p id="sub">Qwen3-8B served behind an API. Before each reply, 24 yes/no questions went to copies of the conversation; the
+      real reply never saw them. Because this model is open, its true hidden state is shown next to the estimate.</p>
+  </header>
+
+  <section class="col">
+    <div class="card">
+      <div class="label">Conversation</div>
+      <div style="margin-top:8px"><button id="play">Replay turn by turn</button></div>
+      <div class="msgs" id="msgs"></div>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="shared state space">
+    <canvas id="c"></canvas>
+    <div class="legend" id="legend"></div>
+    <div class="note">Every point in the cloud is an open model answering the same 24 questions about one message. The
+      space is shared by all models. Copper: this conversation, turn by turn.</div>
+  </section>
+
+  <section class="col">
+    <div class="card">
+      <div class="label">Readouts at the selected turn</div>
+      <div id="meters"></div>
+    </div>
+    <div class="card">
+      <div class="label">Hidden state: estimated vs true</div>
+      <div class="hid"><canvas id="c2"></canvas></div>
+      <div class="small" id="hidnote"></div>
+    </div>
+    <div class="card caveat">
+      <b>Known limitation, shown on purpose.</b> The readouts were trained and checked on single messages. In a
+      multi-turn chat the questions also see earlier turns, so an alarm can carry over: the arithmetic turn right after
+      the poison request is flagged although the model just answered “391”. The next version trains on multi-turn
+      conversations to remove this.
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  const D = window.LIVE_SESSION, E = D.events;
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const col = n => new THREE.Color(css(n) || '#888');
+  const SRC = { harmful: '--c5', benign: '--c3', sst2: '--c4', boolq: '--c1', gsm8k: '--c2', wiki: '--c6' };
+  const SRC_NAME = { harmful: 'harmful requests', benign: 'benign requests', sst2: 'opinions', boolq: 'factual questions', gsm8k: 'maths', wiki: 'summaries' };
+  const NAMES = { harmful_request: 'Harmful request', will_refuse: 'About to refuse', negative_tone: 'Negative tone' };
+  let step = E.length - 1, timer = null;
+
+  function view(canvas, cam) {
+    const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    const s = new THREE.Scene(), c = new THREE.PerspectiveCamera(45, 1, 0.01, 100); c.position.set(...cam);
+    const ctl = new THREE.OrbitControls(c, canvas); ctl.enableDamping = true;
+    const fit = () => { const b = canvas.parentElement.getBoundingClientRect(); r.setSize(b.width, b.height, false); c.aspect = b.width / Math.max(1, b.height); c.updateProjectionMatrix(); };
+    new ResizeObserver(fit).observe(canvas.parentElement);
+    (function tick() { requestAnimationFrame(tick); ctl.update(); r.render(s, c); })();
+    fit(); return s;
+  }
+  const S1 = view($('c'), [1.7, 1.2, 1.9]), S2 = view($('c2'), [1.5, 1.0, 1.7]);
+  const pos = new Float32Array(D.cloud.length * 3), cc = new Float32Array(D.cloud.length * 3);
+  D.cloud.forEach((p, i) => { pos.set(p, i * 3); const k = col(SRC[D.cloud_label[i]] || '--mute'); cc.set([k.r, k.g, k.b], i * 3); });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(cc, 3));
+  S1.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 0.022, vertexColors: true, transparent: true, opacity: .5 })));
+  $('legend').innerHTML = Object.entries(SRC_NAME).map(([k, v]) => `<span><i class="dot" style="background:var(${SRC[k]})"></i>${v}</span>`).join('');
+
+  let o1 = [], o2 = [];
+  const line = (pts, c) => new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: col(c) }));
+  const ball = (p, r, c) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 12), new THREE.MeshBasicMaterial({ color: col(c) })); m.position.fromArray(p); return m; };
+  function draw() {
+    o1.forEach(o => S1.remove(o)); o2.forEach(o => S2.remove(o)); o1 = []; o2 = [];
+    const T = E.slice(0, step + 1);
+    o1.push(line(T.map(e => e.point), '--est'));
+    T.forEach((e, i) => o1.push(ball(e.point, i === step ? 0.05 : 0.025, e.concepts.some(c => c.flag) ? '--flag' : '--est')));
+    o1.forEach(o => S1.add(o));
+    o2.push(line(T.map(e => e.hidden_true), '--ink'), line(T.map(e => e.hidden_est), '--est'), ball(E[step].hidden_true, 0.035, '--ink'), ball(E[step].hidden_est, 0.035, '--est'));
+    o2.forEach(o => S2.add(o));
+  }
+  function render() {
+    $('msgs').innerHTML = E.map((e, i) => {
+      const flags = e.concepts.filter(c => c.flag).map(c => `<span class="chip">${NAMES[c.name]}</span>`).join('');
+      return `<div class="turn ${i === step ? 'on' : ''}" data-i="${i}" tabindex="0"><div class="msg user">${esc(e.user)}</div>
+        <div class="msg bot">${esc(e.reply)}</div>${flags ? `<div class="chips">${flags}</div>` : ''}</div>`;
+    }).join('');
+    [...$('msgs').children].forEach(el => { el.onclick = () => go(+el.dataset.i); el.onkeydown = ev => { if (ev.key === 'Enter') go(+el.dataset.i); }; });
+    $('meters').innerHTML = E[step].concepts.map(c => {
+      const v = c.validation || {}, fam = v.per_family ? Object.keys(v.per_family).length : 0;
+      return `<div class="meter ${c.flag ? 'flag' : ''}"><span class="name">${NAMES[c.name] || c.name}${c.flag ? ' · flagged' : ''}</span>
+        <span class="val">${(100 * c.score).toFixed(0)}%</span>
+        <div class="bar"><i style="width:${(100 * c.score).toFixed(1)}%"></i><b style="left:${(100 * c.threshold).toFixed(1)}%"></b></div>
+        <span class="trust">Held-out check: worst AUROC ${v.worst} across ${fam} model families it never saw.</span></div>`;
+    }).join('');
+    const ck = E[step].hidden_check || {};
+    $('hidnote').textContent = `Ink: true hidden state (layer ${ck.layer}). Copper: estimated from the 24 answers. This decoder's held-out R² is ${ck.R2_top32_weighted} on the top 32 directions.`;
+    draw();
+  }
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  function go(i) { step = Math.max(0, Math.min(i, E.length - 1)); render(); }
+  $('play').onclick = () => {
+    clearInterval(timer); go(0);
+    timer = setInterval(() => { if (step >= E.length - 1) { clearInterval(timer); return; } go(step + 1); }, 1600);
+  };
+  render();
+})();
+</script>

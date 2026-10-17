@@ -1,0 +1,40 @@
+{
+ "n": 12128,
+ "n_dropped_no_reasoning_or_rollout": 2,
+ "auroc": {
+  "R16_ts": 0.9038,
+  "WB_ts": 0.8413,
+  "TXT_ts": 0.8474,
+  "I_dec": 0.9793,
+  "R16_dec": 0.9997,
+  "COT_dec_oof": 0.8706
+ },
+ "G1_Idec_minus_R16ts": [
+  0.075,
+  0.0442,
+  0.1057
+ ],
+ "G2_R16dec_minus_Idec": [
+  0.0206,
+  0.0111,
+  0.0348
+ ],
+ "G3_Idec_minus_WBts": [
+  0.1375,
+  0.1073,
+  0.1631
+ ],
+ "G1_pass": true,
+ "G2_pass": true,
+ "G3_pass": true,
+ "reported_COTdec_minus_Idec": [
+  -0.1073,
+  -0.1321,
+  -0.0849
+ ],
+ "gate_fire_rate": {
+  "XUNSAFE": 0.8873,
+  "XSAFE": 0.0095,
+  "XPLUS": 0.0301
+ }
+}

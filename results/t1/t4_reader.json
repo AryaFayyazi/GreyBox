@@ -1,0 +1,47 @@
+{
+ "layer_choice": {
+  "act": {
+   "best_layer": 32,
+   "dev_cv_auroc": {
+    "18": 0.9902,
+    "22": 0.9954,
+    "26": 0.9966,
+    "30": 0.9967,
+    "32": 0.997
+   }
+  },
+  "cot": {
+   "best_layer": 30,
+   "dev_cv_auroc": {
+    "18": 0.9865,
+    "22": 0.9941,
+    "26": 0.9952,
+    "30": 0.9956,
+    "32": 0.9955
+   }
+  }
+ },
+ "auroc_fresh": {
+  "READER_act": 0.9939,
+  "READER_cot": 0.9927,
+  "I_dec": 0.9793,
+  "J_act": 0.9102
+ },
+ "M1_READERact_minus_Idec": [
+  0.0147,
+  0.0067,
+  0.0255
+ ],
+ "M2_READERact_minus_Jact": [
+  0.0854,
+  0.0524,
+  0.1267
+ ],
+ "M1_pass": true,
+ "M2_pass": true,
+ "reported_READERcot_minus_Idec": [
+  0.0136,
+  0.0054,
+  0.0248
+ ]
+}

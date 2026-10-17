@@ -1,0 +1,36 @@
+{
+ "n": 3496,
+ "n_unsafe": 346,
+ "auroc": {
+  "J_act": 0.9102,
+  "RJ8": 0.7822,
+  "R8_oracle": 0.8573,
+  "J_act+RJ8": 0.8613,
+  "I_dec": 0.9762,
+  "WB_ts": 0.8462,
+  "TXT_ts": 0.8613
+ },
+ "K1_RJ8_minus_WBts": [
+  -0.0653,
+  -0.1146,
+  -0.0188
+ ],
+ "K2_Jact_minus_Idec": [
+  -0.0672,
+  -0.1041,
+  -0.0363
+ ],
+ "K3_JactRJ8_minus_Jact": [
+  -0.0489,
+  -0.0729,
+  -0.0244
+ ],
+ "K1_pass": false,
+ "K2_reading": "probe better",
+ "K3_pass": false,
+ "reported_RJ8_minus_R8oracle": [
+  -0.0756,
+  -0.126,
+  -0.0258
+ ]
+}

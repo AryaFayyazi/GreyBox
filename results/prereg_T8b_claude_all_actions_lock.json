@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T18:48:08-07:00",
+ "sha256": {
+  "docs/prereg_T8b_claude_all_actions.md": "3da7033e047746347302e98fd8c8b4375f0708f7c45872156c1f1290e228a594",
+  "scripts/76_t8b_claude_all_actions.py": "0adb76c33ee062e8641ffc088138c1778fe063246dd0327e584ba58c8eef5594"
+ }
+}

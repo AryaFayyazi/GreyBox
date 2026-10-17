@@ -1,0 +1,10 @@
+{
+ "locked_at": "2026-10-16T01:30:19-07:00",
+ "sha256": {
+  "docs/prereg_L3b_claude_livebench.md": "3f4612176e2ed9ca1b2acbe80618a20195ddaa1fbbae2b5d8e9a22b925abbf23",
+  "scripts/37_livebench_judge.py": "443bffdeaf25d2638cf34aa2d3327186f0fd972388db81f4c5e196a00d41837c",
+  "scripts/41_claude_livebench.py": "af6df80adcfa31562e2a7127bb9cb679c636e48326c434cff6fcfc8fd6ced2cc",
+  "scripts/42_claude_livebench_analysis.py": "68108790af02446645f503bbb22d0cbe034fe13e7e2eba5c39fb1912e98b053b",
+  "/data/models/graybox_ws/models/live/readouts_v2.npz": "3d0816b883b8ee2f901cfc9ab187e942ee939393022b754d01a8b4674b703dee"
+ }
+}

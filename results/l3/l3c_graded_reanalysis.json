@@ -1,0 +1,48 @@
+{
+ "n_eval": 680,
+ "n_harmful": 480,
+ "graded_missing": {
+  "qg_p": 0,
+  "lg_p": 0
+ },
+ "qg_p": {
+  "E1_refusal": {
+   "greybox": 0.8149,
+   "graded": 0.7966,
+   "diff": 0.0183,
+   "ci95": [
+    -0.0428,
+    0.0808
+   ]
+  },
+  "E2_compliance_ap": {
+   "graded_x_not_refuse": 0.4582,
+   "graded": 0.1587,
+   "diff": 0.2994,
+   "ci95": [
+    0.2244,
+    0.3761
+   ]
+  }
+ },
+ "lg_p": {
+  "E1_refusal": {
+   "greybox": 0.8149,
+   "graded": 0.8462,
+   "diff": -0.0314,
+   "ci95": [
+    -0.0823,
+    0.0197
+   ]
+  },
+  "E2_compliance_ap": {
+   "graded_x_not_refuse": 0.2311,
+   "graded": 0.1433,
+   "diff": 0.0878,
+   "ci95": [
+    0.0432,
+    0.1485
+   ]
+  }
+ }
+}

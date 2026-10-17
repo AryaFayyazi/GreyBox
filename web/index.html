@@ -1,0 +1,327 @@
+<title>Grey Box Othello</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a one-screen instrument. Left: the 3D latent space. Right: the two boards (truth vs read from the black box)
+   with the numbers that say how far to trust the picture. Bottom: the move timeline. */
+:root {
+  --bg: #e9ecef; --panel: #f7f8f9; --ink: #1b2126; --mute: #5d6873; --line: #c9d0d6;
+  --felt: #2e6a52; --felt-line: #24533f; --disc-dark: #15191c; --disc-light: #f4f5f2;
+  --est: #c4692c; --truth: #2b3540; --warn: #b5481f; --good: #2f7d57;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --felt: #2a5f4a; --felt-line: #1e4636; --disc-dark: #0b0e10; --disc-light: #eceeea;
+  --est: #e08a4b; --truth: #b9c4cc; --warn: #ec8a5f; --good: #6cc495; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --felt: #2a5f4a; --felt-line: #1e4636; --disc-dark: #0b0e10; --disc-light: #eceeea;
+  --est: #e08a4b; --truth: #b9c4cc; --warn: #ec8a5f; --good: #6cc495; color-scheme: dark; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--body); margin: 0; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px; padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); box-sizing: border-box; }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font: 760 22px/1.1 var(--display); font-stretch: 78%; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--mute); max-width: 72ch; }
+.stage { position: relative; min-height: 320px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: var(--panel); }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.legend { position: absolute; left: 12px; top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;
+  color: var(--mute); pointer-events: none; }
+.legend span { display: flex; align-items: center; gap: 8px; }
+.sw { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+.frame-note { position: absolute; left: 12px; right: 12px; bottom: 8px; font-size: 11.5px; color: var(--mute);
+  pointer-events: none; }
+aside { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: auto; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.label { font: 600 11px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.boards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--felt-line);
+  border: 2px solid var(--felt-line); border-radius: 3px; aspect-ratio: 1; max-width: 100%; }
+.sq { background: var(--felt); position: relative; }
+.sq i { position: absolute; inset: 14%; border-radius: 50%; }
+.sq i.mine { background: var(--disc-dark); }
+.sq i.theirs { background: var(--disc-light); }
+.sq.wrong::after { content: ""; position: absolute; inset: 0; outline: 2px solid var(--warn); outline-offset: -2px; }
+.sq.last { box-shadow: inset 0 0 0 2px var(--est); }
+.boardcap { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--mute); margin-top: 6px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin: 8px 0 0; font-size: 13px; }
+dt { color: var(--mute); } dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+button, select { font: 600 13px var(--body); border-radius: 4px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
+label.tog { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.timeline { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
+.timeline input { flex: 1; min-width: 0; accent-color: var(--est); }
+.chip { display: inline-block; font: 600 11px var(--mono); padding: 2px 6px; border-radius: 3px; border: 1px solid var(--line); }
+.chip.on { border-color: var(--warn); color: var(--warn); }
+ul.facts { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--mute); }
+#status { font-size: 12px; color: var(--mute); min-height: 16px; }
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 52vh auto auto; height: auto; }
+  aside { overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Grey Box: Othello-GPT seen from outside</h1>
+    <p>The copper path is estimated from black-box queries only (61 per move). The ink path is the model's true hidden
+      state, shown because this model is open, so you can check the estimate.</p>
+  </header>
+
+  <section class="stage" aria-label="3D latent trajectory">
+    <canvas id="c"></canvas>
+    <div class="legend">
+      <span><i class="sw" style="background: var(--est)"></i>estimated from outputs only</span>
+      <span><i class="sw" style="background: var(--truth)"></i>true hidden state (layer 6)</span>
+      <span><i class="sw" style="background: var(--mute); opacity: .5"></i>other game positions</span>
+    </div>
+    <div class="frame-note" id="frameNote">Axes: top three principal components of the true residual stream.</div>
+  </section>
+
+  <aside>
+    <div class="card">
+      <div class="label">Board at this move</div>
+      <div class="boards" style="margin-top: 8px">
+        <div><div class="board" id="bTrue" aria-label="true board"></div>
+          <div class="boardcap"><span>True board</span></div></div>
+        <div><div class="board" id="bEst" aria-label="board read from the black box"></div>
+          <div class="boardcap"><span>Read from outputs</span><span class="num" id="accEst">–</span></div></div>
+      </div>
+      <div class="boardcap" style="margin-top: 8px"><span>Black discs: side to move. Orange outline: square read wrong.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">How far to trust this</div>
+      <dl>
+        <dt>Hidden state recovered (held-out R²)</dt><dd id="vR2">–</dd>
+        <dt>Stones read right (held-out)</dt><dd id="vBoard">–</dd>
+        <dt>White-box probe, same test</dt><dd id="vWB">–</dd>
+        <dt>Queries so far</dt><dd id="vQ">–</dd>
+        <dt>Access</dt><dd id="vTier">–</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="label">Run</div>
+      <div class="controls">
+        <select id="runSel" aria-label="game"></select>
+        <button class="primary" id="play">Play</button>
+        <button id="newGame">New game</button>
+      </div>
+      <div class="controls">
+        <label class="tog"><input type="checkbox" id="showTruth" checked> Show true path</label>
+        <label class="tog"><input type="checkbox" id="spin"> Rotate view</label>
+      </div>
+      <div class="controls">
+        <label class="tog"><input type="checkbox" id="gauge"> Rotate the model's hidden basis</label>
+        <span class="chip" id="gaugeChip">white-box probe: –</span>
+      </div>
+      <div id="status" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">What this shows</div>
+      <ul class="facts">
+        <li>The estimate uses only the model's answers: next-move probabilities after each of 60 possible moves.</li>
+        <li>Hidden coordinates are not unique: rotating the model's internal basis changes nothing it outputs. The
+          grey box stays the same; a white-box probe trained on the old basis fails.</li>
+        <li>What the outputs cannot reveal stays hidden. Board squares that no question touches are read less well.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="timeline">
+    <span class="label">Move</span>
+    <input type="range" id="scrub" min="0" max="0" value="0" aria-label="move">
+    <span class="num" id="moveLbl">0 / 0</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  const EMBED = window.GREYBOX_RUNS || null;          // static mode: precomputed runs; live mode: the Grey Box API
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const SQUARES = [...Array(64).keys()];
+  let runs = {}, cur = null, step = 0, playing = false, timer = null;
+
+  // ---------------- boards
+  function makeBoard(el) { el.innerHTML = SQUARES.map(() => '<div class="sq"><i></i></div>').join(''); }
+  makeBoard($('bTrue')); makeBoard($('bEst'));
+  function paint(el, cells, truth, last) {
+    [...el.children].forEach((sq, i) => {
+      const v = cells[i], d = sq.firstChild;
+      d.className = v === 1 ? 'mine' : v === 2 ? 'theirs' : '';
+      sq.classList.toggle('wrong', !!truth && truth[i] !== v);
+      sq.classList.toggle('last', i === last);
+    });
+  }
+
+  // ---------------- 3D
+  const canvas = $('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
+  camera.position.set(1.9, 1.3, 2.1);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  const grid = new THREE.GridHelper(2.4, 12); grid.position.y = -0.9; scene.add(grid);
+  let cloud, lineEst, lineTrue, dotEst, dotTrue, ell;
+  function col(n) { return new THREE.Color(css(n) || '#888'); }
+  function themeColors() {
+    grid.material.color = col('--line'); grid.material.opacity = .6; grid.material.transparent = true;
+    if (cloud) cloud.material.color = col('--mute');
+    if (lineEst) lineEst.material.color = col('--est');
+    if (lineTrue) lineTrue.material.color = col('--truth');
+    if (dotEst) dotEst.material.color = col('--est');
+    if (dotTrue) dotTrue.material.color = col('--truth');
+    if (ell) ell.material.color = col('--est');
+  }
+  function line(n) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    g.setDrawRange(0, 0);
+    return new THREE.Line(g, new THREE.LineBasicMaterial({ linewidth: 2 }));
+  }
+  function setupRun(run) {
+    [cloud, lineEst, lineTrue, dotEst, dotTrue, ell].forEach(o => o && scene.remove(o));
+    const c = run.frame.cloud, g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(c.flat()), 3));
+    cloud = new THREE.Points(g, new THREE.PointsMaterial({ size: 0.022, transparent: true, opacity: .45 }));
+    const n = run.events.length;
+    lineEst = line(n); lineTrue = line(n);
+    const sph = r => new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), new THREE.MeshBasicMaterial());
+    dotEst = sph(0.035); dotTrue = sph(0.025);
+    ell = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: .16, depthWrite: false }));
+    run.events.forEach((e, i) => {
+      lineEst.geometry.attributes.position.array.set(e.point_est, i * 3);
+      lineTrue.geometry.attributes.position.array.set(e.point_true, i * 3);
+    });
+    [cloud, lineEst, lineTrue, dotEst, dotTrue, ell].forEach(o => scene.add(o));
+    themeColors();
+  }
+  function showStep(i) {
+    if (!cur) return;
+    step = Math.max(0, Math.min(i, cur.events.length - 1));
+    const e = cur.events[step];
+    lineEst.geometry.setDrawRange(1, Math.max(0, step)); lineTrue.geometry.setDrawRange(1, Math.max(0, step));   // the opening move's state lies far outside the frame
+    lineEst.geometry.attributes.position.needsUpdate = true; lineTrue.geometry.attributes.position.needsUpdate = true;
+    dotEst.position.fromArray(e.point_est); dotTrue.position.fromArray(e.point_true);
+    dotEst.visible = step > 0;
+    const showT = $('showTruth').checked; lineTrue.visible = showT; dotTrue.visible = showT && step > 0;
+    const r = e.ellipsoid.radii, ax = e.ellipsoid.axes;
+    ell.visible = r.some(v => v > 1e-4);
+    if (ell.visible) {
+      const m = new THREE.Matrix4().makeBasis(new THREE.Vector3(...ax[0]), new THREE.Vector3(...ax[1]), new THREE.Vector3(...ax[2]));
+      ell.setRotationFromMatrix(m); ell.scale.set(Math.max(r[0], .004), Math.max(r[1], .004), Math.max(r[2], .004));
+      ell.position.fromArray(e.point_est);
+    }
+    paint($('bTrue'), e.board_true, null, e.move);
+    paint($('bEst'), e.board_est, e.board_true, e.move);
+    $('accEst').textContent = (100 * e.acc_est_occupied).toFixed(0) + '% of stones right';
+    $('vQ').textContent = e.queries_so_far.toLocaleString();
+    $('gaugeChip').textContent = 'white-box probe: ' + (100 * e.acc_whitebox_occupied).toFixed(0) + '% right';
+    $('gaugeChip').classList.toggle('on', cur.frame.gauge_rotation);
+    $('scrub').value = step; $('moveLbl').textContent = (step + 1) + ' / ' + cur.events.length;
+  }
+  function loadRun(key) {
+    cur = runs[key]; setupRun(cur);
+    const v = cur.frame.validation;
+    $('vR2').textContent = (100 * v.hidden_R2_top64_weighted).toFixed(1) + '%';
+    $('vBoard').textContent = (100 * v.greybox_board_occupied_acc).toFixed(1) + '%';
+    $('vWB').textContent = (100 * v.whitebox_board_occupied_acc).toFixed(1) + '%';
+    $('vTier').textContent = cur.frame.tier;
+    $('frameNote').textContent = 'Axes: ' + cur.frame.frame + '. Paths start after the opening move.';
+    $('scrub').max = cur.events.length - 1; $('gauge').checked = cur.frame.gauge_rotation;
+    showStep(cur.events.length - 1);
+  }
+  function resize() {
+    const r = canvas.parentElement.getBoundingClientRect();
+    renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(canvas.parentElement);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  (function tick() {
+    requestAnimationFrame(tick);
+    if ($('spin').checked && !reduce) scene.rotation.y += 0.003;
+    controls.update(); renderer.render(scene, camera);
+  })();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => setTimeout(themeColors, 30));
+  new MutationObserver(() => setTimeout(themeColors, 30)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------------- playback
+  function play() {
+    if (!cur) return;
+    playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play';
+    clearInterval(timer);
+    if (playing) {
+      if (step >= cur.events.length - 1) showStep(0);
+      timer = setInterval(() => {
+        if (step >= cur.events.length - 1) { play(); return; }
+        showStep(step + 1);
+      }, 420);
+    }
+  }
+  $('play').onclick = play;
+  $('scrub').oninput = e => showStep(+e.target.value);
+  $('showTruth').onchange = () => showStep(step);
+
+  // ---------------- data sources
+  function addRun(key, label, run) {
+    runs[key] = run;
+    const o = document.createElement('option'); o.value = key; o.textContent = label; $('runSel').appendChild(o);
+  }
+  $('runSel').onchange = e => loadRun(e.target.value);
+  async function liveRun(opts) {
+    $('status').textContent = 'Querying the black box…';
+    const r = await fetch('/v1/runs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(opts) });
+    if (!r.ok) { $('status').textContent = 'The server refused the run (' + r.status + '). Check that the Grey Box API is running.'; return null; }
+    const { run_id } = await r.json();
+    const run = await (await fetch('/v1/runs/' + run_id)).json();
+    $('status').textContent = run.events.length + ' moves, ' + run.events.at(-1).queries_so_far.toLocaleString() + ' queries.';
+    return run;
+  }
+  let seed = 1;
+  $('newGame').onclick = async () => {
+    if (EMBED) {   // static mode: cycle through the embedded games
+      const keys = Object.keys(runs); const i = (keys.indexOf($('runSel').value) + 1) % keys.length;
+      $('runSel').value = keys[i]; loadRun(keys[i]); return;
+    }
+    const run = await liveRun({ seed: ++seed, gauge_rotation: $('gauge').checked, n_samples: 64 });
+    if (run) { addRun('g' + seed, 'Game ' + seed + ($('gauge').checked ? ' (rotated basis)' : ''), run); $('runSel').value = 'g' + seed; loadRun('g' + seed); }
+  };
+  $('gauge').onchange = async () => {
+    if (EMBED) {
+      const want = $('gauge').checked, base = (cur.frame.seed_key || '').replace('-rot', '');
+      const k = want ? base + '-rot' : base;
+      if (runs[k]) { $('runSel').value = k; loadRun(k); }
+      return;
+    }
+    const s = cur ? cur.frame.seed ?? seed : seed;
+    const run = await liveRun({ seed: s, gauge_rotation: $('gauge').checked, n_samples: 64 });
+    if (run) { const k = 'g' + s + ($('gauge').checked ? 'r' : ''); addRun(k, 'Game ' + s + ($('gauge').checked ? ' (rotated basis)' : ''), run); $('runSel').value = k; loadRun(k); }
+  };
+  (async () => {
+    resize();
+    if (EMBED) { Object.entries(EMBED).forEach(([k, r]) => addRun(k, r.frame.label || k, r)); loadRun(Object.keys(EMBED)[0]); return; }
+    const run = await liveRun({ seed, gauge_rotation: false, n_samples: 64 });
+    if (run) { run.frame.seed = seed; addRun('g' + seed, 'Game ' + seed, run); loadRun('g' + seed); }
+  })();
+})();
+</script>

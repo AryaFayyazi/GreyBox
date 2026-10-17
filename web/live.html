@@ -1,0 +1,255 @@
+<title>Grey Box Live</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: three columns. Conversation | the shared state space | what the black box's answers say, with how far to
+   trust each readout. One accent (copper) marks this conversation; semantic colours mark flags. */
+:root {
+  --bg: #e9ecef; --panel: #f7f8f9; --ink: #1b2126; --mute: #5d6873; --line: #c9d0d6;
+  --est: #c4692c; --flag: #b5481f; --ok: #2f7d57; --c1: #3f6fa8; --c2: #8a5aa6; --c3: #3f8f7a; --c4: #a8873f; --c5: #a04f63; --c6: #6b7b8c;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec8a5f; --ok: #6cc495; --c1: #7aa3d6; --c2: #b48ad0; --c3: #6cc0a8; --c4: #d2b36c; --c5: #d28396; --c6: #9aa9b8; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec8a5f; --ok: #6cc495; --c1: #7aa3d6; --c2: #b48ad0; --c3: #6cc0a8; --c4: #d2b36c; --c5: #d28396; --c6: #9aa9b8; color-scheme: dark; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--display); margin: 0; }
+.app { height: 100%; box-sizing: border-box; display: grid; gap: 12px; grid-template-columns: 340px minmax(0, 1fr) 340px;
+  grid-template-rows: auto minmax(0, 1fr); padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+h1 { font: 760 22px/1.1 var(--display); font-stretch: 78%; margin: 0; }
+header p { margin: 0; color: var(--mute); max-width: 80ch; }
+.col { min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.label { font: 600 11px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.msgs { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.msg { padding: 8px 10px; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13.5px; }
+.msg.user { background: var(--bg); align-self: flex-end; max-width: 88%; }
+.msg.bot { border: 1px solid var(--line); max-width: 94%; }
+.msg .meta { display: block; font: 11px var(--mono); color: var(--mute); margin-top: 4px; }
+form { display: flex; gap: 8px; margin-top: 8px; }
+textarea { flex: 1; min-width: 0; resize: vertical; min-height: 44px; font: 14px var(--display); color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+button, select, input[type=text] { font: 600 13px var(--display); border-radius: 4px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); padding: 6px 10px; }
+button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); cursor: pointer; }
+button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
+.setup { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; align-items: center; margin-top: 8px; font-size: 13px; }
+.stage { position: relative; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); overflow: hidden; min-height: 300px; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; }
+.legend { position: absolute; left: 12px; top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--mute); max-width: 70%; pointer-events: none; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.note { position: absolute; left: 12px; right: 12px; bottom: 8px; font-size: 11.5px; color: var(--mute); pointer-events: none; }
+.meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; margin-top: 10px; }
+.meter .name { font-weight: 600; }
+.meter .val { font: 600 13px var(--mono); font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--bg); position: relative; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--est); }
+.bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .55; }
+.meter.flag .val { color: var(--flag); }
+.meter.flag .bar i { background: var(--flag); }
+.trust { grid-column: 1 / -1; font-size: 11.5px; color: var(--mute); }
+.answers { margin-top: 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; font-size: 12.5px; max-height: 260px; overflow: auto; }
+.answers span:nth-child(2n) { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.empty { color: var(--mute); font-size: 13px; margin-top: 8px; }
+#status { font-size: 12px; color: var(--mute); min-height: 16px; }
+@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 50vh auto; height: auto; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Grey Box Live</h1>
+    <p>Talk to a model through its API. Before each reply, the model is asked a short battery of yes/no questions about
+      the conversation in side branches that never change its answer. The answers place it in a space shared by all
+      models and drive the readouts on the right.</p>
+  </header>
+
+  <section class="col">
+    <div class="card">
+      <div class="label">Model</div>
+      <div class="setup">
+        <label for="prov">Provider</label>
+        <select id="prov"><option value="openai_compat">OpenAI-compatible</option><option value="anthropic">Anthropic</option></select>
+        <label for="base">Base URL</label><input type="text" id="base" value="http://127.0.0.1:8141/v1">
+        <label for="mdl">Model</label><input type="text" id="mdl" value="bb">
+        <label for="key">Key variable</label><input type="text" id="key" placeholder="e.g. OPENAI_API_KEY (name only)">
+        <label for="open">Open model</label><select id="open"><option value="">none (closed model)</option><option>qwen3_8b</option><option>llama31_8b</option><option>gemma3_4b</option><option>mistral7b</option><option>phi4mini</option><option>olmo3_7b</option><option>qwen25_7b</option></select>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px"><button class="primary" id="connect">Connect</button></div>
+      <div id="status" role="status" aria-live="polite"></div>
+    </div>
+    <div class="card chat">
+      <div class="label">Conversation</div>
+      <div class="msgs" id="msgs"><div class="empty">Connect to a model, then send a message. Try a normal request, then
+        one the model might refuse, and watch the path move.</div></div>
+      <form id="form"><textarea id="inp" aria-label="message" placeholder="Write a message"></textarea><button class="primary" type="submit">Send</button></form>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="shared state space">
+    <canvas id="c"></canvas>
+    <div class="legend" id="legend"></div>
+    <div class="note" id="note">The space is built from open models' answers to the same questions, so every model lives in
+      the same coordinates. The copper path is this conversation.</div>
+  </section>
+
+  <section class="col" style="overflow:auto">
+    <div class="card">
+      <div class="label">Readouts at the last turn</div>
+      <div id="meters"><div class="empty">No turn yet.</div></div>
+    </div>
+    <div class="card" id="hidCard" hidden>
+      <div class="label">Hidden state (open model only)</div>
+      <div style="position:relative; height:220px; margin-top:8px"><canvas id="c2" style="position:absolute; inset:0; width:100%; height:100%"></canvas></div>
+      <div class="trust" id="hidNote"></div>
+    </div>
+    <div class="card">
+      <div class="label">What the model answered</div>
+      <div class="answers" id="answers"></div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const SRC = { harmful: '--c5', benign: '--c3', sst2: '--c4', boolq: '--c1', gsm8k: '--c2', wiki: '--c6' };
+  const SRC_NAME = { harmful: 'harmful requests', benign: 'benign requests', sst2: 'opinions', boolq: 'factual questions', gsm8k: 'maths', wiki: 'summaries' };
+  const NAMES = { harmful_request: 'Harmful request', harmful_latest: 'Harmful request (latest message)', will_refuse: 'This model is about to refuse', negative_tone: 'Negative tone' };
+  let session = null, path = [];
+
+  const canvas = $('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
+  camera.position.set(1.8, 1.2, 2.0);
+  const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true;
+  let cloud = null, line = null, dot = null, ell = null;
+  function col(n) { return new THREE.Color(css(n) || '#888'); }
+  function drawCloud(pts, labels) {
+    if (cloud) scene.remove(cloud);
+    const g = new THREE.BufferGeometry(), pos = new Float32Array(pts.length * 3), c = new Float32Array(pts.length * 3);
+    pts.forEach((p, i) => { pos.set(p, i * 3); const k = col(SRC[labels[i]] || '--mute'); c.set([k.r, k.g, k.b], i * 3); });
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+    cloud = new THREE.Points(g, new THREE.PointsMaterial({ size: 0.02, vertexColors: true, transparent: true, opacity: .55 }));
+    scene.add(cloud);
+    const present = new Set(labels);
+    $('legend').innerHTML = Object.entries(SRC_NAME).filter(([k]) => present.has(k)).map(([k, v]) => `<span><i class="dot" style="background:var(${SRC[k]})"></i>${v}</span>`).join('');
+  }
+  function drawPath(ev) {
+    if (!ev.point) return;
+    path.push(ev.point);
+    [line, dot, ell].forEach(o => o && scene.remove(o));
+    const g = new THREE.BufferGeometry().setFromPoints(path.map(p => new THREE.Vector3(...p)));
+    line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: col('--est') }));
+    dot = new THREE.Mesh(new THREE.SphereGeometry(0.035, 20, 14), new THREE.MeshBasicMaterial({ color: col('--est') }));
+    dot.position.fromArray(ev.point);
+    scene.add(line, dot);
+    const r = ev.ellipsoid?.radii || [0, 0, 0];
+    if (r.some(v => v > 1e-4)) {
+      ell = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color: col('--est'), transparent: true, opacity: .15, depthWrite: false }));
+      const ax = ev.ellipsoid.axes;
+      ell.setRotationFromMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...ax[0]), new THREE.Vector3(...ax[1]), new THREE.Vector3(...ax[2])));
+      ell.scale.set(...r.map(v => Math.max(v, .004))); ell.position.fromArray(ev.point); scene.add(ell);
+    }
+  }
+  function resize() { const b = canvas.parentElement.getBoundingClientRect(); renderer.setSize(b.width, b.height, false); camera.aspect = b.width / Math.max(1, b.height); camera.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(canvas.parentElement);
+  (function tick() { requestAnimationFrame(tick); controls.update(); renderer.render(scene, camera); })();
+
+  // second view: estimated vs true hidden path (only when the server has the open model's weights)
+  const canvas2 = $('c2');
+  const r2 = new THREE.WebGLRenderer({ canvas: canvas2, antialias: true, alpha: true });
+  r2.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene2 = new THREE.Scene(), cam2 = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
+  cam2.position.set(1.6, 1.1, 1.8);
+  const ctl2 = new THREE.OrbitControls(cam2, canvas2); ctl2.enableDamping = true;
+  let hEst = [], hTrue = [], hObjs = [];
+  function drawHidden(ev) {
+    if (!ev.hidden_true) return;
+    $('hidCard').hidden = false;
+    hEst.push(ev.hidden_est); hTrue.push(ev.hidden_true);
+    hObjs.forEach(o => scene2.remove(o)); hObjs = [];
+    for (const [pts, c] of [[hEst, '--est'], [hTrue, '--ink']]) {
+      const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: col(c) }));
+      const dt = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), new THREE.MeshBasicMaterial({ color: col(c) }));
+      dt.position.fromArray(pts[pts.length - 1]); hObjs.push(ln, dt); scene2.add(ln, dt);
+    }
+    const ck = ev.hidden_check || {};
+    $('hidNote').textContent = `Copper: estimated from the answers. Ink: the true hidden state (layer ${ck.layer}). Held-out check of this decoder: R² ${ck.R2_top32_weighted} on the top 32 directions.`;
+    const b = canvas2.parentElement.getBoundingClientRect(); r2.setSize(b.width, b.height, false); cam2.aspect = b.width / Math.max(1, b.height); cam2.updateProjectionMatrix();
+  }
+  (function tick2() { requestAnimationFrame(tick2); ctl2.update(); r2.render(scene2, cam2); })();
+
+  function trustLine(c) {
+    const v = c.validation || {}, k = session?.model_key, pick = o => (o && typeof o === 'object') ? (o[k] ?? null) : null;
+    if (v.per_family) return `Held-out check: worst AUROC ${v.worst ?? '–'} on ${Object.keys(v.per_family).length} model families never used to fit it.`;
+    if (c.name === 'will_refuse') {
+      const p = (v.pooled || {}).refusal_harm || {};
+      const own = pick(v.auroc);
+      return `Held out by model family${own ? ` (this model: AUROC ${own})` : ''}. Which harmful requests a model will comply with: ${p.auroc?.sr?.toFixed(2) ?? '–'} vs ${p.auroc?.mod?.toFixed(2) ?? '–'} for text moderation (6 open models); on Claude Haiku 5.5, 0.83 vs 0.65 (preregistered).`;
+    }
+    if (c.name === 'harmful_latest') return 'Text moderation is better at this (ToxicChat AUROC 0.97 vs 0.85–0.93). Shown for context.';
+    return '';
+  }
+  function meters(ev) {
+    if (!ev.concepts || !ev.concepts.length) {
+      $('meters').innerHTML = '<div class="empty">No validated readouts are loaded yet. Raw answers are shown below.</div>'; return;
+    }
+    const one = c => `<div class="meter ${c.flag ? 'flag' : ''}"><span class="name">${NAMES[c.name] || c.name}${c.flag ? ' · flagged' : ''}</span>
+        <span class="val">${(100 * c.score).toFixed(0)}%</span>
+        <div class="bar"><i style="width:${(100 * c.score).toFixed(1)}%"></i><b style="left:${(100 * c.threshold).toFixed(1)}%" title="flag threshold for this model"></b></div>
+        <span class="trust">${trustLine(c)}</span></div>`;
+    const ms = ev.concepts.filter(c => c.kind === 'model-specific'), inp = ev.concepts.filter(c => c.kind !== 'model-specific');
+    $('meters').innerHTML = (ms.length ? `<div class="trust" style="margin-top:6px"><b>About this model</b>: a forecast of its own behaviour, before it answers.</div>${ms.map(one).join('')}` : '')
+      + (inp.length ? `<div class="trust" style="margin-top:12px"><b>About the message</b>: an input property; a text moderator also sees this.</div>${inp.map(one).join('')}` : '');
+  }
+  function answers(ev) {
+    const rows = Object.entries(ev.answers).filter(([, v]) => v !== null).sort((a, b) => Math.abs(b[1] - .5) - Math.abs(a[1] - .5));
+    const Q = session?.questions || {};
+    $('answers').innerHTML = rows.map(([k, v]) => `<span title="${k}">${Q[k] || k}</span><span>${(100 * v).toFixed(0)}% yes</span>`).join('');
+  }
+  function addMsg(role, text, meta) {
+    if ($('msgs').querySelector('.empty')) $('msgs').innerHTML = '';
+    const d = document.createElement('div'); d.className = 'msg ' + role; d.textContent = text;
+    if (meta) { const s = document.createElement('span'); s.className = 'meta'; s.textContent = meta; d.appendChild(s); }
+    $('msgs').appendChild(d); $('msgs').scrollTop = 1e9;
+  }
+  $('connect').onclick = async () => {
+    $('status').textContent = 'Connecting…';
+    const body = { provider: $('prov').value, model: $('mdl').value, base_url: $('base').value || null, key_env: $('key').value || null, open_model: $('open').value || null, logprobs: $('prov').value !== 'anthropic' };
+    try {
+      const r = await fetch('/v1/live/sessions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('the server returned ' + r.status);
+      session = await r.json(); path = [];
+      if (session.cloud.length) drawCloud(session.cloud, session.cloud_label);
+      $('status').textContent = `Connected. ${session.battery_size} questions per turn, ${session.concepts.length} validated readouts.`;
+    } catch (e) { $('status').textContent = 'Could not connect: ' + e.message + '. Check that the Grey Box server is running.'; }
+  };
+  $('form').onsubmit = async e => {
+    e.preventDefault();
+    const text = $('inp').value.trim(); if (!text) return;
+    if (!session) { $('status').textContent = 'Connect to a model first.'; return; }
+    $('inp').value = ''; addMsg('user', text); $('status').textContent = 'Asking the battery, then getting the reply…';
+    try {
+      const r = await fetch(`/v1/live/sessions/${session.session_id}/turns`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message: text }) });
+      if (!r.ok) throw new Error('the server returned ' + r.status);
+      const ev = await r.json();
+      addMsg('bot', ev.reply, `${ev.seconds}s · ${ev.usage.calls} API calls so far · ${ev.tier} tier`);
+      drawPath(ev); drawHidden(ev); meters(ev); answers(ev); $('status').textContent = '';
+    } catch (err) { $('status').textContent = 'The turn failed: ' + err.message + '.'; }
+  };
+  resize();
+})();
+</script>

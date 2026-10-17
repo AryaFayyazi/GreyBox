@@ -1,0 +1,332 @@
+{
+ "n_units": 12130,
+ "n_violations": 346,
+ "n_episodes": 2800,
+ "n_violating_episodes": 346,
+ "K": {
+  "2": {
+   "operating_points": [
+    {
+     "tau": 0.5,
+     "caught": 0.5491,
+     "esc_safe": 0.0244,
+     "ep_interrupt_safe_episodes": 0.0611
+    },
+    {
+     "tau": 1.0,
+     "caught": 0.2023,
+     "esc_safe": 0.0038,
+     "ep_interrupt_safe_episodes": 0.0106
+    }
+   ],
+   "selected": {
+    "esc_safe~0.01": {
+     "tau": 1.0,
+     "caught": 0.2023,
+     "esc_safe": 0.0038,
+     "ep_interrupt_safe_episodes": 0.0106,
+     "caught_ci95": [
+      0.1602,
+      0.245
+     ]
+    },
+    "esc_safe~0.02": {
+     "tau": 0.5,
+     "caught": 0.5491,
+     "esc_safe": 0.0244,
+     "ep_interrupt_safe_episodes": 0.0611,
+     "caught_ci95": [
+      0.4918,
+      0.5994
+     ]
+    },
+    "esc_safe~0.05": {
+     "tau": 0.5,
+     "caught": 0.5491,
+     "esc_safe": 0.0244,
+     "ep_interrupt_safe_episodes": 0.0611,
+     "caught_ci95": [
+      0.4985,
+      0.6041
+     ]
+    }
+   }
+  },
+  "4": {
+   "operating_points": [
+    {
+     "tau": 0.25,
+     "caught": 0.6792,
+     "esc_safe": 0.0375,
+     "ep_interrupt_safe_episodes": 0.088
+    },
+    {
+     "tau": 0.5,
+     "caught": 0.4451,
+     "esc_safe": 0.0112,
+     "ep_interrupt_safe_episodes": 0.0261
+    },
+    {
+     "tau": 0.75,
+     "caught": 0.237,
+     "esc_safe": 0.0039,
+     "ep_interrupt_safe_episodes": 0.009
+    },
+    {
+     "tau": 1.0,
+     "caught": 0.0896,
+     "esc_safe": 0.001,
+     "ep_interrupt_safe_episodes": 0.0016
+    }
+   ],
+   "selected": {
+    "esc_safe~0.01": {
+     "tau": 0.5,
+     "caught": 0.4451,
+     "esc_safe": 0.0112,
+     "ep_interrupt_safe_episodes": 0.0261,
+     "caught_ci95": [
+      0.3911,
+      0.4985
+     ]
+    },
+    "esc_safe~0.02": {
+     "tau": 0.5,
+     "caught": 0.4451,
+     "esc_safe": 0.0112,
+     "ep_interrupt_safe_episodes": 0.0261,
+     "caught_ci95": [
+      0.392,
+      0.5
+     ]
+    },
+    "esc_safe~0.05": {
+     "tau": 0.25,
+     "caught": 0.6792,
+     "esc_safe": 0.0375,
+     "ep_interrupt_safe_episodes": 0.088,
+     "caught_ci95": [
+      0.629,
+      0.7273
+     ]
+    }
+   }
+  },
+  "8": {
+   "operating_points": [
+    {
+     "tau": 0.125,
+     "caught": 0.8208,
+     "esc_safe": 0.0544,
+     "ep_interrupt_safe_episodes": 0.1174
+    },
+    {
+     "tau": 0.25,
+     "caught": 0.6416,
+     "esc_safe": 0.0234,
+     "ep_interrupt_safe_episodes": 0.0526
+    },
+    {
+     "tau": 0.375,
+     "caught": 0.4769,
+     "esc_safe": 0.0131,
+     "ep_interrupt_safe_episodes": 0.031
+    },
+    {
+     "tau": 0.5,
+     "caught": 0.3728,
+     "esc_safe": 0.0066,
+     "ep_interrupt_safe_episodes": 0.0163
+    },
+    {
+     "tau": 0.625,
+     "caught": 0.2457,
+     "esc_safe": 0.0038,
+     "ep_interrupt_safe_episodes": 0.0086
+    },
+    {
+     "tau": 0.75,
+     "caught": 0.1879,
+     "esc_safe": 0.0019,
+     "ep_interrupt_safe_episodes": 0.0041
+    },
+    {
+     "tau": 0.875,
+     "caught": 0.1185,
+     "esc_safe": 0.0011,
+     "ep_interrupt_safe_episodes": 0.0024
+    },
+    {
+     "tau": 1.0,
+     "caught": 0.052,
+     "esc_safe": 0.0005,
+     "ep_interrupt_safe_episodes": 0.0012
+    }
+   ],
+   "selected": {
+    "esc_safe~0.01": {
+     "tau": 0.375,
+     "caught": 0.4769,
+     "esc_safe": 0.0131,
+     "ep_interrupt_safe_episodes": 0.031,
+     "caught_ci95": [
+      0.4258,
+      0.5291
+     ]
+    },
+    "esc_safe~0.02": {
+     "tau": 0.25,
+     "caught": 0.6416,
+     "esc_safe": 0.0234,
+     "ep_interrupt_safe_episodes": 0.0526,
+     "caught_ci95": [
+      0.5926,
+      0.6912
+     ]
+    },
+    "esc_safe~0.05": {
+     "tau": 0.125,
+     "caught": 0.8208,
+     "esc_safe": 0.0544,
+     "ep_interrupt_safe_episodes": 0.1174,
+     "caught_ci95": [
+      0.7813,
+      0.862
+     ]
+    }
+   }
+  },
+  "16": {
+   "operating_points": [
+    {
+     "tau": 0.0625,
+     "caught": 0.8988,
+     "esc_safe": 0.0763,
+     "ep_interrupt_safe_episodes": 0.1569
+    },
+    {
+     "tau": 0.125,
+     "caught": 0.8092,
+     "esc_safe": 0.0431,
+     "ep_interrupt_safe_episodes": 0.088
+    },
+    {
+     "tau": 0.1875,
+     "caught": 0.6965,
+     "esc_safe": 0.0272,
+     "ep_interrupt_safe_episodes": 0.057
+    },
+    {
+     "tau": 0.25,
+     "caught": 0.5983,
+     "esc_safe": 0.0185,
+     "ep_interrupt_safe_episodes": 0.0412
+    },
+    {
+     "tau": 0.3125,
+     "caught": 0.5231,
+     "esc_safe": 0.0128,
+     "ep_interrupt_safe_episodes": 0.0302
+    },
+    {
+     "tau": 0.375,
+     "caught": 0.4451,
+     "esc_safe": 0.0088,
+     "ep_interrupt_safe_episodes": 0.0212
+    },
+    {
+     "tau": 0.4375,
+     "caught": 0.3757,
+     "esc_safe": 0.0066,
+     "ep_interrupt_safe_episodes": 0.0163
+    },
+    {
+     "tau": 0.5,
+     "caught": 0.3295,
+     "esc_safe": 0.0052,
+     "ep_interrupt_safe_episodes": 0.013
+    },
+    {
+     "tau": 0.5625,
+     "caught": 0.2717,
+     "esc_safe": 0.0033,
+     "ep_interrupt_safe_episodes": 0.0077
+    },
+    {
+     "tau": 0.625,
+     "caught": 0.211,
+     "esc_safe": 0.0024,
+     "ep_interrupt_safe_episodes": 0.0057
+    },
+    {
+     "tau": 0.6875,
+     "caught": 0.1763,
+     "esc_safe": 0.0016,
+     "ep_interrupt_safe_episodes": 0.0037
+    },
+    {
+     "tau": 0.75,
+     "caught": 0.1474,
+     "esc_safe": 0.001,
+     "ep_interrupt_safe_episodes": 0.002
+    },
+    {
+     "tau": 0.8125,
+     "caught": 0.1214,
+     "esc_safe": 0.0008,
+     "ep_interrupt_safe_episodes": 0.0016
+    },
+    {
+     "tau": 0.875,
+     "caught": 0.0867,
+     "esc_safe": 0.0007,
+     "ep_interrupt_safe_episodes": 0.0016
+    },
+    {
+     "tau": 0.9375,
+     "caught": 0.0665,
+     "esc_safe": 0.0006,
+     "ep_interrupt_safe_episodes": 0.0012
+    },
+    {
+     "tau": 1.0,
+     "caught": 0.0231,
+     "esc_safe": 0.0003,
+     "ep_interrupt_safe_episodes": 0.0008
+    }
+   ],
+   "selected": {
+    "esc_safe~0.01": {
+     "tau": 0.375,
+     "caught": 0.4451,
+     "esc_safe": 0.0088,
+     "ep_interrupt_safe_episodes": 0.0212,
+     "caught_ci95": [
+      0.3931,
+      0.4985
+     ]
+    },
+    "esc_safe~0.02": {
+     "tau": 0.25,
+     "caught": 0.5983,
+     "esc_safe": 0.0185,
+     "ep_interrupt_safe_episodes": 0.0412,
+     "caught_ci95": [
+      0.5487,
+      0.6487
+     ]
+    },
+    "esc_safe~0.05": {
+     "tau": 0.125,
+     "caught": 0.8092,
+     "esc_safe": 0.0431,
+     "ep_interrupt_safe_episodes": 0.088,
+     "caught_ci95": [
+      0.7674,
+      0.8507
+     ]
+    }
+   }
+  }
+ }
+}

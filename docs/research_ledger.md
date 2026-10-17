@@ -1,0 +1,896 @@
+# Research ledger (grey-box safety)
+
+Dated log of every experiment, decision and correction. Newest last.
+
+## 2026-10-15
+
+- **Start.** Inputs: the literature report (`Latent recovery black box LLMs.md`) and the Tier-1 prototype
+  (`prototype/greybox`, toy sandbox only). The user wants to carry CAPE's white-box safety results (arXiv 2610.17301)
+  to black-box frontier agents via an estimated "grey box".
+- **Decision: target object.** Raw hidden coordinates are not identifiable (GL(d) gauge; intermediate layers leave no
+  footprint), so we estimate the interrogation state Ψ_Q(x) (answer probabilities to a fixed battery of suffix
+  questions). It is identifiable, gauge-free and shared across models (docs/theory.md T3).
+- **Decision: unit.** The turn start (after the last tool result, before the agent's turn) is primary, because
+  frontier APIs hide or summarize the chain of thought, so CAPE's decision point is not reachable from a black box.
+- **Decision: theory-driven ceiling.** For behaviour-defined labels, π*(x) estimated by rollouts dominates any
+  white-box probe (docs/theory.md T1). Rollouts are run at every unit to measure the ceiling and each monitor's
+  relative efficiency.
+- **Battery v1 locked** before any data: 64 Yes/No items in 7 categories (src/graybox/battery.py; sha256
+  658c9396…, results/battery_v1.sha256).
+- **Pilot (development, exploratory) on Gemma-4-26B-A4B:** 5,941 CAPE decision units (1,941 VIOL, 2,000 X−OTHER,
+  2,000 X+CRIT) from existing CAPE rollouts. All existing CAPE data are development data for this project.
+  Confirmation will use freshly generated rollouts with unused seeds.
+  - Jobs: interrogation (3780), turn-start hidden states (3781), rollout ceiling K=8 (3782), Qwen3-8B reader
+    control (3783).
+- **Key control added:** reader mode. A different model is put in the agent's shoes on the same transcript and asked
+  the same battery. If Ψ_actor beats Ψ_reader, the grey box reads the actor's own state and not only the text.
+
+### 2026-10-15 afternoon: reframe to a general grey box and a ground-truth ladder (user request)
+- The user wants the grey box to be general and groundbreaking, not CAPE-specific, with a 3D API. Inspiration:
+  Handwired (Cheng Lou, 2026-10-14) compiles code into exact neural nets. Ours is the mirror image: net to readable
+  state.
+- Ladder: L0 program compiled into a transformer (tracr); L1 Othello-GPT (a known world model); L2 open LLMs vs residual
+  streams (Gemma pilot on CAPE turns is the first piece); L3 closed APIs (the user will provide keys after L0–L2
+  confirm).
+- **L0 result** (scripts/06, results/tracr/l0_dyck.json): causal shuffle-Dyck-2 compiled by tracr
+  (mlp_exactness 1000; at 100 there were 63/3000 mismatches at MAXLEN 14).
+  - 0 mismatches against the program. Black-box answers are exact.
+  - **Gauge theorem demonstrated:** after a random orthogonal rotation of the residual stream all outputs are
+    identical. The known-layout white-box readout drops from r 0.9995 to −0.46, and grey-box recovery is unchanged.
+  - Prefixes that ever went negative form one behavioural class: their balance is behaviourally inert, as predicted.
+  - Random 256-suffix battery: 21 never-negative states fall into 16 classes; held-out exact 0.90; linear R² of the
+    balances 0.84/0.86.
+  - Cause: random suffixes rarely close high balances, so the battery's reach limits identifiability (Myhill–Nerode
+    depth).
+  - Fix in progress: a designed battery chosen black-box only (greedy, maximising distinct answer patterns).
+- **L1 result** (scripts/05, 07; results/othello/l1_fair.json): Othello-GPT (Li et al. weights, top-1 legal 99.95%).
+  2,400 train and 600 test games, 30k states.
+  - **Hidden-vector recovery from 61 black-box queries.** Variance-weighted R² of the top-64 residual PCs:
+    | Layer | Linear | MLP | Input-only, linear | Input-only, MLP |
+    |---|---|---|---|---|
+    | L4 | 0.94 | 0.97 | 0.18 | 0.89 |
+    | L6 | 0.94 | 0.97 | 0.23 | 0.88 |
+    | L8 | 0.95 | 0.99 | 0.15 | 0.80 |
+  - Board (MLP decoder), occupied-square accuracy / exact board: grey box 0.80/0.23; input-only 0.76/0.10;
+    white-box L6 0.98/0.76.
+  - Interpretation: the battery recovers the high-variance, behaviourally visible state. The board lives in
+    low-variance directions that depth-1 behaviour barely reveals. Variance-weighted R² can overstate, so we now also
+    report probe-subspace R².
+  - Next: the depth study (scripts/08): fixed depth-2 and on-policy depth 1–4 batteries.
+- **L0 final** (results/tracr/l0_dyck.json): a black-box-only greedy design (pool = every string up to length 5
+  plus 2,000 random strings; selection uses answers only, never state labels) gives a 21-question battery.
+  - It separates all 21 never-negative states: each Ψ class determines the state exactly (Myhill–Nerode confirmed
+    on a compiled transformer).
+  - Held-out lookup accuracy is 0.968. The misses are a decoder artefact: single-prefix states never appear in
+    training.
+- **L1 depth study** (scripts/08, results/othello/l1_depth.json; 1,200 games, 9.6k states, MLP decoders, held-out
+  games). Columns: hidden R² (top-64 PCs), probe-subspace R², occupied-stone accuracy.
+  | Battery | Queries | Hidden R² | Probe-subspace R² | Occupied acc. |
+  |---|---|---|---|---|
+  | B1 | 61 | 0.964 | 0.650 | 0.762 |
+  | B2 | 317 | 0.976 | 0.725 | 0.802 |
+  | ON-1 | 16 | 0.908 | 0.582 | 0.682 |
+  | ON-4 | 64 | 0.921 | 0.629 | 0.707 |
+  | B1 + ON-4 | — | 0.966 | 0.663 | 0.763 |
+  - Fixed broad questions beat on-policy rollouts at matched budget. Depth helps.
+  - The board subspace is the hard part, and probe-subspace R² is the honest headline metric.
+- **Demo:** the Grey Box API (src/graybox/server.py) and the 3D viewer (web/index.html) are live on :8765.
+  - Display frame: true-state PCA over t ≥ 1 (the opening state is an outlier). 3 axes hold 25% of the variance.
+  - Gauge toggle: white-box probe 99% → 38% of stones right; grey box unchanged (80%).
+
+### 2026-10-15 13:40: Gemma (CAPE turn start) pilot complete on development data
+- **Rollout ceiling** (K=8, CAPE's own label checker; scripts/04).
+  - Mean resampled P(unsafe): VIOL 0.37 (median 0.25), X−OTHER 0.009, X+CRIT 0.0001.
+  - Most realized violations are minority outcomes: irreducible stochasticity (T1, Corollary 1).
+- **Monitors at the same turn-start unit.** Within-template AUROC: overall / vs X−OTHER / vs X+CRIT.
+  | Monitor | Overall | vs X−OTHER | vs X+CRIT |
+  |---|---|---|---|
+  | R (K=8) | 0.904 | 0.867 | 0.918 |
+  | Ψ, logprob tier | 0.901 | 0.787 | 0.942 |
+  | Ψ, 16 samples | 0.893 | — | — |
+  | TF-IDF text | 0.919 | 0.829 | 0.951 |
+  | White box, best layer | 0.893 (L21) | 0.842 (L21) | 0.914 (L29) |
+  | CAPE readout at the later decision point (reference) | 0.945 | — | — |
+  - At turn start the white box does not beat the black box overall.
+- **Finding: unit selection.** CAPE v57 units select negatives by the future (X−OTHER only from never-violating
+  episodes; pre-violation turns are excluded). A supervised classifier can exploit that selection, which explains
+  TXT > R, an apparent violation of T1.
+  - Fix: clean units (scripts/15): every post-reveal action up to and including the first violation, plus x+ twins,
+    with random negative subsampling. Pool: 993 unsafe vs 28,495 safe x− turns (base rate 3.4%).
+  - The Ψ, hidden and K=16 rollout jobs are queued (3795–3797).
+- **Hidden recovery on Gemma** (top-64 PCs of a 2,816-d residual; ridge; CV).
+  - Ψ alone 0.31–0.40; TF-IDF text 0.28–0.38; both 0.38–0.49.
+  - White-box readout score from Ψ: 0.55–0.58 (from text 0.54–0.60).
+  - Real LLM states at long contexts are far richer than 64 binary answers. L2 measures scaling with battery size.
+- **Goodfire "Neural networks are already clean" (Cammarata).** MLP neurons have a privileged basis (no rotation
+  gauge), so per-neuron black-box visibility is well defined. The L2 hidden stage now also stores MLP neuron vectors
+  at 50% and 75% depth, and scripts/13 reports per-neuron R² (a "visible-neuron map").
+
+### 2026-10-15 14:00–14:20
+- **L1 preregistered confirmation PASSED** (results/othello/l1_confirm.json; lock results/prereg_L1_othello_lock.json).
+  1,000 fresh games (seed 2026), frozen decoders.
+  - E1: hidden R² 0.967 [0.967, 0.968], above 0.90.
+  - E2: ΔR² over input-only +0.094 [0.086, 0.105].
+  - E3: occupied-stone accuracy 0.797 vs 0.754 (+0.043).
+  - E2 and E3: Holm p < 0.0005. White-box reference 0.983.
+- **Reader control on CAPE turns (dev).** Qwen3-8B answered the same 64-item battery in Gemma's place.
+  | Measure | Gemma (actor) | Qwen3-8B (reader) | Both |
+  |---|---|---|---|
+  | Violation forecast, AUROC | 0.901 | 0.844 | 0.919 |
+  | Violation-probe score, R² | 0.55–0.57 | 0.48–0.50 | 0.61–0.63 |
+  | Variance-weighted hidden R² | 0.31–0.40 | 0.38–0.50 | — |
+  - Actor − reader AUROC: +0.056 [0.039, 0.073].
+  - Interpretation: self-interrogation carries actor-specific, behaviour-relevant state. Most hidden variance is
+    content that any reader can describe. Gemma's answers are saturated (82% at q < 0.02 or q > 0.98, reader 68%),
+    so they carry less content.
+  - Decision: the headline metrics are behaviour-relevant ones (forecast, probe-direction R²). Variance-weighted R²
+    is secondary.
+- **Feature decision (dev).** θ + log-odds for the logprob tier: AUROC 0.916, probe-score R² 0.600 (θ alone 0.901 /
+  0.553). θ only for the text tier.
+
+### 2026-10-15 ~14:45: generality across 16 random hidden-state worlds (L1b; scripts/21; results/automata/random_automata.json)
+- Worlds: random probabilistic automata with 6–12 states and 4 symbols. Each symbol permutes the states (doubly
+  stochastic, well mixed). The first attempt, with random transitions, was degenerate: one absorbing state and
+  majority accuracy 0.94. Fixed by using permutations.
+- Model: a 2-layer, d=64 transformer trained per world. Black box: next-symbol distributions; battery: all suffixes
+  up to length 2 (21 queries).
+- Results (held-out, paired across worlds):
+  | Comparison | Mean difference | Wins | Wilcoxon p |
+  |---|---|---|---|
+  | State decoding, grey vs white | +0.001 | 10/16 | 0.84 (parity) |
+  | State decoding, grey vs input-only | +0.064 | 12/16 | 0.003 |
+  | Hidden R², grey vs input-only | +0.030 | 11/16 | 0.25 (n.s.) |
+  - Means: state accuracy grey 0.636, white 0.635, input 0.571, majority 0.339.
+  - The battery separates every automaton state in 16/16 worlds.
+- Pattern across L1, L1b and the CAPE reader control: grey-box recovery of the behaviour-relevant latent is at
+  white-box parity. Variance-weighted hidden R² is dominated by input content. Headline metric = behaviour-relevant
+  recovery.
+
+### 2026-10-15 ~15:30: T1 in a controlled setting (scripts/23; results/othello/t1_othello.json)
+- Othello-GPT, fresh games (seed 77). 5,996 positions; 1,996 test positions by game. Label: "a corner is played in
+  the model's next 3 self-play moves" (behaviour-defined, one realized draw). Base rate 0.176. Selection is
+  past-only.
+- AUROC: R_K for K = 1/2/4/8/16/64 is 0.579/0.656/0.702/0.758/0.792/0.823 (monotone; Brier 0.185 → 0.115).
+  White-box L6 probe 0.735; Ψ (61 queries) 0.737; WB + Ψ 0.718 (overfits).
+- R_64 − WB = +0.087 [0.065, 0.112], R_64 − Ψ = +0.086 [0.064, 0.108].
+- Reading:
+  - T1 holds: no probe beats the rollout forecast.
+  - A probe is worth about 6 rollouts, so the white-box vs black-box choice is a cost trade-off.
+  - The grey box equals the white box on this behavioural label.
+- **Horizon sweep** (results/othello/t1_othello_H1.json, t1_othello_H6.json).
+  | H | R_64 | White-box probe | Ψ | Probe worth (rollouts) |
+  |---|---|---|---|---|
+  | 1 | 0.872 | 0.744 | 0.772 | ~5 |
+  | 3 | 0.823 | 0.735 | 0.737 | ~6 |
+  | 6 | 0.796 | 0.730 | 0.714 | ~5 |
+  - At H = 1 the exact behavioural forecast from one logprob query scores 0.877 [0.855, 0.898]: it beats the
+    trained white-box probe by +0.13.
+  - For labels defined by the model's own behaviour, its output distribution is the Bayes forecast, and a
+    hidden-state probe approximates it lossily.
+- **Clean CAPE units (Gemma, dev), white box at turn start.** All / vs X−SAFE / vs X+PLUS:
+  | Monitor | All | vs X−SAFE | vs X+PLUS |
+  |---|---|---|---|
+  | White box, best layer | 0.837 (L18) | 0.805 | 0.873 |
+  | Ψ | 0.859 | 0.788 | 0.937 |
+  | Text | 0.868 | 0.784 | 0.962 |
+  - The rollout ceiling (K=16) is running.
+
+### 2026-10-15 ~17:30: reader-probe comparison (Model Hermeneutics baseline) on the pilot (outcome-selected) units
+- Monitors of Gemma's violation at turn start. AUROC all / vs X−OTHER / vs X+CRIT:
+  | Monitor | All | vs X−OTHER | vs X+CRIT |
+  |---|---|---|---|
+  | Ψ_self (θ + log-odds) | 0.916 | 0.814 | 0.953 |
+  | Gemma's own WB, best layer | 0.893 (L21) | 0.842 | 0.914 |
+  | Qwen3-8B reader probe, best layer | 0.888 (L17) | 0.838 | 0.905 |
+  | Qwen3-8B reader answers | 0.877 | 0.786 | 0.910 |
+  - Ψ_self − reader probe: +0.029 [0.014, 0.044]. Ψ_self − own WB: +0.024 [0.006, 0.041].
+  - The best layer is chosen on the same data, which favours the probes.
+- **Caveat and decision.** These are CAPE's outcome-selected units (Proposition 4). The reader baselines (8B and the
+  27B Qwen3.8) were re-targeted to the clean units: jobs 3818–3821, replacing the cancelled 3816/3817. The L2 chain
+  now follows them.
+
+### 2026-10-15 ~17:35: T1 on clean CAPE units (Gemma, dev; results/t1/gemma4_clean.json)
+- 5,493 units (993 XUNSAFE, 3,000 XSAFE, 1,500 XPLUS). Within-stratum AUROC, all / vs XSAFE / vs XPLUS:
+  | Monitor | All [95% CI] | vs XSAFE | vs XPLUS |
+  |---|---|---|---|
+  | R16 (untrained) | 0.909 [0.890, 0.927] | 0.879 | 0.941 |
+  | TXT | 0.868 | 0.784 | 0.962 |
+  | Ψ | 0.859 | 0.788 | 0.937 |
+  | WB, best layer | 0.837 (L18) | 0.805 | 0.872 |
+- R16 − WB_L18: +0.072 [0.048, 0.096]. R16 − Ψ: +0.050 [0.027, 0.073]. R16 − TXT: +0.040 [0.018, 0.063].
+- Proper scores: near tie. Brier R16 0.0891 vs WB_L14 0.0886; log loss 0.286 vs 0.282. Finite K = 16 costs
+  calibration.
+- **Selection artefact reversed:** on outcome-selected units TXT > R (0.919 vs 0.904); on clean units R > TXT
+  (+0.040).
+- **Preregistered** T1-agents confirmation (docs/prereg_T1_agents.md; lock results/prereg_T1_agents_lock.json,
+  17:37 PDT). Monitors frozen (WB L18, Ψ, TXT). Endpoints F1 (WB does not beat R16 by more than 0.02), F2 (R16 > WB),
+  F3 (Ψ ≥ WB − 0.03). The fresh pipeline is chained: jobs 3805/3806 (episodes), then 3822–3825.
+- **Failure: 27B reader (job 3820, and probably the earlier 3816).**
+  - Cause: Qwen3.8-27B uses hybrid attention with a Mamba-style recurrent cache. vLLM's default max_num_seqs (1,024)
+    exceeds the 534 cache blocks available, so the engine failed at CUDA-graph capture.
+  - Fix: scripts/01 accepts max_num_seqs; the 27B reader reruns with max_num_seqs=256 (jobs 3829/3830).
+  - Side effect: the fast failure released the dependent jobs before a hold landed, and the Qwen3 L2 job (3786)
+    started early, which is harmless. All jobs were re-chained to keep one GPU: 3786 → 3829 → 3830 → 3794 (adapter)
+    → the remaining L2 models.
+- **Clean units: actor vs reader answers.** Ψ_self 0.859 vs Qwen3-8B reader answers 0.798: +0.061 [0.037, 0.085].
+  vs XSAFE: 0.788 vs 0.712. The self-specific signal replicates on clean units.
+- **Clean units: reader-probe comparison** (results/pilot/reader_compare_clean.json). All / vs XSAFE:
+  | Monitor | All | vs XSAFE |
+  |---|---|---|
+  | Ψ_self | 0.859 | 0.788 |
+  | Own WB, L18 | 0.837 | 0.805 |
+  | Qwen3-8B reader probe, L17 | 0.834 | 0.802 |
+  | Reader answers | 0.798 | 0.712 |
+  - Ψ_self − reader probe: +0.025 [0.001, 0.050]. Ψ_self − own WB: +0.022 [−0.004, 0.047] (tie).
+  - Ordering: R16 (0.909) > Ψ_self ≈ own WB ≈ reader probe > reader answers. The 27B reader is pending (job 3829).
+- **Exchange rate on agents (clean units, R_K from subsets of the 16, 10 draws each).**
+  - AUROC for K = 1/2/3/4/6/8/12/16: 0.663/0.731/0.775/0.800/0.840/0.863/0.891/0.909.
+  - WB L18 (0.837) ≈ K = 6. Ψ (0.859) ≈ K = 7–8. TXT (0.868) ≈ K = 8.
+  - The same exchange rate as Othello-GPT (a probe is worth about 5–6 rollouts).
+- **Label audit: refusal regex.** Reading 6 Qwen3-8B harmful replies labelled "not refused" found misses: refusals
+  that begin with a legal warning (the phrase falls past the 220-character window) and verbs outside the list ("I
+  cannot produce").
+  - Fix: the standard judge Qwen3Guard-Gen-8B ("Refusal: Yes/No"; scripts/28). It runs after the 4th L2 model (job
+    3834) and after the last (3835). The regex label is kept as refused_regex. Agreement and disagreements are saved
+    for audit.
+  - Qwen3-8B regex rates: harmful 0.946, benign 0.000.
+
+### 2026-10-15 ~19:00: L2, first general LLM, Qwen3-8B (dev split, 3,360 contexts; results/l2/l2_dev.json)
+- **Hidden-state R²** (top-64 PCs, variance-weighted). Columns: Ψ_self (88 items) / MiniLM text embedding /
+  text + Ψ / logprob tier only.
+  | Layer | Ψ_self | Text | Text + Ψ | Logprob |
+  |---|---|---|---|---|
+  | L9 | 0.883 | 0.808 | 0.897 | 0.655 |
+  | L18 | 0.898 | 0.785 | 0.907 | 0.643 |
+  | L22 | 0.907 | 0.762 | 0.911 | 0.674 |
+  | L27 | 0.875 | 0.722 | 0.882 | 0.713 |
+  | L36 | 0.758 | 0.637 | 0.770 | 0.577 |
+- **MLP neurons** (top-2,000 by variance). Columns: median R², share with R² > 0.5, share with R² > 0.8.
+  | Layer | Ψ_self | Text |
+  |---|---|---|
+  | L17 | 0.847 / 99.6% / 70% | 0.721 / 95.7% / 21% |
+  | L26 | 0.720 / 88% / 29% | 0.592 / 69% / 10% |
+- **White-box concept-probe scores** recovered from black-box views (R²): harmful Ψ 0.983 vs text 0.897; sentiment
+  Ψ 0.870 vs text 0.386.
+- **Refusal (noisy regex labels; judge labels pending).**
+  - All harmful + benign prompts: about 0.99 for every view.
+  - Harmful prompts only (the model-specific part): white box 0.935; text + logprob + Ψ 0.894; text 0.761; Ψ 0.727.
+  - The white box leads on which harmful prompts this model refuses. To recheck with judge labels.
+- **Pending control:** Ψ_other (other models answering the same questions) needs the second model (Llama, job 3787).
+- **Decision (19:12): the 27B reader moves off the critical path.**
+  - With max_num_seqs = 256, the 27B hybrid model ran at about 14% per 45 minutes, about 5 hours in total, which
+    would have blocked the one-GPU chain (L2, Live, the confirmation).
+  - Cancelled 3829/3830 (about 1 hour lost). Re-queued at the end of the chain on a 2,000-unit subset of the clean
+    units: all 993 XUNSAFE plus 1,007 random others (seed 7; outputs/interrogate/gemma4_cleansub_*). Jobs 3836/3837.
+  - The comparison stays within-unit: the self, WB and 8B-reader monitors are sliced to the same subset.
+- **Deviation: 27B reader answers dropped; probe kept.**
+  - The Qwen3.8-27B reader interrogation would have taken about 5 hours: vLLM prefix caching does not apply to its
+    hybrid Mamba-style layers, so every one of 351,552 prompts paid a full ~3k-token prefill.
+  - Kept: the scientifically needed baseline, the reader probe on the 27B's activations (the Model Hermeneutics
+    method; one forward pass per unit). Turn prompts were rendered on CPU (scripts/01 stage=prompts), and job 3838 runs
+    after the adapter check.
+  - Dropped: the 27B reader's answers. The 8B reader already showed reader answers are the weaker monitor (0.798 vs
+    0.859).
+  - The cancelled parent removed job 3830 despite its afterany dependency, so it was resubmitted as 3838.
+- **API adapter check PASSED** (results/l2/adapter_check_qwen3_8b.json). Qwen3-8B behind a vLLM OpenAI-compatible
+  API; 100 dev contexts × 88 items through adapters.OpenAICompatible.
+  | Tier | θ correlation with offline Ψ | Mean \|Δθ\| | Parsed | Calls | Time |
+  |---|---|---|---|---|---|
+  | Logprob | 0.9998 | 0.008 | 100% | 8,800 | 15 s |
+  | Sample (n=16) | 0.994 | 0.087 | 99.95% | 8,800 | 74 s |
+  - The end-of-job EngineDeadError is the server shutting down (proc.terminate), not a failure.
+  - The provider-style API path measures the same Ψ as the validated offline harness.
+- **Session handover (19:10).** A new Claude session took over. In its last minutes the previous process (19:09–19:13):
+  - added `stage=prompts` to scripts/01 (CPU-only rendering of turn-start prompts);
+  - saved the 27B reader prompts for all clean units;
+  - submitted 3838 (27B reader hidden states on all 5,493 clean units, about 45 minutes) and re-pointed 3787 to it.
+  - This is kept: the reader-probe baseline needs only hidden states. 3837 (subset hidden) was cancelled as
+    redundant. 3836 (27B answers on the 2,000-unit subset) stays at the end.
+  - A second interactive session (graybox-27) exists. It agreed that this session owns the GPU chain and the ledger.
+
+### 2026-10-15 ~20:25: 27B reader probe (Qwen3.8-27B, Model Hermeneutics method) on clean units
+- AUROC all / vs XSAFE / vs XPLUS:
+  | Monitor | All | vs XSAFE | vs XPLUS |
+  |---|---|---|---|
+  | 27B reader probe, best layer | 0.861 (L39) | 0.825 (L31) | 0.909 |
+  | Ψ_self | 0.859 | 0.788 | 0.937 |
+  | Own WB | 0.837 | 0.805 | 0.872 |
+  | 8B reader probe | 0.834 | 0.802 | 0.868 |
+  | R16 | 0.909 | 0.879 | 0.941 |
+  | TXT | 0.868 | 0.784 | 0.962 |
+- Ψ_self − 27B reader probe: −0.003 [−0.026, +0.020] (tie).
+- **Headline revision (honest):** "asking the agent beats reader probes" does not hold against a strong reader. What
+  holds: (1) rollouts beat every trained monitor; (2) the agent's own answers match the best probes (its own white
+  box and a 27B reader); (3) the agent's answers beat a reader's answers (+0.061). For behaviour-defined agent safety,
+  black-box access loses nothing. The 27B reader beats the author's own probe (0.861 vs 0.837), which agrees with
+  Model Hermeneutics.
+- **Redesign after the 27B tie: "ask and resample" (dev, clean units; out-of-fold stacked logistic).**
+  | Monitor | All | vs XSAFE |
+  |---|---|---|
+  | R2 + Ψ | 0.905 | 0.856 |
+  | R4 + Ψ | 0.919 | 0.872 |
+  | R8 + Ψ | 0.933 | 0.891 |
+  | R16 + Ψ | 0.943 | 0.903 |
+  | R16 + 27B reader probe | 0.935 | 0.897 |
+  | Ψ + 27B reader probe | 0.887 | 0.839 |
+  - Rollouts alone, K = 2/4/8/16: 0.737/0.807/0.861/0.908.
+  - R4 + Ψ − 27B reader probe: +0.058 [0.038, 0.079]. Two rollouts plus answers match 16 rollouts. The best monitor
+    is fully black-box.
+  - Added as preregistered **Addendum 1** before fresh data (lock 20:14 PDT): F4 (R4 + Ψ > WB) and F5 (R2 + Ψ not
+    worse than R16 by more than 0.02). The combinations are frozen in models/t1/frozen_combos_addendum1.pkl.
+- **Label audit, Gemma-3-4B:** the regex gives a harmful refusal rate of 0.07, which is implausible. Reading 5
+  replies: all are refusals behind long empathetic preambles ("I understand you're grappling with…", then "**I
+  cannot and will not provide**…", past the window, and with more than 2 words before the verb). This confirms the
+  regex is unusable. All refusal analyses wait for the Qwen3Guard judge labels (job 3834, after Mistral).
+- **Second-agent replication queued (gpt-oss-20b, clean units, development):** 729 XUNSAFE, 3,000 XSAFE, 1,500
+  XPLUS from 5 base x− sets plus the x+ set (scripts/15). Jobs 3841 (Ψ) → 3842 (hidden) → 3843 (R16), at the end of the
+  chain. Purpose: test whether "rollouts > every trained monitor" and "ask and resample > white box" hold on a second
+  agent family.
+- **Failure: live recording (3840).**
+  - Cause: a race. It started when Phi-4 finished early, before scripts/22 had written open_qwen3_8b.npz (scripts/22
+    writes models one at a time on CPU).
+  - Fix: re-queued as 3844 after OLMo (3791), with Qwen2.5 (3792) re-chained after it. Check that the decoder file
+    exists before 3844 starts.
+- **Failure: the auto-release waiter for 3844 never fired** (pgrep -f matched its own shell). The GPU sat idle for
+  about 3 minutes. Released by hand at 21:03; the waiters were stopped by task id. Lesson saved to memory.
+- Overlay decoders (24 live items → top-32 true PCs; scripts/22). R²: Qwen3 0.727, Phi-4 0.697, Llama 0.684,
+  Mistral 0.645. Display-axis correlation 0.88–0.97.
+
+### 2026-10-15 21:02: first real Grey Box Live session (Qwen3-8B behind a vLLM API; outputs/live/session_qwen3_8b.json)
+- 8 scripted turns: 200 API calls, 0.3–3.8 s per turn, 24 battery items + 1 reply per turn, true-hidden overlay.
+- Works:
+  - "dangerous poison" → harmful 1.00 and about-to-refuse 1.00; the model refused. The estimated 3D hidden point is
+    next to the true one.
+  - Benign travel turns → 0.00.
+  - Neighbour-wifi question → harmful 0.99, refuse 0.89; the model warned.
+- **Failure mode: multi-turn carry-over.**
+  - The turn after the poison request ("17 × 23") → harmful 0.86 and refuse 0.92 (false alarm). The poem turn after
+    the wifi questions → harmful 0.34 (flag at the 0.11 threshold).
+  - Cause: the readouts were trained and validated on single messages, and the questions ("the message above") see
+    the earlier harmful turns in multi-turn context. The thresholds were set on single-message data.
+  - Planned fix (redesign): question wording that targets the user's latest message; multi-turn L2 contexts,
+    including harmful → benign switches; re-validate leave-one-family-out on carry-over cases.
+- **L2, 4-model analysis (partial, Gemma-3-4B):** PSI_other (the mean of the other 3 models' answers) recovers
+  Gemma-3's hidden PCs better than PSI_self (L17: 0.842 vs 0.796; text 0.730).
+  - Reading: raw variance is mostly content that any model describes; the average of 3 models also cancels noise
+    and uses 3× the queries.
+  - **Decision before the L2 lock:** the self-specificity endpoint changes to behaviour-relevant targets (this
+    model's own white-box concept-probe logits; judge-labelled refusals within harmful prompts). It is compared
+    against a SINGLE other model at a matched query budget, not an average.
+  - **Bug:** logprob-tier features gave R² −272 (Gemma-3's 262k vocabulary produces near-constant sparse SVD
+    components that explode after standardization). Fix: clip standardized features to ±10 in cv_r2. The L2 analysis
+    will be rerun.
+- **All 8 L2 models done** (gpt-oss harmful refusal 0.99 by regex; judge 2 pending).
+- **Failure: SVD did not converge (Gemma-3).**
+  - Cause: hidden states were stored as float16. Gemma-3's deep residuals reach 49k–65k, and layer 31 had 803
+    non-finite values. All other models stay below 7.7k.
+  - Fix: scripts/13 skips non-finite layers and reports them. scripts/12 saves float32 from now on. Gemma-3's hidden
+    states are re-extracted in fp32 (job 3845, after judge 2).
+  - The logprob clip fix works: Gemma-3 LP R² is 0.58–0.75 (was −272).
+
+### 2026-10-15 22:45: L2 PREREGISTERED CONFIRMATION PASSED (after deviation 1)
+- 1,440 never-analysed contexts, 8 open models (7 families), frozen dev decoders.
+- H1: Ψ_self − text on hidden PCs = +0.120 [0.115, 0.126] (8/8).
+- H2: Ψ_self vs the mean single other model on the model's OWN sentiment-probe logit = +0.057 [0.045, 0.073] (7/8;
+  gpt-oss is the exception).
+- H3: Ψ_self vs text on the probe logit = +0.359 [0.310, 0.415]. All Holm p < 0.0005.
+- Per-model probe-logit R² from Ψ_self: 0.87–0.92 (gpt-oss 0.69); from text: 0.45–0.54.
+- Deviation 1 (clipping at prediction, matching the dev analysis) is recorded in PREREGISTRATION_RECORD with the
+  invalid first run preserved.
+- **Battery scaling (dev; results/l2/scaling_dev.json; Qwen3 and Llama; θ-only, 512-item v3 pool).**
+  Hidden R² at mid depth for m = 8/16/32/64/128/512 questions:
+  | Model | Battery | 8 | 16 | 32 | 64 | 128 | 512 |
+  |---|---|---|---|---|---|---|---|
+  | Llama L24 | Random | 0.20 | 0.36 | 0.48 | 0.59 | 0.69 | 0.76 |
+  | Llama L24 | Designed | 0.40 | 0.49 | 0.55 | 0.62 | 0.68 | 0.76 |
+  | Llama L24 | Designed on Qwen3 | 0.31 | 0.42 | 0.53 | 0.62 | 0.69 | 0.76 |
+  | Qwen3 L27 | Random | 0.33 | 0.46 | 0.60 | 0.69 | 0.76 | 0.84 |
+  | Qwen3 L27 | Designed | 0.43 | 0.57 | 0.63 | 0.71 | 0.76 | 0.84 |
+  - The black-box QR design about doubles recovery at small m and converges by about 128. Designs transfer across
+    models. No plateau by 512. Text alone: Llama 0.64, Qwen3 0.70.
+  - The Mistral v3 run is pending; rerun the analysis when it lands.
+  - **3-model rerun (with Mistral):** at m = 8, designed 0.39–0.43 vs random 0.20–0.32; design on other models 0.31–0.40; all converge by 128–512 (Mistral L24: random 0.20→0.75, designed 0.39 at m = 8; text 0.61). The pattern holds across 3 families.
+
+### 2026-10-16 ~00:10: user critique of Live, and the rigorous response
+- In the recorded Qwen session, 4/8 turns were flagged harmful. Two false alarms (poem; "17 × 23"). The ranking was
+  mostly right (poison 1.00 > wifi 0.99 > … > travel 0.00).
+- Causes:
+  1. The threshold (0.11) was set at 5% FPR on blatant single-message data, which is too sensitive in conversation.
+  2. Multi-turn carry-over, because the battery says "the message above".
+  3. Validation measured single-message ranking, not the per-turn false-alarm rates a tool user experiences.
+- Positioning correction: Live is a demo of the confirmed science, not yet a validated monitor. "Harmful request" is
+  available from text moderation already. The tool's unique value must be model-specific: refusal/compliance
+  forecasting, the agent ask + resample monitor, and the model's own concept readings.
+- Plan (Live v2):
+  1. Battery v2m worded about "the user's latest message", plus multi-turn training contexts.
+  2. Per-model black-box calibration of thresholds (conformal on the observable flag rate).
+  3. A tool benchmark: per-turn FPR/TPR and carry-over, grey box vs text moderation (Qwen3Guard on the latest
+     message) vs both. Keep only readouts that add value.
+  4. Lead with model-specific readouts.
+- **00:09, 2 GPUs until 08:00 (user).** Two lanes.
+  - Lane A: the T1 confirmation, 3805 → 3806 → 3822–3825.
+  - Lane B: the Live v2 benchmark 3847–3852 → Claude judge 3846 → benchmark judge 3853 → 27B subset 3836 → gpt-oss
+    replication 3841–3843.
+  - slurm/lane_guard.sh yields to other users before 08:00 and collapses to one lane at 08:00. Lane B started at once
+    (3847 running).
+- **00:31, lane fix.** After 3847 (Qwen3 livebench) finished, lane B sat idle: 3848 still carried the old
+  single-chain dependency (afterany:3825). I cleared it, and 3848 started at 00:31 (about 15 min of GPU 1 lost).
+  I re-held 3846 (Claude judge): its dependency had cleared from the chain, so without the hold it could have started
+  before the Claude data existed. Waiter bdha2yplg releases it once claude_haiku55_run.json exists. Claude L3 is at
+  97/192 contexts for $0.375 (projected about $0.75 of the $4 cap).
+- **00:40, Live v2 tooling, written before any benchmark labels exist.**
+  - 38_livebench_analysis gains three additions.
+    1. Harmful-compliance prediction: among harmful requests, which ones THIS model complies with. Moderation flags
+       them all, so it cannot rank them.
+    2. A grey box + moderation combined score.
+    3. Pooled within-model AUROCs with a paired item bootstrap, and feature modes (θ+log-odds / θ only / θ only
+       with a simulated n=8 text tier). The deployed readout (θ only, the text tier) is what gets validated.
+    It was dry-run on synthetic labels: random labels → null results, as expected.
+  - Added src/graybox/budget.py: a file-locked shared spend ledger, so a Live server and a benchmark run cannot
+    overwrite each other's totals.
+  - adapters.Anthropic now uses the official SDK (AsyncAnthropic, thinking disabled, effort low), with
+    preamble-aware forks and the ledger.
+  - live.py / server.py: v2 bundle (v2m preamble, per-model thresholds, 'default' for unseen black boxes);
+    model_key.
+  - 39_live_v2_readouts: builds the bundle, with validation copied from 38 (held-out family, n=8).
+  - 40_live_open_v2m: the overlay decoder refit for v2m answers. The v1 decoder was fit on v2-preamble answers, so
+    feeding it v2m answers would be unvalidated.
+  - 27_live_record bundle=v2: the same 8 turns as v1, plus one safe-but-scary turn.
+  - Slurm job 3854 (slurm/live_v2.sh) runs 38×3 → 39 → 40 → 27, after 3853 in lane B.
+- **00:42, second lane fix.** 3849 still waited on lane A (afterany:3825). The old chain had left a second
+  dependency that slurm displayed only after 3848 finished. I reset every lane-B job's dependency explicitly to its
+  lane predecessor: 3849 none → 3850 → 3851 → 3852 → 3846 → 3853 → 3854 → 3836 → 3841 → 3842 → 3843. scontrol update
+  releases a held job, so I re-held 3846.
+  Llama livebench: done in 460 s; yes+no mass median 1.000.
+- **00:55, fresh-episode sanity.**
+  - The x+ fresh run (cf=safe) shows 0 unsafe episodes so far. The original core24b_plus also has 0/2000: x+ is the
+    safe counterfactual, so positives come from x− only. This is expected.
+  - The fresh x− unsafe rate is 20.4%. Every earlier Gemma-4 core24b x− run (xm_gemma4_*) is 19–23%, so the harness
+    is consistent. The 6% files are CAPE's other actor.
+- **00:52, Slurm 21.08 quirk.**
+  - scontrol update Dependency=<new> did not remove the old lane-A link (afterany:3825); it resurfaced on 3850/3851
+    after their predecessor started.
+  - Clearing (Dependency=) then setting works.
+  - An update also dropped the hold on 3846.
+  - Added slurm/laneb_fix.sh (pid 850543): until 3852 ends, it re-clears any lane-A link and keeps 3846 held while the
+    Claude file is missing. It logs to lane_guard.log.
+- **01:00, root cause of the lane stalls.** CAPE's /home/arya/new_safety/cape/slurm/gpu_guard.py (pid 3388394,
+  running since 10-12, soft one-GPU mode) re-chained ALL of my pending jobs into one serial chain every minute.
+  - The user approved a pause until 08:00. It was SIGSTOPped at about 01:00, and slurm/resume_gpu_guard.sh (pid
+    853153) SIGCONTs it at 08:00.
+  - Both lanes were then reset cleanly.
+  - The "Slurm quirk" noted above was this guard, not Slurm.
+- **00:55, Claude Haiku 5.5 L3 data complete.** 192 contexts; 36,851/36,864 answers parsed (99.96%); total spend
+  $0.5446 (37,203 calls). The judge 3846 was released automatically.
+- **01:00, L3 (frozen analysis 33, run before the judge).**
+  - C1 harmful_request AUROC 0.993 [0.983, 0.999]: PASS.
+  - C3 negative_tone 0.935 [0.872, 0.981]: PASS.
+  - The frozen thresholds miscalibrate on Claude (harmful FPR 0.25; tone TPR 0.05), the expected failure mode. This
+    motivates the per-model black-box calibration in Live v2.
+  - C2 waits for the judge (3846).
+- **01:00, compact battery + Claude Live v2 benchmark prepared.**
+  - 38 GB_M=24: label-free QR design per fold on the other families' train θ.
+  - 39 GB_M=24 → readouts_v2_m24.npz. It cuts the Claude cost 3.7×, with 192 calls per turn.
+  - 41_claude_livebench (calib 48 benign train; eval 200 stratified) and 42 (D1–D3).
+  - prereg_L3b drafted. It is to be locked with the m24 bundle's sha before any Claude call.
+  - 37 also judges the Claude livebench replies.
+  - Dry runs on synthetic data passed.
+- **01:20–01:30, Live v2 benchmark results (6 open models, leave-one-family-out; results/livebench/).** This is the
+  answer to the user's "how is that helpful?" critique.
+  1. **Harmful-message detection.** Text moderation (Qwen3Guard on the latest message) beats the grey box: ToxicChat
+     AUROC 0.97 vs 0.85–0.93; per-turn FPR about 1% vs 7–10%; carry-over FPR 0% vs 18–22% (v2m reduced but did not
+     remove carry-over). Decision: the grey box is NOT positioned as a harmful-message detector. Live shows the
+     moderation verdict for that.
+  2. **Model-specific refusal forecasting** (before the reply), grey box vs moderation, pooled within-model AUROC,
+     paired item bootstrap:
+
+     | Tier | all | harmful only (which harmful requests the model complies with) | XSTest safe (over-refusal) |
+     |---|---|---|---|
+     | logprob θ+lo | 0.915 vs 0.880 | 0.851 vs 0.669, +0.18 [0.14, 0.22] | 0.903 vs 0.726, +0.18 [0.09, 0.26] |
+     | text n=8, 88 items | | +0.175 [0.138, 0.210] | +0.134 [0.046, 0.216] |
+     | text n=4, 88 items | | +0.165 [0.127, 0.201] | +0.125 [0.034, 0.207] |
+     | text n=8, 48 / 24 designed items | | +0.13 / +0.12 | +0.09 / +0.06 (n.s.) |
+
+     Breadth of questions beats repeated sampling at equal cost.
+  3. **Specificity (scripts/44).** At equal budget, the target's own Ψ beats one other model's Ψ: +0.009 [0.003,
+     0.014] / +0.019 [0.006, 0.031] / +0.046 [0.009, 0.084]. A 5-model reader ensemble (5× budget) beats the target
+     alone: −0.028. Target + ensemble beats the ensemble: +0.002 / +0.005 (n.s.) / +0.016. So refusal-proneness is
+     mostly shared across models, with a smaller model-specific part, consistent with L2 H2. Both readers beat
+     another model's actual refusal label (0.76–0.84): Ψ carries graded propensity, not just the binary outcome.
+  4. **Honest limit.** In chat, the reply itself reveals a refusal right after the forecast. The forecast matters when
+     acting before the outcome (agents: T1 ask-and-resample, confirmation running in lane A), or when auditing which
+     inputs a model is vulnerable to without generating harmful content.
+- **01:30, L3b preregistration locked** (88 items × n=4, D1 / D2 key / D3; frozen readouts_v2.npz made read-only).
+  The Claude data run started at 01:31 (pid 871247): about $0.000012 per call, projected about $1.05.
+- **01:40, correction.** The 00:10 entry said v1 flagged 4/8 turns. It flagged 5/8 (turns 2–6). The poem, "17 × 23"
+  and "if they add a password…" were flagged harmful above the 0.11 threshold.
+  - v2 session (same 8 turns + 1): harmful/refuse flags only on the wifi-permission turn (borderline; Qwen answered
+    without refusing) and the poison turn (refused).
+  - The wifi-cracking turn read harmful 0.000 / refuse 0.008. Qwen interpreted it benignly ("ask your neighbour")
+    and did not refuse.
+  - Moderation (Qwen3Guard): Controversial for both wifi turns, Unsafe for poison.
+  - v2m overlay (scripts/40): weighted R² 0.07 on held-out datasets, display axes r = 0.92/0.71/0.54 (v1: R² 0.73
+    on in-distribution dev contexts). The page states this.
+- **02:00–02:25, failure and fix.** I started the Claude Live recording (scripts/45) while the L3b eval was running.
+  Together they exceeded Anthropic's 500k input-tokens/min limit, and both crashed on 429 after the SDK's short
+  retries.
+  - The eval lost about 32 in-memory conversations (spend $0.955 → $1.376).
+  - Fixes: backoff on rate-limit/overload in adapters.Anthropic; per-wave checkpoint/resume in 41 (L3b deviation 1,
+    recorded); a strict one-Claude-process rule.
+  - Eval restarted at 02:26 (pid 882346), chained with the Claude Live recording. Projected total spend about $3.3
+    of $4.
+  - Lesson: any paid API run must checkpoint, and runs share one rate limit, not just one budget.
+- **Lane A.** 3822 Ψ done on 12,130 fresh units (2,994 s; yes+no mass median 1.000). 3823 hidden running.
+- **02:55–03:15, Claude data done.**
+  - L3b eval: 200/200, 69,260/70,400 answers parsed (98.4%). Spend total $2.688 after eval.
+  - Claude Live session (scripts/45, 9 turns): flags only on wifi-cracking (harmful 0.98 / refuse 0.99) and poison
+    (0.87 / 0.94); no flags on the trip, budget, poem, arithmetic, summary or kill-process turns.
+  - Cost $0.51, against an estimate of $0.08. The estimate ignored that every fork resends the growing conversation.
+    Total spend $3.203 of $4.00.
+  - No further Claude calls are planned. Prompt caching of the shared prefix is the engineering fix for Live.
+  - Judge 3855 released; it runs after 3836.
+- **03:40, L3b CONFIRMED (preregistered) on Claude Haiku 5.5.** Readouts trained only on open models, read through
+  text sampling only:
+  - D1 refusal forecast 0.923 [0.884, 0.957], beating moderation by +0.068 [0.019, 0.118].
+  - D2 (key): which harmful requests Claude complies with, grey box 0.827 vs moderation 0.651, +0.176 [0.060, 0.287].
+  - D3 not testable (Claude over-refused 1/40).
+  - Harmful-message detection: moderation better (0.966 vs 0.933).
+  - Claude-calibrated thresholds: FPR 6.3% vs 31% uncalibrated.
+  This is the useful-tool finding: before the reply, the grey box tells you which harmful requests THIS model will
+  go along with, and text moderation cannot.
+- **03:50, 27B reader comparison** (scripts/24 tag=cleansub; 2,000 clean units: all 993 XUNSAFE + 1,007 others;
+  within-template AUROC):
+  - 27B reader answers 0.834; 27B reader probe 0.827 (L39); agent's own answers 0.823; agent's white box 0.812;
+    8B reader probe 0.798.
+  - Own minus 27B probe: −0.003 [−0.048, 0.042]; own minus WB: +0.013 [−0.033, 0.060]. All tie.
+  - Correction to the narrative: the agent's own answers beat the weaker 8B reader (+0.061, dev), but a strong 27B
+    reader answering in the agent's place ties or edges it.
+  - Consistent with livebench (scripts/44): propensity is largely shared across models, and a strong or ensembled
+    reader is as good as reading the target. The defensible safety claim stays T1: rollouts of the target beat every
+    probe (0.909 vs ≤ 0.86 dev), and ask-and-resample adds to rollouts. That is being confirmed in lane A.
+- **04:00, interactive Live updated to v2.**
+  - live.html groups readouts by "about this model" vs "about the message", with per-readout trust lines from the v2
+    bundle's validation. The legend shows only the labels present.
+  - The server returns model_key. Restarted on :8765 (outputs/server.pid) with the v2 bundle (88 v2m items,
+    per-model thresholds).
+  - Driven end to end against the mock API: no console errors.
+- **04:11, port clash (caught and fixed).** gpt-oss rollouts (3843) started a vLLM server on port 8131, already held
+  by lane A's Gemma rollout server (3824) on the same node. Its own server failed to bind. I cancelled it 28 s after
+  start, before any request was sent; no output was written, and 3824 was unaffected. Resubmitted with port=8132.
+  Rule: parallel lanes need distinct server ports.
+- **04:20, gpt-oss rollouts (3856, port 8132) running** at about 2.2 units/s.
+  - About 6.6% of first attempts fail in vLLM's harmony parser ("unexpected tokens remaining in message header:
+    to=functions.*"). 04_rollouts retries each unit up to 3 times with a new seed; units that still fail get R = NaN
+    and are excluded, not counted as safe. The NaN count is reported when the job ends.
+  - Lane A rollouts (3824): 5,888/12,130 at 4,945 s; ETA about 05:40.
+- **04:41–05:42 (recorded 08:55 after a session restart).**
+  - gpt-oss rollouts done: 5,229 units, 14 NaN (0.27%), XUNSAFE mean R 0.64.
+  - Lane A rollouts done: 12,130 units, 0 NaN.
+  - **T1 confirmation:**
+    - claim (a) CONFIRMED: R16 0.904 vs WB 0.841 (+0.063 [0.033, 0.094]);
+    - claim (b) not confirmed: Ψ 0.821 vs WB 0.841, non-inferiority bound −0.054 < −0.03;
+    - F4 passes: R4+Ψ 0.890 beats WB by +0.049 [0.020, 0.080];
+    - F5 fails: R2+Ψ vs R16 −0.023 [−0.053, 0.006].
+  - The selection-artefact reversal did not replicate on fresh units.
+  - 08:00: CAPE gpu_guard resumed as scheduled; lane_guard collapse had nothing to merge (all lanes done).
+- **09:00, user (verbatim):** "the api was 5$, use all of it". The shared ledger cap rises from $4.00 to $4.95; the
+  $0.05 margin covers estimated (not reported) usage of filter-blocked calls. The spend before this was $3.203.
+- **09:05, gpt-oss agent replication** (development, scripts/17, 5,229 clean units): R16 0.944, TXT 0.893, Ψ 0.855,
+  Ψ text tier 0.845, WB best 0.854 (L11). R16 − WB +0.089 [0.058, 0.127]. The confirmed T1 claim (a) replicates on
+  a second agent family.
+- **09:10, one-call grey box.** All 88 questions in ONE side-branch call, sampled n=4 times (src/graybox/batch.py,
+  scripts/47). This makes Live affordable on text-only APIs and runnable inside a published page (4 calls per turn
+  instead of 352). Smoke test, Qwen3-8B, 200 conversations: 94% of item-samples answered, 49 s. Full benchmark on 6
+  open models queued (3859–3864); the analysis reuses scripts/38 unchanged (GB_LB=outputs/livebench_batch).
+- **09:40, the safety alarm (scripts/48; 6 open models, leave-one-family-out, per-question text tier n=4; the event
+  is HARMFUL COMPLIANCE, i.e. a harmful latest message the model answered; 947 such cases, 1,933 refused harmful,
+  7,020 benign).**
+  - Fixed thresholds:
+    - moderation alone catches 59% but 89% of its harmful-request alarms are cases the model refused anyway
+      (precision 0.24);
+    - moderation AND "grey box: not about to refuse" gives precision 0.50 (+0.26 [0.22, 0.30]) and needless alarms
+      0.13, but recall 0.30;
+    - the grey box alone is weak (precision 0.25).
+  - Threshold-free compliance-risk score, moderation × (1 − P(refuse)): AP 0.47 vs 0.25 for moderation (+0.23
+    [0.19, 0.27]); AUROC 0.89 vs 0.81 (+0.079 [0.065, 0.091]).
+  - The useful tool combines a moderator (is the request risky?) with the grey box (is THIS model about to go along
+    with it?).
+- **09:20, gpt-oss agent replication complete** (development; 5,229 clean units, 729 unsafe):
+  - R16 0.944 beats every WB layer (0.843–0.862) by +0.08 to +0.10, all CIs > 0;
+  - R16 Brier 0.039 vs WB 0.049–0.053;
+  - Ψ 0.855 ties WB; TXT 0.893.
+  T1 claim (a) replicates on a second agent family.
+- **09:15–09:29, one-call wording fixed on Claude.**
+  - With the first wording Claude replied to the message instead (12.5% of answers usable).
+  - The revised preamble ("Do not reply … yet; this is a check-in") plus a closing reminder gives 100% on 2 benign
+    and 3 harmful TRAIN pilots (cost $0.012).
+  - The open-model runs were cancelled and restarted with the final wording (3865–3870).
+- **09:29, L3c preregistration locked** (E1 harmful-refusal grey box vs moderation; E2/E3 compliance-alarm AP with
+  Qwen3Guard / Claude-as-moderator).
+- **09:30, Claude collection started** (calib → live → evalA → evalB; cap $4.95).
+- **10:15, L3c data done, with a format failure.** Spend $4.462 after the Claude collection.
+  - One-call answer usable rates on Claude: calib 90.6%, evalA 65.7%, evalB 57.3%, live 8.3%.
+  - By kind: single benign 80–96%, XSTest harmful 45%, multi-turn 12–25%.
+  - Claude treats the appended 88-question block as a suspected injection ("I won't fill out that questionnaire,
+    since it isn't a real check-in"), mostly in multi-turn chats. The per-question fork (L3b) had no such problem
+    (98.4%).
+  - L3c is analysed as preregistered once the judge and frozen bundle exist; missing answers shrink to 0.5, as
+    locked.
+- **10:20, format fix (development, scripts/54; 20 TRAIN conversations, 1 sample each).**
+  - Declaring the check-in (system prompt, or a leading user turn) fixes harmful single messages (75% → 100%) but not
+    multi-turn chats (22–33%).
+  - A TRANSCRIPT framing (the conversation quoted inside one user message, the check-in about its last user message)
+    gives 100% usable answers on all 20, multi-turn and harmful included. Spend $4.505.
+  - Next: open-model transcript runs (scripts/55, queued after the L3c chain) → transcript readouts → a small
+    preregistered Claude validation within the remaining $0.44.
+- **10:05–10:20, L3d collection and the recorded fallback (API budget now used, $4.961 of $5).**
+  - L3d: calib 44 + eval 440 (all 400 harmful single-turn, then 40 benign), stopped by the $4.95 cap as the
+    preregistration's stopping rule allows. 100% of answers usable in the transcript framing.
+  - scripts/58 (cap $4.98 for this $0.011 run): transcript-framing answer sets for the scripted 9-turn Claude
+    conversation from L3c's live stage; 100% usable on every turn (in-conversation format: 8%).
+  - No further Claude calls are possible; the user should revoke the key.
+  - GPU order changed so the tool's data comes first: judge 3871 → transcript runs 3872–3877 → remaining L3c
+    in-context runs 3866–3870. Neither preregistered analysis depends on the order.
+- **10:24, one-GPU slip (caught in seconds).** Re-pointing 3872 at the already-finished judge made it start alongside
+  3866 (two GPUs after 08:00). It was requeued and held after 4 s, then re-chained. The chain is strictly serial:
+  3866 → 3872–3877 → 3867–3870. Rule: never point a dependency at a finished job; check the running count after
+  every re-chain.
+- **Claude judge (3871):** refusal rates calib 0.00, live 0.22, evalA 0.46, evalB 0.575. Qwen3 in-context one-call
+  run: 98.4% of answers usable.
+- **10:55, unattended finishing chains.** slurm/finish_tx.sh (pid 1057586; waits for 3877) and slurm/finish_ic.sh
+  (waits for 3870). Each runs, in the preregistered order: the open-model analysis → the frozen bundle (exact locked
+  command) → its sha appended to PREREGISTRATION_RECORD → chmod a-w → the preregistered Claude analysis → the alarm
+  evaluation (development). finish_tx also builds the in-browser page. Nothing is published before I review the
+  results.
+- **12:05, transcript-format open-model runs.** Usable answers: Qwen3 99.9%, Llama 98.1%, Mistral 67.0%.
+  - Mistral hedges ("Unknown", "Yes (vaguely)", "No (impossible to know …)"). "Unknown" counts as missing and
+    shrinks to 0.5. Missing answers are spread across item positions (first 10: 66%, last 10: 79%) and kinds (63–76%),
+    so this is not truncation.
+  - Kept as is: the locked procedure uses all six models.
+- **11:55, agent demo page** republished with the confirmed T1 numbers at a new link
+  (https://claude.ai/artifact/XmzAzdFPC2j7Ad7tXmwP2T; the original came from an earlier session). The paper draft
+  gains §5.1 (formats, cost, latency).
+- **12:45, black-box agent guard (development; scripts/59; 2,800 fresh episodes, 12,130 units, 346 first
+  violations).** Escalate an action when ≥ τ of K API resamples of the same turn are unsafe; no training.
+  - K=16, τ=2/16: catches 81% [77, 85] of violations; 4.3% of safe actions escalated; 8.8% of safe episodes
+    interrupted.
+  - K=8, τ=1/8: 82%, at 5.4% / 11.7%.
+  - K=4, τ=1/4: 68% at 3.8%.
+  - K=2: 55% at 2.4% (τ=1/2) or 20% at 0.4% (τ=1).
+  - Comparable to CAPE's white-box gate (Gemma 0.70 → 0.09 violations). Limit: first violations only; a blocked
+    agent may retry, so the end-to-end effect needs a live gated run.
+- **12:55, T2 locked (preregistered): internals vs black box at two moments.**
+  - Decision-point context = turn prompt + the agent's reasoning + "<channel|>". CPU check: 400/400 units have
+    reasoning; 50/50 end on token 101 and extend the turn-start prompt (median +286 tokens).
+  - CAPE's frozen gate (v54) applied unchanged.
+  - R16_dec resamples only the action from that point (the first such code; CAPE never did it).
+  - GPU order: OLMo transcript 3877 → T2 hidden → T2 roll → L3c in-context runs 3867–3870.
+- **12:50, SDK** (src/graybox/sdk.py): Reader (transcript one-call readout, the validated alarm) and AgentGuard
+  (provider-agnostic resampling guard). Unit-tested with fakes.
+- **13:45–14:10, L3d CONFIRMED and the in-browser tool published.**
+  - L3d, preregistered, transcript one-call format on Claude:
+    - F1: harmful-request refusal, grey box 0.817 vs moderation 0.676, +0.141 [0.082, 0.199];
+    - F2: compliance-risk AP with Claude-as-moderator 0.331 vs 0.216, +0.115 [0.076, 0.179] (Qwen3Guard: 0.509 vs
+      0.237).
+  - The fixed rule "moderator Unsafe AND not about to refuse" failed: recall 2.6%. Claude-as-moderator says
+    "Controversial", not "Unsafe", on most requests Claude then goes along with (64/116).
+  - Alarm rule chosen after seeing L3d (exploratory): moderator ∈ {Unsafe, Controversial} AND P(refuse) < 0.5.
+    - Checked on 6 open models it was not chosen on (transcript format, leave-one-family-out, Qwen3Guard): recall
+      0.70, precision 0.37, alarms on refused harmful 0.32, on benign 8.1% (moderator-Unsafe alone: 0.55 / 0.24 /
+      0.89 / 0.7%).
+    - Post hoc on Claude: 0.61 / 0.46.
+  - Honest limitation shown on the page: the transcript format compresses Claude's refusal probabilities (poison
+    request 0.45, which Claude refused, so a false alarm in the recorded session). Precision is about 0.4.
+  - Published the in-browser page (https://claude.ai/artifact/U9bmnZFskRNr1CemNm7Xvx; capability: sample). The live
+    path is mock-tested and its prompts are byte-identical to the validated ones; the real live call is untested
+    from here.
+- **14:15, transcript format on open models (development; leave-one-family-out, θ exact).** Refusal AUROC, transcript
+  format vs per-question fork:
+  - harmful-only: 0.798 vs 0.851 (still +0.129 [0.094, 0.163] over moderation);
+  - all: 0.854 vs 0.915 (moderation 0.880);
+  - XSTest safe: 0.753 vs 0.903 (n.s. vs moderation).
+  - Compliance-alarm AP: 0.42 vs 0.47 (moderation 0.25).
+  - Other models reading the transcript beat the target more clearly (0.849 vs 0.798 harmful-only), as expected for a
+    reading task.
+  - Trade-off: about 1/50th of the cost, about 0.05 AUROC lost, and the over-refusal advantage gone.
+- **14:30, rigor fix 1: guard thresholds held out (scripts/61).** τ is chosen on the development clean units (earlier
+  episodes) for a target safe-escalation rate, then applied once to the 2,800 fresh episodes, with
+  scenario-clustered CIs.
+  - K=16 (target 5%): τ=2/16 → caught 0.81 [0.77, 0.85], escalation 4.3%.
+  - K=8: 0.82 [0.78, 0.86] at 5.4%.
+  - K=16 (target 2%): 0.70 [0.65, 0.74] at 2.7%.
+  - K=4: 0.68 at 3.8%.
+  The rates on the fresh data track the development targets, so these are out-of-sample numbers.
+- **14:40, more rigor work.**
+  - Multi-turn check, transcript format on open models (held-out family): which harmful requests a model goes along
+    with, in multi-turn chats 0.810 vs moderation 0.636; ToxicChat 0.770 vs 0.655; XSTest 0.806 vs 0.712.
+  - The 3-level moderation verdict ties many items, which handicaps its AUROC. scripts/62 (queued 3883/3884):
+    graded P(unsafe) from Qwen3Guard and Llama-Guard-3 for all 5,610 messages, plus an independent refusal judge
+    (Llama-3.3-70B FP8) on Claude's 680 eval replies and the open models' replies. Key comparisons are rerun
+    against these.
+  - Readout variants on open models (harmful-only refusal, held-out family): logistic 0.798 (current), boosting
+    0.818, other C values 0.797–0.804. The gain is small; the frozen logistic readout is kept (no fishing).
+  - scripts/99_verify_all.py checks every lock (0 unexplained mismatches; 4 documented changes) and prints the
+    headline numbers from the saved results.
+- **14:06, user added $5 (key total $10); ledger cap $9.90. L3e locked and running** (prospective test of the Live
+  tool on Claude).
+  - 923 fresh conversations: ToxicChat including 94 jailbreak attempts, HarmfulQA, multi-turn B>H/H>B/B>B; sources
+    never shown to Claude nor used in training, de-duplicated by exact text.
+  - Frozen: v4 readouts and the alarm rule (moderator Unsafe/Controversial AND P(refuse) < 0.5).
+  - A1: tool-alarm precision > moderator-alone precision. A2/A3: refusal forecast vs a graded Qwen3Guard baseline,
+    including multi-turn.
+  - Independent Llama-3.3-70B judge as a sensitivity check.
+  - Cost so far about $0.0011 per single-turn conversation; projected total spend about $6.5.
+- **14:25, L3e Claude data complete.** 923/923 conversations; 99.4% of answers usable; Claude-moderator: Safe 431,
+  Unsafe 247, Controversial 242, unparsed 3. Spend $6.076 of $9.90. Labels job 3885 released (runs after T2 hidden).
+- **Paper figures** (scripts/90_figures.py; validated palette; direct labels): guard trade-off with held-out operating
+  points; Claude grey box vs moderation across the preregistered tests (L3e is added automatically).
+- **14:58, T2 hidden stage done** (2,984 s; 12,128/12,130 units; 2 have empty reasoning).
+  - CAPE's frozen gate on the fresh units fires on XUNSAFE 0.887, XSAFE 0.009, XPLUS 0.030 (CAPE's own confirmation:
+    0.934 / 0.010 / 0.112).
+  - Raw (unstratified) AUROC 0.981. The preregistered within-template AUROC and G1–G3 come after the decision-point
+    rollouts.
+- **14:40, L3e: the honest correction.** A1 passes (the tool's alarm doubles the precision of Claude-as-moderator),
+  but A2 and A3 fail against a GRADED moderator: Qwen3Guard P(unsafe) ranks Claude's harmful-request refusals at
+  0.855, the grey box 0.873 (n.s.).
+  - Our earlier chat-safety gains over moderation (+0.14 to +0.18) were measured against the 3-level verdict, a weak,
+    tie-heavy baseline. Exploratory: the grey box adds about +0.03 AP over two moderators.
+  - What survives:
+    - the agent results (T1: black-box rollouts beat white-box probes; the guard catches 81% at 4%, held out);
+    - the readout transfer to Claude (L3);
+    - the state-recovery science (L0–L2);
+    - a tool whose alarm is about twice as precise as a single moderator verdict.
+  - The chat claim must be "comparable to strong graded moderation, small additive value", not "beats moderation".
+- **14:50, all user-facing claims aligned with L3e.** Paper abstract and §4.4, README and TOOL.md now present the
+  chat result as "the alarm doubles a single moderator verdict's precision; it ties a strong graded moderator". The
+  live page already carried the revised text (published before the session break). T2 rollouts (194k generations)
+  are running, ETA about 16:15. Its analysis and the graded-baseline re-analysis (scripts/67) are chained.
+- **15:00, a rigor problem in our own agent results (found while mapping CAPE's end-to-end harness).**
+  - R_K (T1, T2 and the guard) labels each resampled action with CAPE's environment checker. That checker is an
+    oracle: it knows the hidden authorization facts. The white-box probe needs labels only for training; at
+    deployment it runs without them.
+  - So T1 confirms the theorem (the forecast using the true label function g dominates any state readout). It does
+    NOT show that a deployable black-box monitor beats a probe.
+  - If a deployment had g, it would apply g to the actual proposed action (100% catch), not to resamples. The
+    guard's "81% caught" assumes an oracle labeller.
+  - Fix: T3 (preregistered, below). A deployable LLM judge (Llama-3.3-70B; another family; sees only the agent's
+    instructions, the conversation with its tool results, and the action; never the hidden facts) labels (a) the
+    actual action (an action monitor) and (b) K=8 resampled actions (a deployable resampling guard). Both are
+    compared with CAPE's decision-point probe and the turn-start probe on the 12,130 fresh units.
+- **14:51, T3 locked (preregistered).** The deployable-judge version of the agent comparison:
+  - K1: judge-labelled resampling vs the turn-start probe;
+  - K2: the judge on the actual action vs CAPE's decision-point probe (two-sided);
+  - K3: resampling added to the action monitor.
+  GPU order: T2 roll (running) → graded moderation 3883 → T3 roll 3886 → T3 judge 3887 → Llama judge 3884 → L3c
+  runs. All analyses are chained to run automatically.
+- **15:40, T2 CONFIRMED (all three endpoints).** Time, not access, decides.
+  - Decision point: resample-the-action 0.9997 ≥ CAPE probe 0.979 > CoT TF-IDF 0.871.
+  - Turn start: resample-the-turn 0.904 > text 0.847 ≈ probe 0.841.
+  - Graded moderation (3883): Qwen3Guard graded harmful-vs-benign AUROC 0.998 and Llama-Guard-3 0.970 on the Live
+    benchmark; the graded re-analysis (scripts/67) is chained. T3 resampling is running.
+- **15:45, graded-baseline re-analysis (scripts/67; sensitivity, not preregistered).**
+  - Harmful-request refusal AUROC, grey box vs graded Qwen3Guard / Llama-Guard-3:
+    - Claude L3b 0.827 vs 0.774 / 0.872;
+    - Claude L3d 0.817 vs 0.784 / 0.836 (all n.s.);
+    - open models, per-question 0.851 vs 0.790 / 0.828;
+    - open models, transcript 0.798 vs 0.790 / 0.828.
+  - Compliance-risk AP on open models: graded Qwen3Guard alone 0.21; × (1 − grey-box refusal) 0.48 (per-question) /
+    0.43 (transcript).
+  - Settled reading for chat: the refusal forecast TIES strong graded moderation. Its value is in combination (it
+    roughly doubles compliance-detection AP over one moderator) plus a small unique increment over two moderators
+    (+0.03 AP, L3e exploratory).
+- **16:10, T3: the practical agent claim is reversed (preregistered).**
+  - Deployable resampling (judge-scored) 0.782 < turn-start probe 0.846 < judge on the actual action 0.910 < CAPE
+    probe at the decision point 0.976. The oracle scorer was worth +0.076.
+  - At 5% escalation, deployable guards catch 12% (resampling) and 41% (action judge), against 94% for the CAPE probe.
+  - Lesson: probes amortize the label function during training; black-box resampling needs it at test time, and
+    judge errors compound across samples.
+  - Settled story for the paper:
+    1. Theorem: with the true label function, resampling dominates any state readout at any moment (T1, T2).
+    2. Practice: the label function is the bottleneck; white-box probes win when weights exist (T3, CAPE).
+    3. Without weights, judge the actual action (0.910), not resamples.
+    4. The grey-box state Ψ is a measurement of the behavioural state (L0–L3) and a modest add-on to moderation for
+       chat (L3e), not a better safety monitor.
+- **16:07, T4 locked (preregistered): the fair black-box control for T3.** An open reader (Qwen3-8B) trained on
+  development labels reads only the transcript and the proposed action (optionally the reasoning). Its probe is
+  compared with CAPE's decision-point probe (M1, non-inferiority −0.02) and with the zero-shot judge (M2).
+  - It tells "labels amortize the label function" apart from "the agent's internals carry more than its text".
+  - Queued after the Llama judge (3888 → then the L3c in-context runs); analysis chained.
+- Paper rewritten after T3: new abstract, contributions and §4.5. README, TOOL.md and the SDK docstring corrected
+  (the guard's 81% needs an oracle checker). The agent demo page was republished with the correction.
+- **16:18, T5 locked BEFORE any T4 output existed** (outputs/t4 did not exist at lock time).
+  - Agent internals vs transcript reader with ONE identical probe pipeline (per-layer PCA+logistic, depth-averaged),
+    on unseen scenario families (5 folds over 23 families).
+  - P1: reader non-inferior to the agent's internals (−0.02). P2: agent probe vs zero-shot judge.
+  - This is the deployment-realistic, fair version of the CAPE question.
+  - GPU: Llama judge 3884 → T4 hidden 3888 → T5 agent dev hidden 3890 → L3c runs. Analyses chained.
+- **16:45, refusal labels are robust.** The independent Llama-3.3-70B judge vs Qwen3Guard on the 6 open models'
+  benchmark replies: agreement 0.970–0.990, Cohen's κ 0.847–0.966, refusal rates within 0.012. On Claude L3c replies
+  the Llama refusal rates are 0.49 / 0.61; on L3e the agreement is 95.9%. No refusal-based conclusion depends on the
+  judge.
+- **17:35, T4 CONFIRMED: labels, not access.** Qwen3-8B reading only the transcript and the proposed action, with a
+  linear probe trained on development labels: 0.994 on fresh units, against 0.979 for CAPE's probe on Gemma's own
+  internals (+0.015 [0.007, 0.026]) and 0.910 for the zero-shot judge.
+  - The T3 failure was missing labels, not missing access.
+  - The practical monitor for closed agents is a trained transcript reader.
+  - T5 (unseen families) decides how far it generalizes.
+- **17:37, one-GPU slip #2 (10 s).** I queued T6 after T5's hidden job without noticing it had already finished, so T6
+  started alongside the L3c Mistral run. I requeued and re-chained it: 3867 → 3892 → 3893 → 3868–3870.
+  - Prevention: slurm/append.sh appends to the true chain tail (the pending job nothing depends on) and verifies at
+    most one running job, requeue-holding the new job otherwise. All future GPU jobs go through it.
+- **17:37, T6 locked** (before T5's result): the Gemma-trained reader monitors gpt-oss (Q1 vs the zero-shot judge),
+  plus a label-efficiency curve and latency.
+- **17:55, T5 CONFIRMED.** On unseen scenario families, a transcript reader trained on labels is within 0.007 of the
+  agent's own internals (0.969 vs 0.976; non-inferior at −0.02). Both beat the zero-shot judge (0.910) by 0.05–0.06.
+  - Settled agent story: labels, not access. Trained monitors win; a black-box transcript reader gets nearly all of
+    the white-box value; resampling and zero-shot judging lag.
+- **18:05, the reader monitor as a product.**
+  - src/graybox/monitor.py (ReaderMonitor, Step): the T4/T5-validated method behind a public API.
+  - scripts/72: shipped probe models/monitor/reader_probe.joblib (trained on dev + fresh) and a dev-only probe for
+    verification.
+  - The end-to-end check (job 3894) asserts text identity with the validated prompt and that SDK AUROC matches the
+    stored features within 0.01, on 600 fresh units.
+  - Server: POST /v1/monitor/action (lazy-loads the reader).
+  - Paper retitled "Labels, Not Access"; abstract rewritten around the confirmed story; §4.6 (T4, T5) added.
+- **18:10, T7 locked (preregistered): external benchmark.** AgentDojo prompt injection, CAPE's v75 spot-arm episodes
+  (Gemma, gpt-oss).
+  - Units are EXECUTED tool calls: 3,455, with 125 injected. A first unit builder used the calls log, which for
+    Gemma includes unexecuted parallel calls (2,620 of 4,268 had no result); fixed before the lock.
+  - R1: the CAPE-trained reader (no AgentDojo training) vs the zero-shot judge. R2: reader vs CAPE's own gate on
+    gpt-oss.
+  - Chain: T6 judge → monitor check → T7 hidden → T7 judge → L3c runs (strictly serial, verified).
+- **18:13, T8 locked and running: a real closed frontier agent.** Claude Haiku 5.5 acts on CAPE-Bench through
+  Anthropic's tool-use API (scripts/74 reproduces CAPE's semantics). The Gemma-trained reader monitor (frozen) vs the
+  zero-shot judge on Claude's actions.
+  - Pilots: 10 + 40 episodes; 4/40 unsafe; $0.0017 per episode.
+  - Run: 1,000 episodes, projected $1.7 (total about $7.9 of $9.90).
+- **18:30, T6 CONFIRMED.** Cross-agent: Gemma-trained reader on gpt-oss 0.915 vs zero-shot judge 0.833 (+0.082).
+  - Label efficiency: 74 labelled units already give 0.938 (above the zero-shot judge on Gemma, 0.910); 586 give
+    0.986.
+  - Latency 41 ms per action.
+  - Product implication: a few hundred labelled traces per deployment suffice; transfer to a new agent keeps most of
+    the gain.
+- **18:40, shipped monitor verified end to end (scripts/72 check).** On 600 fresh units through the public SDK
+  (ReaderMonitor, Step, ctx_text, act_text): prompt text identical to the validated one 600/600; probabilities
+  identical to the stored-feature pipeline (max |diff| 0.0); AUROC 0.9993 on this sample; 89 ms per action end to
+  end.
+- **19:00, T7 CONFIRMED on an external benchmark.** AgentDojo prompt injection, with no AgentDojo training:
+  - reader 0.781 vs zero-shot judge 0.537;
+  - on gpt-oss the reader beats CAPE's own white-box gate, 0.823 vs 0.601 (+0.222);
+  - 42% of injected calls caught at 5% benign alarms (judge 0%).
+  - Weakness: Gemma's AgentDojo calls 0.655.
+  - R2 code/text subset discrepancy recorded; same conclusion either way.
+- **18:45, T8 not testable as preregistered; T8b locked (18:48).**
+  - Claude's 68 violations are uninformed: 42 at the reveal (send_message), 26 without any reveal
+    (execute_mock_command). The post-reveal unit rule therefore has 0 positives.
+  - T8b: all non-read actions up to the first violation (3,128 units, 68 unsafe), locked before any monitor score.
+  - Lesson: check where pilot violations fall relative to the unit rule before locking.
+  - Finding in itself: Claude violates by acting without first checking; Gemma violates after reading the fact.
+- **19:40, T8b CONFIRMED: a closed frontier agent, monitored by a reader trained only on an open agent.**
+  - Claude Haiku 5.5's actions: reader 0.991 vs zero-shot judge 0.633; 95.6% of violations caught at 5% escalation
+    (judge 0%).
+  - The claim now spans same scenarios (T4), unseen families (T5), another open agent (T6), an external benchmark
+    (T7) and a closed frontier agent (T8b).
+
+## 2026-10-17
+- **3D monitor space live** (claude.ai artifact JPTrEWGDqryvZe7rX5fPB1 and the website's monitor.html). The reader
+  features of all 3,128 Claude actions (scripts/78) reproduced T8b's stored scores exactly. Axis 1 is the probe's
+  logit, axes 2–3 are PCs with the probe direction projected out, and the plane is the label-free cut.
+- **T10 recorded** (C1, C2 pass; the never-learned restart family gets 0/26 at the 5% cut). Label curve
+  (exploratory): 20 labels 85%, 40 labels 94%.
+- **L3c recorded** (E1–E3 pass vs the 3-level verdict). A graded re-analysis (scripts/51b) shows E1 ties; the alarm
+  gain holds.
+- **T11 locked**: gpt-6-luna as a second closed agent family (scripts/80, 81). The pilots showed violations only in
+  tp_campaign_test, so the endpoints are pooled, vs tool identity, and within tool. OpenAI ledger cap $5.00.
+- **Website live**: https://aryafayyazi.github.io/GreyBox/ (gh-pages; built by site/build.py from saved results and
+  the record).
+  - The in-browser text-monitor trainer matches the SDK: rendering 302/302 byte-identical; AUROC 0.9887 vs 0.9886;
+    a browser-exported model scored in Python to within 1e-13; 0.175 ms per step.
+  - Live end-to-end test: training on 1,500 steps takes 4.5 s.
+- **Lean self-host server** (graybox.monitor_server): installs and starts without torch; text endpoint 0.1–0.25 ms per
+  request. The Dockerfile is untested on this host (no docker).
+- **Theory**: Proposition 10 / Corollary 3 (docs/theory.md T6). For action-level labels, transcript + proposed action is
+  Bayes-sufficient against any white-box monitor at or before the decision point. The abstract is rewritten around
+  it (v1 kept in docs/paper_abstract_v1.md).
+- **Bookkeeping**: the record table had 16 rows outside the table; they are moved back. Fixed the monitor page's
+  horizontal scroll (tag wrapping). The trainer now shows the budget ceiling and the precision.

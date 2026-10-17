@@ -1,0 +1,48 @@
+{
+ "n": 5229,
+ "n_unsafe": 729,
+ "layer": 32,
+ "auroc_gptoss": {
+  "READER_from_gemma": 0.9152,
+  "J_act": 0.8331
+ },
+ "Q1_READER_minus_Jact_gptoss": [
+  0.0824,
+  0.0434,
+  0.1288
+ ],
+ "Q1_pass": true,
+ "reported_label_efficiency_by_training_scenarios": {
+  "10": {
+   "train_units_mean": 74,
+   "fresh_gemma_auroc_mean": 0.9376,
+   "reps": 5
+  },
+  "25": {
+   "train_units_mean": 164,
+   "fresh_gemma_auroc_mean": 0.9734,
+   "reps": 5
+  },
+  "50": {
+   "train_units_mean": 297,
+   "fresh_gemma_auroc_mean": 0.9781,
+   "reps": 5
+  },
+  "100": {
+   "train_units_mean": 586,
+   "fresh_gemma_auroc_mean": 0.9859,
+   "reps": 5
+  },
+  "200": {
+   "train_units_mean": 1188,
+   "fresh_gemma_auroc_mean": 0.989,
+   "reps": 5
+  },
+  "896": {
+   "train_units_mean": 5493,
+   "fresh_gemma_auroc_mean": 0.9939,
+   "reps": 1
+  }
+ },
+ "reported_reader_latency_s_median": 0.0411
+}

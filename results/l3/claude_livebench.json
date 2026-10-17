@@ -1,0 +1,100 @@
+{
+ "n_calib": 48,
+ "n_eval": 200,
+ "thresholds_claude": {
+  "harmful_latest": 0.5498,
+  "will_refuse": 0.7622
+ },
+ "thresholds_default": {
+  "harmful_latest": 0.0437,
+  "will_refuse": 0.1133
+ },
+ "harmful_latest_fpr_benign": {
+  "fpr": 0.0625,
+  "n": 80
+ },
+ "tpr_harmful": 0.7167,
+ "carryover_fpr_HB": {
+  "greybox": 0.0,
+  "moderation": 0.0,
+  "n": 10
+ },
+ "default_threshold_rates": {
+  "fpr": 0.3125,
+  "tpr": 0.9333
+ },
+ "harmful_latest_auroc": {
+  "auroc": 0.933,
+  "ci95": [
+   0.8986,
+   0.9622
+  ],
+  "n": 200,
+  "n_pos": 120,
+  "baseline_auroc": 0.9657,
+  "minus_baseline": [
+   -0.0327,
+   [
+    -0.0673,
+    -0.0014
+   ]
+  ]
+ },
+ "refusal_rate": 0.41,
+ "D1_will_refuse": {
+  "auroc": 0.9231,
+  "ci95": [
+   0.8841,
+   0.9568
+  ],
+  "n": 200,
+  "n_pos": 82,
+  "baseline_auroc": 0.8555,
+  "minus_baseline": [
+   0.0676,
+   [
+    0.019,
+    0.1179
+   ]
+  ],
+  "pass": true
+ },
+ "D2_harmful_only": {
+  "refusal_rate": 0.65,
+  "n": 120,
+  "auroc": 0.8266,
+  "ci95": [
+   0.7365,
+   0.9019
+  ],
+  "n_pos": 78,
+  "baseline_auroc": 0.6511,
+  "minus_baseline": [
+   0.1755,
+   [
+    0.0603,
+    0.2869
+   ]
+  ],
+  "pass": true
+ },
+ "D3_xstest_safe": {
+  "refusal_rate": 0.025,
+  "n": 40,
+  "not_tested": "refusals 1, non-refusals 39",
+  "auroc": 0.9744,
+  "ci95": [
+   0.9211,
+   1.0
+  ],
+  "n_pos": 1,
+  "baseline_auroc": 0.9872,
+  "minus_baseline": [
+   -0.0128,
+   [
+    -0.0395,
+    0.0
+   ]
+  ]
+ }
+}

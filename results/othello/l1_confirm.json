@@ -1,0 +1,32 @@
+{
+ "n_states": 10000,
+ "n_games": 1000,
+ "E1_greybox_hidden_R2": 0.9673,
+ "input_only_hidden_R2": 0.8731,
+ "greybox_occupied_acc": 0.7967,
+ "input_only_occupied_acc": 0.7537,
+ "whitebox_occupied_acc": 0.9825,
+ "E1_CI95": [
+  0.9669,
+  0.9676
+ ],
+ "E1_pass": true,
+ "E2_delta_R2": [
+  0.0944,
+  0.0855,
+  0.1054
+ ],
+ "E2_p_one_sided": 0.0,
+ "E3_delta_occupied_acc": [
+  0.0431,
+  0.0399,
+  0.0464
+ ],
+ "E3_p_one_sided": 0.0,
+ "holm": {
+  "E2": 0.0,
+  "E3": 0.0
+ },
+ "E2_pass": true,
+ "E3_pass": true
+}

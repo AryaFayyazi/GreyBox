@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T14:50:40-07:00",
+ "sha256": {
+  "docs/prereg_T3_deployable.md": "28645f1553239cb7f6e749296bcd97cb26c40ff98c61f4b6eb06b003e8fc78a7",
+  "scripts/68_t3_deployable.py": "91bdae9e923ebd955b5c9d03251bd6285db4368650ceaa2307d28b409f2d4230"
+ }
+}

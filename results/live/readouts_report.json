@@ -1,0 +1,70 @@
+{
+ "models": [
+  "gemma3_4b",
+  "llama31_8b",
+  "mistral7b",
+  "qwen3_8b"
+ ],
+ "items": [
+  "T02",
+  "T03",
+  "T04",
+  "T05",
+  "T06",
+  "T09",
+  "T10",
+  "T11",
+  "T12",
+  "A01",
+  "A08",
+  "I01",
+  "I02",
+  "I05",
+  "E02",
+  "E03",
+  "P01",
+  "P03",
+  "P04",
+  "P06",
+  "S01",
+  "U01",
+  "U09",
+  "U11"
+ ],
+ "frame_var_explained": 0.4372,
+ "axes": {
+  "harmful_request": {
+   "heldout_family_auroc": {
+    "gemma": 0.9991,
+    "llama": 0.9993,
+    "mistral": 0.9989,
+    "qwen": 0.9999
+   },
+   "worst": 0.9989,
+   "kept": true,
+   "n": 4480
+  },
+  "will_refuse": {
+   "heldout_family_auroc": {
+    "gemma": 0.994,
+    "llama": 0.9878,
+    "mistral": 0.9255,
+    "qwen": 0.9995
+   },
+   "worst": 0.9255,
+   "kept": true,
+   "n": 4480
+  },
+  "negative_tone": {
+   "heldout_family_auroc": {
+    "gemma": 0.9123,
+    "llama": 0.9681,
+    "mistral": 0.9375,
+    "qwen": 0.9579
+   },
+   "worst": 0.9123,
+   "kept": true,
+   "n": 2240
+  }
+ }
+}

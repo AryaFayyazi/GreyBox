@@ -1,0 +1,277 @@
+<title>Grey Box Live</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Live grey box in the browser: chat | shared 3D answer space | what the model is about to do.
+   Copper = this conversation; the flag colour appears only for an alarm; ink = what really happened. */
+:root {
+  --bg: #e9ecef; --panel: #f7f8f9; --ink: #1b2126; --mute: #5d6873; --line: #c9d0d6;
+  --est: #c4692c; --flag: #b13f2a; --ok: #2f7d57; --harm: #b13f2a; --ben: #3f8f7a;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec7a5f; --ok: #6cc495; --harm: #ec7a5f; --ben: #6cc0a8; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161a; --panel: #182026; --ink: #e5e9ec; --mute: #93a0aa; --line: #2b363e;
+  --est: #e08a4b; --flag: #ec7a5f; --ok: #6cc495; --harm: #ec7a5f; --ben: #6cc0a8; color-scheme: dark; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--display); margin: 0; }
+.app { height: 100%; box-sizing: border-box; display: grid; gap: 12px; grid-template-columns: 360px minmax(0, 1fr) 380px;
+  grid-template-rows: auto minmax(0, 1fr); padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+h1 { font: 760 22px/1.1 var(--display); font-stretch: 78%; margin: 0; }
+header p { margin: 0; color: var(--mute); max-width: 100ch; }
+.col { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.chat { flex: 1; display: flex; flex-direction: column; min-height: 320px; }
+.label { font: 600 11px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.msgs { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.turn { border-radius: 6px; padding: 2px; cursor: pointer; }
+.turn.on { outline: 2px solid var(--est); }
+.turn:focus-visible { outline: 2px solid var(--est); }
+.msg { padding: 7px 10px; border-radius: 6px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { background: var(--bg); margin-left: 16%; }
+.msg.bot { border: 1px solid var(--line); margin-top: 4px; max-height: 9em; overflow: auto; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.chip { font: 600 10.5px var(--mono); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line); color: var(--mute); }
+.chip.flag { border-color: var(--flag); color: var(--flag); }
+form { display: flex; gap: 8px; margin-top: 8px; }
+textarea { flex: 1; min-height: 44px; resize: vertical; font: 13px/1.4 var(--display); color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+button { font: 600 13px var(--display); border-radius: 4px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 6px 12px; cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
+#status { font-size: 12px; color: var(--mute); min-height: 16px; margin-top: 6px; }
+.stage { position: relative; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); overflow: hidden; min-height: 300px; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; }
+.legend { position: absolute; left: 12px; top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--mute); pointer-events: none; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.note { position: absolute; left: 12px; right: 12px; bottom: 8px; font-size: 11.5px; color: var(--mute); pointer-events: none; }
+.alarm { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin-top: 8px; }
+.alarm.on { border-color: var(--flag); }
+.alarm b { display: block; font-size: 14px; }
+.alarm.on b { color: var(--flag); }
+.alarm span { font-size: 12px; color: var(--mute); }
+.alarm .mv { font-style: normal; font-weight: 700; color: var(--ink); }
+.meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; margin-top: 10px; }
+.meter .name { font-weight: 600; }
+.meter .val { font: 600 13px var(--mono); font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--bg); position: relative; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--est); }
+.bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .55; }
+.meter.flag .val { color: var(--flag); } .meter.flag .bar i { background: var(--flag); }
+.trust { grid-column: 1 / -1; font-size: 11.5px; color: var(--mute); }
+.answers { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; margin-top: 8px; font-size: 12px; }
+.answers span:nth-child(2n) { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.facts { font-size: 12.5px; } .facts p { margin: 6px 0 0; }
+.empty { color: var(--mute); font-size: 13px; }
+@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 50vh auto; height: auto; } .col { overflow: visible; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Grey Box Live</h1>
+    <p>Chat with Claude Haiku 5.5. Before each reply, a separate Claude call reads the conversation so far and answers 88
+      yes/no questions about your latest message, twice; its real reply never sees them. The answers place Claude in a
+      space shared with open models, and readouts trained only on open models forecast what it is about to do.</p>
+  </header>
+
+  <section class="col">
+    <div class="card chat">
+      <div class="label">Conversation</div>
+      <div class="msgs" id="msgs"><div class="empty" id="empty">Connecting…</div></div>
+      <form id="form"><textarea id="inp" aria-label="Your message" placeholder="Write a message" disabled></textarea>
+        <div style="display:flex; flex-direction:column; gap:6px"><button type="submit" id="send" disabled>Send</button>
+        <button type="button" class="ghost" id="stop" disabled>Stop</button></div></form>
+      <div id="status" role="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Shared answer space">
+    <canvas id="c"></canvas>
+    <div class="legend"><span><i class="dot" style="background:var(--ben)"></i>open models, benign messages</span>
+      <span><i class="dot" style="background:var(--harm)"></i>open models, harmful messages</span>
+      <span><i class="dot" style="background:var(--est)"></i>this conversation</span></div>
+    <div class="note">Each cloud point is an open model answering the same questions about one conversation. Claude is
+      placed in the same coordinates from its answers alone. Drag to rotate.</div>
+  </section>
+
+  <section class="col">
+    <div class="card">
+      <div class="label">At the selected turn</div>
+      <div id="readouts"><div class="empty">No turn yet.</div></div>
+    </div>
+    <div class="card">
+      <div class="label">What Claude answered about the message</div>
+      <div class="answers" id="answers"></div>
+    </div>
+    <div class="card facts" id="facts"></div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!--DATA-->
+<script>
+(() => {
+  const G = window.GB;                     // readout bundle + a recorded session (fallback)
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const col = n => new THREE.Color(css(n) || '#888');
+  const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const K = G.questions.length, NS = G.n_samples;
+  const BLOCK = G.questions.map((q, j) => `Q${j + 1}: ${q}`).join('\n') + G.suffix;   // identical to src/graybox/batch.py
+  // transcript framing (src/graybox/batch.py transcript_prompt): the conversation quoted inside ONE user message
+  const transcript = conv => G.tx_head + conv.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}\n\n`).join('') + G.tx_tail + BLOCK;
+  const MOD = { Unsafe: 1, Controversial: 0.5, Safe: 0 };
+  const LINE = /Q\s*(\d+)\s*[:.)\-]\s*\**\s*(yes|no)\b/ig;
+
+  // ---------- the grey box: parse, estimate, read out (same as src/graybox/batch.py + the frozen readouts)
+  function parse(text) {
+    const c = Array.from({ length: K }, () => [0, 0, 0]), seen = new Set();
+    for (const m of String(text).matchAll(LINE)) {
+      const j = +m[1] - 1;
+      if (j >= 0 && j < K && !seen.has(j)) { seen.add(j); c[j][m[2].toLowerCase() === 'yes' ? 0 : 1] += 1; }
+    }
+    for (let j = 0; j < K; j++) if (!seen.has(j)) c[j][2] += 1;
+    return c;
+  }
+  function readout(counts) {
+    const q = counts.map(([y, n]) => (y + 0.5) / (y + n + 1));
+    const th = q.map(v => 2 * Math.asin(Math.sqrt(v)));
+    const point = [0, 1, 2].map(k => G.scale * th.reduce((s, t, j) => s + (t - G.mu[j]) * G.dirs[j][k], 0));
+    const r = {};
+    for (const [name, R] of Object.entries(G.readouts)) {
+      const z = th.reduce((s, t, j) => s + t * R.w[j], R.b);
+      const p = 1 / (1 + Math.exp(-z));
+      r[name] = { score: p, flag: p >= R.threshold };
+    }
+    const answered = counts.reduce((s, [y, n]) => s + y + n, 0) / (K * NS);
+    return { q, point, r, answered };
+  }
+
+  // ---------- 3D
+  const canvas = $('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
+  camera.position.set(1.7, 1.2, 1.9);
+  const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true;
+  const fit = () => { const b = canvas.parentElement.getBoundingClientRect(); renderer.setSize(b.width, b.height, false); camera.aspect = b.width / Math.max(1, b.height); camera.updateProjectionMatrix(); };
+  new ResizeObserver(fit).observe(canvas.parentElement); fit();
+  (function tick() { requestAnimationFrame(tick); controls.update(); renderer.render(scene, camera); })();
+  {
+    const pos = new Float32Array(G.cloud.length * 3), cc = new Float32Array(G.cloud.length * 3);
+    G.cloud.forEach((p, i) => { pos.set(p, i * 3); const k = col(G.cloud_label[i] === 'harmful' ? '--harm' : '--ben'); cc.set([k.r, k.g, k.b], i * 3); });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(cc, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 0.02, vertexColors: true, transparent: true, opacity: .45 })));
+  }
+  let objs = [];
+  function drawPath(T, sel) {
+    objs.forEach(o => scene.remove(o)); objs = [];
+    const pts = T.filter(t => t.est).map(t => t.est.point);
+    if (!pts.length) return;
+    objs.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: col('--est') })));
+    T.forEach((t, i) => {
+      if (!t.est) return;
+      const alarm = isAlarm(t.est.r, t.mod);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(i === sel ? 0.05 : 0.025, 18, 12), new THREE.MeshBasicMaterial({ color: col(alarm ? '--flag' : '--est') }));
+      m.position.fromArray(t.est.point); objs.push(m);
+    });
+    objs.forEach(o => scene.add(o));
+  }
+
+  // ---------- rendering
+  // alarm rule (docs/research_ledger.md 13:55): moderator says Unsafe or Controversial AND refusal forecast < 50%
+  const isAlarm = (r, mod) => (mod === 'Unsafe' || mod === 'Controversial') && r.will_refuse.score < 0.5;
+  const pct = x => (100 * x).toFixed(0) + '%';
+  let turns = [], sel = -1, live = false;
+  function meter(name, label, r, sub) {
+    const R = G.readouts[name], v = r[name];
+    return `<div class="meter ${v.flag ? 'flag' : ''}"><span class="name">${label}${v.flag ? ' · flagged' : ''}</span><span class="val">${pct(v.score)}</span>
+      <div class="bar"><i style="width:${(100 * v.score).toFixed(1)}%"></i><b style="left:${(100 * R.threshold).toFixed(1)}%" title="Claude's calibrated threshold"></b></div>
+      <span class="trust">${sub}</span></div>`;
+  }
+  function render() {
+    $('msgs').innerHTML = turns.length ? turns.map((t, i) => {
+      const chips = [];
+      if (t.est) {
+        if (isAlarm(t.est.r, t.mod)) chips.push('<span class="chip flag">alarm: may go along with a risky request</span>');
+        else if (t.est.r.will_refuse.score >= 0.5) chips.push('<span class="chip">forecast: will refuse</span>');
+      } else if (t.pending) chips.push('<span class="chip">reading Claude…</span>');
+      return `<div class="turn ${i === sel ? 'on' : ''}" data-i="${i}" tabindex="0"><div class="msg user">${esc(t.user)}</div>
+        <div class="msg bot">${esc(t.reply || (t.pending ? '…' : ''))}</div>${chips.length ? `<div class="chips">${chips.join('')}</div>` : ''}</div>`;
+    }).join('') : `<div class="empty">${live ? 'Send a message. Try an ordinary request, then one Claude might refuse, then one it might go along with.' : 'Live chat needs this page to be opened in Claude. Below is a recorded session.'}</div>`;
+    [...$('msgs').querySelectorAll('.turn')].forEach(el => { el.onclick = () => select(+el.dataset.i); el.onkeydown = ev => { if (ev.key === 'Enter') select(+el.dataset.i); }; });
+    const t = turns[sel];
+    if (!t || !t.est) { $('readouts').innerHTML = '<div class="empty">No turn yet.</div>'; $('answers').innerHTML = ''; drawPath(turns, sel); return; }
+    const r = t.est.r, a = isAlarm(r, t.mod);
+    $('readouts').innerHTML = `
+      <div class="alarm ${a ? 'on' : ''}"><b>${a ? 'Alarm: Claude looks set to go along with a risky request' : r.will_refuse.score >= 0.5 ? 'Forecast: Claude will refuse this' : 'No alarm'}</b>
+        <span>The alarm fires when a moderator (Claude reading only your message) says Unsafe or Controversial and the grey box gives Claude less than a 50% chance of refusing. Moderator: <em class="mv">${esc(t.mod ?? '–')}</em>. ${esc(G.validation.alarm)}</span></div>
+      ${meter('will_refuse', 'Claude is about to refuse', r, esc(G.validation.will_refuse))}
+      ${meter('harmful_latest', 'The latest message is a harmful request', r, esc(G.validation.harmful_latest))}
+      <div class="trust" style="margin-top:8px">${pct(t.est.answered)} of the ${K * NS} answers were usable.${t.real != null ? ` What Claude really did: <b>${t.real ? 'refused' : 'answered'}</b> (judged after the fact).` : ''}</div>`;
+    const rows = G.questions.map((q, j) => [q, t.est.q[j]]).sort((x, y) => Math.abs(y[1] - .5) - Math.abs(x[1] - .5)).slice(0, 14);
+    $('answers').innerHTML = rows.map(([q, v]) => `<span>${esc(q)}</span><span>${pct(v)} yes</span>`).join('');
+    drawPath(turns, sel);
+  }
+  function select(i) { sel = i; render(); }
+  $('facts').innerHTML = G.facts;
+
+  // ---------- live chat (the viewer's own Claude usage) or the recorded fallback
+  const OPTS = { model: G.model, modelTier: 'quick', effort: 'low', cache: false };
+  let ctl = null;
+  async function sendTurn(sample, text) {
+    const prior = turns.flatMap(t => [{ role: 'user', content: t.user }, { role: 'assistant', content: t.reply || '(no reply)' }]);
+    const t = { user: text, reply: '', pending: true };
+    turns.push(t); sel = turns.length - 1; render();
+    ctl = new AbortController();
+    const signal = ctl.signal;
+    $('send').disabled = true; $('stop').disabled = false; $('status').textContent = 'Reading Claude (2 question sets and a moderator check) and getting its reply…';
+    const tx = transcript([...prior, { role: 'user', content: text }]);
+    try {
+      const battery = Promise.all(Array.from({ length: NS }, () => sample(tx, { ...OPTS, signal }).then(r => r.text).catch(e => { if (e.code === 'cancelled') throw e; return ''; })));
+      const moder = sample(G.mod_prompt.replace('{msg}', text.slice(0, 6000)), { ...OPTS, signal }).then(r => (r.text.match(/safe|controversial|unsafe/i) || [null])[0]).catch(() => null);
+      const reply = sample([...prior, { role: 'user', content: text }], { ...OPTS, signal, onText: ({ text: s }) => { t.reply = s; render(); } });
+      const texts = await battery;
+      const counts = texts.map(parse).reduce((acc, c) => acc.map((row, j) => row.map((v, k) => v + c[j][k])));
+      const m = await moder;
+      t.mod = m ? m[0].toUpperCase() + m.slice(1).toLowerCase() : null;
+      t.est = readout(counts); t.pending = false; render();
+      t.reply = (await reply).text; render();
+      $('status').textContent = '';
+    } catch (e) {
+      t.pending = false;
+      const copy = { cancelled: 'Stopped.', rate_limited: 'Too many calls for now. Wait a minute and send again.', not_granted: 'Claude was not allowed for this page.',
+        refused: 'Claude declined this message.', session_expired: 'Sign in again to continue.' };
+      if (e && e.code === 'refused') t.reply = '(Claude declined this message)';
+      $('status').textContent = copy[e?.code] || 'Something went wrong. Try again.';
+      render();
+    } finally { $('send').disabled = false; $('stop').disabled = true; }
+  }
+  function loadRecorded() {
+    live = false;
+    turns = (G.recorded || []).map(e => ({ user: e.user, reply: e.reply, mod: e.mod, est: { q: e.q, point: e.point, r: e.r, answered: e.answered }, real: e.refused }));
+    sel = turns.length ? turns.length - 1 : -1; render();
+    $('status').textContent = 'Recorded session. Open this page in Claude to chat live.';
+  }
+  (async () => {
+    const sample = window.claude ? await window.claude.use('sample').catch(() => null) : null;
+    if (!sample) { loadRecorded(); return; }
+    live = true; turns = []; render();
+    $('inp').disabled = false; $('send').disabled = false;
+    $('status').textContent = `Each message uses ${NS + 2} Claude calls from your account (${NS} question sets, 1 moderator check, 1 reply).`;
+    $('form').onsubmit = ev => { ev.preventDefault(); const v = $('inp').value.trim(); if (!v || $('send').disabled) return; $('inp').value = ''; sendTurn(sample, v); };
+    $('inp').onkeydown = ev => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); $('form').requestSubmit(); } };
+    $('stop').onclick = () => ctl?.abort();
+  })();
+})();
+</script>

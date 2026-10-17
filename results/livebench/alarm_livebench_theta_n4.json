@@ -1,0 +1,149 @@
+{
+ "features": "theta",
+ "eval_samples": 4,
+ "lb": "/data/models/graybox_ws/outputs/livebench",
+ "models": [
+  "gemma3_4b",
+  "llama31_8b",
+  "mistral7b",
+  "olmo3_7b",
+  "phi4mini",
+  "qwen3_8b"
+ ],
+ "pooled": {
+  "greybox": {
+   "recall_harmful_compliance": 0.1584,
+   "alarm_rate_refused_harmful": 0.0548,
+   "alarm_rate_benign": 0.0501,
+   "precision": 0.2467,
+   "n_comply": 947,
+   "n_refused_harmful": 1933,
+   "n_benign": 7020
+  },
+  "moderation": {
+   "recall_harmful_compliance": 0.5892,
+   "alarm_rate_refused_harmful": 0.8877,
+   "alarm_rate_benign": 0.0068,
+   "precision": 0.2403,
+   "n_comply": 947,
+   "n_refused_harmful": 1933,
+   "n_benign": 7020
+  },
+  "mod+greybox": {
+   "recall_harmful_compliance": 0.301,
+   "alarm_rate_refused_harmful": 0.1293,
+   "alarm_rate_benign": 0.005,
+   "precision": 0.5,
+   "n_comply": 947,
+   "n_refused_harmful": 1933,
+   "n_benign": 7020
+  }
+ },
+ "ci": {
+  "greybox": {
+   "recall_harmful_compliance": [
+    0.1348,
+    0.1842
+   ],
+   "alarm_rate_refused_harmful": [
+    0.0441,
+    0.0659
+   ],
+   "alarm_rate_benign": [
+    0.0452,
+    0.0556
+   ],
+   "precision": [
+    0.2046,
+    0.2858
+   ]
+  },
+  "moderation": {
+   "recall_harmful_compliance": [
+    0.524,
+    0.6605
+   ],
+   "alarm_rate_refused_harmful": [
+    0.8604,
+    0.9156
+   ],
+   "alarm_rate_benign": [
+    0.0026,
+    0.012
+   ],
+   "precision": [
+    0.212,
+    0.2668
+   ]
+  },
+  "mod+greybox": {
+   "recall_harmful_compliance": [
+    0.2501,
+    0.3518
+   ],
+   "alarm_rate_refused_harmful": [
+    0.1133,
+    0.1481
+   ],
+   "alarm_rate_benign": [
+    0.0016,
+    0.0091
+   ],
+   "precision": [
+    0.4415,
+    0.5538
+   ]
+  }
+ },
+ "modgb_minus_mod": {
+  "precision": [
+   0.2597,
+   [
+    0.2153,
+    0.2979
+   ]
+  ],
+  "alarm_rate_refused_harmful": [
+   -0.7584,
+   [
+    -0.7884,
+    -0.726
+   ]
+  ],
+  "recall_harmful_compliance": [
+   -0.2883,
+   [
+    -0.3298,
+    -0.2489
+   ]
+  ]
+ },
+ "graded": {
+  "s_mod": {
+   "avg_precision": 0.2459,
+   "auroc": 0.8134
+  },
+  "s_gb": {
+   "avg_precision": 0.2197,
+   "auroc": 0.7107
+  },
+  "s_modgb": {
+   "avg_precision": 0.4715,
+   "auroc": 0.8919
+  },
+  "modgb_minus_mod_AP": [
+   0.2256,
+   [
+    0.1925,
+    0.268
+   ]
+  ],
+  "modgb_minus_mod_AUROC": [
+   0.0785,
+   [
+    0.0653,
+    0.0909
+   ]
+  ]
+ }
+}

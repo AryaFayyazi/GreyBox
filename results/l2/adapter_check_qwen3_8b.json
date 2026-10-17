@@ -1,0 +1,14 @@
+{
+ "model": "qwen3_8b",
+ "n_ctx": 100,
+ "logprob": {
+  "corr_theta": 0.9998,
+  "mean_abs_dtheta": 0.0079,
+  "frac_parsed": 1.0
+ },
+ "sample16": {
+  "corr_theta": 0.9938,
+  "mean_abs_dtheta": 0.0868,
+  "frac_parsed": 0.9995
+ }
+}

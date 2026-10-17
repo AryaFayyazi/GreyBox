@@ -1,0 +1,88 @@
+{
+ "auroc": {
+  "all": {
+   "PSI_self": 0.8228,
+   "WB_self_L14": 0.7901,
+   "WB_self_L18": 0.8111,
+   "WB_self_L21": 0.8085,
+   "WB_self_L24": 0.8115,
+   "WB_self_L26": 0.7889,
+   "WB_self_L29": 0.7969,
+   "PSI_reader_qwen3_8b": 0.7663,
+   "RP_qwen3_8b_L17": 0.7916,
+   "RP_qwen3_8b_L21": 0.7975,
+   "RP_qwen3_8b_L25": 0.7776,
+   "RP_qwen3_8b_L29": 0.7737,
+   "RP_qwen3_8b_L31": 0.7655,
+   "RP_qwen3_8b_L35": 0.7778,
+   "PSI_reader_qwen38": 0.8344,
+   "RP_qwen38_L31": 0.8233,
+   "RP_qwen38_L39": 0.8266,
+   "RP_qwen38_L45": 0.8223,
+   "RP_qwen38_L51": 0.8217,
+   "RP_qwen38_L57": 0.8184,
+   "RP_qwen38_L63": 0.8025
+  },
+  "vs_XOTHER": {
+   "PSI_self": 0.731,
+   "WB_self_L14": 0.723,
+   "WB_self_L18": 0.7511,
+   "WB_self_L21": 0.7521,
+   "WB_self_L24": 0.7561,
+   "WB_self_L26": 0.7222,
+   "WB_self_L29": 0.74,
+   "PSI_reader_qwen3_8b": 0.6607,
+   "RP_qwen3_8b_L17": 0.7608,
+   "RP_qwen3_8b_L21": 0.771,
+   "RP_qwen3_8b_L25": 0.7235,
+   "RP_qwen3_8b_L29": 0.7133,
+   "RP_qwen3_8b_L31": 0.7159,
+   "RP_qwen3_8b_L35": 0.7152,
+   "PSI_reader_qwen38": 0.7392,
+   "RP_qwen38_L31": 0.7659,
+   "RP_qwen38_L39": 0.7455,
+   "RP_qwen38_L45": 0.7401,
+   "RP_qwen38_L51": 0.7642,
+   "RP_qwen38_L57": 0.7631,
+   "RP_qwen38_L63": 0.7319
+  },
+  "vs_XPLUS": {
+   "PSI_self": 0.9255,
+   "WB_self_L14": 0.8652,
+   "WB_self_L18": 0.8781,
+   "WB_self_L21": 0.8716,
+   "WB_self_L24": 0.8734,
+   "WB_self_L26": 0.8636,
+   "WB_self_L29": 0.8605,
+   "PSI_reader_qwen3_8b": 0.8844,
+   "RP_qwen3_8b_L17": 0.826,
+   "RP_qwen3_8b_L21": 0.8271,
+   "RP_qwen3_8b_L25": 0.8381,
+   "RP_qwen3_8b_L29": 0.8411,
+   "RP_qwen3_8b_L31": 0.8211,
+   "RP_qwen3_8b_L35": 0.8478,
+   "PSI_reader_qwen38": 0.9408,
+   "RP_qwen38_L31": 0.8876,
+   "RP_qwen38_L39": 0.9172,
+   "RP_qwen38_L45": 0.9143,
+   "RP_qwen38_L51": 0.8859,
+   "RP_qwen38_L57": 0.8801,
+   "RP_qwen38_L63": 0.8813
+  }
+ },
+ "PSI_self_minus_RP_qwen3_8b_L21": [
+  0.0268,
+  -0.0286,
+  0.0776
+ ],
+ "PSI_self_minus_RP_qwen38_L39": [
+  -0.0026,
+  -0.0484,
+  0.042
+ ],
+ "PSI_self_minus_WB_self_L24": [
+  0.0133,
+  -0.0329,
+  0.0602
+ ]
+}

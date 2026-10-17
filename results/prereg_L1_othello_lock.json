@@ -1,0 +1,9 @@
+{
+ "locked_at": "2026-10-15T13:53:52-07:00",
+ "sha256": {
+  "docs/prereg_L1_othello.md": "d294e8e12411781641a0077704576a00dea002c84abbf49c3ba9637557f2d952",
+  "scripts/19_othello_confirm.py": "3a6a208c9270e5f61df49e131405f741fec93cc1d0d606b86c71c0e1d9590c48",
+  "/data/models/graybox_ws/models/othello/demo.pt": "f07c20660b7a5733ecaa9152fbcfa61e9c8cf138a2b7432476d7898458364931",
+  "/data/models/graybox_ws/models/othello/input_only.pt": "a45f28021f4e60fe57c730540658f7920a066880198573d9549c09d9c1f588c0"
+ }
+}

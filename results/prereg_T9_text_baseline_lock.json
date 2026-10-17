@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T19:25:49-07:00",
+ "sha256": {
+  "docs/prereg_T9_text_baseline.md": "258f540e1e8a1e7caf79250cbcf02dbbe266b55127a2e6164bbf547e6031a3aa",
+  "scripts/77_t9_text_baseline.py": "0bb0e2080d5b421489ad4221ebfcc7bef5abd98fef112c4082269076fed00270"
+ }
+}

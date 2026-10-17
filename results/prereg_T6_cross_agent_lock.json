@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T17:36:47-07:00",
+ "sha256": {
+  "docs/prereg_T6_cross_agent.md": "5663a5295d46e14ee730d395a3be974756f88ff9f7bab476ac2327a53c9b2ad0",
+  "scripts/71_t6_cross_agent.py": "17b4f2f702aaa2ab24f2505fe453e449674f67f9ca2dc35cbfcad77afe79bdad"
+ }
+}

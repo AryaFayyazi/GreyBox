@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T20:16:27-07:00",
+ "sha256": {
+  "docs/prereg_T10_claude_unseen_families.md": "7a80eed8d608d5e226ce6cf51c15aace16792557c1d70933b7b2a602916da324",
+  "scripts/79_t10_claude_unseen_families.py": "85ed0bde3b6325d54a336c21e982ba5970e21e2154384c08e368a7183e487c69"
+ }
+}

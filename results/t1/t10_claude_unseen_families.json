@@ -1,0 +1,71 @@
+{
+ "n": 3128,
+ "n_unsafe": 68,
+ "train_units": 17465,
+ "TXT_C": 10.0,
+ "auroc_pooled": {
+  "READER_lofo": 0.9122,
+  "TXT_lofo": 0.91,
+  "J_act": 0.5701,
+  "TOOL_PRIOR": 0.8569
+ },
+ "auroc_within": {
+  "READER_lofo": 0.9483,
+  "TXT_lofo": 0.8927,
+  "J_act": 0.6325,
+  "TOOL_PRIOR": 0.5
+ },
+ "C1_pooled_READER_minus_Jact": [
+  0.342,
+  0.3111,
+  0.371
+ ],
+ "C2_within_READER_minus_Jact": [
+  0.3176,
+  0.2646,
+  0.3744
+ ],
+ "C1_pass": true,
+ "C2_pass": true,
+ "reported_pooled_READER_minus_TXT": [
+  0.0023,
+  -0.0193,
+  0.023
+ ],
+ "reported_within_READER_minus_TXT": [
+  0.0541,
+  0.0048,
+  0.1003
+ ],
+ "reader_above_tool_prior_pooled": true,
+ "label_free_cut": {
+  "READER_lofo": {
+   "cons_service_restart": 0.0,
+   "tp_campaign_test": 0.9762,
+   "safe_escalated": 0.0379
+  },
+  "TXT_lofo": {
+   "cons_service_restart": 0.0,
+   "tp_campaign_test": 0.9048,
+   "safe_escalated": 0.0389
+  },
+  "J_act": {
+   "cons_service_restart": 0.0,
+   "tp_campaign_test": 0.0,
+   "safe_escalated": 0.0513
+  },
+  "TOOL_PRIOR": {
+   "cons_service_restart": 0.0,
+   "tp_campaign_test": 1.0,
+   "safe_escalated": 0.0431
+  }
+ },
+ "send_message_units": {
+  "n": 56,
+  "safe": 14,
+  "READER_lofo": 0.9983,
+  "TXT_lofo": 1.0,
+  "J_act": 0.585,
+  "TOOL_PRIOR": 0.5
+ }
+}

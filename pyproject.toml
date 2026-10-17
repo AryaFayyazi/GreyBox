@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+license = {text = "MIT"}
+name = "graybox"
+version = "0.1.0"
+description = "Read a black-box language model's state and guard an agent's actions through its API alone"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+server = ["fastapi", "uvicorn", "httpx", "pydantic"]
+research = ["pandas", "scikit-learn", "omegaconf", "torch", "transformers", "vllm"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+graybox = ["data/*.npz", "data/*.json"]

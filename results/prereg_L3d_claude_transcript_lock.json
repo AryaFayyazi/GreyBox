@@ -1,0 +1,11 @@
+{
+ "locked_at": "2026-10-16T09:55:37-07:00",
+ "sha256": {
+  "docs/prereg_L3d_claude_transcript.md": "671d83aaa4f3034cccc8af131a4dd77125674c875f3e7abfbbedeb0244a714c5",
+  "src/graybox/batch.py": "a0dbd514c667526d608777a65b679180aa511a8cebf29379bf17aa17f0481668",
+  "scripts/39_live_v2_readouts.py": "0094d2ced66747e73f3c0acaf7e1ad4147a5da5389c5a4a5f278cd85ba670732",
+  "scripts/55_transcript_battery.py": "a9b2557de15ed5d84fe8e8d76de89d5428c1ffca62bfca6fd2166981fc2278ce",
+  "scripts/56_claude_transcript.py": "142f0620898beaf3da928ba31c9ee4985ec17c1ea70f1256c946a42fb46de186",
+  "scripts/57_claude_transcript_analysis.py": "875b165ac708749a720ad0592d47c389c76e099420f9c8786de73c0e68f82263"
+ }
+}

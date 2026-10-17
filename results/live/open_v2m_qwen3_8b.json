@@ -1,0 +1,12 @@
+{
+ "layer": 27,
+ "battery": "v2m",
+ "R2_top32_weighted": 0.07,
+ "display_axis_corr": [
+  0.9228,
+  0.7145,
+  0.5369
+ ],
+ "n_train": 3360,
+ "n_test": 1250
+}

@@ -1,0 +1,34 @@
+{
+ "n": 12128,
+ "families": 23,
+ "auroc": {
+  "AGENT_family": 0.9759,
+  "AGENT_same": 0.9902,
+  "READER_family": 0.9689,
+  "READER_same": 0.9942,
+  "J_act": 0.9102,
+  "I_dec_frozen": 0.9793
+ },
+ "P1_READER_minus_AGENT_family": [
+  -0.007,
+  -0.014,
+  -0.0001
+ ],
+ "P1_pass": true,
+ "P2_AGENT_family_minus_Jact": [
+  0.0616,
+  0.0282,
+  0.1005
+ ],
+ "P2_reading": "agent probe better",
+ "reported_READER_minus_AGENT_same": [
+  0.004,
+  0.0004,
+  0.0079
+ ],
+ "reported_READER_family_minus_Jact": [
+  0.0502,
+  0.0158,
+  0.0912
+ ]
+}

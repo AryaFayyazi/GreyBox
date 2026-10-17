@@ -1,0 +1,15 @@
+{
+ "locked_at": "2026-10-15T22:18:54-07:00",
+ "sha256": {
+  "docs/prereg_L2.md": "4a13c526b78ba9ca87e5c6b140c327af646f13a977e7bf90fd2a0676c1a1baa6",
+  "scripts/30_l2_confirm.py": "d1dedc9c399259e0ebad08ab36519e0837389f7b4b9d7483fc89c523de5236c0",
+  "/data/models/graybox_ws/models/l2/frozen_gemma3_4b.npz": "999297f2c388d0221b0b612111cda12c256dc4e0e9cfd4b1a369a00c0bace336",
+  "/data/models/graybox_ws/models/l2/frozen_gptoss20b.npz": "cbb7401b241a431648aa15772aa37d78c3aeb612c853bc75886427abf515df4b",
+  "/data/models/graybox_ws/models/l2/frozen_llama31_8b.npz": "0cad5b9c23884b0ef9a975acc1be4252ed7dccf117ffafd11793bd87930bbd58",
+  "/data/models/graybox_ws/models/l2/frozen_mistral7b.npz": "d836504ac99e33a9298d925e4a5b0b117cb85f1dfdb97f07c7c32df13880e9d5",
+  "/data/models/graybox_ws/models/l2/frozen_olmo3_7b.npz": "81227f9d22100f93cf0026e88f8221e66e7f38d69bcdcf4c1452c43590f5b858",
+  "/data/models/graybox_ws/models/l2/frozen_phi4mini.npz": "3218f47396f44750fb55d955510c48e362b3251bb1ddaf7b070122a7bf764452",
+  "/data/models/graybox_ws/models/l2/frozen_qwen25_7b.npz": "c1ba277db6d0f22a663cd1f2ace5b0a5dfbba633222b1983cf34dcd41a0f20c6",
+  "/data/models/graybox_ws/models/l2/frozen_qwen3_8b.npz": "2aa312469e12e23ce6db09ec141d94698c80c5276563a3267e25813405c27761"
+ }
+}

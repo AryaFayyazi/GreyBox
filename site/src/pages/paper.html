@@ -1,0 +1,39 @@
+<!--title: Paper-->
+<!--desc: Labels, not access: what a black box reveals about its hidden state, and how to monitor closed agents.-->
+<h1>Labels, not access</h1>
+<p class="lede">What a black box reveals about its hidden state, and how to monitor closed agents.</p>
+<p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
+
+<h2>Summary</h2>
+<p>Safety monitors that read a model's internals need its weights, but the most capable agents expose only text. We ask what
+outputs reveal about a model's hidden state, and what monitoring a closed agent actually requires.</p>
+<p><b>A model's internals are computed from the text it has read.</b> So they cannot carry more information about a future violation
+than the full transcript does. What white-box access buys is narrower:</p>
+<ul>
+  <li><b>Seeing hidden tokens.</b> After an agent's private reasoning its action is nearly fixed. Internals read at that moment beat every
+    monitor that reads before it, and a monitor that reads the proposed action recovers the advantage (T2).</li>
+  <li><b>A good representation, which needs labels.</b> Without labels, a 70B judge scoring resampled actions loses to a probe (T3). With labels,
+    an open reader model with a linear probe, reading only the transcript, matches the agent's own internals (T4, T5), transfers to other
+    agents including a closed frontier one (T6, T8b), and to an external benchmark (T7).</li>
+  <li><b>The policy is the limit.</b> A bag-of-words classifier on the same labels matches the reader in distribution but fails on new tasks
+    and benchmarks (T9). For a policy family never seen in training, even the reader ranks violations well but escalates none at a 5% budget,
+    until a few dozen labelled examples are added (T10).</li>
+</ul>
+<p>For chat, a model's answers to side-branch questions recover its behavioural state on models with known internals (a compiled program,
+Othello-GPT, eight open chat models) and transfer to Claude. As a safety signal they tie a strong graded moderator at forecasting
+refusals, and in combination with one they double the precision of an alarm for harmful requests that get answered.</p>
+
+<h2>How the evidence was produced</h2>
+<ul>
+  <li>Every confirmatory test was written down and hash-locked before its data was collected or scored; deviations and failures are reported.</li>
+  <li>Agents: Gemma-4 and gpt-oss (open), Claude Haiku 5.5 (closed, through its public API) on CAPE-Bench; a second closed family (GPT-6-luna) is being tested under a locked preregistration (T11); AgentDojo for
+    prompt injection.</li>
+  <li>Uncertainty: cluster bootstrap over scenarios (agents) or conversations (chat), 1,000–2,000 resamples.</li>
+</ul>
+
+<h2>Figures</h2>
+<figure><img src="figures/generalization.png" alt="Monitor AUROC under increasing shift" loading="lazy"><figcaption>Transcript monitors under increasing
+shift.</figcaption></figure>
+<figure><img src="figures/time_vs_access.png" alt="Time, not access" loading="lazy"><figcaption>Reading after the agent's reasoning helps every
+method.</figcaption></figure>
+<figure><img src="figures/label_efficiency.png" alt="Label efficiency" loading="lazy"><figcaption>A few hundred labels match white-box monitoring.</figcaption></figure>

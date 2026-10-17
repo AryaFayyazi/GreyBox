@@ -1,0 +1,9 @@
+{
+ "locked_at": "2026-10-16T18:09:10-07:00",
+ "sha256": {
+  "docs/prereg_T7_agentdojo.md": "a002b23675e5ba93d5a50c74c994ca566a77a67202d0d05e0042b7cb524eca29",
+  "scripts/73_t7_agentdojo.py": "32b9150810de3d494cb3ef02459d64e8f7cbf2dd24072f2ade6f4fa741fa4f7e",
+  "src/graybox/monitor.py": "0d41ca6f398b4424fa2792df95002c438832f9ee0987c2f41a892eba33759478",
+  "/data/models/graybox_ws/models/monitor/reader_probe.joblib": "81ed26e6bbdb6b99ec10d9a7647a3dc2ba2e90aa3f92b9700aa797e802d59c2b"
+ }
+}

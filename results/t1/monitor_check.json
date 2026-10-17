@@ -1,0 +1,9 @@
+{
+ "n": 600,
+ "text_identical": "600/600",
+ "auroc_sdk": 0.9993,
+ "auroc_stored_features": 0.9993,
+ "max_abs_prob_diff": 0.0,
+ "latency_s_median": 0.0888,
+ "pass": true
+}

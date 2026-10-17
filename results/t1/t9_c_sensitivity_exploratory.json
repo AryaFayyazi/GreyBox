@@ -1,0 +1,26 @@
+{
+ "note": "exploratory; TXT features as locked in T9; C fixed (no CV)",
+ "locked_C10": {
+  "T4_same_scenarios": 0.9915,
+  "T5_unseen_families": 0.9499,
+  "T6_gptoss": 0.9429,
+  "T7_agentdojo": 0.5028,
+  "T8b_claude": 0.9972
+ },
+ "C100": {
+  "T4_same_scenarios": 0.9926,
+  "T6_gptoss": 0.953,
+  "T5_unseen_families": 0.9465,
+  "T7_agentdojo": 0.4795,
+  "T8b_claude": 0.9972,
+  "T8b_caught_label_free_cut": 0.6029
+ },
+ "C1000": {
+  "T4_same_scenarios": 0.9896,
+  "T6_gptoss": 0.8901,
+  "T5_unseen_families": 0.9433,
+  "T7_agentdojo": 0.4578,
+  "T8b_claude": 0.9934,
+  "T8b_caught_label_free_cut": 0.6324
+ }
+}

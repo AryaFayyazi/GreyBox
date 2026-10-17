@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-16T16:17:52-07:00",
+ "sha256": {
+  "docs/prereg_T5_family.md": "7d8924879372fbe6f786068c46db8cf7e21e2f0fd09409c531344dea4c50c4d2",
+  "scripts/70_t5_family_holdout.py": "5892cecec518fbeb7423b72b0f1852580c2a9ef2fff4cbcfeab42ef2d5df1ce0"
+ }
+}

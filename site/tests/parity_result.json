@@ -1,0 +1,19 @@
+{
+ "render_identical": "302/302",
+ "render_mismatch_idx": [],
+ "vocab_py": [
+  7424,
+  1416
+ ],
+ "vocab_js": [
+  7424,
+  1416
+ ],
+ "spearman_decision": 0.99818,
+ "max_abs_decision_diff": 0.4263,
+ "auroc_py": 0.9886,
+ "auroc_js": 0.9887,
+ "js_fit_ms": 1027,
+ "js_score_ms_per_step": 0.176,
+ "roundtrip_browser_model_scored_in_python_max_abs_diff": 1.0746958878371515e-13
+}

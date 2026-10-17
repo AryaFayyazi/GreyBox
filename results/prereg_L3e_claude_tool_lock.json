@@ -1,0 +1,14 @@
+{
+ "locked_at": "2026-10-16T14:06:28-07:00",
+ "sha256": {
+  "docs/prereg_L3e_claude_tool.md": "d6973a5181c912f5260a5f22929bb0fe246b943ea8b5a504749651efd050c238",
+  "/data/models/graybox_ws/outputs/l3e/items.parquet": "3f43c8335ba02eff6f29c14fcb01de77cbbdc5740f2405f4825706cd2c079d8f",
+  "scripts/63_l3e_items.py": "d5f3b9e66606e31f0791c723d9854fdbcc275cff8092cfb285435a2dad312f30",
+  "scripts/64_l3e_claude.py": "c1b7bcded369e8e7686d93cdfc04445e795bb3ba550826b506c72a21ddfa4060",
+  "scripts/65_l3e_judge.py": "f588e238956cc2af1044bdfd393c311ee6487a1051c5d6f664cbcca6246be7c0",
+  "scripts/66_l3e_analysis.py": "9bfcc4f0070cb0f1da519ae70030b9807c4b3589fdd42626a5deb28257e89e5c",
+  "scripts/62_stronger_baselines.py": "0a91e131d80f9b7bfeceda5677d6f6d33c68d251d1c8caede095d474ec6a380a",
+  "src/graybox/batch.py": "a0dbd514c667526d608777a65b679180aa511a8cebf29379bf17aa17f0481668",
+  "/data/models/graybox_ws/models/live_tx/readouts_v4.npz": "859f711e229f592cb4754fd7556993d370adf5a96da2d0ab823f120218aefdb9"
+ }
+}

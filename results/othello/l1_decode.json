@@ -1,0 +1,152 @@
+{
+ "n_states": 30000,
+ "n_train": 24000,
+ "n_test": 6000,
+ "majority_square_acc": 0.5494,
+ "decode": {
+  "P0 (1 query)": {
+   "square_acc": 0.7185,
+   "board_exact": 0.0077,
+   "acc_by_class": {
+    "empty": 0.8996,
+    "mine": 0.4973,
+    "theirs": 0.5947
+   }
+  },
+  "P1 (61 queries)": {
+   "square_acc": 0.892,
+   "board_exact": 0.2077,
+   "acc_by_class": {
+    "empty": 0.9886,
+    "mine": 0.7749,
+    "theirs": 0.8251
+   }
+  },
+  "input-only: who placed each square": {
+   "square_acc": 0.8689,
+   "board_exact": 0.0162,
+   "acc_by_class": {
+    "empty": 1.0,
+    "mine": 0.6813,
+    "theirs": 0.8026
+   }
+  },
+  "input-only: move number": {
+   "square_acc": 0.6245,
+   "board_exact": 0.0,
+   "acc_by_class": {
+    "empty": 0.8863,
+    "mine": 0.0902,
+    "theirs": 0.6282
+   }
+  },
+  "P1 sampled n=1": {
+   "square_acc": 0.6777,
+   "board_exact": 0.0178,
+   "acc_by_class": {
+    "empty": 0.8535,
+    "mine": 0.4856,
+    "theirs": 0.5383
+   }
+  },
+  "P1 sampled n=8": {
+   "square_acc": 0.7815,
+   "board_exact": 0.0542,
+   "acc_by_class": {
+    "empty": 0.9264,
+    "mine": 0.6107,
+    "theirs": 0.6774
+   }
+  },
+  "P1 sampled n=64": {
+   "square_acc": 0.8661,
+   "board_exact": 0.1538,
+   "acc_by_class": {
+    "empty": 0.9792,
+    "mine": 0.7341,
+    "theirs": 0.7836
+   }
+  },
+  "white-box resid L0": {
+   "square_acc": 0.6471,
+   "board_exact": 0.021,
+   "acc_by_class": {
+    "empty": 0.8723,
+    "mine": 0.3685,
+    "theirs": 0.496
+   }
+  },
+  "white-box resid L1": {
+   "square_acc": 0.9058,
+   "board_exact": 0.1613,
+   "acc_by_class": {
+    "empty": 0.9999,
+    "mine": 0.7952,
+    "theirs": 0.8378
+   }
+  },
+  "white-box resid L2": {
+   "square_acc": 0.9448,
+   "board_exact": 0.2838,
+   "acc_by_class": {
+    "empty": 0.9998,
+    "mine": 0.883,
+    "theirs": 0.9025
+   }
+  },
+  "white-box resid L3": {
+   "square_acc": 0.9687,
+   "board_exact": 0.4457,
+   "acc_by_class": {
+    "empty": 0.9999,
+    "mine": 0.9339,
+    "theirs": 0.9445
+   }
+  },
+  "white-box resid L4": {
+   "square_acc": 0.9797,
+   "board_exact": 0.5862,
+   "acc_by_class": {
+    "empty": 1.0,
+    "mine": 0.9562,
+    "theirs": 0.9647
+   }
+  },
+  "white-box resid L5": {
+   "square_acc": 0.9864,
+   "board_exact": 0.691,
+   "acc_by_class": {
+    "empty": 1.0,
+    "mine": 0.9716,
+    "theirs": 0.9757
+   }
+  },
+  "white-box resid L6": {
+   "square_acc": 0.9899,
+   "board_exact": 0.7492,
+   "acc_by_class": {
+    "empty": 0.9996,
+    "mine": 0.98,
+    "theirs": 0.9817
+   }
+  },
+  "white-box resid L7": {
+   "square_acc": 0.9906,
+   "board_exact": 0.7355,
+   "acc_by_class": {
+    "empty": 0.9982,
+    "mine": 0.983,
+    "theirs": 0.9841
+   }
+  },
+  "white-box resid L8": {
+   "square_acc": 0.9898,
+   "board_exact": 0.6915,
+   "acc_by_class": {
+    "empty": 0.9974,
+    "mine": 0.9814,
+    "theirs": 0.9838
+   }
+  }
+ }
+}
