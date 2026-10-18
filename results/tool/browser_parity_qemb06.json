@@ -27,5 +27,19 @@
    "sec_per_step": 1.19
   }
  },
- "decision": "ship fp16 (1.2 GB): q8 features do not match the features the probe was trained on"
+ "decision": "ship fp16 (1.2 GB): q8 features do not match the features the probe was trained on",
+ "browser_chromium_wasm_fp16_isolated_8threads": {
+  "cosine_min": 0.999997,
+  "cosine_mean": 0.999998,
+  "max_abs_diff": 0.00036203116178512573,
+  "seconds_incl_download": 270.6
+ },
+ "browser_speed_sec_per_action": {
+  "what": "Chromium headless, 12 AgentDojo (T13b) steps, model cached, CPU",
+  "wasm_fp16_1thread": 28.36,
+  "wasm_fp32_1thread": 26.02,
+  "wasm_fp16_isolated_4threads": 9.37,
+  "wasm_fp16_isolated_8threads": 7.09,
+  "note": "GitHub Pages sends no isolation headers; site/src/coi-sw.js adds them to train.html only"
+ }
 }

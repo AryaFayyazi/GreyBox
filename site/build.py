@@ -307,6 +307,7 @@ def main():
     (DIST / "assets").mkdir(parents=True)
     for f in (SRC / "assets").iterdir():
         shutil.copy(f, DIST / "assets" / f.name)
+    shutil.copy(SRC / "coi-sw.js", DIST / "coi-sw.js")      # the trainer's cross-origin isolation (multi-threaded reader)
     shutil.copytree(R / "figures", DIST / "figures", ignore=shutil.ignore_patterns("*.pdf"))
     (DIST / ".nojekyll").write_text("")
     pages = {"index.html": index_page(), "results.html": results_page()}

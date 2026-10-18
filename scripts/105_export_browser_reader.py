@@ -43,7 +43,7 @@ def main():
         print(s, check[s], flush=True)
     A, c = r["auroc"], r["caught_label_free_5pct"]
     scope = "all tasks" if r["F2_pass"] else "new kinds of tasks only"
-    note = (f"Browser reader ({enc}, {DOWNLOAD[enc]} once, then cached). Trained on our CAPE-Bench steps only. On a new kind of task "
+    note = (f"Browser reader ({enc}, {DOWNLOAD[enc]} once, then cached; slow without WebGPU). Trained on our CAPE-Bench steps only. On a new kind of task "
             f"(GPT-6-luna on AgentDojo) it scores AUROC {A[enc]['T13b']:.3f}, against {A['TXT']['T13b']:.3f} for word counts and "
             f"{A['q8']['T13b']:.3f} for the GPU reader (preregistered test T19). On the closed agents' CAPE-Bench actions: "
             f"{A[enc]['T8b']:.3f} (Claude) and {A[enc]['T11']:.3f} (GPT). Use: {scope}.")
@@ -53,6 +53,9 @@ def main():
            "t19": {"auroc": {k: A[k] for k in (enc, "TXT", "q8")}, "caught_label_free_5pct": {k: c[k] for k in (enc, "TXT", "q8")},
                    "F1": r["F1_T13b_selected_minus_TXT"], "F2": r["F2_closedCAPE_selected_minus_q8"]},
            "deployment_check": check, "pretrained": d}
+    par = ROOT / "results/tool/browser_parity_qemb06.json"           # the page's fp16 ONNX features vs PyTorch (Chromium)
+    if enc == "qemb06" and par.exists():
+        res["browser_parity"] = json.loads(par.read_text())["browser_chromium_wasm_fp16"]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(res))
     print("shipped", enc, scope, out)

@@ -1,5 +1,18 @@
 <!--title: Train a monitor-->
 <!--desc: Import your agent's logs, label its actions, and train a monitor that scores the next action before it runs. In your browser; nothing is uploaded.-->
+<script>
+// Multi-threaded browser reader: coi-sw.js adds cross-origin isolation headers to this page. The first visit registers it
+// and reloads once (before anything is loaded or labelled); later visits are already isolated. Without it, all still works.
+(() => {
+  if (window.crossOriginIsolated || !window.isSecureContext || !('serviceWorker' in navigator)) return;
+  let tried = false; try { tried = sessionStorage.getItem('gbCoiReload') === '1'; } catch (e) { tried = true; }
+  navigator.serviceWorker.register('coi-sw.js').then(() => navigator.serviceWorker.ready).then(() => {
+    if (tried || navigator.serviceWorker.controller && window.crossOriginIsolated) return;
+    try { sessionStorage.setItem('gbCoiReload', '1'); } catch (e) { return; }
+    location.reload();
+  }).catch(() => {});
+})();
+</script>
 <h1>Monitor your own agent</h1>
 <p class="lede">Import your agent's logs (OpenAI or Anthropic tool-calling format), label some of its actions, and train a monitor
   that scores each new action before it runs. Then put it in your agent's loop. Everything here runs in this browser tab: the page

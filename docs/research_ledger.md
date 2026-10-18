@@ -977,3 +977,16 @@ Dated log of every experiment, decision and correction. Newest last.
   - T19's decoder list and the 14B claim are corrected;
   - the abstract now scopes 94/98% to the training benchmark, and the T16c reviewer is an oracle;
   - TF-IDF is the one name for the text baseline.
+- **Browser reader speed (measured, Chromium CPU):**
+  - The fp16 reader took 28 s per action, because GitHub Pages pages are not cross-origin isolated, so WASM ran on one
+    thread. fp32 is no faster (26 s).
+  - A same-origin service worker (site/src/coi-sw.js) adds COOP/COEP (credentialless) to train.html only. With it:
+    9.4 s per action on 4 threads and 7.1 s on 8 (the worker now uses min(8, cores)).
+  - Features are unchanged in isolated mode (cosine ≥ 0.999997).
+  - End-to-end on the built site: the page is isolated after one reload, fonts load, text training works, the reader
+    scores pasted steps, other pages are unaffected, and there are no console errors.
+  - The trainer shows the time per action and the time left; the docs have a browser-reader section with the measured
+    numbers.
+- Export (scripts/105) passed its deployment check: float32 CPU features give T13b 0.6026 and T7 0.6854, against
+  T19's 0.6049 and 0.6884. The reader shipped as "new kinds of tasks only" (T19's fixed rule). The run had loaded the
+  old "610 MB" value; the JSON was patched to 1.2 GB, and the script now writes it.
