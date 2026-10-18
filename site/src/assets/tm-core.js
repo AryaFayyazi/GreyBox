@@ -31,7 +31,56 @@
     if (!isFinite(x)) return isNaN(x) ? 'NaN' : (x > 0 ? 'Infinity' : '-Infinity');
     return String(x);   // Python prints floats like 1.0 as "1.0"; JSON numbers that were floats with .0 become ints here
   }
+  // A number parsed from Python-rendered JSON keeps Python's text: an int stays exact, a float prints as Python's repr
+  // (50.0 stays "50.0", 1e-05 stays "1e-05"). Used where a rendered action is parsed and dumped again (canonical mode).
+  class PyNum { constructor(t) { this.t = t; } }
+  class PyDict { constructor(e) { this.e = e; } }   // [key, value] pairs in source order (JS objects move integer-like keys first)
+  function pyFloat(x) {
+    if (!isFinite(x)) return isNaN(x) ? 'NaN' : (x > 0 ? 'Infinity' : '-Infinity');
+    if (x === 0) return Object.is(x, -0) ? '-0.0' : '0.0';
+    const [m, e] = x.toExponential().split('e'), exp = Number(e), d = m.replace('-', '').replace('.', ''), sg = x < 0 ? '-' : '';
+    if (exp >= 16 || exp < -4) return sg + d[0] + (d.length > 1 ? '.' + d.slice(1) : '') + 'e' + (exp < 0 ? '-' : '+') + String(Math.abs(exp)).padStart(2, '0');
+    if (exp < 0) return sg + '0.' + '0'.repeat(-exp - 1) + d;
+    return sg + (d.length <= exp + 1 ? d + '0'.repeat(exp + 1 - d.length) + '.0' : d.slice(0, exp + 1) + '.' + d.slice(exp + 1));
+  }
+  function parsePyJSON(src) {                  // JSON.parse, with numbers as PyNum; throws on invalid input
+    let i = 0;
+    const ws = () => { while (i < src.length && ' \t\n\r'.includes(src[i])) i++; };
+    const val = () => {
+      ws();
+      const c = src[i];
+      if (c === '{') {
+        i++; const o = new Map(); ws();
+        const done = () => new PyDict([...o.entries()]);   // duplicate keys: the last value, at the first key's place (as Python)
+        if (src[i] === '}') { i++; return done(); }
+        for (;;) { ws(); if (src[i] !== '"') throw new SyntaxError('key'); const k = str(); ws(); if (src[i++] !== ':') throw new SyntaxError(':');
+          o.set(k, val()); ws(); if (src[i] === ',') { i++; continue; } if (src[i++] === '}') return done(); throw new SyntaxError('}'); }
+      }
+      if (c === '[') {
+        i++; const a = []; ws();
+        if (src[i] === ']') { i++; return a; }
+        for (;;) { a.push(val()); ws(); if (src[i] === ',') { i++; continue; } if (src[i++] === ']') return a; throw new SyntaxError(']'); }
+      }
+      if (c === '"') return str();
+      for (const [w, v] of [['true', true], ['false', false], ['null', null], ['NaN', new PyNum('NaN')], ['Infinity', new PyNum('Infinity')], ['-Infinity', new PyNum('-Infinity')]])
+        if (src.startsWith(w, i)) { i += w.length; return v; }
+      const m = /^-?(?:0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(src.slice(i));
+      if (!m) throw new SyntaxError('value');
+      i += m[0].length;
+      return new PyNum(m[1] || m[2] ? pyFloat(Number(m[0])) : BigInt(m[0]).toString());
+    };
+    const str = () => {
+      const m = /^"(?:[^"\\\u0000-\u001f]|\\["\\/bfnrt]|\\u[0-9a-fA-F]{4})*"/.exec(src.slice(i));
+      if (!m) throw new SyntaxError('string');
+      i += m[0].length; return JSON.parse(m[0]);
+    };
+    const v = val(); ws();
+    if (i !== src.length) throw new SyntaxError('trailing');
+    return v;
+  }
   function pyDumps(v) {
+    if (v instanceof PyNum) return v.t;
+    if (v instanceof PyDict) return '{' + v.e.map(([k, x]) => pyStr(k) + ': ' + pyDumps(x)).join(', ') + '}';
     if (v === null || v === undefined) return 'null';
     if (v === true) return 'true';
     if (v === false) return 'false';
@@ -121,7 +170,34 @@
     return String(text).replace(/[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/g, ' xemailx $1 ')
       .replace(/(?:https?:\/\/|www\.)([A-Za-z0-9.-]+)[^\s"'<>]*/gi, ' xurlx $1 ');
   }
+  // canonical mode: the decisive fields of each call only (as graybox.monitor.canonical_args). A field named like free
+  // text becomes "[free text]"; in other strings quoted prose (3+ words) and '#' comments are removed.
+  const FREE_TEXT_FIELDS = new Set(['body', 'subject', 'message', 'msg', 'text', 'content', 'contents', 'description', 'desc', 'note',
+    'notes', 'comment', 'comments', 'reason', 'justification', 'summary', 'title', 'explanation', 'details', 'memo', 'caption',
+    'remarks', 'rationale', 'purpose']);
+  function canonicalArgs(v) {
+    if (Array.isArray(v)) return v.map(canonicalArgs);
+    if (v instanceof PyDict) return new PyDict(v.e.map(([k, x]) => [k, FREE_TEXT_FIELDS.has(k.toLowerCase()) && typeof x === 'string' ? '[free text]' : canonicalArgs(x)]));
+    if (v && typeof v === 'object' && !(v instanceof PyNum)) {
+      const o = {};
+      for (const k of Object.keys(v)) o[k] = FREE_TEXT_FIELDS.has(String(k).toLowerCase()) && typeof v[k] === 'string' ? '[free text]' : canonicalArgs(v[k]);
+      return o;
+    }
+    if (typeof v === 'string') {
+      const prose = m => (m.slice(1, -1).split(/\s+/).filter(Boolean).length >= 3 ? '' : m);
+      return v.replace(/'[^']*'|"[^"]*"/g, prose).replace(/\s#.*$/gm, '').replace(/\s+/g, ' ').trim();
+    }
+    return v;
+  }
+  function canonicalActText(act) {
+    const i = act.indexOf(' '), tool = i < 0 ? act : act.slice(0, i);
+    let a; try { a = parsePyJSON(i < 0 ? '' : act.slice(i + 1)); } catch (e) { return act; }
+    return a instanceof PyDict ? actText(tool, canonicalArgs(a)) : act;
+  }
+  const canonicalCtxText = ctx => ctx.replace(/^\[Agent called\] (.+)$/gm, (m, c) => '[Agent called] ' + canonicalActText(c));
+  const canonical = r => ({ ctx: canonicalCtxText(r.ctx), act: canonicalActText(r.act) });
   function features(model, r) {
+    if (model.canonical) r = canonical(r);
     if (model.mask_pii) r = { ctx: maskPII(r.ctx), act: maskPII(r.act) };
     const a = transform(model.vc, r.ctx), b = transform(model.va, r.act), off = model.vc.idf.length;
     return { idx: a.idx.concat(b.idx.map(j => j + off)), val: a.val.concat(b.val) };
@@ -181,6 +257,7 @@
   function decision(model, x) { let s = model.b; for (let k = 0; k < x.idx.length; k++) s += model.w[x.idx[k]] * x.val[k]; return s; }
 
   function fit(rendered, labels, C, opts = {}) {
+    if (opts.canonical) rendered = rendered.map(canonical);
     if (opts.mask) rendered = rendered.map(r => ({ ctx: maskPII(r.ctx), act: maskPII(r.act) }));
     const vc = fitVectorizer(rendered.map(r => r.ctx), 3, opts.maxFeatures || 200000, opts.drop || null);
     const va = fitVectorizer(rendered.map(r => r.act), 3, opts.maxFeatures || 200000, opts.drop || null);
@@ -189,6 +266,7 @@
     const lr = fitLR({ rows, dim: vc.idf.length + va.idf.length }, labels, C);
     model.w = lr.w; model.b = lr.b;
     if (opts.mask) model.mask_pii = true;            // scoring masks emails and URLs the same way
+    if (opts.canonical) model.canonical = true;      // scoring reads the canonical action the same way
     return model;
   }
   const score = (model, r) => sigmoid(decision(model, features(model, r)));
@@ -359,6 +437,6 @@
     return { steps, format: fmt, conversations: count.steps === convs.length ? null : convs.length - count.steps, ...info };
   }
 
-  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, maskPII, transform, features, fitLR, fit, score, decision, sigmoid,
+  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, maskPII, canonicalArgs, canonicalActText, canonicalCtxText, canonical, parsePyJSON, pyFloat, transform, features, fitLR, fit, score, decision, sigmoid,
               auroc, withinAUROC, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
 })(typeof self !== 'undefined' ? self : this);

@@ -1,0 +1,79 @@
+\section{Method}
+\label{sec:method}
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize, node distance=5mm,
+  box/.style={draw=gbmute, rounded corners=2pt, align=center, inner sep=3pt, fill=white, minimum height=10mm},
+  hid/.style={box, draw=gbink, fill=gbink!7, dashed},
+  ours/.style={box, draw=gbblue, fill=gbblue!9, thick},
+  note/.style={font=\tiny, text=gbmute, align=center},
+  arr/.style={-{Latex[length=1.5mm]}, gbmute, line width=0.6pt}]
+\node[hid, text width=24mm] (agent) {\textbf{closed agent} $\pi_\theta$\\hidden state $\phi_t=\Phi_\theta(Z_t)$};
+\node[box, right=of agent, text width=21mm] (tr) {\textbf{transcript} $V_t$\\and proposed action $A_t$};
+\node[ours, right=of tr, text width=20mm] (reader) {\textbf{open reader} $R$\\$\psi_t=R(V_t,\kappa(A_t))$};
+\node[ours, right=of reader, text width=17mm] (probe) {\textbf{probe}\\$s_t=w^{\top}\psi_t$};
+\node[ours, right=of probe, text width=22mm] (gate) {\textbf{frozen cut} $\hat c$\\from unlabelled traffic};
+\node[box, right=of gate, text width=17mm] (dec) {\textbf{allow, block}\\or hold for review};
+\node[box, above=4mm of reader, text width=52mm, minimum height=7mm, draw=gbblue, dashed] (rep) {\textbf{replica} $\hat\phi_t=M\psi_t\approx\E[\phi_t\mid\psi_t]$, checked against the true state of open agents};
+\node[note, below=1.5mm of agent] {not identifiable from outputs\\(gauge, Prop.~\ref{prop:gauge})};
+\node[note, below=1.5mm of tr] {Bayes-sufficient for the label\\(Cor.~\ref{cor:action})};
+\node[note, below=1.5mm of reader] {conditional mean, readout\\commutes (Prop.~\ref{prop:replica})};
+\node[note, below=1.5mm of gate] {exact coverage, burst-robust\\(Props.~\ref{prop:frozen},~\ref{prop:burst})};
+\node[note, below=1.5mm of probe] {trained on an\\open agent only};
+\node[note, below=1.5mm of dec] {before the action runs};
+\draw[arr] (agent) -- (tr);
+\draw[arr] (tr) -- (reader);
+\draw[arr] (reader) -- (probe);
+\draw[arr] (probe) -- (gate);
+\draw[arr] (gate) -- (dec);
+\draw[arr, dashed] (reader) -- (rep);
+\draw[arr, gbblue] (dec.north) |- ([yshift=4mm]rep.north) node[pos=0.75, above, font=\tiny, text=gbblue]{the agent's next step depends on the decision} -| (agent.north);
+\end{tikzpicture}
+\caption{The grey box. The monitor sees only the transcript and the proposed action, as an operator does; $\kappa$ is the action's canonical form (\cref{sec:robust}). An open reader model holds a replica of the closed agent's state, validated where the true state is known; a probe on the reader's state scores the action, and a cut set on the agent's own unlabelled traffic, then frozen, decides before the action runs. Each stage is backed by a result of \cref{sec:method}.}
+\label{fig:method}
+\end{figure*}
+
+\subsection{Setting}
+An agent is an autoregressive policy $\pi_\theta$ over tokens. At step $t$ it has read and written the tokens $Z_t$; a deployment sees $V_t$, and $H_t$ is the rest, so $Z_t=(V_t,H_t)$ (with reasoning off, as in our closed-agent tests, $H_t=\varnothing$). The agent proposes an action $A_t\sim\pi_\theta(\cdot\mid Z^-_t)$, where $Z^-_t$ are the tokens before the action is sampled, with sampling noise $\xi_t$ independent of everything else. Its internal state at the decision token is $\phi_t=\Phi_\theta(Z_t)\in\mathbb{R}^d$, a deterministic function of the tokens. $W$ are facts of the world that the agent has not observed, and $Y\in\{0,1\}$ marks a policy violation. A \emph{monitor} maps what it sees to a score $s_t$ and escalates when $s_t\ge c$; its \emph{budget} $\beta$ is the share of actions escalated.
+
+\subsection{What cannot be read: a gauge symmetry}
+\begin{proposition}[gauge]\label{prop:gauge}
+Fold the gains of the normalisation layers into the adjacent weights. Then for every orthogonal $G$ acting on the residual stream (and every invertible $G$ at a layer that is read only through linear maps), the network with hidden states $G\phi$, every write matrix $W_{\mathrm{out}}$ replaced by $GW_{\mathrm{out}}$ and every read matrix $W_{\mathrm{in}}$ by $W_{\mathrm{in}}G^{-1}$, computes the same output distribution on every input.
+Hence no estimator from outputs can recover hidden coordinates beyond this group, and a probe direction fitted on one model has no meaning on another.
+\end{proposition}
+As in a gauge theory, only invariant quantities are observable. Two invariants carry the safety-relevant state: the law of the agent's future outputs (its \emph{behavioural state}) and the token history $Z_t$ itself, of which $\phi_t$ is a function. We build a grey box from each.
+
+\subsection{Reading the behavioural state}
+The \emph{interrogation state} of a context $x$ for a battery of yes/no questions $Q=(q_1,\dots,q_m)$, each asked in a side branch so that the agent's conversation never sees it, is $\Psi_Q(x)=\big(P_\pi(\textsc{yes}\mid x\oplus q_j)\big)_{j}$. It is a vector of probabilities of fixed events, so it is gauge-invariant and comparable across models.
+\begin{proposition}[Fisher--Rao coordinates]\label{prop:fisher}
+For one Bernoulli coordinate the map $\vartheta=2\arcsin\sqrt{p}$ is an isometry from the Fisher--Rao metric $\mathrm{d}p^2/\big(p(1-p)\big)$ to the Euclidean line. With $n$ sampled answers, $\Var(\hat\vartheta)\approx 1/n$ for every $p$, so $\vartheta(\hat\Psi)\in[0,\pi]^m$ has isotropic noise of known size.
+\end{proposition}
+For a finite-state model, a battery identifies the minimal state exactly when it contains a distinguishing suffix for every pair of states (Myhill--Nerode; \cref{app:proofs}).
+
+\subsection{Replicating the token-determined state}
+A \emph{reader} is an open model $R$ that reads the same visible tokens and the proposed action; $\psi_t=R(V_t,A_t)$ is its hidden state at a fixed layer.
+\begin{proposition}[access and replica]\label{prop:replica}
+(a) For every label $Y$, $\sigma(Z_t,\phi_t)=\sigma(Z_t)$; the best monitor that reads $(Z_t,\phi_t)$ is no better than the best that reads $Z_t$ under every strictly proper score and at every point of the ROC curve, and under log loss the best that reads $Z_t$ beats the best that reads $V_t$ by exactly $I(Y;H_t\mid V_t)$.
+(b) The $L^2$-optimal replica $\hat\phi=\E[\phi\mid\psi]$ satisfies $\Cov(\hat\phi)\preceq\Cov(\phi)$, and for every component $k$, $\Var(\hat\phi_k)=R^2_k\,\Var(\phi_k)$ with $R^2_k=1-\E(\phi_k-\hat\phi_k)^2/\Var(\phi_k)$. The same identity holds for the best linear replica.
+(c) For every linear readout $w$, $\E[w^\top\phi\mid\psi]=w^\top\hat\phi$: a probe applied to the replica is the conditional expectation of the same probe on the true state.
+\end{proposition}
+Part (a) says why a replica is possible: with reasoning off, $\phi_t$ is a function of tokens that an outside model can also read. Part (b) predicts that the replica is less spread than the state, by a factor that equals the share of variance it replicates; part (c) says why white-box readouts transfer to the replica. We estimate $\hat\phi=M\psi+b$ by ridge regression on paired steps of an open agent, on the top principal components of its state, and report the variance-weighted $R^2$ on fresh steps. A linear map is the natural estimator when the reader's representation is complete in the agent's latents \citep{zhou2026identifiabilities}.
+
+\subsection{The proposed action is sufficient}
+\begin{corollary}[sufficiency of the proposed action]\label{cor:action}
+Let $Y=g(A_t,V_t,W)$ with $W\indep Z^-_t\mid V_t$. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$, and every monitor that reads the agent's internals at or before the action has a Bayes risk at least that of the best monitor that reads $(V_t,A_t)$.
+\end{corollary}
+A probe read before the action must also predict which action will be sampled; a monitor that reads the action does not. Training a monitor is therefore a supervised problem on $(V_t,A_t)$, and the reader matters through how well its representation lets a linear probe learn $P(Y\mid V_t,A_t)$ under distribution shift.
+
+\subsection{Label-free decisions at a fixed budget}
+A score's scale does not transfer between agents (\cref{sec:closed}), so the cut must come from the monitored agent's own traffic, without labels.
+\begin{proposition}[a frozen cut has exact coverage]\label{prop:frozen}
+Let the scores of $n$ unlabelled warm-up actions and of a new action be exchangeable and continuous, and let $\hat c$ be the $k$-th smallest warm-up score, $k=\lceil(1-\beta)(n+1)\rceil$. Then $\beta-\tfrac{1}{n+1}<P(S_{n+1}>\hat c)\le\beta$, and given the warm-up, the long-run escalation rate $1-F(\hat c)$ follows $\mathrm{Beta}(n+1-k,k)$.
+\end{proposition}
+With $n=500$ and $\beta=0.05$ the escalation rate has mean $0.05$ and standard deviation $0.0097$. A cut that keeps moving with recent traffic fails exactly when it matters:
+\begin{proposition}[bursts]\label{prop:burst}
+A cut set at the top $\beta$ of a window in which a share $\rho>\beta$ of the actions are violations catches at most $\beta/\rho$ of them. A frozen cut catches each violation with probability $P(S\ge\hat c\mid Y=1)$, independent of $\rho$.
+\end{proposition}
+\textbf{Metrics.} We report the share of violations caught when \emph{exactly} $\beta$ of the actions, the highest-scored, are escalated (actions tied at the cut count in proportion), and the AUROC within strata (template, tool or suite), $\sum_k n^+_kn^-_k\,\mathrm{AUC}_k/\sum_k n^+_kn^-_k$, which removes what the stratum alone explains. Intervals are 95\% percentile intervals from a bootstrap over scenarios or episodes. Proofs of all statements are in \cref{app:proofs}.
+

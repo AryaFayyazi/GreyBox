@@ -330,6 +330,8 @@ class TextMonitor:
         """The monitor's score (logit) for a JSON-loaded model. `rendered=(ctx, act)` skips rendering."""
         d = self._json
         ctx, act = rendered or (ctx_text(instructions, task, _steps(history)), act_text(*action))
+        if d.get("canonical"):                     # trained on canonical actions (train_text --canonical): read them the same way
+            ctx, act = canonical_ctx_text(ctx), canonical_act_text(act)
         if d.get("mask_pii"):
             ctx, act = mask_pii(ctx), mask_pii(act)
         return d["b"] + self._block(d["vc"], ctx, 0, d["w"]) + self._block(d["va"], act, len(d["vc"]["idf"]), d["w"])

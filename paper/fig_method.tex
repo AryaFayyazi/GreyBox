@@ -1,0 +1,7 @@
+% The method figure: what the operator sees -> two networks that read the same tokens -> a decision before the action runs
+\begin{figure*}[t]
+\centering
+\input{fig_method_body}
+\caption{\textbf{The grey box, as one causal chain.} (1) A closed agent's weights and hidden state $\phi_t$ are out of reach, and its hidden coordinates cannot be identified from its outputs (\cref{prop:gauge}). (2) The operator sees the transcript and the proposed action, before the action runs; when these decide the label, they are sufficient (\cref{cor:action}). (3) An open reader reads the same tokens; its state $\psi_t$ holds a replica $\E[\phi_t\mid\psi_t]$ of the agent's state (orange arrow), checked against the true state of four open agents (\cref{prop:replica,prop:rb}, \cref{sec:replica}). (4) A probe on $\psi_t$, trained only on an open agent, scores the action; the cut is the top 5\% of the agent's own unlabelled traffic, then frozen (\cref{prop:frozen,prop:shift,prop:burst}). (5) The action runs, is blocked, or is held for a reviewer, and the agent continues from that decision (\cref{alg:monitor}).}
+\label{fig:method}
+\end{figure*}

@@ -2,6 +2,23 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.5.0 (2026-10-18)
+**Added**
+- `graybox.mcp_proxy` (`pip install "greybox-monitor[mcp]"`, MCP SDK 2.x): a monitor in front of any MCP server; each
+  tool call is checked before it is forwarded; a blocked call returns an error result. Tested end to end with a real MCP
+  client and server. The cost of seeing only the tool calls was measured (scripts/117).
+- Audit log: `Guard(audit_log=..., on_decision=...)` and the server's `GB_AUDIT_LOG` record every decision, including
+  blocked malformed calls; a failing log never changes a decision.
+- Canonical mode (`train_text --canonical`, `train_reader --canonical`, the browser trainer's "Canonical actions" box):
+  the monitor reads only the decisive fields of each call. A field named like free text (body, subject, reason, ...)
+  becomes "[free text]"; quoted prose of 3 or more words and `#` comments are removed. The model file records
+  `canonical`, and Guard, the server and the browser then read actions the same way, so an agent cannot move the score
+  by rewording what it says about its own call. Python and the browser give identical canonical text on 38,105 steps and
+  rewrites (scripts/121). Why: a score-querying attacker who rewrote only free text cut the shipped reader's catch rate
+  from 96% to 29% (preregistered T25).
+  Off by default: in the preregistered test of the canonical reader (T26) clean catch at 5% fell from 94–98% to 51–59%
+  on two closed agents, because a message body can be the leaked content itself; the score did not move under attack.
+
 ## 0.4.1 (2026-10-18)
 From a second fresh-install user test (PyPI 0.4.0) and a paper audit.
 

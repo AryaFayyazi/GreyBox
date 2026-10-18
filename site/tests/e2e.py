@@ -32,6 +32,16 @@ with sync_playwright() as p:
     res["stats"] = pg.inner_text("#stats"); res["details"] = pg.inner_text("#details")
     pg.click("#scoreBtn"); pg.wait_for_timeout(300); res["score"] = pg.inner_text("#scoreOut")
     pg.screenshot(path=str(shots / "train_results.png"), full_page=True)
+    # canonical mode: train again with the box checked; the downloaded model records it and the stats are shown
+    errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
+    pg.check("#canonicalMode"); t0 = time.time(); pg.click("#trainBtn")
+    pg.wait_for_function("!document.getElementById('trainBtn').disabled && !document.getElementById('results').hidden", timeout=900000)
+    pg.wait_for_timeout(500)
+    res["canonical_train_seconds"] = round(time.time() - t0, 1); res["canonical_stats"] = pg.inner_text("#stats")
+    with pg.expect_download() as dl:
+        pg.click("#exportBtn")
+    res["canonical_model_flag"] = json.loads(Path(dl.value.path()).read_text()).get("canonical")
+    if errs: res["errors"]["train_canonical"] = errs
     b.close()
 srv.shutdown()
 print(json.dumps(res, indent=1))

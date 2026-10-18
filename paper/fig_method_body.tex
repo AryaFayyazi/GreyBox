@@ -1,0 +1,83 @@
+% The grey box as one causal chain, drawn at print size (17 cm = text width): five cards, one message each.
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,
+  card/.style={rounded corners=5pt, line width=0.7pt},
+  ttl/.style={font=\sffamily\footnotesize\bfseries, anchor=north, align=center},
+  sub/.style={font=\sffamily\fontsize{6.3}{7.4}\selectfont, text=gbmute, align=center, anchor=north, text width=2.85cm},
+  num/.style={circle, fill=#1, text=white, font=\sffamily\scriptsize\bfseries, inner sep=1.3pt, minimum size=4.2mm},
+  cell/.style={minimum width=2.9mm, minimum height=2.9mm, inner sep=0pt, draw=white, line width=0.4pt},
+  flow/.style={-{Latex[length=2.3mm,width=2mm]}, line width=1.2pt, gbmute!80}]
+\def\W{2.95}\def\H{3.65}\def\G{0.55}
+% card x-origins
+\foreach \i/\x in {1/0, 2/3.5, 3/7.0, 4/10.5, 5/14.0} {\coordinate (c\i) at (\x,0);}
+
+% ---------------------------------------------------------------- 1 closed agent
+\fill[card, gbink] (c1) rectangle ++(\W,\H);
+\node[num=gbmute] at ($(c1)+(0.24,\H-0.27)$) {1};
+\node[ttl, text=white] at ($(c1)+(\W/2+0.27,\H-0.12)$) {\faLock\ Closed agent};
+\foreach \j in {0,...,4} \fill[white!25!gbink, rounded corners=1pt] ($(c1)+(0.35+0.47*\j,1.72)$) rectangle ++(0.34,1.15);
+\node[font=\sffamily\fontsize{6.3}{7.4}\selectfont, text=white!75] at ($(c1)+(\W/2,1.55)$) {layers (weights hidden)};
+\foreach \c [count=\j from 0] in {80,35,60,15,90,45,25,70} \node[cell, fill=gborange!\c] at ($(c1)+(0.46+0.29*\j,1.05)$) {};
+\node[circle, fill=gbink, draw=white, line width=0.5pt, inner sep=0.6pt, font=\sffamily\bfseries\tiny, text=white] at ($(c1)+(\W/2,1.05)$) {?};
+\node[sub, text=white!80] at ($(c1)+(\W/2,0.72)$) {hidden state $\phi_t$, not\\identifiable from outputs};
+
+% ---------------------------------------------------------------- 2 what the operator sees
+\fill[card, gbmute!9, draw=gbmute!35] (c2) rectangle ++(\W,\H);
+\node[num=gbmute] at ($(c2)+(0.24,\H-0.27)$) {2};
+\node[ttl, text=gbink] at ($(c2)+(\W/2+0.27,\H-0.12)$) {\faEye\ Transcript};
+\begin{scope}[shift={($(c2)+(0.18,0)$)}, every node/.style={anchor=west, font=\sffamily\fontsize{6.3}{7.4}\selectfont, inner sep=2pt}]
+  \fill[gbmute!22, rounded corners=2pt] (0,2.62) rectangle (2.59,2.98); \node at (0,2.8) {instructions};
+  \fill[gbblue!18, rounded corners=2pt] (0,2.18) rectangle (2.59,2.54); \node at (0,2.36) {user's task};
+  \fill[white, draw=gbmute!40, rounded corners=2pt] (0,1.74) rectangle (2.59,2.10); \node at (0,1.92) {earlier calls and results};
+  \fill[gborange!14, draw=gborange, line width=1pt, rounded corners=2pt] (0,0.96) rectangle (2.59,1.62);
+  \node[font=\sffamily\bfseries\fontsize{6.3}{7.4}\selectfont, text=gborange] at (0,1.44) {proposed action $A_t$};
+  \node[font=\ttfamily\fontsize{5.0}{6.0}\selectfont] at (0,1.13) {restart-service checkout};
+\end{scope}
+\node[sub] at ($(c2)+(\W/2,0.72)$) {all that a deployment sees,\\before the action runs};
+
+% ---------------------------------------------------------------- 3 open reader
+\fill[card, gbblue] (c3) rectangle ++(\W,\H);
+\node[num=gbink] at ($(c3)+(0.24,\H-0.27)$) {3};
+\node[ttl, text=white] at ($(c3)+(\W/2+0.27,\H-0.12)$) {\faLockOpen\ Open reader};
+\foreach \j in {0,...,4} \fill[white!35!gbblue, rounded corners=1pt] ($(c3)+(0.35+0.47*\j,1.72)$) rectangle ++(0.34,1.15);
+\node[font=\sffamily\fontsize{6.3}{7.4}\selectfont, text=white] at ($(c3)+(\W/2,1.55)$) {Qwen3-8B, layer 32};
+\foreach \c [count=\j from 0] in {95,40,75,55,25,85,45,65} \node[cell, fill=white, fill opacity=0.\c, draw=gbblue] at ($(c3)+(0.46+0.29*\j,1.05)$) {};
+\node[sub, text=white] at ($(c3)+(\W/2,0.72)$) {its state $\psi_t$ after reading\\the same tokens};
+
+% ---------------------------------------------------------------- 4 score and frozen cut
+\fill[card, white, draw=gbmute!35] (c4) rectangle ++(\W,\H);
+\node[num=gbink] at ($(c4)+(0.24,\H-0.27)$) {4};
+\node[ttl, text=gbink] at ($(c4)+(\W/2+0.27,\H-0.12)$) {\faChartArea\ Probe score};
+\begin{scope}[shift={($(c4)+(0.2,1.12)$)}]
+  \fill[gbblue!22] plot[domain=0:2.55, samples=50] (\x,{1.45*exp(-((\x-0.85)^2)/0.18)}) -- (2.55,0) -- (0,0) -- cycle;
+  \draw[gbblue, line width=0.9pt] plot[domain=0:2.55, samples=50] (\x,{1.45*exp(-((\x-0.85)^2)/0.18)});
+  \fill[gborange!35] plot[domain=0:2.55, samples=50] (\x,{0.7*exp(-((\x-2.0)^2)/0.09)}) -- (2.55,0) -- (0,0) -- cycle;
+  \draw[gborange, line width=0.9pt] plot[domain=0:2.55, samples=50] (\x,{0.7*exp(-((\x-2.0)^2)/0.09)});
+  \draw[gbmute, line width=0.5pt] (0,0) -- (2.6,0);
+  \draw[gbink, line width=1.1pt, dash pattern=on 2.5pt off 1.5pt] (1.55,-0.05) -- (1.55,1.62);
+  \node[font=\sffamily\fontsize{6.3}{7.4}\selectfont, text=gbblue, anchor=south] at (0.5,1.0) {safe};
+  \node[font=\sffamily\fontsize{6.3}{7.4}\selectfont, text=gborange, anchor=south] at (2.12,0.72) {violation};
+  \node[font=\sffamily\bfseries\fontsize{6.3}{7.4}\selectfont, text=gbink, anchor=south west] at (1.58,1.25) {cut};
+\end{scope}
+\node[sub] at ($(c4)+(\W/2,0.72)$) {cut: top 5\% of \emph{unlabelled}\\traffic, then frozen};
+
+% ---------------------------------------------------------------- 5 decision
+\fill[card, gbaqua!10, draw=gbaqua!60] (c5) rectangle ++(\W,\H);
+\node[num=gbink] at ($(c5)+(0.24,\H-0.27)$) {5};
+\node[ttl, text=gbink] at ($(c5)+(\W/2+0.27,\H-0.12)$) {\faIcon{shield-alt}\ Decision};
+\foreach \t/\c/\y in {{\faCheck\ run it}/gbaqua!85!black/2.55, {\faBan\ block}/gborange/1.95, {\faUserCheck\ hold for review}/gbblue/1.35}
+  \node[rounded corners=6pt, fill=\c, text=white, font=\sffamily\bfseries\scriptsize, minimum width=2.45cm, minimum height=0.46cm] at ($(c5)+(\W/2,\y)$) {\t};
+\node[sub] at ($(c5)+(\W/2,0.72)$) {before the action runs};
+
+% ---------------------------------------------------------------- the chain
+\foreach \a/\b in {1/2, 2/3, 3/4, 4/5} \draw[flow] ($(c\a)+(\W+0.06,\H/2)$) -- ($(c\b)+(-0.06,\H/2)$);
+% the replica: reader state -> agent state (over the top)
+\draw[-{Latex[length=2.3mm,width=2mm]}, gborange, line width=1.1pt, dash pattern=on 4pt off 2pt, rounded corners=8pt]
+  ($(c3)+(\W/2,\H+0.04)$) -- ($(c3)+(\W/2,\H+0.62)$) -- ($(c1)+(\W/2,\H+0.62)$) -- ($(c1)+(\W/2,\H+0.06)$);
+\node[anchor=south, inner sep=2pt, font=\sffamily\scriptsize, text=gborange!85!black] at ($(c2)+(\W/2+0.25,\H+0.64)$)
+  {\textbf{replica} $\hat\phi_t=\E[\phi_t\mid\psi_t]$ of the hidden state, checked on open agents};
+% the loop: the decision comes back to the agent (under the cards)
+\draw[-{Latex[length=2.3mm,width=2mm]}, gbaqua!75!black, line width=1.1pt, rounded corners=8pt]
+  ($(c5)+(\W/2,-0.04)$) -- ($(c5)+(\W/2,-0.5)$) -- ($(c1)+(\W/2,-0.5)$) -- ($(c1)+(\W/2,-0.06)$);
+\node[fill=white, inner sep=2pt, font=\sffamily\scriptsize, text=gbaqua!65!black] at ($(c3)+(\W/2,-0.5)$)
+  {the agent's next step depends on the decision};
+\end{tikzpicture}

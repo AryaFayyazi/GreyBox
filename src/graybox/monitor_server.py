@@ -10,6 +10,7 @@ GET  /v1/health
 
 Security: bind to localhost unless you set GB_API_KEY; with it, every endpoint but /v1/health needs the header
 "Authorization: Bearer <GB_API_KEY>". Requests carry whole transcripts, which can hold credentials.
+Audit: GB_AUDIT_LOG=/path/decisions.jsonl appends one record per scored action.
 Gates: GB_GATE_STATE=/path/gates.json keeps each stream's gate (warm-up scores, frozen cut) across restarts; without it,
 a restarted server escalates every action of a stream until it has seen 100 again (fail closed). A gate belongs to a
 (stream, budget) pair: a request with another budget starts a new, cold gate, and /calibrate seeds one budget.
@@ -75,6 +76,20 @@ def _gate(stream: str, budget: float) -> QuantileGate:
         _STATE["gates"][k] = QuantileGate(budget)
         _save_gates()
     return _STATE["gates"][k]
+
+
+def _audit(endpoint: str, req, out: dict) -> None:
+    """GB_AUDIT_LOG=/path/decisions.jsonl: one record per scored action (time, endpoint, stream, tool, args, score,
+    decision). It stays on this machine; the arguments can hold personal data. A failing log never changes a decision."""
+    path = os.environ.get("GB_AUDIT_LOG")
+    if not path:
+        return
+    rec = {"time": time.time(), "endpoint": endpoint, "stream": req.stream, "tool": req.action.tool, "args": req.action.args, **out}
+    try:
+        with _GATE_LOCK, open(path, "a") as f:
+            f.write(json.dumps(rec, default=str) + "\n")
+    except OSError as e:
+        print(f"graybox: audit failed ({e}); the decision stands", flush=True)
 
 
 def _observe(g: QuantileGate, score: float) -> bool:
@@ -151,6 +166,16 @@ def _hist(req):
     return [Step(h.tool, h.args or {}, h.result) for h in req.history]
 
 
+def _inputs(req, canonical: bool):
+    """(context or None, history, args) as the monitor reads them; a canonical monitor reads the canonical action and
+    earlier calls (graybox.monitor.canonical_args), as Guard does."""
+    if not canonical:
+        return req.context, _hist(req), req.action.args
+    from .monitor import canonical_args, canonical_ctx_text
+    ctx = None if req.context is None else canonical_ctx_text(req.context)
+    return ctx, [Step(h.tool, canonical_args(h.args or {}), h.result) for h in req.history], canonical_args(req.action.args or {})
+
+
 def _load_text():
     """Load the text (or browser-reader) monitor named by GB_TEXT_MONITOR once; remember a load error for /v1/health."""
     path = os.environ.get("GB_TEXT_MONITOR")
@@ -190,10 +215,11 @@ def monitor_text(req: ActionRequest):
         raise HTTPException(422, "'budget' applies only with gate=true; without it the file's own cut is used")
     warn = ("this monitor was not trained on conversation-aware contexts: 'context' changes its input"
             if req.context is not None and not tm._json.get("chat") else None)
-    if req.context is not None:
-        z = tm.decision(None, None, None, None, rendered=(req.context, act_text(req.action.tool, req.action.args)))
+    ctx, hist, args = _inputs(req, bool(tm._json.get("canonical")))
+    if ctx is not None:
+        z = tm.decision(None, None, None, None, rendered=(ctx, act_text(req.action.tool, args)))
     else:
-        z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
+        z = tm.decision(req.instructions, req.task, hist, (req.action.tool, args))
     if req.gate:
         budget = req.budget or 0.05
         g = _gate("text:" + req.stream, budget)
@@ -201,6 +227,7 @@ def monitor_text(req: ActionRequest):
         esc = _observe(g, z)
     else:
         esc, thr, budget = z >= tm._json["threshold_logit"], tm._json["threshold_logit"], tm._json.get("budget")
+    _audit("text", req, {"score": round(z, 4), "unit": "logit", "escalate": bool(esc), "threshold": thr})
     return {"score": round(z, 4), "unit": "logit", "escalate": esc, "threshold": None if thr is None else round(thr, 4),
             "cut": "live gate on this stream" if req.gate else "the file's cut",
             "budget": budget, "ms": round(1000 * (time.perf_counter() - t0), 3), "warning": warn,
@@ -243,13 +270,15 @@ def monitor_action(req: ActionRequest):
         rm = _STATE["reader"]
         if req.context is None and getattr(rm, "chat", False):
             raise HTTPException(422, "this probe was trained with conversation-aware context (--chat): send 'context' (graybox.chat.chat_ctx)")
-        if req.context is not None:
-            p = float(rm.probe.predict_proba(rm.features(Q.format(ctx=req.context, cot="", act=act_text(req.action.tool, req.action.args))))[0, 1])
+        ctx, hist, args = _inputs(req, bool(getattr(rm, "canonical", False)))
+        if ctx is not None:
+            p = float(rm.probe.predict_proba(rm.features(Q.format(ctx=ctx, cot="", act=act_text(req.action.tool, args))))[0, 1])
         else:
-            p = rm.score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
+            p = rm.score(req.instructions, req.task, hist, (req.action.tool, args))
         g = _gate(req.stream, req.budget or 0.05)
         t = g.threshold
         esc = _observe(g, p)
+    _audit("action", req, {"score": round(p, 6), "unit": "probability", "escalate": bool(esc), "threshold": t})
     return {"p_unsafe": round(p, 6), "escalate": esc, "threshold": t, "calibrated": t is not None, "frozen": g.frozen,
             "ms": round(1000 * (time.perf_counter() - t0), 1),
             "note": "p_unsafe ranks actions but is not calibrated on a new agent; act on 'escalate'"}

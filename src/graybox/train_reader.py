@@ -78,6 +78,9 @@ def main(argv=None):
     ap.add_argument("--reader", default="Qwen/Qwen3-8B", help="Hugging Face id of the reader model (downloaded once; needs a GPU)")
     ap.add_argument("--chat", action="store_true", help="conversation-aware context (agents that talk with a user); "
                     "then score with Guard(..., chat=True) or the server's 'context' field")
+    ap.add_argument("--canonical", action="store_true", help="train on the canonical action (graybox.monitor.canonical_args): free "
+                    "text that the agent writes about its own call is removed, so rewording it cannot move the score; Guard and "
+                    "the server then read actions the same way")
     a = ap.parse_args(argv)
     from pathlib import Path
     if Path(a.out).exists() and not a.force:
@@ -102,6 +105,9 @@ def main(argv=None):
         steps = load_steps(a.data, chat=a.chat)
     except (ValueError, OSError) as e:
         raise SystemExit(f"{a.data}: {e}")
+    if a.canonical:
+        from .guard import canonical_step
+        steps = [canonical_step(s) for s in steps]
     y = np.array([int(bool(s["label"])) for s in steps])
     if y.sum() < 2 or (1 - y).sum() < 2:
         raise SystemExit("need at least 2 violations and 2 safe actions")
@@ -122,9 +128,10 @@ def main(argv=None):
         caught.append(caught_at_budget(y, oof, 0.05))
     report = {"actions": int(len(y)), "violations": int(y.sum()), "groups": int(len(set(groups))), "folds": k, "repeats": 3,
               "cv_auroc": round(float(np.mean(aucs)), 4), "cv_auroc_range": [round(min(aucs), 4), round(max(aucs), 4)],
-              "caught_at_5pct": round(float(np.mean(caught)), 4), "most_possible_at_5pct": round(min(1.0, 0.05 * len(y) / y.sum()), 4)}
+              "caught_at_5pct": round(float(np.mean(caught)), 4), "most_possible_at_5pct": round(min(1.0, 0.05 * len(y) / y.sum()), 4),
+              "canonical": a.canonical}
     probe = mk(len(y)).fit(X, y)
-    joblib.dump({"probe": probe, "layer": a.layer, "reader": a.reader, "chat": a.chat, "trained_on": f"{a.data}: {report}"}, a.out)
+    joblib.dump({"probe": probe, "layer": a.layer, "reader": a.reader, "chat": a.chat, "canonical": a.canonical, "trained_on": f"{a.data}: {report}"}, a.out)
     print(json.dumps(report, indent=1))
     print("saved", a.out)
 

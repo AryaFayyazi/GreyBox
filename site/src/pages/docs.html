@@ -33,7 +33,7 @@ opinion on held actions, not as the only monitor.</p>
 pip install "greybox-monitor[text]"       # + train the text monitor in Python
 pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
 <p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
-<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.4.1</code>);
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.5.0</code>);
 the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
@@ -48,6 +48,14 @@ python -m graybox.train_text labelled_steps.jsonl --eval-only --group-by family 
 codes, random-looking tokens or rare words are left out of the model file. Names and company names that recur in your logs stay (the
 filter cannot tell a name from a word), so keep the file internal if your logs name people. <code>--no-privacy</code> turns it off. The filter also reduces memorization: on our GPT example, with whole task families
 held out, AUROC 0.916 with the filter and 0.799 without it (0.946 and 0.942 with tasks held out). An existing <code>--out</code> file is not overwritten without <code>--force</code>.</p>
+<p><b>Canonical mode</b> (<code>--canonical</code>, also for <code>graybox.train_reader</code> and in the browser trainer): the
+monitor reads only the decisive fields of each call. A field named like free text (body, subject, message, reason, note, ...) becomes
+<code>[free text]</code>; in other strings, quoted prose of 3 or more words and <code>#</code> comments are removed. Short quoted
+literals and the words of a command stay. The model file records it, and <code>Guard</code>, the server and the browser then read
+actions the same way. An agent then cannot move the score by rewording what it says about its own call, however many times it
+tries. Tool results are not changed. <b>It is off by default because it has a measured cost</b> (a preregistered test): on two closed
+agents the canonical reader caught 51–59% of the violations at a 5% budget instead of 94–98%, because a message body can be the
+leaked content itself. Use it only when your policies never depend on what free text says.</p>
 <p>The estimate is the mean of 3 cross-validations with different fold assignments (the report gives the range); tasks with a
 violation are spread over the folds. Python and the browser use the same folds and agree to about 0.001.</p>
 <p>Read the within-tool AUROC. If it is much lower than the pooled AUROC, the monitor mostly knows <i>which tool</i> is called, not
@@ -112,6 +120,23 @@ is then scored with the earlier calls of the same reply (with no results yet), a
 <p><b>Units.</b> For the text monitor and the browser reader, <code>v.score</code> (and the server's <code>"score"</code>) is a logit, compared
 with the file's <code>threshold_logit</code>; <code>v.unit</code> says so. For the reader monitor with a gate it is a probability, but act on
 <code>v.allow</code>: the probability does not transfer between agents.</p>
+
+<h3>In front of an MCP server</h3>
+<p>If your agent calls tools through MCP, put the monitor between the client and the server; the agent does not change:</p>
+<pre>pip install "greybox-monitor[mcp]"
+python -m graybox.mcp_proxy --monitor greybox-text-monitor.json --instructions policy.txt --skip-tools read_file,list_files \
+    --hold-tools issue_refund --audit-log decisions.jsonl -- &lt;your MCP server command&gt;</pre>
+<p>The proxy lists the server's tools unchanged and checks each call before it forwards it; a blocked call returns an error
+result with the block message. An MCP server never sees the conversation, so the monitor reads only the instructions and task
+you pass and the calls of the session. On our GPT example, the text monitor lost little from that (AUROC 0.79 with the full
+context, 0.77 without the user's task, 0.81 with the calls only; the same 45% caught at 5%; <code>scripts/117</code>), because word
+counts lean on the action. We did not measure this for the reader monitor. Use <code>Guard</code> in the agent loop when you can.</p>
+
+<h3>Audit log</h3>
+<p><code>Guard(..., audit_log="decisions.jsonl")</code> appends one record per check (time, tool, arguments, score, decision, held,
+by rule, reviewer error, cut); <code>on_decision=fn</code> receives the same record. The server writes it with
+<code>GB_AUDIT_LOG=/path/decisions.jsonl</code>. A failing log never changes a decision. The arguments can hold personal data;
+the log stays on your machine.</p>
 
 <h3>Hold for review instead of block</h3>
 <p>Blocking has a cost. In our live tests, goal completion fell from 47.4% to 45.6% (GPT) and from 40.7% to 34.9% (Claude). Nearly all of
@@ -237,7 +262,7 @@ POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in Op
    ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"version": "0.4.1", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+→ {"version": "0.5.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
    "auth_required": false, "gate_state_persisted": false, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in

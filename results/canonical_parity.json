@@ -1,0 +1,41 @@
+{
+ "sets": {
+  "train": {
+   "n": 17623,
+   "differ": 0,
+   "act_changed": 3614
+  },
+  "T8b": {
+   "n": 3128,
+   "differ": 0,
+   "act_changed": 761
+  },
+  "T11": {
+   "n": 3627,
+   "differ": 0,
+   "act_changed": 1348
+  },
+  "T7": {
+   "n": 3455,
+   "differ": 0,
+   "act_changed": 1146
+  },
+  "T13b": {
+   "n": 3925,
+   "differ": 0,
+   "act_changed": 595
+  },
+  "T25_rewrites": {
+   "n": 6336,
+   "differ": 0,
+   "act_changed": 5658
+  },
+  "hand": {
+   "n": 11,
+   "differ": 0,
+   "act_changed": 7
+  }
+ },
+ "all_identical": true,
+ "examples_of_differences": []
+}

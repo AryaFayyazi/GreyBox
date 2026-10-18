@@ -1,0 +1,94 @@
+{
+ "Gemma-4": {
+  "steps": 12128,
+  "violations": 346,
+  "premise_auroc_h": 0.9958,
+  "premise_auroc_h_plus_residual": 0.9964,
+  "residual_share_of_score_variance": 0.306,
+  "pairwise_logistic_risk": {
+   "true": 0.0184,
+   "replica": 0.0148
+  },
+  "calibrated_log_loss": {
+   "true": 0.0306,
+   "replica": 0.0264
+  },
+  "auroc_pooled": {
+   "true": 0.9943,
+   "replica": 0.9959
+  },
+  "auroc_within_template": {
+   "true": 0.984,
+   "replica": 0.9869
+  }
+ },
+ "gpt-oss-20b": {
+  "steps": 2432,
+  "violations": 311,
+  "premise_auroc_h": 0.9861,
+  "premise_auroc_h_plus_residual": 0.9863,
+  "residual_share_of_score_variance": 0.249,
+  "pairwise_logistic_risk": {
+   "true": 0.0777,
+   "replica": 0.0451
+  },
+  "calibrated_log_loss": {
+   "true": 0.1345,
+   "replica": 0.0975
+  },
+  "auroc_pooled": {
+   "true": 0.9718,
+   "replica": 0.9864
+  },
+  "auroc_within_template": {
+   "true": 0.8998,
+   "replica": 0.9237
+  }
+ },
+ "Qwen3.8-27B": {
+  "steps": 2378,
+  "violations": 73,
+  "premise_auroc_h": 0.9883,
+  "premise_auroc_h_plus_residual": 0.9888,
+  "residual_share_of_score_variance": 0.33,
+  "pairwise_logistic_risk": {
+   "true": 0.0436,
+   "replica": 0.0353
+  },
+  "calibrated_log_loss": {
+   "true": 0.0341,
+   "replica": 0.0261
+  },
+  "auroc_pooled": {
+   "true": 0.9857,
+   "replica": 0.99
+  },
+  "auroc_within_template": {
+   "true": 0.9554,
+   "replica": 0.9715
+  }
+ },
+ "Muse-Glimmer-30B": {
+  "steps": 2657,
+  "violations": 335,
+  "premise_auroc_h": 0.9952,
+  "premise_auroc_h_plus_residual": 0.9953,
+  "residual_share_of_score_variance": 0.232,
+  "pairwise_logistic_risk": {
+   "true": 0.0557,
+   "replica": 0.022
+  },
+  "calibrated_log_loss": {
+   "true": 0.1187,
+   "replica": 0.0597
+  },
+  "auroc_pooled": {
+   "true": 0.9819,
+   "replica": 0.9955
+  },
+  "auroc_within_template": {
+   "true": 0.9286,
+   "replica": 0.9686
+  }
+ }
+}

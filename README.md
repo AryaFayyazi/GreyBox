@@ -45,6 +45,11 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
    privacy filter (on unless you pass `--no-privacy`) masks emails and URLs and drops terms with digits, codes or rare words;
    names that recur in your logs stay in the model file.
    `--eval-only --group-by <field>` reports the score with other groups held out (for example task families).
+   `--canonical` trains on the canonical action: free text that the agent writes about its own call (a message body, a
+   subject, a reason) and quoted prose are removed, so rewording them cannot move the score.
+   It is off by default because it has a measured cost (preregistered): on two closed agents the canonical reader caught
+   51–59% of violations at a 5% budget instead of 94–98%, because a message body can be the leaked content itself. Use it
+   only when your policies never depend on what free text says.
 2. Put it in your agent's loop:
    ```python
    from graybox.guard import Guard
@@ -63,6 +68,14 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
    the agent's own traffic, `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review
    load at 5%, but it caught only 29 of 115 there (1 of 39 in one split): it does not restore detection. Label actions of the new tasks and retrain, or use the
    reader. A new gate sends every action to review until it has seen 100: seed it with `gate.fit(past_scores)`.
+
+4. Agents that call tools through MCP: run the monitor as a proxy in front of the MCP server (`pip install
+   "greybox-monitor[mcp]"`), with no change to the agent:
+   ```
+   python -m graybox.mcp_proxy --monitor greybox-text-monitor.json --instructions policy.txt -- <your MCP server command>
+   ```
+   The proxy sees only the tool calls, not the conversation (on our GPT example the text monitor lost little from that;
+   see the docs). `Guard(..., audit_log="decisions.jsonl")`, or the server's `GB_AUDIT_LOG`, records every decision.
 
 Train the reader monitor on your own labels with one command on a GPU:
 `python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib`, then load it with
@@ -112,6 +125,8 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T22: a zero-shot reasoning judge on τ²-bench | Qwen3-32B with thinking reads the policy, the conversation and the proposed write; no labels. On T20's 262 writes: within tool 0.804 (T21's reader 0.535). Both preregistered endpoints fail: judge − tool +0.304 [−0.084, +0.427], judge − reader +0.268 [−0.074, +0.511]; only 7 tasks have a violation. |
 | T23: the same judge on four closed frontier agents | T22's judge, unchanged, on the 894 published τ² writes of Claude 3.7 Sonnet, GPT-4.1, GPT-4.1-mini and o4-mini (227 violations, 29 tasks). Within tool: judge 0.766, reader trained on other tasks 0.646. K1 passes (judge − tool +0.266 [0.151, 0.338]); K2 fails (judge − reader +0.120 [−0.047, +0.274]). With exactly 5% of writes reviewed the reader catches more: 18.4% vs 11.7% (most possible 19.7%). The judge separates violating from allowed writes of the same tool without labels, but as a review queue it is below the tool alone (13.0%). |
 | T16c: hold for review instead of block | On Claude (450 scenarios), escalated actions go to a reviewer (here an oracle; an upper bound on a human). Episodes with an executed violation: 6.7% → 0.0% (R1 passes). Goals 38.7% (no gate 40.7%, blocking 34.9%); the preregistered "at most 3 points lost" fails (−0.020 [−0.051, +0.007]). Exploratory: episodes in which the reviewer let a held action run kept their goals (60.8% vs 58.8%); the gap is in episodes where nothing was held, which we suggest is variation between runs (untested: the control was not concurrent). 0.20 reviews per episode. |
+| T24: a closed agent told it is monitored | Claude Haiku 5.5 on 990 scenarios, with and without an oversight notice, with the cut frozen on its earlier traffic. Caught 97.1% [92.9%, 100%] of the told agent's violations and 83.6% of the others (both endpoints pass). The notice moved all scores up: the frozen cut escalated 15.2% of actions instead of 5.3%, so set the cut again after a prompt change. Violation rate unchanged. |
+| T25–T27: an attacker who can query the score | Rewriting only the free text of 134 real violations, with score feedback, cut the reader's catch rate from 96% to 29% (fails). Two preregistered defenses also failed: canonical actions (score cannot move, but clean catch fell to 51–59% because a message body can be the leaked content) and training on rewrites of both classes (60% caught after a fresh, defense-aware attack). The monitor is not robust to adaptive rewording: do not show the score to the agent. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
 
 **Results that did not confirm** are in the record too. Examples: the agent's answers alone do not match the

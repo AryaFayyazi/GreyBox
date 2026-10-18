@@ -1,0 +1,17 @@
+{
+ "train_actions": 742,
+ "test_actions": 773,
+ "test_violations": 49,
+ "full_context": {
+  "auroc": 0.7929,
+  "caught_at_5pct": 0.449
+ },
+ "no_task": {
+  "auroc": 0.7664,
+  "caught_at_5pct": 0.449
+ },
+ "calls_only": {
+  "auroc": 0.8135,
+  "caught_at_5pct": 0.449
+ }
+}

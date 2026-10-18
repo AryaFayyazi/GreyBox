@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greybox-monitor"            # import name: graybox ("graybox" and "greybox" on PyPI are other projects)
-version = "0.4.1"
+version = "0.5.0"
 description = "Monitor tool-calling agents (open or closed) from their transcripts: score each proposed action before it runs"
 readme = "README.md"
 license = "MIT"
@@ -38,12 +38,14 @@ reader = ["torch>=2.2,<3", "transformers>=4.51,<6", "joblib>=1.3", "scikit-learn
 browser-reader = ["torch>=2.2,<3", "transformers>=4.51,<6"]                                 # score a browser-reader model file in Python (CPU)
 server = ["fastapi>=0.110,<1", "uvicorn>=0.23,<1", "httpx>=0.25,<1", "pydantic>=2,<3"]
 anthropic = ["anthropic>=0.40"]
+mcp = ["mcp>=2,<3", "anyio>=4"]                                                           # graybox.mcp_proxy
 all = ["greybox-monitor[text,reader,server]"]
 research = ["pandas", "scikit-learn", "omegaconf", "torch", "transformers", "vllm"]
 
 [project.scripts]
 graybox-train-text = "graybox.train_text:cli"
 graybox-train-reader = "graybox.train_reader:main"
+graybox-mcp-proxy = "graybox.mcp_proxy:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

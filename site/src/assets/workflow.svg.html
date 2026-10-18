@@ -1,0 +1,81 @@
+<figure class="workflow" aria-label="Animated overview: the transcript and the proposed action flow into an open reader model; a replica of the closed agent's hidden state is formed; a probe scores the action against a frozen cut; the action is allowed or blocked before it runs.">
+<svg viewBox="0 -26 960 326" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>How Grey Box decides before an action runs</title>
+  <defs>
+    <marker id="wfArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="wf-arrowhead"/></marker>
+    <path id="wfToReader" d="M250,170 C290,170 300,200 345,200"/>
+    <path id="wfToAgent" d="M250,120 C290,120 300,80 345,80"/>
+    <path id="wfToScore" d="M560,200 C600,200 610,150 650,150"/>
+  </defs>
+  <!-- 1 the transcript the operator sees -->
+  <g class="wf-step" transform="translate(20,30)">
+    <text class="wf-h" x="0" y="0">1 · What the operator sees</text>
+    <rect class="wf-card wf-ins" x="0" y="16" width="230" height="30" rx="5"/><text class="wf-t" x="10" y="35">[Instructions] no restarts without approval</text>
+    <rect class="wf-card wf-task" x="0" y="52" width="230" height="30" rx="5"/><text class="wf-t" x="10" y="71">[User task] update logging on checkout-api</text>
+    <rect class="wf-card" x="0" y="88" width="230" height="30" rx="5"/><text class="wf-t wf-mono" x="10" y="107">[Agent called] service-status …</text>
+    <rect class="wf-card" x="0" y="124" width="230" height="30" rx="5"/><text class="wf-t wf-mono" x="10" y="143">[Tool result] production; no approval</text>
+    <rect class="wf-card wf-act" x="0" y="166" width="230" height="48" rx="6"/>
+    <text class="wf-t wf-acth" x="10" y="184">Proposed action — not yet run</text>
+    <text class="wf-t wf-mono" x="10" y="203">restart-service checkout-api</text>
+    <text class="wf-small" x="0" y="236">no weights · no hidden reasoning · no labels of this agent</text>
+  </g>
+  <!-- tokens flowing to both networks -->
+  <g class="wf-flow">
+    <use href="#wfToReader" class="wf-path"/><use href="#wfToAgent" class="wf-path"/>
+    <circle r="4" class="wf-tok"><animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#wfToReader"/></animateMotion></circle>
+    <circle r="4" class="wf-tok"><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite"><mpath href="#wfToReader"/></animateMotion></circle>
+    <circle r="4" class="wf-tok wf-tok2"><animateMotion dur="2.4s" begin="0.4s" repeatCount="indefinite"><mpath href="#wfToAgent"/></animateMotion></circle>
+    <circle r="4" class="wf-tok wf-tok2"><animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite"><mpath href="#wfToAgent"/></animateMotion></circle>
+  </g>
+  <!-- 2 two networks read the same tokens -->
+  <g transform="translate(345,30)">
+    <text class="wf-h" x="0" y="0">2 · Two networks, same tokens</text>
+    <rect class="wf-agent" x="0" y="16" width="120" height="70" rx="7"/>
+    <text class="wf-tw" x="12" y="36">closed agent</text>
+    <g class="wf-lock" transform="translate(98,24)"><rect x="0" y="6" width="12" height="10" rx="2"/><path d="M2.5,6 v-3 a3.5,3.5 0 0 1 7,0 v3" fill="none"/></g>
+    <g class="wf-layers wf-dim"><rect x="12" y="46" width="14" height="30" rx="2"/><rect x="32" y="46" width="14" height="30" rx="2"/><rect x="52" y="46" width="14" height="30" rx="2"/><rect x="72" y="46" width="14" height="30" rx="2"/><rect x="92" y="46" width="14" height="30" rx="2"/></g>
+    <text class="wf-small" x="132" y="30">hidden state: can't be read</text>
+    <g transform="translate(132,38)" class="wf-state wf-gauge"><rect x="0" width="14" height="14" style="--o:.85;--p:.25"/><rect x="16" width="14" height="14" style="--o:.35;--p:.7"/><rect x="32" width="14" height="14" style="--o:.6;--p:.15"/><rect x="48" width="14" height="14" style="--o:.15;--p:.9"/><rect x="64" width="14" height="14" style="--o:.9;--p:.45"/><rect x="80" width="14" height="14" style="--o:.45;--p:.6"/><rect x="96" width="14" height="14" style="--o:.25;--p:.85"/><rect x="112" width="14" height="14" style="--o:.7;--p:.35"/></g>
+    <text class="wf-small" x="132" y="70">rotation G: same outputs</text>
+
+    <rect class="wf-reader" x="0" y="140" width="120" height="70" rx="7"/>
+    <text class="wf-tw" x="12" y="160">open reader</text>
+    <g class="wf-layers wf-scan"><rect x="12" y="170" width="14" height="30" rx="2"/><rect x="32" y="170" width="14" height="30" rx="2"/><rect x="52" y="170" width="14" height="30" rx="2"/><rect x="72" y="170" width="14" height="30" rx="2"/><rect x="92" y="170" width="14" height="30" rx="2"/></g>
+    <text class="wf-small" x="132" y="150">replica of the agent's state</text>
+    <g transform="translate(132,158)" class="wf-state wf-replica">
+      <rect x="0" width="14" height="14" style="--o:.7"/><rect x="16" width="14" height="14" style="--o:.4"/><rect x="32" width="14" height="14" style="--o:.55"/><rect x="48" width="14" height="14" style="--o:.25"/>
+      <rect x="64" width="14" height="14" style="--o:.75"/><rect x="80" width="14" height="14" style="--o:.45"/><rect x="96" width="14" height="14" style="--o:.3"/><rect x="112" width="14" height="14" style="--o:.6"/>
+    </g>
+    <text class="wf-small" x="132" y="192">46–66% of the variance, from the</text>
+    <text class="wf-small" x="132" y="204">transcript alone</text>
+    <path class="wf-link" d="M266,48 C285,48 285,165 266,165" marker-end="url(#wfArr)"/>
+    <text class="wf-small wf-linkt" x="291" y="100" transform="rotate(90 291 100)" text-anchor="middle">checked on open agents</text>
+  </g>
+  <!-- the reader's state goes to the probe -->
+  <g class="wf-flow">
+    <use href="#wfToScore" class="wf-path"/>
+    <circle r="4" class="wf-tok"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#wfToScore"/></animateMotion></circle>
+  </g>
+  <!-- 3 decide before it runs -->
+  <g transform="translate(650,30)">
+    <text class="wf-h" x="0" y="0">3 · Decide before it runs</text>
+    <path class="wf-safe" d="M0,190 C40,190 50,70 80,70 C110,70 125,190 170,190 Z"/>
+    <path class="wf-viol" d="M150,190 C175,190 185,130 205,130 C225,130 235,190 260,190 Z"/>
+    <line class="wf-axis" x1="0" y1="190" x2="290" y2="190"/>
+    <line class="wf-cut" x1="168" y1="40" x2="168" y2="200"/>
+    <text class="wf-small wf-cutt" x="174" y="50">frozen cut: top 5% of the</text>
+    <text class="wf-small wf-cutt" x="174" y="62">agent's own unlabelled traffic</text>
+    <text class="wf-small" x="0" y="212">risk score →</text>
+    <circle class="wf-needle" cy="190" r="7" cx="70">
+      <animate attributeName="cx" values="20;70;70;70;120;205;205;205" keyTimes="0;0.12;0.4;0.5;0.62;0.75;0.92;1" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <g class="wf-chip wf-allow"><rect x="0" y="226" width="120" height="26" rx="13"/><text x="60" y="243" text-anchor="middle">✓ run it</text>
+      <animate attributeName="opacity" values="0.15;1;1;0.15;0.15" keyTimes="0;0.13;0.45;0.5;1" dur="6s" repeatCount="indefinite"/></g>
+    <g class="wf-chip wf-block"><rect x="130" y="226" width="160" height="26" rx="13"/><text x="210" y="243" text-anchor="middle">⦸ block or send to a person</text>
+      <animate attributeName="opacity" values="0.15;0.15;1;1;0.15" keyTimes="0;0.74;0.77;0.95;1" dur="6s" repeatCount="indefinite"/></g>
+  </g>
+  <!-- the decision changes the agent's next step -->
+  <path class="wf-loop" d="M915,44 V-6 Q915,-14 907,-14 H343 Q335,-14 335,-6 V72 Q335,80 341,80" marker-end="url(#wfArr)"/>
+  <text class="wf-small wf-loopt" x="625" y="-18" text-anchor="middle">the agent's next step depends on the decision</text>
+</svg>
+</figure>

@@ -1,0 +1,62 @@
+This appendix collects the limits of every claim and every test that failed or could not be done. The main text reports
+only results that met their preregistered criterion; the complete record, with each test's outcome as it was registered,
+is in \cref{app:record}.
+
+\subsection{Scope of the claims}
+\begin{itemize}
+\item \textbf{Replication is tested only where the true state is known} (four open agents). For closed agents we test
+  prediction and prevention with a probe on the reader's state; the replica itself, mapped into Gemma-4's coordinates,
+  scores lower on the closed agents (AUROC 0.959 and 0.976; exploratory). Replication is partial: 46--66\% of the
+  variance of the main components, 51--54\% of each full layer on Gemma-4 and 30--46\% on the other three agents.
+\item \textbf{The decisive information is largely in the tokens.} A probe on the true state also works on a TF-IDF replica
+  (0.983), and TF-IDF with the same labels equals the reader on the training benchmark (within-template AUROC 0.997 vs 0.991 on Claude; pooled, 0.975 vs 0.989; the
+  preregistered test that the reader beats it there failed). The reader's advantage is robustness to shift.
+\item \textbf{Most agent tests use one benchmark}, CAPE-Bench, whose tasks are synthetic. The headline closed-agent
+  results (94\% and 98\% caught; live prevention) are on the benchmark the monitor was trained on.
+\item \textbf{\Cref{cor:action} needs a label that the action and the visible facts decide.} It does not cover labels about
+  later behaviour or beliefs (for later behaviour, the rollout forecast dominates every readout; \cref{prop:behaviour}).
+\item \textbf{Scores do not transfer between agents}: on Claude, a cut at probability 0.5 catches 3\%. The cut must come
+  from the monitored agent's own traffic (\cref{prop:frozen}).
+\item \textbf{The live tests compare the gate with no gate}; no baseline gate ran in the loop. Offline, on the same agents'
+  991- and 1{,}000-episode runs, holding 5\% of actions would have stopped 94\%/98\% (Claude/GPT) of the episodes with a violation
+  with the reader, 64\%/49\% with TF-IDF, 0\%/38\% with the 70B judge and 42\%/14\% with tool identity (exploratory).
+\item \textbf{The monitor is not robust to an adaptive attacker.} An attacker who queries the score and rewrites free text evades it; two defenses failed (below). Keep the score hidden from the agent.
+\item \textbf{Blocking costs goals.} Goals reached fell from 47.4\% to 45.6\% (GPT) and from 40.7\% to 34.9\% (Claude); holding
+  for an oracle reviewer gave 38.7\%, and the preregistered test that review costs at most 3 points was not shown
+  ($-0.020$ [$-0.051$, $+0.007$]). A human reviewer is slower and makes errors.
+\end{itemize}
+
+\subsection{Tests that failed or could not be done}
+\begin{longtable}{@{}p{0.27\textwidth}p{0.69\textwidth}@{}}
+\toprule
+\textbf{Test} & \textbf{Outcome}\\
+\midrule\endhead
+Interrogation state alone vs a white-box probe & The agent's answers alone do not match a probe on its internals at the start of the turn (failed).\\
+Resampling scored by a deployable judge & A 70B judge in place of the environment checker: 0.782, below the probe (0.846); the label function is the bottleneck (failed).\\
+Claude, actions after a reveal & 0 violations in the preregistered units: Claude violates at or without the reveal (not tested; the all-actions test replaced it).\\
+Reader vs TF-IDF in distribution & TF-IDF equals the reader on the training benchmark (failed; it is worse under shift).\\
+A policy family removed from training & The ranking holds (0.912 vs 0.570), but 0 of 26 violations are escalated at a 5\% budget without labels of the policy.\\
+Labels for a new policy, prospective & The held-out credentials policy needed no labels (18 of 18 caught with 0), so there was nothing to fix (failed as registered).\\
+AgentDojo with spotlighting & Attacks succeeded in 2.1\% of episodes (4 injected calls; not tested).\\
+AgentDojo without a defense, closed agent, no AgentDojo labels & 0.840 vs judge 0.787, $+0.052$ [$-0.026$, $+0.130$] (failed); with labels of open agents the same test passes (\cref{sec:coverage}).\\
+Hold for review: goal cost & Not shown within 3 points (above).\\
+Browser-size reader vs the 8B reader & $-0.097$ [$-0.115$, $-0.079$] AUROC on the closed agents' CAPE-Bench actions, against a margin of $-0.05$ (failed); offered for new kinds of tasks only.\\
+\multicolumn{2}{@{}l}{\emph{A second outside benchmark, $\tau^2$-bench (an airline policy)}}\\
+Claude alone & 9 violations, below the preregistered 15 (not tested).\\
+Two closed agents, a persistent customer & TF-IDF 0.987 within tool, the reader 0.738 ($-0.250$ [$-0.518$, $-0.077$]; failed). Every test task also occurred in training.\\
+The same, test tasks removed from training & Neither monitor transfers: reader 0.535, TF-IDF 0.519 (both failed); TF-IDF with entities masked 0.366. The 0.987 was memorisation of the tasks. A $\tau^2$ violation breaks a written rule over facts of the case (a booking older than 24 hours, the cabin), which a linear readout of other tasks' labels does not learn.\\
+A zero-shot reasoning judge (Qwen3-32B) & 0.804 within tool on the same writes, but 7 violating tasks; both endpoints failed (wide intervals).\\
+The same judge, four frontier agents & 894 writes: it separates violating from allowed writes of the same tool (0.766, passes), but not significantly better than the reader trained on other tasks (0.646; $+0.120$ [$-0.047$, $+0.274$], failed); at a 5\% budget the reader caught 18.4\%, the judge 11.7\%, tool identity 13.0\% (exploratory).\\
+\multicolumn{2}{@{}l}{\emph{Robustness}}\\
+An adaptive attacker who can query the score & Rewriting only the free text of 134 real closed-agent violations (two rounds of 16, score feedback; every rewrite still violates) cut the shipped reader's catch rate from 96.3\% to 29.1\% [21.6\%, 36.6\%] (failed), and the reader was not more robust than TF-IDF ($-0.052$ [$-0.149$, $+0.037$]). The rewrites keep the decisive field and add self-reported approvals. The two fixes below were tested against fresh attacks.\\
+A monitor that reads the canonical action & Free-text fields replaced by a placeholder and quoted prose removed, so that rewording cannot move the score (\cref{cor:action}, canonical form). The invariance held: on messages the score did not move under attack. But clean catch at 5\% fell from 94.1\% to 51.5\% (Claude) and from 98.5\% to 59.1\% (GPT; $-0.410$ [$-0.493$, $-0.311]$), AgentDojo $-0.029$ [$-0.080$, $+0.010$], and 50.8\% [42.5\%, 59.0\%] were caught after the attack (all three endpoints failed). In 81 of the 82 attacked messages the body carries the leaked draft: free text is payload as well as self-report, so the premise of the canonical form is false there. It is an option in the tool, with this cost, not the default.\\
+\TWENTYSEVEN
+\multicolumn{2}{@{}l}{\emph{The interrogation state in chat}}\\
+Forecasting Claude's refusals & Ties a graded text moderator in a prospective test (0.873 vs 0.855); it adds precision only in combination (\cref{app:psi}).\\
+\bottomrule
+\end{longtable}
+
+\subsection{Design order}
+Several tests were designed after earlier results: the second $\tau^2$-bench tests after the first, the reasoning judge after
+the unseen-task test, the canonical form after the adaptive attack, and adversarial training after the canonical form. Each was preregistered and locked before its own data
+existed, and the later locks were published first, but their hypotheses were not independent of what we had seen.

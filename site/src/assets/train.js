@@ -189,7 +189,7 @@
       else if (m.type === 'error') { $('progMsg').innerHTML = `<span class="tag fail">error</span> ${esc(m.msg)}`; $('trainBtn').disabled = false; w.terminate(); }
       else { model = m.model; model.chat = $('chatCtx').checked; report = m.report; w.terminate(); $('prog').hidden = true; $('progMsg').textContent = ''; $('trainBtn').disabled = false; results(); }
     };
-    w.postMessage({ cmd: 'train', rows, budget, privacy: $('privacyFilter').checked });
+    w.postMessage({ cmd: 'train', rows, budget, privacy: $('privacyFilter').checked, canonical: $('canonicalMode').checked });
   }
 
   // ---- browser reader ----
@@ -208,10 +208,11 @@
       else { w._loaded = BR.encoder; w.postMessage({ cmd: 'load', encoder: BR.encoder }); }
     });
   }
-  async function ensureEmb() {
-    if (emb) return emb;
+  async function ensureEmb(canon = $('canonicalMode').checked) {   // canonical mode: the reader embeds the decisive fields only
+    if (emb && emb.canonical === canon) return emb;
     $('progMsg').textContent = `loading the reader (${BR.download}, once; then cached by the browser)`;
-    emb = await embedSteps(steps.map(s => TM.render(s)));
+    emb = await embedSteps(steps.map(s => (canon ? TM.canonical(TM.render(s)) : TM.render(s))));
+    emb.canonical = canon;
     return emb;
   }
   async function trainEmbed() {
@@ -224,7 +225,7 @@
         const m = ev.data;
         if (m.type === 'progress') { $('prog').value = m.frac; $('progMsg').textContent = m.msg; }
         else if (m.type === 'error') { $('progMsg').innerHTML = `<span class="tag fail">error</span> ${esc(m.msg)}`; $('trainBtn').disabled = false; w.terminate(); }
-        else { model = m.model; model.chat = $('chatCtx').checked; report = m.report; embScores = m.scores; w.terminate(); $('prog').hidden = true; $('progMsg').textContent = ''; $('trainBtn').disabled = false; results(); }
+        else { model = m.model; model.chat = $('chatCtx').checked; if (E.canonical) model.canonical = true; report = m.report; embScores = m.scores; w.terminate(); $('prog').hidden = true; $('progMsg').textContent = ''; $('trainBtn').disabled = false; results(); }
       };
       w.postMessage({ cmd: 'train', X: E.X, dim: E.dim, y: steps.map(s => s.label), groups: steps.map((s, i) => String(s.group ?? s.task ?? i)),
                       tools: steps.map(s => TM.render(s).act.split(' ')[0]), budget, encoder: BR.encoder, web: BR.web });
@@ -233,7 +234,7 @@
   $('pretrainedBtn').onclick = async () => {
     const budget = Number($('budget').value) / 100;
     try {
-      const E = await ensureEmb(), P = BR.pretrained, n = steps.length, sc = new Array(n);
+      const E = await ensureEmb(false), P = BR.pretrained, n = steps.length, sc = new Array(n);
       for (let i = 0; i < n; i++) { let s = P.b; for (let k = 0; k < E.dim; k++) s += P.w[k] * (E.X[i * E.dim + k] - P.mean[k]) / P.scale[k]; sc[i] = s; }
       model = { ...P, budget, threshold_logit: TM.quantile(sc, 1 - budget), chat: $('chatCtx').checked, format: 'graybox-embed-monitor/1' };
       embScores = sc; $('prog').hidden = true; $('progMsg').textContent = '';
@@ -304,8 +305,10 @@
                  : `Browser reader ${r.encoder} (${num(r.dim)} features), logistic regression C = ${r.C}.`) +
       (r.unsafe < 20 ? ' With fewer than 20 violations these numbers are rough: the interval above shows how rough.' : '') +
       (isNaN(r.auroc_within_tool) ? '' : ` Within tool (0.5 = knowing only which tool is called): AUROC ${r.auroc_within_tool.toFixed(3)}.`) +
-      (r.auroc - r.auroc_within_tool > 0.1 ? ' Most of the AUROC comes from which tool is called, not from the call itself: on new groups the ' +
-        'monitor does not separate safe from unsafe calls of the same tool. Check such rules in code, or review those calls.' : '') +
+      (r.auroc_within_tool < 0.65 ? ' Most of the AUROC comes from which tool is called, not from the call itself: on new groups the ' +
+        'monitor separates safe from unsafe calls of the same tool little better than chance. Check such rules in code, or review those calls.'
+        : r.auroc - r.auroc_within_tool > 0.1 ? ' Part of the AUROC comes from which tool is called: within a tool it is lower. For tools where most ' +
+        'calls are safe, check the rule in code or review the calls.' : '') +
       (r.pretrained ? '' : ' Word counts memorize the ids, names and amounts of the labelled tasks; they do not check a numeric, date or recipient ' +
         'rule on values they have not seen.');
     queueInfo();
@@ -376,7 +379,7 @@
     try {
       const ex = parseBox($('step').value);
       let z, note = '';
-      if (isEmbed()) { const E = await embedSteps([TM.render(ex)]); z = model.b; for (let k = 0; k < E.dim; k++) z += model.w[k] * (E.X[k] - model.mean[k]) / model.scale[k]; $('prog').hidden = true; $('progMsg').textContent = ''; }
+      if (isEmbed()) { const E = await embedSteps([model.canonical ? TM.canonical(TM.render(ex)) : TM.render(ex)]); z = model.b; for (let k = 0; k < E.dim; k++) z += model.w[k] * (E.X[k] - model.mean[k]) / model.scale[k]; $('prog').hidden = true; $('progMsg').textContent = ''; }
       else {
         const r = TM.render(ex), x = TM.features(model, r), off = model.vc.idf.length;
         z = TM.decision(model, x);
@@ -398,7 +401,7 @@
     if ($('exportBtn').textContent.startsWith('Download anyway') && !confirm('This monitor is not usable yet (see the warning above). Download it anyway?')) return;
     const note = isEmbed() ? '' : model.privacy
       ? 'This model was trained without words that have digits, "@", long codes or random strings, or that are rare (fewer than 1% of your actions); the numbers above are for this model. Names or secrets that recur across many conversations can remain: check the file before you share it.'
-      : 'This file holds words from your logs (names, ids, secrets). Before you share it, tick "Train without identifying words" and train again.';
+      : 'This file holds words from your logs (names, ids, secrets). Before you share it, tick "Privacy filter" and train again.';
     $('exportNote').textContent = note;
     download(new Blob([JSON.stringify(model)], { type: 'application/json' }), isEmbed() ? 'greybox-reader-monitor.json' : 'greybox-text-monitor.json');
   };

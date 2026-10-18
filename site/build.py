@@ -148,6 +148,7 @@ refund), Grey Box gives it a risk score from the conversation so far, and sends 
 to the model's internals. It learns your policy from examples that you label. It works best on the kinds of tasks that you labelled; on
 a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
 <a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
+{(ROOT / "site/src/assets/workflow.svg.html").read_text()}
 <figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, replicas of two closed agents, and live prevention rates" loading="eager"></a>
 <figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span><b>Seeing inside closed agents.</b> Panels (a–d) share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
 replica, computed from the transcript only. (c, d) Two closed agents, mapped through the same reader: we never saw their weights, and their replica cannot be checked, so we test prediction. Red: policy

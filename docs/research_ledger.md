@@ -1073,3 +1073,52 @@ Dated log of every experiment, decision and correction. Newest last.
   - The test attack uses a new seed and is told about the defense.
   - Dry run of the target stage (scratch folder, deleted): 600 actions; replay reproduced every label. Bug found and
     fixed before the lock: Gemma's .aware scenarios need their own benchmark's specs.
+- **T24 (monitor-aware Claude) PASSES A1 and A2 (2026-10-18; $3.63; total Anthropic ledger $18.32).**
+  - Caught at the frozen cut: plain 83.6%, aware 97.1% [92.9%, 100%]; A1 +0.136 [+0.050, +0.225].
+  - The violation rate did not change: −0.003 [−0.012, +0.005].
+  - Caveat: the notice shifts the scores up. The frozen cut escalated 15.2% of aware actions (plain 5.3%). At each
+    arm's own 5% budget: 88.6% vs 83.6%. The paper reports both.
+- **Paper revision (2026-10-18): third audit fixes, a deeper Method, new figures.**
+  - Audit fixes:
+    - a main-body heading had rested on a failed prospective test; now only label transfer (passed) is reported;
+    - exploratory numbers are labelled;
+    - Table 1's metrics are named (Claude within template; GPT pooled, with +0.217 vs the judge);
+    - abstract and conclusion: 46–66% (not "half to two thirds");
+    - limits: four open agents; full-layer R² 51–54% (Gemma) and 30–46% (others); the 991-episode Claude run;
+    - latency for both agents; the record has no endpoint or test ids, the T14 L1/L2 mislabel is fixed, quotes are
+      fixed, bare file names are removed, T1 font encoding;
+    - British spelling throughout.
+  - Method:
+    - a threat model;
+    - gauge assumptions stated (biases rotated; LayerNorm needs G1=1; post-block gains restrict G);
+    - Fisher–Rao validity condition;
+    - battery design (greedy partition refinement, ≤ classes−1 questions; 21 for 22 classes);
+    - the replica Rao–Blackwellises a white-box probe (new; exploratory check in scripts/123: the replica beats the
+      true state on pairwise risk, calibrated log loss and AUROC in 4 of 4 agents; the residual adds ≤ 0.0006 AUROC);
+    - the frozen-cut proposition now matches the shipped interpolated quantile (within 2/(n+1)) and needs i.i.d. for
+      the Beta law;
+    - a shift bound (Kolmogorov distance; T24: K 0.014 plain, 0.24 aware, escalation +0.10);
+    - the burst proposition's assumption;
+    - the corollary's assumption (V a function of Z⁻) and the contraction step;
+    - Algorithm 1 (the monitor) in the main text; Algorithm 2 (the battery) in the appendix.
+  - Figures:
+    - the method figure redrawn twice; the user found the first version cluttered. It is now five cards in one causal
+      chain, with the replica arc and the decision loop, drawn at print size;
+    - replication (a): true vs replica positions of the same steps;
+    - a new transfer figure: a heat map under shift, label transfer, and the T24 score shift;
+    - the tool screenshots moved to the appendix (unreadable at column size);
+    - the "Claude, unseen policy" row removed from the main figure (a failed test).
+  - The main text fits in 8 pages.
+- **Site:** an animated workflow on the index page (SVG with SMIL and CSS, tokens for light and dark mode, static under
+  reduced motion, scrolls inside its own box on phones). Checked in Chromium: no errors, no page scroll at 390 px.
+- **T27 (adversarial training) FAILS D1, D2 and D3 (2026-10-18).**
+  - After the defense-aware attack: 59.7% [51.5%, 67.9%] caught (bar 70%).
+  - The shipped probe on the same rewrites: 57.5%. Hardening helped about 2 points; T25's directly optimised attack had
+    left the shipped probe at 29.1%.
+  - Clean catch fell slightly: D2 −0.037 [−0.078, +0.016]. AgentDojo D3 +0.012 with a lower bound at the margin
+    (−0.050 after rounding; fails as the locked code computes it).
+  - Messages remain the weak spot (47.6% after the attack).
+  - Conclusion recorded in the paper: the grey box is not robust to a score-querying attacker who rewrites free text.
+    Three preregistered defenses failed (κ, canonical training, adversarial training). Open problem; next candidate
+    defenses (not run): hide the score from the agent (no query access), an ensemble with a rule-based check on the
+    decisive field, and certified bounds on the score's sensitivity to free text.

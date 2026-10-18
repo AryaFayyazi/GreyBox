@@ -83,6 +83,20 @@ def _as_dict(m):
     return m
 
 
+def canonical_step(step: dict) -> dict:
+    """A step with the canonical form of its action and of every earlier call (graybox.monitor.canonical_args): free text
+    that the agent writes about its own calls - bodies, subjects, reasons, comments - is replaced, so a rewrite of it cannot
+    move the score. A prebuilt context string gets the same treatment line by line."""
+    from .monitor import canonical_act_text, canonical_args, canonical_ctx_text
+    out = dict(step)
+    a = step["action"]
+    out["action"] = canonical_act_text(a) if isinstance(a, str) else {**a, "args": canonical_args(a.get("args") or {})}
+    out["history"] = [{**h, "args": canonical_args(h.get("args") or {})} for h in step.get("history") or []]
+    if isinstance(step.get("context"), str):
+        out["context"] = canonical_ctx_text(step["context"])
+    return out
+
+
 def responses_to_chat(items: list, instructions: str | None = None) -> list[dict]:
     """OpenAI Responses API input items -> Chat Completions messages (consecutive function_call items form one
     assistant reply, as parallel calls do)."""
@@ -186,18 +200,24 @@ class Verdict:
 class Guard:
     """monitor: a TextMonitor (uses its stored cut) or a ReaderMonitor (needs gate=QuantileGate(...)).
     reviewer: optional fn(step) -> bool for escalated actions (True = run it); chat: conversation-aware context.
+    on_decision: optional fn(record) called after every check; audit_log: a JSON-lines file that gets one record per check
+    (time, tool, args, score, unit, allow, held, by_rule, review_error, threshold). Neither can change a decision.
     hold_tools: tools whose every call is escalated (an explicit rule, e.g. {"issue_refund"}), on top of the score; the
     gate still sees their scores. Prefer this to a budget per tool: offline, a 5% budget per tool caught 39% / 46% of
     Claude's / GPT's violations against 94% / 98% with one budget, because violations cluster in a few tools."""
 
-    def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None, hold_tools=(), reviewer_timeout: float | None = None):
+    def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None, hold_tools=(), reviewer_timeout: float | None = None,
+                 on_decision=None, audit_log: str | None = None):
         if chat is None:            # default: the setting the monitor was trained with (model files and probe files record it)
             chat = bool((getattr(monitor, "_json", None) or {}).get("chat", getattr(monitor, "chat", False)))
         self.monitor, self.gate, self.reviewer, self.chat = monitor, gate, reviewer, chat
+        # canonical: the monitor was trained on canonical actions (graybox.monitor.canonical_args); the model file records it
+        self.canonical = bool((getattr(monitor, "_json", None) or {}).get("canonical", getattr(monitor, "canonical", False)))
         if isinstance(hold_tools, str):          # one tool name, not its characters (a string used to hold nothing: fail open)
             hold_tools = [hold_tools]
         self.hold_tools = frozenset(hold_tools or ())
         self.reviewer_timeout = reviewer_timeout      # seconds; no answer in time blocks the action (fail closed)
+        self.on_decision, self.audit_log = on_decision, audit_log   # audit: a callback and/or a JSON-lines file, one record per check
 
     def _is_text(self) -> bool:
         """Text and browser-reader monitors score in logits (decision); the reader scores probabilities."""
@@ -207,6 +227,8 @@ class Guard:
         return "logit" if self._is_text() or self.gate is None else "probability"
 
     def _escalated(self, step: dict) -> tuple[bool, float]:
+        if self.canonical:                                          # the monitor reads the canonical action (free text removed)
+            step = canonical_step(step)
         tool, args = step["action"]["tool"], step["action"].get("args") or {}
         ctx = step.get("context") if isinstance(step.get("context"), str) else None   # a prebuilt (conversation-aware) context
         hist = [Step(h["tool"], h.get("args") or {}, h.get("result", "")) for h in step.get("history") or []]
@@ -221,6 +243,29 @@ class Guard:
         return bool(self.gate(p)), p
 
     def check_step(self, step: dict) -> Verdict:
+        v = self._check_step(step)
+        if self.on_decision is not None or self.audit_log:
+            self._audit(step, v)
+        return v
+
+    def _audit(self, step: dict, v: Verdict) -> None:
+        """One record per decision: time, tool, arguments, score, decision. A failing callback or log never changes the
+        decision (it is reported on stderr). The arguments can hold personal data: the log stays on your machine."""
+        import sys
+        import time
+        rec = {"time": time.time(), "tool": step["action"]["tool"], "args": step["action"].get("args") or {}, "call_id": step.get("call_id"),
+               "score": v.score, "unit": v.unit, "allow": v.allow, "held": v.held, "by_rule": v.by_rule, "review_error": v.review_error,
+               "threshold": getattr(self.gate, "threshold", None) if self.gate is not None else (getattr(self.monitor, "_json", None) or {}).get("threshold_logit")}
+        try:
+            if self.on_decision is not None:
+                self.on_decision(rec)
+            if self.audit_log:
+                with open(self.audit_log, "a") as f:
+                    f.write(json.dumps(rec, default=str) + "\n")
+        except Exception as e:  # noqa: BLE001
+            print(f"graybox: audit failed ({type(e).__name__}: {e}); the decision stands", file=sys.stderr)
+
+    def _check_step(self, step: dict) -> Verdict:
         esc, score = self._escalated(step)
         unit, rule = self._unit(), step["action"]["tool"] in self.hold_tools
         if not (esc or rule):
@@ -310,7 +355,10 @@ class Guard:
     def _check_proposed(self, steps, name, args) -> Verdict:
         st = steps[-1] if steps else None
         if not name or st is None or st["action"]["tool"] != name:   # malformed call: fail closed, never score another action
-            return Verdict(allow=False, score=None, unit=self._unit(), review_error=f"malformed tool call (tool name {name!r}): blocked")
+            v = Verdict(allow=False, score=None, unit=self._unit(), review_error=f"malformed tool call (tool name {name!r}): blocked")
+            if self.on_decision is not None or self.audit_log:
+                self._audit({"action": {"tool": name, "args": args if isinstance(args, dict) else {}}}, v)
+            return v
         return self.check_step(st)
 
     def check_openai(self, messages: list, tool_call) -> Verdict:

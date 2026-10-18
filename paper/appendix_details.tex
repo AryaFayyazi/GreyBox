@@ -1,3 +1,18 @@
+\begin{algorithm}[h]
+\caption{Battery design from black-box answers}
+\label{alg:battery}
+\small
+\begin{algorithmic}[1]
+\REQUIRE contexts $x_1..x_N$; pool of questions $\mathcal Q$; answers $a(x,q)\in\{0,1\}$ from the model's outputs only
+\STATE $C\gets$ one class holding all contexts; $Q\gets()$
+\LOOP
+  \STATE $q^\star\gets\arg\max_{q\in\mathcal Q}$ $\#$classes of $C$ refined by $a(\cdot,q)$
+  \STATE \textbf{if} $q^\star$ splits no class \textbf{then return} $Q$ \COMMENT{\cref{prop:battery}}
+  \STATE append $q^\star$ to $Q$; $C\gets C$ refined by $a(\cdot,q^\star)$
+\ENDLOOP
+\end{algorithmic}
+\end{algorithm}
+
 % Experimental details: every value here is the value in the code (scripts/, src/graybox/) and the preregistrations.
 \textbf{Agents.} All agents run CAPE-Bench's mock environment for at most 20 turns, with one tool call per turn.
 \begin{itemize}
@@ -6,7 +21,7 @@
   \item Gemma-4 (26B-A4B): temperature 1.0, top-$p$ 0.95, top-$k$ 64, thinking on.
   \item gpt-oss-20b: temperature 1.0, top-$p$ 1.0, reasoning effort ``medium''.
   \end{itemize}
-  The episodes of the open agents in T17 come from the released CAPE-Bench rollouts.
+  The episodes of the three additional open agents come from the released CAPE-Bench rollouts.
 \item Closed agents use their public tool-use APIs:
   \begin{itemize}
   \item Claude Haiku~5.5: thinking disabled, effort ``low'', at most 1{,}024 tokens per turn.
@@ -30,21 +45,21 @@ A context of 30{,}000 characters or more keeps its first 6{,}000 and last 24{,}0
 Qwen3-8B's chat template with thinking off and is cut to its last 12{,}000 tokens. The feature is the residual stream at
 the last prompt token, at hidden-state index 32 (the output of block 31 of 36), in bf16.
 
-\textbf{Monitor.} The monitor standardizes the features, keeps the top 256 principal components, and fits a logistic
+\textbf{Monitor.} The monitor standardises the features, keeps the top 256 principal components, and fits a logistic
 regression with $C=0.05$. It is trained on Gemma-4's CAPE-Bench steps only (17{,}623; development and fresh). The
-review cut has no labels. Offline (Table 2), it sends exactly 5\% of the agent's actions in the test set, the
-highest-scored, to review (actions tied at the cut count in proportion). Live (T16, T16b), it was the 95th percentile of
+review cut has no labels. Offline (\cref{tab:closed}), it sends exactly 5\% of the agent's actions in the test set, the
+highest-scored, to review (actions tied at the cut count in proportion). Live, it was the 95th percentile of
 the agent's earlier unlabelled actions, then frozen; the tool freezes it after the first 500. A rolling cut fails under
 bursts of similar actions.
 
-\textbf{Replica (T15, T17).}
+\textbf{Replica.}
 \begin{itemize}
-\item \textbf{Target:} the agent's residual stream at its end-of-reasoning token, at 5 depths (block $\mathrm{round}(nf)-1$, $f\in\{0.5,0.62,0.72,0.82,0.9\}$). It is standardized and reduced to 128 principal components, all fit on development.
+\item \textbf{Target:} the agent's residual stream at its end-of-reasoning token, at 5 depths (block $\mathrm{round}(nf)-1$, $f\in\{0.5,0.62,0.72,0.82,0.9\}$). It is standardised and reduced to 128 principal components, all fit on development.
 \item \textbf{Map:} ridge regression, with $\alpha\in\{1,10,10^2,10^3,10^4\}$ chosen by 5-fold cross-validation grouped by scenario.
-\item \textbf{Probe for E2:} standardize, then logistic regression with $C=0.05$, on the 128 true components.
+\item \textbf{Probe on the true state:} standardise, then logistic regression with $C=0.05$, on the 128 true components.
 \end{itemize}
 
-\textbf{Text baseline (T9).} TF-IDF of the context and of the action, kept as two separate blocks:
+\textbf{Text baseline.} TF-IDF of the context and of the action, kept as two separate blocks:
 \begin{itemize}
 \item word 1- and 2-grams, minimum document frequency 3, at most 200{,}000 features each, sublinear term frequency;
 \item logistic regression with $C\in\{0.1,1,10\}$, chosen by 5-fold cross-validation grouped by scenario.
@@ -58,4 +73,4 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \item Each preregistration (the document and its analysis code) is locked by its SHA-256 hash before its data exist. One script checks every lock and every number in this paper again from the saved results.
 \end{itemize}
 
-\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two (and one accidental 4-second overlap): PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in T16 and T16b was 89 and 80~ms.
+\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two (and one accidental 4-second overlap): PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in the two live tests was 89 and 80~ms.

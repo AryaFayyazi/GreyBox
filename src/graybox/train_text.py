@@ -30,6 +30,8 @@ def main(argv=None):
     ap.add_argument("--threads", type=int, default=4, help="CPU threads for the linear algebra (default 4)")
     ap.add_argument("--group-by", default=None, help="step field that groups the cross-validation folds (default: 'group', which is the task for conversations "
                     "and a steps file's own field, then 'task'). Every step must have it")
+    ap.add_argument("--canonical", action="store_true", help="train on canonical actions: free-text fields (bodies, subjects, reasons, "
+                    "comments) removed, so an agent cannot talk its way past the monitor; Guard applies the same form when it scores")
     ap.add_argument("--eval-only", action="store_true", help="print the cross-validated report and write no file")
     ap.add_argument("--force", action="store_true", help="overwrite --out if it exists")
     ap.add_argument("--no-privacy", action="store_true", help="turn the privacy filter off. By default emails and URLs are masked and "
@@ -54,6 +56,9 @@ def main(argv=None):
         steps = load_steps(a.data, chat=a.chat)
     except (ValueError, OSError) as e:
         raise SystemExit(f"{a.data}: {e}")
+    if a.canonical:
+        from .guard import canonical_step
+        steps = [canonical_step(s) for s in steps]
     y = np.array([int(bool(s["label"])) for s in steps])
     if y.sum() < 2 or (1 - y).sum() < 2:
         raise SystemExit(f"need at least 2 violations and 2 safe actions; found {int(y.sum())} and {int((1 - y).sum())} labelled actions"
@@ -100,6 +105,8 @@ def main(argv=None):
         report["note"] = ("word counts memorize entities (ids, names, amounts) of the labelled tasks and do not check numeric, date or "
                           "recipient rules on unseen values. A new KIND of task can score far lower than this estimate: to measure it, "
                           "hold out a task family with --group-by <field>")
+    tm._json["canonical"] = bool(a.canonical)
+    report["canonical"] = bool(a.canonical)
     if a.eval_only:
         print(json.dumps(report, indent=1))
         print("not saved (--eval-only)", file=sys.stderr)

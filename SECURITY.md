@@ -33,3 +33,13 @@ open a public issue for a vulnerability. We aim to answer within 7 days.
 - A malformed tool call (no tool name) is blocked.
 - A reviewer that raises, times out (`reviewer_timeout`) or answers anything but True blocks the action.
 - A new gate escalates every action until it has seen 100 scores.
+
+## Adaptive attackers (a known limit)
+- **Do not show the score, the decision reason, or the cut to the agent or to anyone who writes its inputs.** In a
+  preregistered test, an attacker who could query the score and rewrote only the free text of a violating call (a
+  message body, a command's notes) cut the reader's catch rate from 96% to 29%. Two defenses that we preregistered did
+  not fix this: canonical mode (`--canonical`) makes the score invariant to such rewording but misses violations whose
+  free text is the payload, and training on rewritten examples raised the catch rate only to 60%. Return a neutral
+  message on a block (Guard's default `BLOCK_MESSAGE`), and keep the server's responses away from the agent.
+- A prompt change (for example a notice that the agent is monitored) moves the whole score distribution. Set the cut
+  again on the new traffic (`/v1/monitor/calibrate`, or a new `QuantileGate`).

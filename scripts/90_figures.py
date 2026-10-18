@@ -53,8 +53,8 @@ def fig_claude():
     The printed difference is against the stronger graded moderator."""
     G = json.loads((R / "l3/graded_baseline_reanalysis.json").read_text())["claude"]
     rows = []
-    for name, f, key, gk, mk, tag in (("L3b  per-question (88×4 calls)", "l3/claude_livebench.json", "D2_harmful_only", "auroc", "baseline_auroc", "L3b"),
-                                      ("L3d  transcript (2 calls)", "l3/claude_transcript.json", "F1_harmful_refusal", "greybox_auroc", "moderation_auroc", "L3d")):
+    for name, f, key, gk, mk, tag in (("per-question battery (88×4 calls)", "l3/claude_livebench.json", "D2_harmful_only", "auroc", "baseline_auroc", "L3b"),
+                                      ("transcript readout (2 calls)", "l3/claude_transcript.json", "F1_harmful_refusal", "greybox_auroc", "moderation_auroc", "L3d")):
         e = json.loads((R / f).read_text())[key]
         qg, lg = G[f"{tag}_qg_p"], G[f"{tag}_lg_p"]
         best = max((qg, lg), key=lambda x: x["baseline"])
@@ -62,11 +62,11 @@ def fig_claude():
     c = json.loads((R / "l3/claude_batch.json").read_text())["E1_harmful_refusal"]
     cg = json.loads((R / "l3/l3c_graded_reanalysis.json").read_text())
     best = max((cg["qg_p"]["E1_refusal"], cg["lg_p"]["E1_refusal"]), key=lambda x: x["graded"])
-    rows.insert(1, ("L3c  in-conversation (n=4; 60% usable)", c["greybox_auroc"], c["moderation_auroc"], cg["qg_p"]["E1_refusal"]["graded"],
+    rows.insert(1, ("in-conversation (n=4; 60% usable)", c["greybox_auroc"], c["moderation_auroc"], cg["qg_p"]["E1_refusal"]["graded"],
                     cg["lg_p"]["E1_refusal"]["graded"], [best["diff"], best["ci95"]]))
     e = json.loads((R / "l3/l3e_tool.json").read_text())["primary_qwen3guard_judge"]["A2"]
     best = max((e["qg_p"], e["lg_p"]), key=lambda x: x["baseline_auroc"])
-    rows.append(("L3e  prospective, fresh (2 calls)", e["qg_p"]["greybox_auroc"], None, e["qg_p"]["baseline_auroc"], e["lg_p"]["baseline_auroc"], [best["diff"], best["ci95"]]))
+    rows.append(("prospective, fresh conversations (2 calls)", e["qg_p"]["greybox_auroc"], None, e["qg_p"]["baseline_auroc"], e["lg_p"]["baseline_auroc"], [best["diff"], best["ci95"]]))
     fig, ax = plt.subplots(figsize=(5.8, 0.5 * len(rows) + 1.5))
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     for i, (name, g, m3, qg, lg, d) in enumerate(rows[::-1]):
@@ -142,9 +142,9 @@ def fig_generalization():
             ("Another agent (gpt-oss)", t6["READER_from_gemma"], t6["J_act"], None, tx["T6_gptoss"]),
             ("External benchmark (AgentDojo)", t7["per_actor"]["pooled"]["READER"], t7["per_actor"]["pooled"]["J_act"], None, tx["T7_agentdojo"]),
             ("Closed agent, Claude (1 stratum, 26 viol.)", t8["READER"], t8["J_act"], None, tx["T8b_claude"]),
-            ("Claude, policy family unseen (T10)", t10["auroc_within"]["READER_lofo"], t10["auroc_within"]["J_act"], None, t10["auroc_within"]["TXT_lofo"]),
-            ("Second closed agent, GPT (T11)", t11["auroc_within_template"]["READER"], t11["auroc_within_template"]["J_act"], None, t11["auroc_within_template"]["TXT"]),
-            ("GPT on AgentDojo, no defense (T13b)", t13b["auroc_within_suite"]["READER"], t13b["auroc_within_suite"]["J_act"], None, t13b["auroc_within_suite"]["TXT"])]
+            ("Claude, policy family unseen", t10["auroc_within"]["READER_lofo"], t10["auroc_within"]["J_act"], None, t10["auroc_within"]["TXT_lofo"]),
+            ("Second closed agent, GPT", t11["auroc_within_template"]["READER"], t11["auroc_within_template"]["J_act"], None, t11["auroc_within_template"]["TXT"]),
+            ("GPT on AgentDojo, new policy", t13b["auroc_within_suite"]["READER"], t13b["auroc_within_suite"]["J_act"], None, t13b["auroc_within_suite"]["TXT"])]
     fig, ax = plt.subplots(figsize=(5.8, 4.5))
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     ax.axvline(0.5, color=MUTE, ls="--", lw=0.9, zorder=0.5)                 # chance: AUROC 0.5
@@ -176,11 +176,11 @@ def fig_policy_labels():
     if t10:
         xs = [int(n) for n in t10["by_n"] if int(n) <= 40]
         ax.plot(xs, [t10["by_n"][str(n)]["cons_service_restart"] for n in xs], color=C[1], lw=2, ls="--", marker="o", ms=6, mec="white", mew=1.2,
-                label="Claude, restart policy (T10, exploratory)")
+                label="Claude, restart policy (exploratory)")
     if t12:
         xs = [int(n) for n in t12["curve"]]
         ax.plot(xs, [t12["curve"][str(n)]["F_caught"] for n in xs], color=C[0], lw=2.2, marker="o", ms=6, mec="white", mew=1.2,
-                label="GPT, credentials policy (T12)")
+                label="GPT, credentials policy")
     ax.set_xlabel("Labelled steps of the new policy added")
     ax.set_ylabel("Violations caught (5% reviewed)")
     ax.set_ylim(-0.03, 1.03); ax.set_xticks([0, 5, 10, 20, 40])
@@ -193,7 +193,7 @@ def fig_policy_labels():
         ks = [int(k) for k in t14["curve"]]
         xp = [max(k, 30) for k in ks]                       # k = 0 drawn at the left edge, labelled "0"
         ax.plot(xp, [t14["curve"][str(k)]["caught_benign5"] for k in ks], color=C[0], lw=2.2, marker="o", ms=6, mec="white", mew=1.2,
-                label="trained reader (T14)")
+                label="trained reader")
         ax.set_xscale("log"); ax.set_xticks(xp); ax.set_xticklabels([str(k) for k in ks])
         ax.minorticks_off()
         ax.annotate(f"AUROC {t14['curve'][str(ks[0])]['auroc']:.2f}", (xp[0], t14["curve"][str(ks[0])]["caught_benign5"]), xytext=(6, -12), textcoords="offset points", fontsize=7.5, color=INK)

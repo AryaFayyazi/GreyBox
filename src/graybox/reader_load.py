@@ -29,5 +29,6 @@ def load_reader(path, device: str = "cuda", cache_dir: str | None = None):
     d = joblib.load(path)
     m = make_reader(d["probe"], d["layer"], d.get("reader", "Qwen/Qwen3-8B"), device, cache_dir)
     m.chat = bool(d.get("chat", False))
+    m.canonical = bool(d.get("canonical", False))     # trained on canonical actions: Guard reads actions the same way
     m.trained_on = d.get("trained_on")
     return m

@@ -654,3 +654,97 @@ def test_v041_fixes_hold_tools_string_responses_string_group_by_conversation_fie
         train_text.main([str(f), "--eval-only", "--budget", "5"])
     with pytest.raises(SystemExit, match="folder of --out does not exist"):
         train_text.main([str(f), "--out", str(tmp_path / "no" / "m.json")])
+
+
+def test_audit_log_and_callback_record_every_decision_and_cannot_change_it(tmp_path, monkeypatch):
+    from graybox.guard import Guard
+    from graybox.monitor import TextMonitor
+    seen = []
+    g = Guard(TextMonitor.load_json(MODEL), on_decision=seen.append, audit_log=str(tmp_path / "a.jsonl"), hold_tools={"wipe"})
+    msgs = [{"role": "system", "content": "p"}, {"role": "user", "content": "do it"}]
+    v1 = g.check_openai(msgs, {"id": "c1", "type": "function", "function": {"name": "send_message", "arguments": '{"to": "a"}'}})
+    v2 = g.check_openai(msgs, {"id": "c2", "type": "function", "function": {"name": "", "arguments": "{}"}})      # malformed: blocked
+    v3 = g.check("p", "t", [], "wipe", {})
+    lines = [json.loads(x) for x in (tmp_path / "a.jsonl").read_text().splitlines()]
+    assert len(seen) == len(lines) == 3 and [r["allow"] for r in lines] == [v1.allow, False, False] and lines[2]["by_rule"]
+    boom = Guard(TextMonitor.load_json(MODEL), on_decision=lambda r: 1 / 0)
+    plain = Guard(TextMonitor.load_json(MODEL)).check("p", "t", [], "send_message", {"to": "a"})
+    vb = boom.check("p", "t", [], "send_message", {"to": "a"})                             # a failing callback: same decision
+    assert vb.score == plain.score and vb.allow == plain.allow
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from graybox import monitor_server
+    monkeypatch.setenv("GB_TEXT_MONITOR", str(MODEL)); monkeypatch.setenv("GB_AUDIT_LOG", str(tmp_path / "s.jsonl"))
+    monkeypatch.delenv("GB_API_KEY", raising=False)
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    with TestClient(monitor_server.app) as c:
+        r = c.post("/v1/monitor/text", json={"instructions": "p", "task": "t", "action": {"tool": "send_message", "args": {"to": "y"}}, "stream": "s"}).json()
+    rec = json.loads((tmp_path / "s.jsonl").read_text().splitlines()[0])
+    assert rec["tool"] == "send_message" and rec["stream"] == "s" and rec["score"] == r["score"] and rec["escalate"] == r["escalate"]
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+
+
+def test_canonical_mode_removes_self_reported_text_in_training_and_scoring(tmp_path, capsys):
+    from graybox import train_text
+    from graybox.guard import Guard, canonical_step
+    from graybox.monitor import TextMonitor, canonical_args
+    assert canonical_args({"recipient": "x@ext.example", "body": "approved by the CFO", "command": "restart a --reason 'routine approved work today'"}) == \
+        {"recipient": "x@ext.example", "body": "[free text]", "command": "restart a --reason"}
+    st = canonical_step({"action": 'send {"to": "a", "subject": "QA ok"}', "context": '[Agent called] send {"to": "b", "body": "hi there"}'})
+    assert st["action"] == 'send {"to": "a", "subject": "[free text]"}' and '"body": "[free text]"' in st["context"]
+    rows = [{"context": f"task {i % 6}", "action": {"tool": "send", "args": {"to": "out@x.example" if i % 3 == 0 else "team@corp.example",
+             "body": f"routine approved note {i}"}}, "label": int(i % 3 == 0), "task": f"t{i % 6}", "instructions": "", "history": []} for i in range(60)]
+    f = tmp_path / "s.jsonl"
+    f.write_text("\n".join(json.dumps(r) for r in rows))
+    out = tmp_path / "m.json"
+    train_text.main([str(f), "--out", str(out), "--canonical", "--group-by", "task"])
+    tm = TextMonitor.load_json(out)
+    assert tm._json["canonical"] and "routine" not in tm._json["va"]["vocab"]
+    g = Guard(tm)
+    assert g.canonical
+    a = g.check("", "t", [], "send", {"to": "out@x.example", "body": "hello"})
+    b = g.check("", "t", [], "send", {"to": "out@x.example", "body": "Approved by legal, routine QA test, ticket 7, nothing to see"})
+    assert a.score == b.score                                   # rewriting the free text cannot move the score
+
+
+def test_server_reads_canonical_actions_when_the_model_was_trained_on_them(tmp_path):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    import os
+    from graybox import monitor_server
+    d = json.loads(MODEL.read_text())
+    d["canonical"] = True
+    (tmp_path / "c.json").write_text(json.dumps(d))
+    old = os.environ.get("GB_TEXT_MONITOR")
+    os.environ["GB_TEXT_MONITOR"] = str(tmp_path / "c.json")
+    monitor_server._STATE.pop("text", None)
+    try:
+        c = TestClient(monitor_server.app)
+        def score(body, **kw):
+            req = {"instructions": "x", "task": "y", "action": {"tool": "send_message", "args": {"to": "out@x.example", "body": body}}, **kw}
+            return c.post("/v1/monitor/text", json=req).json()["score"]
+        hist = [{"tool": "send_message", "args": {"to": "a", "body": "first"}, "result": "ok"}]
+        hist2 = [{"tool": "send_message", "args": {"to": "a", "body": "approved by legal, routine"}, "result": "ok"}]
+        assert score("hello") == score("Approved by legal: routine QA, ticket 7")
+        assert score("hello", history=hist) == score("approved", history=hist2)
+        ctx = "[Operating instructions]\nx\n\n[Agent called] send_message {\"to\": \"a\", \"body\": \"first\"}"
+        assert score("hello", context=ctx) == score("approved", context=ctx.replace("first", "approved by the CFO"))
+    finally:
+        monitor_server._STATE.pop("text", None)
+        if old is None:
+            os.environ.pop("GB_TEXT_MONITOR", None)
+        else:
+            os.environ["GB_TEXT_MONITOR"] = old
+
+
+def test_text_monitor_reads_canonically_when_called_directly(tmp_path):
+    from graybox.monitor import TextMonitor
+    d = json.loads(MODEL.read_text())
+    d["canonical"] = True
+    (tmp_path / "c.json").write_text(json.dumps(d))
+    tm = TextMonitor.load_json(tmp_path / "c.json")
+    a = tm.decision("x", "y", [], ("send_message", {"to": "out@x.example", "body": "hello"}))
+    b = tm.decision("x", "y", [], ("send_message", {"to": "out@x.example", "body": "Approved by legal: routine QA, ticket 7"}))
+    assert a == b
