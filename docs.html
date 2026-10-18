@@ -42,7 +42,7 @@ opinion on held actions, not as the only monitor.</p>
 pip install "greybox-monitor[text]"       # + train the text monitor in Python
 pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
 <p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
-<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.6.0</code>);
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.7.0</code>);
 the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
@@ -73,6 +73,14 @@ whether this call breaks the rule; the report then warns. On τ²-bench grouped 
 <code>graybox.guard.conversation_steps</code>. The file is the same format as the browser trainer's, and the model gives the same
 scores in both (to 10<sup>−13</sup>).</p>
 
+<h2 id="recalibrate">Set the cut again after a change</h2>
+<p>A cut escalates its budget only on traffic like the one it was set on. After a change of agent, prompt, tools or tasks, set it again
+on new, unlabelled logs (no labels needed):</p>
+<pre>python -m graybox.recalibrate new_logs.jsonl --monitor greybox-text-monitor.json --out recalibrated.json
+# reports how many actions the old cut would escalate on the new traffic, and writes the new cut</pre>
+<p>In a preregistered live test, a notice that the agent is monitored moved Claude's scores: the old cut escalated 16.6% of its actions.
+A cut set again on its new traffic escalated 4.7% (budget 5%), and the gate still blocked every violation. Identical actions get
+identical scores; the cut never lets such ties push the review load above the budget.</p>
 <h2>Put a monitor in your agent's loop</h2>
 <p><code>graybox.guard.Guard</code> checks each proposed tool call before it runs, in each provider's own message format. A blocked call
 does not run; the agent gets a message that it was blocked. In our live test on a closed agent (T16, 500 scenarios with and
@@ -248,7 +256,7 @@ if gate(p):
 <div class="note"><b>Act on the gate, not on <code>p</code>.</b> The probe ranks a new agent's actions well, but its probabilities do not
   transfer: on Claude a 0.5 cut caught 3% of violations. <code>QuantileGate</code> sets its cut at the top <i>budget</i> of the first 500
   actions it sees (no labels), then freezes it, so a burst of malicious actions cannot raise it. It escalates everything until it has seen
-  100 actions. Call <code>gate.recalibrate()</code> when the agent, its tools or its policy change.</div>
+  100 actions. Call <code>gate.recalibrate()</code> when the agent, its tools, its prompt or its policy change: in a live test, a notice that the agent is monitored moved its scores so that the old cut escalated 16.6% of actions; a cut set again on its new, unlabelled traffic escalated 4.7% and still blocked every violation.</div>
 <p>Two probes are in <a href="https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0">release v0.2.0</a> (4.3 MB each, with SHA-256
 checksums; load them with the scikit-learn version given there):</p>
 <ul>
@@ -256,7 +264,7 @@ checksums; load them with the scikit-learn version given there):</p>
 <li><code>reader_probe_cape_agentdojo.joblib</code>: the same, plus 3,455 labelled AgentDojo calls of two open agents. On a closed agent's
 AgentDojo calls it scored 0.922 (zero-shot judge 0.787; T14).</li>
 </ul>
-<p>Both learned the policies in their training data. For another type of policy, add labelled steps of it: features from
+<p>The <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/MODEL_CARD.md">model card</a> lists their training data, measured performance and limits. Both learned the policies in their training data. For another type of policy, add labelled steps of it: features from
 <code>mon.features(prompt)</code>, then the same scikit-learn pipeline.</p>
 
 <h2>Train the reader monitor on your own labels (GPU)</h2>
@@ -292,7 +300,7 @@ POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in Op
    ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"version": "0.6.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+→ {"version": "0.7.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
    "auth_required": false, "gate_state_persisted": false, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in

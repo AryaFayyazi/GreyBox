@@ -236,7 +236,7 @@
     try {
       const E = await ensureEmb(false), P = BR.pretrained, n = steps.length, sc = new Array(n);
       for (let i = 0; i < n; i++) { let s = P.b; for (let k = 0; k < E.dim; k++) s += P.w[k] * (E.X[i * E.dim + k] - P.mean[k]) / P.scale[k]; sc[i] = s; }
-      model = { ...P, budget, threshold_logit: TM.quantile(sc, 1 - budget), chat: $('chatCtx').checked, format: 'graybox-embed-monitor/1' };
+      model = { ...P, budget, threshold_logit: TM.budgetCut(sc, budget).cut, chat: $('chatCtx').checked, format: 'graybox-embed-monitor/1' };
       embScores = sc; $('prog').hidden = true; $('progMsg').textContent = '';
       const L = steps.map((s, i) => i).filter(i => steps[i].label === 0 || steps[i].label === 1), y = L.map(i => steps[i].label), s = L.map(i => sc[i]);
       const nPos = y.reduce((a, b) => a + b, 0), cut = model.threshold_logit;
@@ -274,7 +274,7 @@
     const r = report;
     allScores = steps.map((_, i) => stepScore(i));
     // the review cut, as the page promises: the top `budget` of the scores of ALL your loaded actions, without labels
-    model.threshold_logit = TM.quantile(allScores, 1 - r.budget);
+    model.threshold_logit = TM.budgetCut(allScores, r.budget).cut;
     model.cut_source = 'the top ' + pct(r.budget) + ' of the scores of all ' + steps.length + ' loaded actions (no labels used)';
     histogram(r);
     $('results').hidden = false; $('use').hidden = false;

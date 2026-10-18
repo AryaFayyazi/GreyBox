@@ -295,6 +295,17 @@
     }
     return den ? num / den : NaN;
   }
+  // as graybox.stats.budget_cut: the quantile without ties; with tied scores at the cut, the smallest observed score that
+  // escalates at most the budget (identical actions get identical scores); returns {cut, share}
+  function budgetCut(a, budget) {
+    const n = a.length, q = quantile(a, 1 - budget), share = c => a.filter(x => x >= c).length / n;
+    const s0 = share(q);
+    if (s0 <= budget + 2 / n) return { cut: q, share: s0 };
+    const vals = [...new Set(a.filter(x => x > q))].sort((x, y) => x - y);
+    for (const v of vals) { const s = share(v); if (s <= budget + 2 / n) return { cut: v, share: s }; }
+    const m = Math.max(...a);
+    return { cut: m, share: share(m) };
+  }
   function quantile(a, q) { const s = Float64Array.from(a).sort(); const p = (s.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return s[lo] + (s[hi] - s[lo]) * (p - lo); }
   // GroupKFold like scikit-learn: groups sorted by size (desc), each assigned to the currently smallest fold
   // FNV-1a over UTF-8 bytes, as graybox.stats._fnv1a
@@ -438,5 +449,5 @@
   }
 
   root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, maskPII, canonicalArgs, canonicalActText, canonicalCtxText, canonical, parsePyJSON, pyFloat, transform, features, fitLR, fit, score, decision, sigmoid,
-              auroc, withinAUROC, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
+              auroc, withinAUROC, quantile, budgetCut, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
 })(typeof self !== 'undefined' ? self : this);
