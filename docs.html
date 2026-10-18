@@ -42,7 +42,7 @@ opinion on held actions, not as the only monitor.</p>
 pip install "greybox-monitor[text]"       # + train the text monitor in Python
 pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
 <p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
-<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.5.0</code>);
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.6.0</code>);
 the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
@@ -186,6 +186,27 @@ python -m graybox.train_reader logs.jsonl --chat --out probe.joblib    # train o
 The browser trainer has the same option, and it gives identical context to Python (268/268 steps of 40 real τ²-bench conversations,
 182 of them with later user turns).</p>
 
+<h2 id="frameworks">Agent frameworks</h2>
+<p><code>graybox.integrations</code> places the Guard before every tool call of three frameworks. A blocked call does not run; the agent
+gets the neutral block message, never the score. Each adapter is tested offline against the real SDK.</p>
+<pre># Claude Agent SDK: pip install "greybox-monitor[text,claude-agent]"
+from claude_agent_sdk import ClaudeAgentOptions, HookMatcher
+from graybox.integrations import claude_agent_hook
+options = ClaudeAgentOptions(hooks={"PreToolUse": [HookMatcher(hooks=[claude_agent_hook(guard, instructions=SYSTEM)])]})
+# on_escalate="ask" sends an escalated call to the user's permission prompt instead of denying it
+
+# OpenAI Agents SDK: pip install "greybox-monitor[text,openai-agents]"
+from graybox.integrations import openai_agents_guardrails
+check, record = openai_agents_guardrails(guard)
+@function_tool(tool_input_guardrails=[check], tool_output_guardrails=[record])   # attach both to every tool
+def send_message(to: str, body: str) -> str: ...
+
+# LangGraph: pip install "greybox-monitor[text,langgraph]"
+from graybox.integrations import langgraph_tool_wrapper
+node = ToolNode(tools, wrap_tool_call=langgraph_tool_wrapper(guard))   # awrap_tool_call=langgraph_tool_wrapper(guard, async_=True)</pre>
+<p>The OpenAI Agents SDK gives a tool guardrail only the run's original input, not the calls made earlier in the run. The
+<code>record</code> guardrail keeps them, so the monitor sees the whole run; without it, a test shows that a violation after an
+earlier read runs unchecked.</p>
 <h2>The text monitor (CPU, real time)</h2>
 <p>Train it in the <a href="train.html">browser trainer</a> and download the model file, then:</p>
 <pre>from graybox.monitor import TextMonitor, Step
@@ -271,7 +292,7 @@ POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in Op
    ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"version": "0.5.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+→ {"version": "0.6.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
    "auth_required": false, "gate_state_persisted": false, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in
