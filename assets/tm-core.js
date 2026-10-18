@@ -227,7 +227,13 @@
     if (typeof a === 'object') return a;
     try { const v = JSON.parse(a); return v && typeof v === 'object' && !Array.isArray(v) ? v : { _raw: a }; } catch (e) { return { _raw: a }; }
   }
-  function conversationSteps(conv, gid, chat = false) {
+  // label values: 0/1, true/false, or the strings "0", "1", "true", "false"; anything else is reported, never guessed
+  function parseLabel(v) {
+    if (v === 1 || v === true || v === '1' || v === 'true') return 1;
+    if (v === 0 || v === false || v === '0' || v === 'false') return 0;
+    return undefined;
+  }
+  function conversationSteps(conv, gid, chat = false, info = null) {
     // conv: {messages: [...], system?} or a bare array of messages
     const msgs = Array.isArray(conv) ? conv : (conv.messages || []);
     let system = Array.isArray(conv) ? '' : textOf(conv.system);
@@ -241,6 +247,7 @@
       if (m.role === 'user' && Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_result') results[b.tool_use_id] = textOf(b.content);
     }
     const labels = (!Array.isArray(conv) && conv.labels) || {};          // optional {call_id: 0/1}
+    const seen = new Set();
     const steps = [], hist = [], turns = [];
     const isResults = c => Array.isArray(c) && c.every(b => b && b.type === 'tool_result');
     for (const m of msgs) {
@@ -256,37 +263,60 @@
       if (Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_use') calls.push({ id: b.id, tool: b.name, args: parseArgs(b.input) });
       for (const c of calls) {
         if (!c.tool) continue;
-        const lab = c.id != null && labels[c.id] !== undefined ? (labels[c.id] ? 1 : 0) : null;
-        const st = { instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null };
+        let lab = null;
+        if (c.id != null && labels[c.id] !== undefined) {
+          seen.add(String(c.id));
+          lab = parseLabel(labels[c.id]);
+          if (lab === undefined) { lab = null; if (info) info.badLabels.push(`${gid}: ${c.id} = ${JSON.stringify(labels[c.id])}`); }
+        }
+        const st = { instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null,
+                     turns: turns.slice() };                                  // the whole conversation before the call, for people to read
         if (chat) st.context = chatCtx(system, turns);
         steps.push(st);
         hist.push({ tool: c.tool, args: c.args, result: results[c.id] ?? '' });
         turns.push({ call: [c.tool, c.args], result: results[c.id] ?? '' });
       }
     }
+    if (info) for (const k of Object.keys(labels)) if (!seen.has(String(k))) info.unknownIds.push(`${gid}: ${k}`);
     return steps;
   }
   function importLogs(text, opts = {}) {
     text = text.trim();
+    if (!text) throw new Error('the file is empty');
     let convs, whole;
     try { whole = JSON.parse(text); } catch (e) { whole = undefined; }      // one JSON document, or JSON lines
     if (whole !== undefined) {
       if (Array.isArray(whole) && whole.length && (whole[0].role !== undefined)) convs = [whole];   // one conversation as a message list
       else convs = Array.isArray(whole) ? whole : [whole];
-    } else convs = text.split(/\r?\n/).filter(l => l.trim()).map((l, i) => { try { return JSON.parse(l); } catch (e) { throw new Error(`line ${i + 1}: not valid JSON`); } });
+    } else {
+      convs = [];
+      text.split(/\r?\n/).forEach((l, i) => {                                  // i + 1 = the physical line number
+        if (!l.trim()) return;
+        try { convs.push(JSON.parse(l)); } catch (e) { throw new Error(`line ${i + 1}: not valid JSON`); }
+      });
+    }
+    const info = { badLabels: [], unknownIds: [] };
     // already in step format?
-    if (convs.length && (convs[0].action !== undefined || convs[0].context !== undefined)) return { steps: convs, format: 'steps', conversations: null };
+    if (convs.length && (convs[0].action !== undefined || convs[0].context !== undefined)) {
+      const steps = convs.map((s, i) => {
+        if (s.label === undefined || s.label === null) return { ...s, label: null };
+        const l = parseLabel(s.label);
+        if (l === undefined) info.badLabels.push(`step ${i + 1} = ${JSON.stringify(s.label)}`);
+        return { ...s, label: l === undefined ? null : l };
+      });
+      return { steps, format: 'steps', conversations: null, ...info };
+    }
     const steps = [];
     let fmt = null;
     convs.forEach((c, i) => {
       const msgs = Array.isArray(c) ? c : (c.messages || []);
       if (!fmt) fmt = msgs.some(m => m.tool_calls) ? 'openai' : msgs.some(m => Array.isArray(m.content) && m.content.some(b => b && b.type === 'tool_use')) ? 'anthropic' : null;
-      steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`), !!opts.chat));
+      steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`), !!opts.chat, info));
     });
     if (!steps.length) throw new Error('no tool calls found: expected OpenAI messages with "tool_calls" or Anthropic messages with "tool_use" blocks');
-    return { steps, format: fmt || 'unknown', conversations: convs.length };
+    return { steps, format: fmt || 'unknown', conversations: convs.length, ...info };
   }
 
   root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, transform, features, fitLR, fit, score, decision, sigmoid,
-              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx };
+              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
 })(typeof self !== 'undefined' ? self : this);
