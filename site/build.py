@@ -46,8 +46,8 @@ def page(name, title, desc, body):
 <main><div class="wrap">
 {body}
 </div></main>
-<footer><div class="wrap">Grey Box is a research project. Every result on this site comes from a preregistered, hash-locked test,
-failures included (<a href="results.html">evidence</a>). Built {__import__("datetime").date.today().isoformat()}.</div></footer>
+<footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked
+tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built {__import__("datetime").date.today().isoformat()}.</div></footer>
 </body></html>
 """
 
@@ -121,7 +121,11 @@ def index_page():
     gate = j("t1/t8b_calibration_exploratory.json")["gate_eval_76c"]
     par = json.loads((ROOT / "site/tests/parity_result.json").read_text())
     p = lambda x: f"{100 * x:.0f}%"  # noqa: E731
-    c8 = t8["caught_at_5pct_safe_escalated"]
+    lf = j("t1/label_free_cuts.json")["claude_T8b"]                  # one operating point: the label-free 5% cut
+    c8 = {k: lf[k]["label_free_cut"] for k in ("READER", "J_act")}
+    t17 = j("t1/t17_replication_agents.json")["agents"]
+    r17 = [a["r2_fresh"]["READER"] for a in t17.values()]
+    pl = {L: v for L, v in t15["r2_fresh_per_layer_full_space"]["READER"].items()}
     body = f"""<h1>Monitor AI agents that you cannot open.</h1>
 <p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
@@ -143,14 +147,18 @@ violations. In every agent they occupy their own region.</figcaption></figure>
 
 <h2>What we found</h2>
 <div class="grid2">
-<div class="card"><h3>The grey box replicates the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
-  So an open model that reads the same tokens can hold a replica of it. From the transcript alone, the replica reconstructs
-  {p(t15['r2_fresh']['READER'])} of the variance of an open agent's hidden state. A probe trained on the true state scores
-  {t15['E2_auroc']['READER_replica']:.3f} on the replica and {t15['E2_auroc']['true']:.3f} on the true state.</p></div>
+<div class="card"><h3>The grey box replicates part of the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
+  So an open model that reads the same tokens can hold a replica of part of it. From the transcript alone, the replica reconstructs
+  {p(t15['r2_fresh']['READER'])} of the variance of the 128 main components of an open agent's hidden state ({p(min(pl.values()))}–{p(max(pl.values()))} of each full layer;
+  text features: {p(t15['r2_fresh']['TXT'])}). The same reader replicates three more open agents on scenarios it never saw ({p(min(r17))}–{p(max(r17))}).
+  A probe trained on the true state scores {t15['E2_auroc']['READER_replica']:.3f} on the replica and {t15['E2_auroc']['true']:.3f} on the true state;
+  it also works on a replica from text features ({t15['E2_auroc']['TXT_replica']:.3f}), because the information that decides a violation is in the tokens.</p></div>
 <div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of two closed agents, each scenario with and
   without the gate. A blocked action did not run, and the agent was told that a human would review it. Episodes with an executed violation
   fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Claude Haiku 5.5. The agents did not route around a block. Each check
-  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Claude) points fewer task goals reached.</p></div>
+  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Claude) points fewer task goals reached. When a reviewer decided on the flagged actions
+  instead (an oracle, as an upper bound on a human), violations fell to 0.0% and goals to 38.7% (no gate: 40.7%); the preregistered test
+  that this costs at most 3 points failed (−2.0 points, 95% interval −5.1 to +0.7). The closed agents ran with reasoning off.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}
@@ -164,9 +172,10 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
   service-restart policy without similar ones did not: the monitor ranked Claude's violations well (AUROC
   {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught
-  {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])}. Labels from open agents work for closed
-  ones: on prompt injections, labelled calls of open agents raised the catch rate on a closed agent from 36% to 92%. Label steps of each
-  new type of policy.</p></div>
+  {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])} (exploratory). On prompt injections (AgentDojo),
+  labelled calls of open agents raised the catch rate on a closed agent from 28% to 58% at the label-free cut (AUROC 0.840 → 0.922),
+  also on user tasks that the training never saw (exploratory). On τ²-bench the closed agents broke the policy too rarely to test
+  this. Label steps of each new type of policy.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
   the reader on the training benchmark (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
   On a new benchmark of prompt injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}). The reader stayed at
@@ -265,6 +274,9 @@ def browser_reader():
     src = R / "tool/browser_reader.json"
     if src.exists() and json.loads(src.read_text()).get("shipped"):
         shutil.copy(src, DIST / "data/browser_reader.json")
+    else:                                   # always present (no 404); the page says why it is not offered
+        (DIST / "data/browser_reader.json").write_text(json.dumps({"shipped": False, "status": "in a preregistered test (T19)" if not src.exists()
+                                                                    else "not offered: it did not pass its preregistered test (T19)"}))
 
 
 def main():

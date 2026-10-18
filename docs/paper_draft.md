@@ -1,3 +1,5 @@
+> **Superseded.** This early draft is kept for the record; the paper is `paper/main.tex`. Its numbers predate T15–T20.
+
 # Labels, Not Access: What a Black Box Reveals About Its Hidden State, and How to Monitor Closed Agents
 
 *Draft. Numbers marked ⟨…⟩ are pending. Every confirmatory number comes from a preregistered, hash-locked test.*

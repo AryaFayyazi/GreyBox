@@ -41,12 +41,14 @@ def sha(p):
 
 def check_locks():
     print("== locks")
-    bad = 0
+    bad = not_public = 0
     for lk in sorted(R.glob("prereg_*_lock.json")):
         L = json.loads(lk.read_text())
         for f, h in L["sha256"].items():
             p = Path(f) if Path(f).is_absolute() else ROOT / f
             if not p.exists():
+                if Path(f).is_absolute():          # frozen models and per-action files on the authors' machine: not in the repo
+                    print(f"  NOT PUBLIC {lk.name}: {f}"); not_public += 1; continue
                 print(f"  MISSING   {lk.name}: {f}"); bad += 1; continue
             if sha(p) == h:
                 continue
@@ -57,7 +59,8 @@ def check_locks():
             why = EXPLAINED.get((lk.name, f))
             print(f"  CHANGED   {lk.name}: {f} -> {why or 'UNEXPLAINED'}")
             bad += why is None
-    print(f"  unexplained mismatches: {bad}")
+    print(f"  unexplained mismatches (repository files changed or missing): {bad}")
+    print(f"  locked files outside the repository, not checked here: {not_public}")
 
 
 def j(p):

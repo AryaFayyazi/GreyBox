@@ -13,7 +13,7 @@ outside observer can read the hidden state of a closed agent, replicate it, and 
     changes no output. The behavioural state is identifiable. A battery of side-branch questions recovers it on models with known internals
     (Othello-GPT: R² 0.967), but as a safety signal it only ties a text moderator.</li>
   <li><b>What can be replicated.</b> An agent's internal state is a function of the tokens that it read. An open model that reads the same
-    tokens replicates 66% of the variance of an agent's hidden state, and readouts trained on the true state work on the replica (T15).</li>
+    tokens replicates 66% of the variance of the 128 main components of an agent's hidden state (T15; 46–54% for three more agents, T17), and readouts trained on the true state work on the replica, as they do on a text replica.</li>
   <li><b>What it is good for.</b> For a policy check on a proposed action, the transcript and the action are Bayes-sufficient. A probe on
     the reader's latent state (which holds the replica), trained only on an open agent, catches most violations of two closed agents (T8b,
     T11), and blocks them in the loop (T16).

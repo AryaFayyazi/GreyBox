@@ -103,6 +103,11 @@ class QuantileGate:
         return True if t is None else score >= t
 
 
+def _steps(history) -> list[Step]:
+    """History as Step objects; dicts {tool, args, result} (the guard's, the server's and the data format's) are accepted."""
+    return [h if isinstance(h, Step) else Step(h["tool"], h.get("args") or {}, h.get("result") or "") for h in history or []]
+
+
 class TextMonitor:
     """CPU monitor: TF-IDF on context and action + logistic regression, trained on YOUR labelled steps (T9's TXT).
 
@@ -117,27 +122,76 @@ class TextMonitor:
         self.C = C
 
     @staticmethod
-    def _texts(steps):
-        return [ctx_text(i, t, h) for i, t, h, _ in steps], [act_text(*a) for *_, a in steps]
+    def _rendered(s) -> tuple[str, str]:
+        """(ctx, act) of one step: a dict from graybox.guard.conversation_steps / the browser ({instructions, task,
+        history, action} or a prebuilt {context, action}) or a tuple (instructions, task, history, action)."""
+        if isinstance(s, dict):
+            a = s["action"]
+            act = a if isinstance(a, str) else act_text(a["tool"], a.get("args"))
+            if isinstance(s.get("context"), str):
+                return s["context"], act
+            return ctx_text(s.get("instructions", ""), s.get("task", ""), _steps(s.get("history"))), act
+        i, t, h, a = s
+        return ctx_text(i, t, _steps(h)), act_text(*a)
 
-    def fit(self, steps, labels, groups=None):
+    @classmethod
+    def _texts(cls, steps):
+        r = [cls._rendered(s) for s in steps]
+        return [c for c, _ in r], [a for _, a in r]
+
+    def fit(self, steps, labels, groups=None, budget: float = 0.05, grid=(0.1, 1, 10)):
+        """Fit on labelled steps (dicts or tuples). With groups, C is chosen from `grid` by grouped 5-fold
+        cross-validation (as in the browser trainer; self.cv_auroc). The fitted monitor works with Guard and the
+        server: save it with .save(path). The escalation cut is the (1 - budget) quantile of the training scores
+        (no labels used)."""
+        import numpy as np
         import scipy.sparse as sp
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.linear_model import LogisticRegression
         ctx, act = self._texts(steps)
-        mk = lambda: TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=200_000, sublinear_tf=True)
-        self.v = [mk(), mk()]
-        X = sp.hstack([self.v[0].fit_transform(ctx), self.v[1].fit_transform(act)]).tocsr()
-        self.lr = LogisticRegression(C=self.C, max_iter=4000).fit(X, labels)
+        y = np.asarray([int(bool(v)) for v in labels])
+        mk = lambda: TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=200_000, sublinear_tf=True)  # noqa: E731
+
+        def design(ix_fit, ix_apply):
+            v = [mk(), mk()]
+            v[0].fit([ctx[i] for i in ix_fit]); v[1].fit([act[i] for i in ix_fit])
+            X = lambda ix: sp.hstack([v[0].transform([ctx[i] for i in ix]), v[1].transform([act[i] for i in ix])]).tocsr()  # noqa: E731
+            return v, X(ix_fit), (X(ix_apply) if len(ix_apply) else None)
+        self.cv_auroc = None
+        if groups is not None and len(set(groups)) >= 2 and grid:
+            from sklearn.metrics import roc_auc_score
+            from sklearn.model_selection import GroupKFold
+            k, oof = min(5, len(set(groups))), {C: np.zeros(len(y)) for C in grid}
+            for tr, te in GroupKFold(k).split(ctx, y, groups):
+                _, Xtr, Xte = design(tr, te)
+                for C in grid:
+                    oof[C][te] = LogisticRegression(C=C, max_iter=4000).fit(Xtr, y[tr]).decision_function(Xte)
+            self.cv_auroc = {C: float(roc_auc_score(y, oof[C])) for C in grid}
+            self.C = max(grid, key=lambda C: self.cv_auroc[C])
+            self.oof = oof[self.C]
+        allix = list(range(len(y)))
+        self.v, X, _ = design(allix, [])
+        self.lr = LogisticRegression(C=self.C, max_iter=4000).fit(X, y)
+        z = self.lr.decision_function(X)
+        self._json = self.to_dict(threshold_logit=float(np.quantile(z, 1 - budget)), budget=budget)
         return self
 
+    def to_dict(self, threshold_logit: float, budget: float = 0.05) -> dict:
+        """The fitted model in the browser trainer's format (graybox-text-monitor/1); scored in pure Python by decision()."""
+        nv = len(self.v[0].idf_)
+        w = self.lr.coef_[0]
+        blk = lambda v: {"vocab": {t: int(j) for t, j in v.vocabulary_.items()}, "idf": [float(x) for x in v.idf_]}  # noqa: E731
+        return {"format": "graybox-text-monitor/1", "C": self.C, "vc": blk(self.v[0]), "va": blk(self.v[1]),
+                "w": [float(x) for x in w], "b": float(self.lr.intercept_[0]), "threshold_logit": threshold_logit,
+                "budget": budget, "n_context_terms": nv}
+
+    def save(self, path) -> None:
+        Path(path).write_text(json.dumps(self._json))
+
     def score(self, instructions: str, task: str, history: list[Step], action: tuple[str, dict | None]) -> float:
-        if getattr(self, "_json", None) is not None:
-            import math
-            return 1 / (1 + math.exp(-self.decision(instructions, task, history, action)))
-        import scipy.sparse as sp
-        X = sp.hstack([self.v[0].transform([ctx_text(instructions, task, history)]), self.v[1].transform([act_text(*action)])]).tocsr()
-        return float(self.lr.predict_proba(X)[0, 1])
+        """P(unsafe) (a probability). decision() gives the logit, which Guard and the server compare with threshold_logit."""
+        import math
+        return 1 / (1 + math.exp(-self.decision(instructions, task, history, action)))
 
     # ---- models trained in the browser (greybox site, format graybox-text-monitor/1) ----
     @classmethod
@@ -166,7 +220,7 @@ class TextMonitor:
     def decision(self, instructions: str, task: str, history: list[Step], action: tuple[str, dict | None], *, rendered=None) -> float:
         """The monitor's score (logit) for a JSON-loaded model. `rendered=(ctx, act)` skips rendering."""
         d = self._json
-        ctx, act = rendered or (ctx_text(instructions, task, history), act_text(*action))
+        ctx, act = rendered or (ctx_text(instructions, task, _steps(history)), act_text(*action))
         return d["b"] + self._block(d["vc"], ctx, 0, d["w"]) + self._block(d["va"], act, len(d["vc"]["idf"]), d["w"])
 
     def escalate(self, instructions: str, task: str, history: list[Step], action: tuple[str, dict | None]) -> bool:

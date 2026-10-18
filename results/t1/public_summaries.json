@@ -1,0 +1,31 @@
+{
+ "reader_latency_T6": {
+  "n": 5229,
+  "median_ms": 41.1,
+  "p95_ms": 83.2,
+  "hardware": "1 NVIDIA H100 NVL, bf16, unbatched"
+ },
+ "t17_fidelity_next16_tokens": {
+  "gptoss20b": {
+   "steps": 5221,
+   "mean_accuracy": 0.9122,
+   "mean_probability": 0.9051
+  },
+  "qwen38": {
+   "steps": 4664,
+   "mean_accuracy": 0.9507,
+   "mean_probability": 0.903
+  },
+  "museglimmer": {
+   "steps": 5184,
+   "mean_accuracy": 0.9992,
+   "mean_probability": 0.9989
+  }
+ },
+ "t18_episodes": {
+  "all_episodes": 600,
+  "episodes_with_a_labelled_write": 234,
+  "labelled_writes": 343,
+  "violations": 9
+ }
+}

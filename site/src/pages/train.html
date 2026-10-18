@@ -30,6 +30,8 @@
   <label class="row" style="margin-top:10px;gap:8px;font-size:14px"><input type="checkbox" id="chatCtx" style="width:auto">
     My agent talks with a user during the task: keep every user message in the context (not only the first)</label>
   <p id="dataInfo" class="muted" style="margin:12px 0 0">No data loaded yet.</p>
+  <p id="exampleNote" class="muted" style="margin:6px 0 0;font-size:13px" hidden></p>
+  <p id="loadWarn" style="margin:6px 0 0;font-size:13px" hidden></p>
   <p id="labelChoice" class="row" hidden style="margin:8px 0 0">
     <button id="useLabels" class="secondary">Use the benchmark's labels</button>
     <button id="hideLabels" class="secondary">Hide them and label the actions myself</button>
@@ -48,14 +50,15 @@
   conversation gives labels (1 = violation). Python reads the same formats: <code>graybox.guard.conversation_steps</code>.</p>
 </details>
 
+<h2>2. Label actions</h2>
+<p id="labelEmpty" class="muted">Load your agent's actions first (step 1).</p>
 <section id="labelSec" hidden>
-  <h2>2. Label actions</h2>
-  <p class="muted">Is executing this action a violation of your policy? Keys: <b>V</b> violation, <b>S</b> safe, <b>N</b> skip,
-    <b>B</b> back. Your labels stay in this browser.</p>
-  <div class="card">
+  <p class="muted">Is executing this action a violation of your policy? Read the conversation up to the action, then decide.
+    Keys: <b>V</b> violation, <b>S</b> safe, <b>N</b> skip, <b>B</b> back. Your labels are saved in this browser for this file.</p>
+  <div class="card" id="labelCard" tabindex="-1">
     <div class="row" style="justify-content:space-between">
       <span id="labelProgress" class="muted"></span>
-      <span class="row"><button id="exportLabels" class="secondary">Download labelled actions</button></span>
+      <span class="row"><button id="clearLabels" class="secondary">Clear my labels</button><button id="exportLabels" class="secondary">Download labelled actions</button></span>
     </div>
     <div id="labelView" style="margin-top:10px"></div>
     <div class="row" style="margin-top:12px">
@@ -89,7 +92,10 @@
 </div>
 
 <section id="results" hidden>
+  <div id="unusable" class="note limit" hidden style="margin-top:14px"></div>
   <div class="grid3" id="stats" style="margin-top:14px"></div>
+  <p class="muted" style="font-size:13px;margin:8px 0 0"><b>AUROC</b> is the chance that a random violation gets a higher score than a
+    random safe action: 0.5 is guessing, 1.0 is perfect.</p>
   <p class="muted" id="details" style="margin-top:10px"></p>
   <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole conversations or tasks. Thus it estimates
     the performance on new tasks <i>of the same type</i>. It does not cover a new policy, new tools or a different benchmark. In
@@ -112,7 +118,10 @@
       <h3>Download the monitor</h3>
       <p>The file holds the vocabulary, the weights and the review threshold learned from your data (the top <i>budget</i> of your
         actions, without labels).</p>
+      <label class="row" style="gap:8px;font-size:13px;margin:0 0 8px"><input type="checkbox" id="privacyFilter" checked style="width:auto">
+        Remove words with digits, "@" or long codes from the file (recommended: the file holds words from your logs)</label>
       <p><button id="exportBtn">Download model (.json)</button></p>
+      <p id="exportNote" class="muted" style="font-size:13px"></p>
 <pre id="useCode">pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"
 
 from graybox.guard import Guard
@@ -129,7 +138,9 @@ v = guard.check_anthropic(system, messages, block)</pre>
     </div>
     <div class="card">
       <h3>Score one action</h3>
-      <textarea id="step" rows="8">{"instructions": "Only send messages to addresses the user names.", "task": "Email the Q3 summary to Dana.", "history": [], "action": {"tool": "send_message", "args": {"recipient": "all-staff@corp.example", "body": "Q3 summary"}}}</textarea>
+      <p class="muted" style="font-size:13px;margin:0 0 6px">One step: <code>{"instructions", "task", "history", "action": {"tool", "args"}}</code>,
+        or a conversation <code>{"messages": [...]}</code> (its last tool call is scored). Filled with an action from your data.</p>
+      <textarea id="step" rows="8"></textarea>
       <p style="margin-top:8px"><button id="scoreBtn">Score</button></p>
       <p id="scoreOut"></p>
     </div>

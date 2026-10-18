@@ -245,7 +245,8 @@ def test_server_loads_the_reader_once_under_concurrent_first_requests(monkeypatc
 
         def score(self, instructions, task, history, action):
             return 0.01
-    monkeypatch.setattr(monitor, "ReaderMonitor", SlowReader)
+    from graybox import reader_load
+    monkeypatch.setattr(reader_load, "load_reader", lambda path: SlowReader.load(path))
     monkeypatch.setenv("GB_MONITOR_PROBE", "fake.joblib")
     monitor_server._STATE.pop("reader", None)
     c, codes = TestClient(monitor_server.app), []
@@ -254,3 +255,114 @@ def test_server_loads_the_reader_once_under_concurrent_first_requests(monkeypatc
     [t.start() for t in th]; [t.join() for t in th]
     monitor_server._STATE.pop("reader", None)
     assert codes == [200] * 8 and len(loads) == 1
+
+
+class _Spy:
+    """A monitor that records what it scores (TextMonitor interface: decision + _json threshold)."""
+    _json = {"threshold_logit": 0.0}
+
+    def __init__(self):
+        self.seen = []
+
+    def decision(self, instructions, task, history, action, *, rendered=None):
+        self.seen.append((action, len(history or [])))
+        return 1.0 if action and action[0] == "send_message" else -1.0
+
+
+def _tc(i, name, args):
+    return {"id": i, "type": "function", "function": {"name": name, "arguments": json.dumps(args)}}
+
+
+def test_guard_scores_the_proposed_call_even_with_a_reused_or_empty_id():
+    from graybox.guard import Guard
+    msgs = [{"role": "system", "content": "Only email people the user names."}, {"role": "user", "content": "Mail Bob."},
+            {"role": "assistant", "tool_calls": [_tc("call_0", "read_file", {"path": "/r"})]}, {"role": "tool", "tool_call_id": "call_0", "content": "x"}]
+    for cid in ("call_0", "", None):                 # a reused id, an empty id, no id
+        spy = _Spy()
+        v = Guard(spy).check_openai(msgs, _tc(cid, "send_message", {"to": "all-staff"}))
+        assert spy.seen[-1] == (("send_message", {"to": "all-staff"}), 1) and not v.allow, (cid, spy.seen)
+
+
+def test_guard_same_score_for_every_documented_call_style():
+    from graybox.guard import Guard
+    from graybox.monitor import TextMonitor
+    tm = TextMonitor.load_json(MODEL)
+    base = [{"role": "system", "content": "Only email people the user names."}, {"role": "user", "content": "Mail the report to Bob."}]
+    c0, c1 = _tc("c0", "read_file", {"path": "/r"}), _tc("c1", "send_message", {"to": "all-staff"})
+    reply = {"role": "assistant", "content": None, "tool_calls": [c0, c1]}
+    g = Guard(tm)
+    before = g.check_openai(base, c1).score                                          # check before appending the reply
+    after = g.check_openai(base + [reply], c1).score                                  # README style
+    after_sib = g.check_openai(base + [reply, {"role": "tool", "tool_call_id": "c0", "content": "r"}], c1).score   # a sibling already ran
+    assert before == after == after_sib
+
+
+def test_reviewer_fails_closed_and_sees_the_score():
+    from graybox.guard import Guard
+    seen = []
+    for answer, allow in ((True, True), (False, False), ("no", False), (1, False)):
+        v = Guard(_Spy(), reviewer=lambda st, a=answer: seen.append(st) or a).check("p", "t", [], "send_message", {})
+        assert v.held and v.allow == allow and (v.review_error is None) == isinstance(answer, bool)
+    assert "score" in seen[0] and "label" not in seen[0]
+
+    def boom(st):
+        raise RuntimeError("reviewer down")
+    v = Guard(_Spy(), reviewer=boom).check("p", "t", [], "send_message", {})
+    assert v.held and not v.allow and "reviewer down" in v.review_error
+
+
+def test_text_monitor_trained_in_python_saves_and_guards(tmp_path):
+    from graybox.guard import Guard
+    from graybox.monitor import TextMonitor
+    rng = np.random.default_rng(0)
+    steps, y, g = [], [], []
+    for i in range(120):
+        bad = i % 6 == 0
+        steps.append({"instructions": "Only email people the user names.", "task": f"Mail the report to user{i % 7}.",
+                      "history": [{"tool": "read_file", "args": {"path": f"/r{i % 3}"}, "result": "report"}],
+                      "action": {"tool": "send_message", "args": {"to": "all-staff" if bad else f"user{i % 7}", "n": int(rng.integers(9))}}})
+        y.append(int(bad)); g.append(f"conv{i // 3}")
+    tm = TextMonitor().fit(steps, y, g)
+    tm.save(tmp_path / "m.json")
+    tj = TextMonitor.load_json(tmp_path / "m.json")
+    s = steps[0]
+    z1 = tm.decision(s["instructions"], s["task"], s["history"], (s["action"]["tool"], s["action"]["args"]))
+    z2 = tj.decision(s["instructions"], s["task"], s["history"], (s["action"]["tool"], s["action"]["args"]))
+    assert abs(z1 - z2) < 1e-9 and tm.cv_auroc is not None
+    v = Guard(tj).check(s["instructions"], s["task"], s["history"], "send_message", s["action"]["args"])
+    assert v.allow == (z2 < tj._json["threshold_logit"]) and v.unit == "logit"
+    z = np.array([tj.decision(x["instructions"], x["task"], x["history"], (x["action"]["tool"], x["action"]["args"])) for x in steps])
+    assert z[np.array(y) == 1].mean() > z[np.array(y) == 0].mean()
+
+
+def test_server_accepts_openai_shapes_and_reports_load_errors(monkeypatch):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from graybox import monitor_server
+    from graybox.monitor import TextMonitor, act_text, ctx_text, Step
+    monkeypatch.setenv("GB_TEXT_MONITOR", str(MODEL))
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    c, tm = TestClient(monitor_server.app), TextMonitor.load_json(MODEL)
+    r = c.post("/v1/monitor/text", json={"context": "[Operating instructions]\nx", "action": {"tool": "send_message", "args": "{\"to\": \"a\"}"}})
+    assert r.status_code == 200 and r.json()["unit"] == "logit"          # context alone; arguments as a JSON string
+    assert abs(r.json()["score"] - round(tm.decision(None, None, None, None, rendered=("[Operating instructions]\nx", act_text("send_message", {"to": "a"}))), 4)) < 1e-9
+    r = c.post("/v1/monitor/text", json={"instructions": "p", "task": "t", "history": [{"tool": "read_file", "args": None, "result": None}],
+                                         "action": {"tool": "send_message", "args": {"to": "a"}}})
+    assert r.status_code == 200 and abs(r.json()["score"] - round(tm.decision("p", "t", [Step("read_file", {}, "")], ("send_message", {"to": "a"})), 4)) < 1e-9
+    monkeypatch.setenv("GB_TEXT_MONITOR", "/nonexistent/model.json")
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    h = c.get("/v1/health").json()
+    assert h["text_monitor"] is False and "FileNotFoundError" in h["text_monitor_error"]
+    assert c.post("/v1/monitor/text", json={"action": {"tool": "x"}}).status_code == 503
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+
+
+def test_guard_follows_a_reader_probes_chat_setting():
+    from graybox.guard import Guard
+
+    class R:
+        chat = True
+    assert Guard(R(), gate=object()).chat and not Guard(R(), gate=object(), chat=False).chat

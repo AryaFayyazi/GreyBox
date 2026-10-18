@@ -3,35 +3,54 @@
     GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app      # CPU, real time
     GB_MONITOR_PROBE=reader_probe.joblib     uvicorn graybox.monitor_server:app       # + GPU reader
 
-POST /v1/monitor/text    the text monitor trained in the browser trainer (escalation cut from its file)
+POST /v1/monitor/text    the text monitor (browser trainer or python -m graybox.train_text; escalation cut from its file).
+                         Also a browser-reader file (graybox-embed-monitor/1; graybox.embed_monitor).
 POST /v1/monitor/action  the reader monitor (Qwen3-8B + probe), with a frozen QuantileGate per stream
 GET  /v1/health
 """
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .monitor import Q, QuantileGate, Step, TextMonitor, act_text
 
-app = FastAPI(title="Grey Box monitor", version="0.2")
+from . import __version__  # noqa: E402
+app = FastAPI(title="Grey Box monitor", version=__version__)
 _STATE: dict = {"gates": {}}
 _READER_LOCK = threading.Lock()      # one forward pass at a time on the GPU model
 
 
 class StepIn(BaseModel):
     tool: str
-    args: dict | None = Field(default_factory=dict)
-    result: str = ""
+    args: dict | str | None = Field(default_factory=dict, description="a dict, or a JSON string (OpenAI's function.arguments)")
+    result: str | None = ""
+
+    @field_validator("args")
+    @classmethod
+    def _parse_args(cls, v):
+        if isinstance(v, str):
+            try:
+                v = json.loads(v or "{}")
+            except json.JSONDecodeError:
+                return {"_raw": v}
+            return v if isinstance(v, dict) else {"_raw": v}
+        return v or {}
+
+    @field_validator("result")
+    @classmethod
+    def _result(cls, v):
+        return v or ""
 
 
 class ActionRequest(BaseModel):
-    instructions: str = Field(..., description="the agent's operating instructions (system prompt)")
-    task: str = Field(..., description="the user's task")
+    instructions: str = Field("", description="the agent's operating instructions (system prompt)")
+    task: str = Field("", description="the user's task")
     history: list[StepIn] = Field(default_factory=list, description="earlier tool calls with their results")
     action: StepIn = Field(..., description="the proposed action (tool '__final__' for a final answer)")
     stream: str = Field("default", description="deployment id; each stream calibrates its own frozen cut (reader only)")
@@ -44,25 +63,47 @@ def _hist(req):
     return [Step(h.tool, h.args or {}, h.result) for h in req.history]
 
 
+def _load_text():
+    """Load the text (or browser-reader) monitor named by GB_TEXT_MONITOR once; remember a load error for /v1/health."""
+    path = os.environ.get("GB_TEXT_MONITOR")
+    if not path or "text" in _STATE or "text_error" in _STATE:
+        return
+    try:
+        d = json.loads(open(path).read())
+        if d.get("type") == "embed":
+            from .embed_monitor import EmbedMonitor
+            _STATE["text"] = EmbedMonitor(d)
+        else:
+            _STATE["text"] = TextMonitor.load_json(path)
+    except Exception as e:  # noqa: BLE001
+        _STATE["text_error"] = f"{type(e).__name__}: {e}"
+
+
+@app.on_event("startup")
+def _startup():
+    _load_text()                      # fail fast: a bad GB_TEXT_MONITOR shows in /v1/health, not at the first request
+
+
 @app.get("/v1/health")
 def health():
-    return {"text_monitor": bool(os.environ.get("GB_TEXT_MONITOR")), "reader_monitor": bool(os.environ.get("GB_MONITOR_PROBE")),
-            "reader_loaded": "reader" in _STATE}
+    _load_text()
+    return {"text_monitor": "text" in _STATE, "text_monitor_error": _STATE.get("text_error"),
+            "reader_monitor": bool(os.environ.get("GB_MONITOR_PROBE")), "reader_loaded": "reader" in _STATE}
 
 
 @app.post("/v1/monitor/text")
 def monitor_text(req: ActionRequest):
-    path = os.environ.get("GB_TEXT_MONITOR")
-    if not path:
-        raise HTTPException(503, "set GB_TEXT_MONITOR to a model file from the browser trainer")
+    if not os.environ.get("GB_TEXT_MONITOR"):
+        raise HTTPException(503, "set GB_TEXT_MONITOR to a monitor file (browser trainer or python -m graybox.train_text)")
+    _load_text()
     if "text" not in _STATE:
-        _STATE["text"] = TextMonitor.load_json(path)
+        raise HTTPException(503, f"the monitor file could not be loaded: {_STATE.get('text_error')}")
     tm, t0 = _STATE["text"], time.perf_counter()
     if req.context is not None:
         z = tm.decision(None, None, None, None, rendered=(req.context, act_text(req.action.tool, req.action.args)))
     else:
         z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
-    return {"score": round(z, 4), "escalate": z >= tm._json["threshold_logit"], "threshold": round(tm._json["threshold_logit"], 4),
+    return {"score": round(z, 4), "unit": "logit", "escalate": z >= tm._json["threshold_logit"], "threshold": round(tm._json["threshold_logit"], 4),
             "budget": tm._json.get("budget"), "ms": round(1000 * (time.perf_counter() - t0), 3),
             "note": "text monitor: reliable on the tools and policies it was trained on; retrain for new ones"}
 
@@ -92,10 +133,12 @@ def monitor_action(req: ActionRequest):
     t0 = time.perf_counter()
     with _READER_LOCK:            # the first load is inside the lock: concurrent first requests raced on the lazy imports
         if "reader" not in _STATE:
-            from .monitor import ReaderMonitor
-            _STATE["reader"] = ReaderMonitor.load(path)
+            from .reader_load import load_reader
+            _STATE["reader"] = load_reader(path)
             t0 = time.perf_counter()
         rm = _STATE["reader"]
+        if req.context is None and getattr(rm, "chat", False):
+            raise HTTPException(422, "this probe was trained with conversation-aware context (--chat): send 'context' (graybox.chat.chat_ctx)")
         if req.context is not None:
             p = float(rm.probe.predict_proba(rm.features(Q.format(ctx=req.context, cot="", act=act_text(req.action.tool, req.action.args))))[0, 1])
         else:

@@ -43,11 +43,11 @@ def prompt_of(s: dict) -> str:
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("data")
-    ap.add_argument("--out", default="my_reader_probe.joblib")
-    ap.add_argument("--layer", type=int, default=32)
-    ap.add_argument("--reader", default="Qwen/Qwen3-8B")
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] + " Needs a GPU (about 90 s for 1,500 actions).")
+    ap.add_argument("data", help="labelled conversations (OpenAI or Anthropic, with a 'labels' field {call_id: 0/1}) or labelled steps, JSON lines")
+    ap.add_argument("--out", default="my_reader_probe.joblib", help="the probe file to write (load with graybox.reader_load.load_reader)")
+    ap.add_argument("--layer", type=int, default=32, help="reader layer (hidden-state index; 32 = the tested setting for Qwen3-8B)")
+    ap.add_argument("--reader", default="Qwen/Qwen3-8B", help="Hugging Face id of the reader model (downloaded once; needs a GPU)")
     ap.add_argument("--chat", action="store_true", help="conversation-aware context (agents that talk with a user); "
                     "then score with Guard(..., chat=True) or the server's 'context' field")
     a = ap.parse_args(argv)

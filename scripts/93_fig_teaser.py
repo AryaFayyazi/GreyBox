@@ -49,6 +49,9 @@ def main():
     rep = ridge.predict(xs.transform(Hf["h"][okf, j].astype(np.float32)))
     t15 = json.loads((ROOT / "results/t1/t15_latent_replication.json").read_text())
     assert abs(r2_score(Yf, rep, multioutput="variance_weighted") - t15["r2_fresh"]["READER"]) < 1e-3
+    lf = json.loads((ROOT / "results/t1/label_free_cuts.json").read_text())   # one operating point: the label-free cut
+    r17 = [a["r2_fresh"]["READER"] for a in json.loads((ROOT / "results/t1/t17_replication_agents.json").read_text())["agents"].values()]
+    r17lo, r17hi = min(r17), max(r17)
     yg = Uf.y.values[okf].astype(bool)
     t8, t11 = importlib.import_module("76_t8b_claude_all_actions"), importlib.import_module("81_t11_gpt_monitor")
     closed = {}
@@ -92,10 +95,10 @@ def main():
     axs = [fig.add_subplot(gs[0, k]) for k in range(ncol)]
     panel(axs[0], Yf, yg, "(a) Open agent", "true hidden state, weights open\n12,128 fresh actions")
     panel(axs[1], rep, yg, "(b) Its replica",
-          f"from the transcript only; {t15['r2_fresh']['READER']:.0%} of\nvariance; probe {t15['E2_auroc']['READER_replica']:.3f} (true {t15['E2_auroc']['true']:.3f})", seed=1)
+          f"transcript only; {t15['r2_fresh']['READER']:.0%} of variance\n3 more agents: {r17lo:.0%}–{r17hi:.0%}", seed=1)
     Zc, yc = closed["claude"]
     panel(axs[2], Zc, yc, "(c) Claude (closed)",
-          f"Haiku 5.5; weights never seen\nprobe: {r8['caught_at_5pct_safe_escalated']['READER']:.1%} caught at 5% review", seed=2)
+          f"Haiku 5.5; weights never seen\nprobe: {lf['claude_T8b']['READER']['label_free_cut']:.1%} caught at 5% review", seed=2)
     Zg, yg2 = closed["gpt"]
     panel(axs[3], Zg, yg2, "(d) GPT (closed)",
           f"6-luna; weights never seen\nprobe: {r11['label_free_cut']['READER']['all']:.1%} caught at 5% review", seed=3)

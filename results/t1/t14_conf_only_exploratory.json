@@ -1,0 +1,30 @@
+{
+ "conf_calls": 2890,
+ "conf_injected": 28,
+ "conf_user_tasks_also_in_T7_training": 0,
+ "auroc_within_suite": {
+  "full": 0.9286,
+  "zero": 0.8475,
+  "judge": 0.786
+ },
+ "caught_label_free_5pct": {
+  "full": 0.5357,
+  "zero": 0.2857,
+  "judge": 0.1786
+ },
+ "caught_benign_cut_5pct": {
+  "full": 0.8214,
+  "zero": 0.3214,
+  "judge": 0.5
+ },
+ "full_minus_judge": [
+  0.1426,
+  0.0752,
+  0.226
+ ],
+ "full_minus_zero": [
+  0.0811,
+  0.0457,
+  0.1233
+ ]
+}

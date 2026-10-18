@@ -5,16 +5,24 @@ build-backend = "setuptools.build_meta"
 [project]
 license = {text = "MIT"}
 name = "graybox"
-version = "0.1.0"
-description = "Read a black-box language model's state and guard an agent's actions through its API alone"
+version = "0.3.0"
+description = "Monitor tool-calling agents (open or closed) from their transcripts: score each proposed action before it runs"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
+text = ["scikit-learn>=1.3", "scipy"]                             # train the text monitor in Python (graybox.train_text)
+reader = ["torch>=2.2", "transformers>=4.51", "joblib", "scikit-learn>=1.3", "huggingface_hub"]   # reader monitor (GPU)
+browser-reader = ["torch>=2.2", "transformers>=4.51"]               # score with a browser-reader model file in Python (CPU)
+server = ["fastapi", "uvicorn", "httpx", "pydantic>=2"]
 anthropic = ["anthropic>=0.40"]
-server = ["fastapi", "uvicorn", "httpx", "pydantic"]
+all = ["graybox[text,reader,server]"]
 research = ["pandas", "scikit-learn", "omegaconf", "torch", "transformers", "vllm"]
+
+[project.scripts]
+graybox-train-text = "graybox.train_text:main"
+graybox-train-reader = "graybox.train_reader:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

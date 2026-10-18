@@ -126,6 +126,8 @@ class Verdict:
     score: float | None
     block_message: str = BLOCK_MESSAGE
     held: bool = False            # escalated and sent to the reviewer (allow then says what the reviewer decided)
+    unit: str = "logit"           # "logit" for text and browser-reader monitors (compared with threshold_logit); "probability" for the reader
+    review_error: str | None = None   # the reviewer raised or did not answer True/False: the action is blocked (fail closed)
 
 
 class Guard:
@@ -133,9 +135,12 @@ class Guard:
     reviewer: optional fn(step) -> bool for escalated actions (True = run it); chat: conversation-aware context."""
 
     def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None):
-        if chat is None:            # default: the setting the monitor was trained with (browser model files record it)
-            chat = bool((getattr(monitor, "_json", None) or {}).get("chat", False))
+        if chat is None:            # default: the setting the monitor was trained with (model files and probe files record it)
+            chat = bool((getattr(monitor, "_json", None) or {}).get("chat", getattr(monitor, "chat", False)))
         self.monitor, self.gate, self.reviewer, self.chat = monitor, gate, reviewer, chat
+
+    def _unit(self) -> str:
+        return "probability" if self.gate is not None else "logit"
 
     def _escalated(self, step: dict) -> tuple[bool, float]:
         tool, args = step["action"]["tool"], step["action"].get("args") or {}
@@ -154,30 +159,52 @@ class Guard:
 
     def check_step(self, step: dict) -> Verdict:
         esc, score = self._escalated(step)
+        unit = self._unit()
         if not esc:
-            return Verdict(allow=True, score=score)
+            return Verdict(allow=True, score=score, unit=unit)
         if self.reviewer is None:
-            return Verdict(allow=False, score=score)
-        return Verdict(allow=bool(self.reviewer(step)), score=score, held=True)
+            return Verdict(allow=False, score=score, unit=unit)
+        try:                                   # fail closed: only an explicit True runs the action
+            answer = self.reviewer({**{k: v for k, v in step.items() if k != "label"}, "score": score, "unit": unit})
+        except Exception as e:  # noqa: BLE001
+            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"{type(e).__name__}: {e}")
+        if not isinstance(answer, bool):
+            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"reviewer returned {answer!r}, not True/False")
+        return Verdict(allow=answer, score=score, held=True, unit=unit)
 
     def check(self, instructions: str, task: str, history: list[dict], tool: str, args: dict) -> Verdict:
         return self.check_step({"instructions": instructions, "task": task, "history": history, "action": {"tool": tool, "args": args}})
 
-    def _check_last(self, steps, call_id, name, args) -> Verdict:
-        st = next((s for s in steps if s["call_id"] == call_id), None) if call_id else None
-        st = st or {"instructions": steps[0]["instructions"] if steps else "", "task": steps[0]["task"] if steps else "", "history": [],
-                    "action": {"tool": name, "args": args}}
+    @staticmethod
+    def _before_reply(msgs: list, call_id, name) -> list:
+        """The canonical context of a proposed call: everything BEFORE the assistant reply that holds it. That reply can
+        only be the LATEST assistant message (followed at most by results of sibling calls); if the messages include it
+        (same id and tool), it and what follows are dropped, so the score is the same with or without it."""
+        k = max((i for i, m in enumerate(msgs) if m.get("role") == "assistant"), default=None)
+        if k is None or not call_id:
+            return msgs
+        m = msgs[k]
+        calls = [(tc.get("id"), (tc.get("function") or {}).get("name")) for tc in m.get("tool_calls") or []]
+        if isinstance(m.get("content"), list):
+            calls += [(b.get("id"), b.get("name")) for b in m["content"] if isinstance(b, dict) and b.get("type") == "tool_use"]
+        return msgs[:k] if (call_id, name) in calls else msgs
+
+    def _check_proposed(self, steps, name, args) -> Verdict:
+        st = steps[-1]                          # the proposed call is the last step: never looked up by id
+        assert st["action"]["tool"] == name, (st["action"], name)
         return self.check_step(st)
 
     def check_openai(self, messages: list, tool_call) -> Verdict:
-        """messages: the conversation so far; tool_call: the proposed call (from the latest assistant message)."""
+        """messages: the conversation (with or without the reply that holds the call); tool_call: the proposed call.
+        The monitor sees everything before that reply, then the call."""
         tc = _as_dict(tool_call)
         name, args = (tc.get("function") or {}).get("name"), _args((tc.get("function") or {}).get("arguments"))
-        prefix = [_as_dict(m) for m in messages] + [{"role": "assistant", "tool_calls": [tc]}]
-        return self._check_last(conversation_steps(prefix, chat=self.chat), tc.get("id"), name, args)
+        prefix = self._before_reply([_as_dict(m) for m in messages], tc.get("id"), name) + [{"role": "assistant", "tool_calls": [tc]}]
+        return self._check_proposed(conversation_steps(prefix, chat=self.chat), name, args)
 
     def check_anthropic(self, system, messages: list, tool_use) -> Verdict:
-        """system: the system prompt; messages: the conversation so far; tool_use: the proposed tool_use block."""
+        """system: the system prompt; messages: the conversation (with or without the reply that holds the block);
+        tool_use: the proposed tool_use block. The monitor sees everything before that reply, then the call."""
         b = _as_dict(tool_use)
-        prefix = [_as_dict(m) for m in messages] + [{"role": "assistant", "content": [b]}]
-        return self._check_last(conversation_steps(prefix, system=system, chat=self.chat), b.get("id"), b.get("name"), _args(b.get("input")))
+        prefix = self._before_reply([_as_dict(m) for m in messages], b.get("id"), b.get("name")) + [{"role": "assistant", "content": [b]}]
+        return self._check_proposed(conversation_steps(prefix, system=system, chat=self.chat), b.get("name"), _args(b.get("input")))

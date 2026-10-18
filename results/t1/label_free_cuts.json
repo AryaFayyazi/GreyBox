@@ -1,0 +1,53 @@
+{
+ "claude_T8b": {
+  "READER": {
+   "auroc_pooled": 0.9887,
+   "label_free_cut": 0.9412,
+   "oracle_cut": 0.9559,
+   "safe_escalated_label_free": 0.0304
+  },
+  "J_act": {
+   "auroc_pooled": 0.5701,
+   "label_free_cut": 0.0,
+   "oracle_cut": 0.0,
+   "safe_escalated_label_free": 0.0513
+  },
+  "TOOL_PRIOR": {
+   "auroc_pooled": 0.8569,
+   "label_free_cut": 0.6176,
+   "oracle_cut": 0.6176,
+   "safe_escalated_label_free": 0.0431
+  },
+  "TXT": {
+   "label_free_cut": 0.6471,
+   "oracle_cut": 0.8824,
+   "source": "results/t1/t9_text_baseline.json"
+  }
+ },
+ "gpt_T11": {
+  "READER": {
+   "auroc_pooled": 0.9959,
+   "label_free_cut": 0.9848,
+   "oracle_cut": 0.9848,
+   "safe_escalated_label_free": 0.0329
+  },
+  "J_act": {
+   "auroc_pooled": 0.7784,
+   "label_free_cut": 0.3788,
+   "oracle_cut": 0.3788,
+   "safe_escalated_label_free": 0.0441
+  },
+  "TXT": {
+   "auroc_pooled": 0.9637,
+   "label_free_cut": 0.5,
+   "oracle_cut": 0.6212,
+   "safe_escalated_label_free": 0.0418
+  },
+  "TOOL_PRIOR": {
+   "auroc_pooled": 0.8558,
+   "label_free_cut": 0.6061,
+   "oracle_cut": 0.6061,
+   "safe_escalated_label_free": 0.0643
+  }
+ }
+}
