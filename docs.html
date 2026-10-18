@@ -34,7 +34,7 @@ AUROC: word counts 0.52, reader 0.54). With the same tasks in training, word cou
 (reservation codes, names, dates) of those tasks. So: word counts need labels of the same tasks and entities; neither monitor checks a
 numeric, date or recipient rule on values it has not seen. For such rules, write the check in code, or hold the action for review.
 A zero-shot reasoning model that reads the written policy (T23, Qwen3-32B, no labels) separated violating from allowed calls of the same tool
-on four closed frontier agents (AUROC 0.77), but at a 5% review budget it caught fewer violations than the reader. Use it as a second
+on four closed frontier agents (AUROC 0.77), but at a 5% review budget it caught fewer violations than the reader and than the tool alone. Use it as a second
 opinion on held actions, not as the only monitor.</p>
 
 <h2>Install</h2>
