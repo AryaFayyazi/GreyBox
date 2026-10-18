@@ -64,12 +64,14 @@ def cv_scores(d):
     t9 = importlib.import_module("77_t9_text_baseline")
     H = np.load(D / "t18_train_reader.npz")["h"].astype(np.float32)
     y, g = d.y.values, d.task_id.values
-    R, T, TL = np.zeros(len(d)), np.zeros(len(d)), np.zeros(len(d))
+    R, T = np.zeros(len(d)), np.zeros(len(d))
     for tr, te in GroupKFold(5).split(H, y, g):
         reader = make_pipeline(StandardScaler(), PCA(min(256, len(tr) - 1), random_state=0), LogisticRegression(C=0.05, max_iter=4000))
         R[te] = reader.fit(H[tr], y[tr]).decision_function(H[te])
         T[te] = t9.TXT().fit(d.ctx.values[tr], d.act.values[tr], y[tr], g[tr]).score(d.ctx.values[te], d.act.values[te])
-        TL[te] = d.tool.iloc[te].map(d.iloc[tr].groupby("tool").y.mean()).fillna(y[tr].mean()).values
+    # amendment 1 (before any judge result): TOOL must be constant within a tool (within-tool AUROC exactly 0.5). The
+    # fold-wise rate varied between folds and scored 0.217 within tool in a dry run, which would have inflated K1.
+    TL = d.tool.map(d.groupby("tool").y.mean()).values
     return R, T, TL
 
 

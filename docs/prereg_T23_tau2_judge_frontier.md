@@ -19,7 +19,7 @@ need labels are scored by cross-validation grouped by task: each write is scored
 - **Baselines (5-fold GroupKFold over task_id):**
   - READER_cv: Qwen3-8B layer 32, the same recipe as T18/T20/T21;
   - TXT_cv: TF-IDF as in T9;
-  - TOOL_cv: the tool's violation rate in the training folds.
+  - TOOL_cv: the tool's violation rate (see amendment 1).
 - **Metric:** within-tool AUROC. Cluster bootstrap over task_id, 1,000 resamples.
 
 ## Endpoints
@@ -49,3 +49,9 @@ need labels are scored by cross-validation grouped by task: each write is scored
 - One judge model, one prompt.
 
 Code: scripts/103e_t23_tau2_judge_frontier.py (judge: one GPU, vLLM; analyze: CPU).
+
+## Amendment 1 (2026-10-17, before any judge result on these writes; published with its own lock)
+A CPU dry run of the baselines showed that TOOL_cv, the tool's rate in each training fold, is not constant within a
+tool: it varies between folds and scored a within-tool AUROC of 0.217. That would have inflated K1. TOOL_cv is now the
+tool's rate on all writes. It is constant within each tool, so its within-tool AUROC is exactly 0.5, as in T18–T22.
+Nothing else changes. Dry-run values of the other baselines (within tool): READER_cv 0.646, TXT_cv 0.490.
