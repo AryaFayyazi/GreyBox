@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greybox-monitor"            # import name: graybox ("graybox" and "greybox" on PyPI are other projects)
-version = "0.6.0"
+version = "0.7.0"
 description = "Monitor tool-calling agents (open or closed) from their transcripts: score each proposed action before it runs"
 readme = "README.md"
 license = "MIT"
@@ -49,6 +49,7 @@ research = ["pandas", "scikit-learn", "omegaconf", "torch", "transformers", "vll
 graybox-train-text = "graybox.train_text:cli"
 graybox-train-reader = "graybox.train_reader:main"
 graybox-mcp-proxy = "graybox.mcp_proxy:main"
+graybox-recalibrate = "graybox.recalibrate:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]

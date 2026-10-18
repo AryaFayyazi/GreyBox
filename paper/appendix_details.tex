@@ -27,7 +27,7 @@
   \item Claude Haiku~5.5: thinking disabled, effort ``low'', at most 1{,}024 tokens per turn.
   \item GPT-6-luna: reasoning effort ``none'', no parallel tool calls, at most 2{,}048 tokens per turn.
   \end{itemize}
-  The shared spend ledgers record \$19.58 of API use in total (Anthropic \$14.65, OpenAI \$4.92), including tests of the released tool.
+  The shared spend ledgers record \$24.78 of API use in total (Anthropic \$19.86, OpenAI \$4.92), including tests of the released tool and a 40-episode pilot (\$0.10) of Claude on AgentDojo that was not analysed.
 \end{itemize}
 
 \textbf{Units.} A unit is one proposed action that is not a read, after the step that reveals the deciding fact. Each
@@ -73,4 +73,4 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \item Each preregistration (the document and its analysis code) is locked by its SHA-256 hash before its data exist. One script checks every lock and every number in this paper again from the saved results.
 \end{itemize}
 
-\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two (and one accidental 4-second overlap): PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in the two live tests was 89 and 80~ms.
+\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two (and one accidental 4-second overlap): PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in the three blocking live tests was 89, 80 and 83~ms.

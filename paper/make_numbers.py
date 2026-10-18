@@ -66,5 +66,7 @@ if p16c.exists():
                rv["per_episode"], 100 * rv["share_of_scored_actions"], rv["held_that_were_violations"], rv["held_actions"])]
 else:
     out += [r"\newcommand{\REVIEWTAB}{\PENDING{running}}", r"\newcommand{\REVIEWOUT}{--}", r"\newcommand{\REVIEWTEXT}{\PENDING{T16c}}"]
+UNUSED = ("\\PREVENTTEXT", "\\REVIEWTEXT", "\\REVIEWOUT")   # report-era macros: not used by the paper; dropped so their ids cannot leak
+out = [x for x in out if not any(x.startswith("\\newcommand{" + u + "}") for u in UNUSED)]
 (ROOT / "paper/numbers.tex").write_text("\n".join(out) + "\n")
 print("numbers.tex:", "T16" if p.exists() else "pending")

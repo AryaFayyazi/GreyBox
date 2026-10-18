@@ -37,7 +37,8 @@ NAMES = {  # descriptive names for the paper (the released record keeps its ids)
     "T16b": "Live prevention (Claude)", "T16c": "Hold for review", "T17": "Replication, three architectures",
     "T18": "tau2-bench, Claude", "T19": "Browser-size readers", "T20": "tau2-bench, two closed agents",
     "T21": "tau2-bench, unseen tasks", "T22": "tau2-bench, reasoning judge", "T23": "Reasoning judge, frontier agents",
-    "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor"}
+    "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor",
+    "T27": "Training against the attack", "T28": "Cut set again after a prompt change"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -51,8 +52,9 @@ def names(s: str, lead: bool = False) -> str:
 
 
 ROMAN = {"1": "i", "2": "ii", "3": "iii", "4": "iv", "5": "v", "6": "vi"}
-EP = re.compile(r"\b([A-HJ-SU-Z])([1-6])(b?)\b")          # endpoint ids (H1, C2, K1b, ...); T and I are test/feature ids
-ARMS = {"R16": "resampling (16 rollouts)", "WB": "white-box probe", "I_dec": "internals at the decision", "READER_act": "reader",
+EP = re.compile(r"\b([A-HJKMN-SU-Z])([1-6])(b?)\b")          # not L (test ids L1-L3e, named below) nor T or I          # endpoint ids (H1, C2, K1b, ...); T and I are test/feature ids
+ARMS = {"R16_ts": "resampling at the start of the turn", "R16_dec": "resampling at the decision", "WB_ts": "white-box probe at the start of the turn",
+        "R16": "resampling (16 rollouts)", "WB": "white-box probe", "I_dec": "internals at the decision", "READER_act": "reader",
         "J_act": "judge", "TXT_cv": "TF-IDF (cross-validated)", "READER_cv": "reader (cross-validated)", "TXT": "TF-IDF",
         "TOOL_cv": "tool identity (cross-validated)", "TOOL": "tool identity", "READER": "reader", "JUDGE": "judge"}
 ARM = re.compile(r"\b(" + "|".join(sorted(map(re.escape, ARMS), key=len, reverse=True)) + r")\b")
@@ -99,6 +101,22 @@ def main():
         "violating from allowed writes of the same tool.\n\n"
         "{\\small\\begin{longtable}{p{0.24\\textwidth}p{0.71\\textwidth}}\n\\toprule Test & Outcome (verbatim from the record)\\\\\\midrule\\endhead\n"
         + body + "\n\\bottomrule\n\\end{longtable}}\n")
+    md = (ROOT / "docs/PREREGISTRATION_RECORD.md").read_text()
+    if "## Correction to the T26 cause" in md:                 # a dated correction of one recorded cause, as in the record
+        sec = md[md.index("## Correction to the T26 cause"):].split("\n## ")[0].split("\n", 1)[1]
+        items, cur = [], None
+        for line in sec.splitlines():
+            if line.startswith("- "):
+                cur = [line[2:].strip()]; items.append(cur)
+            elif line.startswith("  ") and cur is not None:
+                cur.append(line.strip())
+            elif line.strip() and (not items or (len(items) == 1 and not sec.lstrip().startswith("- ") and cur is None)):
+                (items[0].append(line.strip()) if items else items.append([line.strip()]))
+        body_c = "\n".join("\\item " + tex(names(endpoints(anon(" ".join(i)), "T26"))).replace("\x02", "``").replace("\x03", "''") for i in items)
+        with open(ROOT / "paper/appendix_record.tex", "a") as f:
+            f.write("\n\\paragraph{Correction to one recorded cause.} The record keeps the first wording of the canonical-action "
+                    "monitor's cause and adds this dated correction (an exploratory diagnosis; no endpoint changed).\n"
+                    "\\begin{itemize}\n" + body_c + "\n\\end{itemize}\n")
     print("appendix_record.tex:", len(rows), "tests")
 
 

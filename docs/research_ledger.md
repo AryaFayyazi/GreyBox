@@ -1140,3 +1140,64 @@ Dated log of every experiment, decision and correction. Newest last.
     left the shipped probe at 57.5%).
   We did not spend a preregistration on it. Deployment advice: train a private probe on your own labels, and keep
   scores and decision reasons from the agent.
+- **v0.6.0 released (2026-10-18): agent framework adapters (`graybox.integrations`).**
+  - Adapters: Claude Agent SDK PreToolUse hook (history from the session transcript; deny, or "ask" for the user's
+    permission prompt); OpenAI Agents SDK tool guardrails; LangGraph ToolNode wrapper (sync and async).
+  - Each API was read from the installed SDK source, not guessed: claude-agent-sdk 0.2.168, openai-agents 0.24.0,
+    langgraph 1.2.16.
+  - Finding: the OpenAI SDK gives a tool guardrail only the run's original input, not the run's earlier calls. The
+    adapter records each call and result with an output guardrail, keyed per run. A negative control shows that
+    without it, a send after a confidential read runs unchecked.
+  - The Claude transcript parser merges the per-block entries of one reply and skips sub-agent entries. The format was
+    checked against a real Claude Code transcript; only its structure was read.
+  - Tests: offline against the real SDKs (ScriptedModel, a one-node graph). New CI job "integrations"; all jobs green.
+    PyPI hashes equal the local build. A fresh install with all extras passes 44 tests (1 skipped).
+- **Diagnosis of the robustness failures; the T26 cause was wrong and is now corrected (2026-10-18).**
+  - The decisive fact of the main attacked family (tp_campaign_test) is the list's membership. Only `list-info` shows
+    it, and neither closed agent called it, so the label is decided by the recipient plus an unobserved fact. The body
+    does not decide the label.
+  - The attacker dropped the draft in about 2/3 of its best rewrites, and the calls still violated.
+  - The family is absent from Gemma's training families. The shipped probe's clean catch on it came from a removable
+    cue.
+  - New proposition: a ceiling under rewording. The canonical monitor's clean ROC bounds every monitor's attacked ROC.
+    Our measured ceiling is about 55% at 5%.
+  - Headline check: without this family, catch at 5% is 92.3% (Claude) and 96.3% (GPT).
+  - Not run: a canonical reader with open-agent labels of the family. Too few labels exist (Qwen 7), and it would be
+    designed after seeing the data.
+- **T28 (set the cut again after a prompt change, live) PASSES R1 and R2 (2026-10-18; the last $1.44 of the Anthropic
+  balance; ledger $19.855).**
+  - R1: violations 6.5% → 0.0% (−0.065 [−0.090, −0.043]).
+  - R2: the re-set cut escalated 4.73% [3.49%, 6.10%] of actions; the stale cut would have escalated 16.6%.
+  - This confirms the frozen-cut and shift propositions live and prospectively, as the deployment recipe.
+  - Before T28: a 40-episode pilot of Claude on AgentDojo (scripts/125, $0.096, not analysed). It made 0 injected tool
+    calls (one attack succeeded through the final text), so a label-transfer replication on Claude could not be powered.
+- **Fourth paper audit (2026-10-18, after T28): 3 critical, 10 important and 10 minor findings, all fixed.**
+  - Critical:
+    - the proofs appendix still had the wrong T26 cause;
+    - the record appendix was stale (it lacked T27, T28 and the correction);
+    - the abstract's "97% when told" was not at the 5% budget (now 89% at the same budget).
+  - Important:
+    - the ceiling proposition now names the optimal attacker, and the canonical clean accuracy is called a lower bound
+      on the ceiling;
+    - Rao–Blackwell: stated for the conditional mean, "consistent with" its premise, limited to convex losses;
+      disclosed that the TF-IDF replica gains as much on three agents (shrinkage, not the reader);
+    - the ridge-ratio claim is now in-sample only (out of sample the ratio exceeds R² on 80/128 components);
+    - "both" defenses, not "three";
+    - the 500-action rolling window gives 20%, not 36% (36% is the 5,000 window);
+    - D2 failed, not "at the margin";
+    - spend corrected ($24.78 total); latency for three live tests;
+    - the AgentDojo cut numbers now match the figure;
+    - exploratory labels added (review vs block goals; the attack diagnosis);
+    - "exact" budget changed to "the 5% budget".
+  - Minor: Fisher wording; gauge groups for equal gains; 21 states plus a dead state; the reasoning check is no longer
+    called a mutual information; record names no longer garbled by the endpoint pattern; Python/browser "near-identical";
+    hidden reasoning in the replica's premise; the order-statistic vs interpolated cut; unused report macros dropped.
+  - Layout: the Rao–Blackwell table moved to an appendix to keep the main text within 8 pages.
+- **Tool: `graybox.recalibrate` (new CLI) and a fix for tied scores (2026-10-18).**
+  - The recipe from T28 as one command: score unlabelled logs, set the cut, and report how much the old cut drifted.
+    On the public GPT example with the test model, the old cut escalated 2.6% of actions and the command flagged the
+    shift.
+  - Bug found while testing: with tied scores at the quantile (identical actions), a quantile cut escalated 37% instead
+    of 5%. New `stats.budget_cut`: equal to np.quantile without ties (checked: T28's server cut and the T8b cut are
+    unchanged), and it keeps the budget when there are ties. Used by QuantileGate, TextMonitor.fit and the browser
+    (TM.budgetCut). Documented post-lock edit 3, reversed exactly in scripts/99 for T26's whole-file lock.

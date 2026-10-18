@@ -208,6 +208,14 @@ gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.
   threshold. It caught {p(gate['online']['frozen_default']['run_order']['caught_after_100'])} online. When half of a later burst was
   malicious, it still caught {p(gate['burst']['rate_0.5']['frozen_default']['caught'])}. A rolling threshold caught
   {p(gate['burst']['rate_0.5']['rolling5000']['caught'])}.</p></div>
+<div class="card"><h3>An agent that knows it is monitored</h3><p>We told Claude Haiku 5.5 that a monitor reviews its tool calls
+  (preregistered, 990 scenarios). It violated as often as before, and the monitor caught 97% of its violations. The notice moved
+  all of its scores up, so the old review cut sent 15–17% of actions to review. Live, a cut set again on the agent's new,
+  unlabelled traffic sent 4.7% (the budget was 5%) and the gate blocked every violation: 6.5% of episodes → 0.0%.</p></div>
+<div class="card"><h3>Not robust to an adaptive attacker</h3><p>An attacker who can query the score and rewrite a call's free
+  text cut the share caught from 96% to 29%. Two defenses we preregistered (canonical actions; training on rewrites) reached
+  51% and 60%. A theorem explains the ceiling: under rewording, no monitor beats the best monitor of the call's decisive fields,
+  and the main attacked family was missing from training. Keep the score hidden from the agent.</p></div>
 <div class="card"><h3>Chat: forecast a refusal</h3><p>We ask a model about a conversation in a side branch. The answers forecast if the
   model will refuse. On Claude this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
   precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>

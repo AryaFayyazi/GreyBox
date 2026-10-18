@@ -25,8 +25,8 @@ networks, so it cannot distinguish $h$ from $Gh$; a probe $w^\top h$ on one netw
 \emph{Other normalisations.} LayerNorm subtracts the mean, $N(h)=Ph/\mathrm{rms}(Ph)$ with $P=I-\tfrac1d\mathbf 1\mathbf 1^\top$;
 $N(Gh)=GN(h)$ holds for orthogonal $G$ with $G\mathbf 1=\mathbf 1$, which still form a group of dimension $(d-1)(d-2)/2$.
 A normalisation \emph{after} a block, $\mathrm{diag}(\gamma)N(\cdot)$ added to the stream, needs $G\,\mathrm{diag}(\gamma)=
-\mathrm{diag}(\gamma)\,G$: $G$ must commute with the gains, so for distinct gains only sign flips and permutations within
-equal gains remain. From exact full-vocabulary log probabilities the final hidden state is identified only up to such a
+\mathrm{diag}(\gamma)\,G$: $G$ must commute with the gains, so for distinct gains only sign flips remain, and for equal gains any orthogonal map within
+the block of equal gains. From exact full-vocabulary log probabilities the final hidden state is identified only up to such a
 $G$ \citep{carlini2024stealing}. $\square$
 
 \textbf{\Cref{prop:fisher} (Fisher--Rao coordinates).} The Fisher information of a Bernoulli$(p)$ observation is $1/\big(p(1-p)\big)$.
@@ -52,9 +52,8 @@ $H(Y\mid\mathcal G)$, and $H(Y\mid V_t)-H(Y\mid V_t,H_t)=I(Y;H_t\mid V_t)$.
 (b) By the law of total covariance, $\Cov(\phi)=\E\,\Cov(\phi\mid\psi)+\Cov\big(\E[\phi\mid\psi]\big)$, and the first term is positive
 semidefinite. For component $k$, $\Var(\phi_k)=\E(\phi_k-\hat\phi_k)^2+\Var(\hat\phi_k)$, so $\Var(\hat\phi_k)=R^2_k\Var(\phi_k)$. For the
 best linear predictor $\hat\phi_k=a_k^\top\psi+b_k$ the residual is uncorrelated with $\hat\phi_k$ (the normal equations), and
-the same decomposition holds. Ridge regression shrinks $a_k$, so its residual is no longer orthogonal to $\hat\phi_k$ and
-$\Var(\hat\phi_k)/\Var(\phi_k)$ falls below $R^2_k$; on fresh steps \cref{fig:replication}d shows the ratio closely tracking
-$R^2_k$ on 128 components (correlation 0.99, slope 0.89).
+the same decomposition holds in sample. On fresh steps neither identity is exact: \cref{fig:replication}d shows the ratio
+closely tracking $R^2_k$ on 128 components (correlation 0.99, slope 0.89), above $R^2_k$ on 80 of them.
 (c) Conditional expectation is linear: $\E[w^\top\phi\mid\psi]=w^\top\E[\phi\mid\psi]$. $\square$
 
 \textbf{\Cref{prop:rb} (the replica Rao--Blackwellises a probe).} $s=w^\top\phi$ is a function of $\phi$, so $Y\indep\phi\mid\psi$
@@ -78,8 +77,17 @@ AUROC itself. $\square$
 The inequality can be strict: if $A_t$ is random given $Z^-_t$ and $Y$ depends on which action is sampled, a probe read before
 the action must average over the actions. \emph{Canonical form.} If moreover $Y=g(\kappa(A_t),V_t,W)$ for a function $\kappa$ of the
 action, the same steps with $\kappa(A_t)$ in place of $A_t$ show that $(V_t,\kappa(A_t))$ is sufficient, and every monitor of
-$(V_t,\kappa(A_t))$ is invariant to any change of $A_t$ that keeps $\kappa(A_t)$. The premise is about the label, and it can
-fail: when a message body carries the leaked content, removing free text removes the violation (\cref{app:limits}).
+$(V_t,\kappa(A_t))$ is invariant to any change of $A_t$ that keeps $\kappa(A_t)$. The premise is about the label. In our attacked family it held: the checker labels a send by its recipient. The canonical
+monitor failed there because that field was never learned: the family is absent from training (\cref{app:limits}).
+
+\textbf{\Cref{prop:ceiling} (a ceiling under rewording).} Write an action as $(\kappa,t)$, with $t$ its free text, and let
+$T_0(V,\kappa)$ be the set of texts that safe actions with context $V$ and decisive part $\kappa$ use. Define
+$m(V,\kappa)=\inf_{t\in T_0(V,\kappa)}s(V,\kappa,t)$, and $m=+\infty$ where $T_0$ is empty. On a safe action $t\in T_0(V,\kappa)$, so
+$m\le s$ and $m\ge c$ implies $s\ge c$: $m$ escalates no more safe actions than $s$. Under the attack, a violation with $(V,\kappa)$
+is rewritten to the text in $T_0(V,\kappa)$ with the lowest score (allowed by the assumption; take a sequence if the infimum
+is not attained), so its attacked score is $m(V,\kappa)$, and it is escalated iff $m(V,\kappa)\ge c$. As $m$ depends only on
+$(V,\kappa)$, the attack does not change it, and its share of violations caught on clean traffic equals the share that $s$
+catches under the attack. Where $T_0$ is empty the attacker cannot imitate a safe action, and $m=+\infty$ escalates. $\square$
 
 \textbf{\Cref{prop:frozen} (a frozen cut).} For exchangeable scores without ties, the rank of $S_{n+1}$ among
 $S_1,\dots,S_{n+1}$ is uniform on $\{1,\dots,n+1\}$. $S_{n+1}>S_{(k)}$ holds iff its rank exceeds $k$, which has probability

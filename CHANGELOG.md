@@ -2,6 +2,20 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.7.0 (2026-10-18)
+**Added**
+- `graybox.recalibrate` (`graybox-recalibrate`): set the review cut again on new, unlabelled traffic after a change of
+  agent, prompt, tools or tasks. It reports how far the old cut drifted. This is the recipe that a preregistered live
+  test confirmed: the re-set cut escalated 4.7% of actions (budget 5%; the old cut 16.6%), and the gate still blocked
+  every violation.
+- MODEL_CARD.md for the released probes.
+
+**Fixed**
+- Tied scores at the cut. Identical actions get identical text-monitor scores, and a quantile cut then escalated the
+  whole tied group (37% instead of 5% in a test). `graybox.stats.budget_cut` keeps the budget. Without ties it equals
+  the quantile, so existing continuous-score cuts are unchanged. QuantileGate, TextMonitor.fit and the browser trainer
+  use it.
+
 ## 0.6.0 (2026-10-18)
 **Added**
 - `graybox.integrations`: the Guard in three agent frameworks, tested offline against the real SDKs:

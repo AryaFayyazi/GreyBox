@@ -86,3 +86,27 @@ def sample_tier(q, n, seed=0):
     """Text-only API with n sampled one-word answers per question: q̂ = Binomial(n, q) / n."""
     rng = np.random.default_rng(seed)
     return rng.binomial(n, np.clip(q, 0, 1)) / n
+
+
+def budget_cut(scores, budget: float) -> tuple[float, float]:
+    """(cut, share): the cut for "escalate when score >= cut" on these scores, and the share it escalates.
+
+    Without ties this is np.quantile(scores, 1 - budget), which escalates within 2/n of the budget (the paper's frozen-cut
+    proposition). With many tied scores at that quantile, ">=" would escalate the whole tied group: identical actions
+    get identical text-monitor scores, and a quantile cut on such traffic escalated 37% instead of 5% in a test. Then the
+    cut is raised to the smallest observed score that escalates at most `budget`. If one tied score alone holds more than
+    the budget, that score is the cut, and the share says how much is escalated."""
+    import numpy as np
+    z = np.asarray(scores, float)
+    n = len(z)
+    q = float(np.quantile(z, 1 - budget))
+    share = float((z >= q).mean())
+    if share <= budget + 2.0 / n:
+        return q, share
+    vals = np.unique(z[z > q])
+    for v in vals:                                   # ascending: the smallest cut that keeps the budget
+        s = float((z >= v).mean())
+        if s <= budget + 2.0 / n:
+            return float(v), s
+    v = float(z.max())
+    return v, float((z >= v).mean())

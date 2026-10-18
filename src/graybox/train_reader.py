@@ -19,8 +19,9 @@ from .guard import conversation_steps, parse_label
 from .monitor import Q, act_text, ctx_text, Step
 
 
-def load_steps(path: str, chat: bool = False) -> list[dict]:
-    """Labelled steps from a steps JSONL or from conversations with a "labels" field. Unlabelled steps are dropped.
+def load_steps(path: str, chat: bool = False, labelled_only: bool = True) -> list[dict]:
+    """Labelled steps from a steps JSONL or from conversations with a "labels" field. Unlabelled steps are dropped,
+    unless labelled_only=False (graybox.recalibrate scores every tool call of unlabelled logs).
     chat: build conversation-aware contexts (every user turn and agent message; graybox.chat) from conversations."""
     text = open(path, encoding="utf-8").read()
     if text.lstrip().startswith("["):                 # a .json file holding one array of conversations or steps
@@ -54,6 +55,8 @@ def load_steps(path: str, chat: bool = False) -> list[dict]:
                     if k not in ("messages", "labels", "system", "id") and k not in s and isinstance(v, (str, int, float, bool)):
                         s[k] = v
                 steps.append(s)
+    if not labelled_only:
+        return steps
     out = [s for s in steps if s.get("label") in (0, 1, True, False)]
     if not out and n_ids:
         raise ValueError(f"the 'labels' fields name {n_ids} call ids, but none of the {n_calls} tool calls has a matching id "

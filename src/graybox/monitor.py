@@ -83,15 +83,16 @@ class QuantileGate:
         if self._frozen is None:
             self.buf.append(x)
             if not self.rolling and len(self.buf) >= self.warmup:
-                import numpy as np
-                self._frozen = float(np.quantile(np.fromiter(self.buf, float), 1 - self.budget))
+                from .stats import budget_cut                 # np.quantile without ties; ties at the cut do not exceed the budget
+                self._frozen = budget_cut(list(self.buf), self.budget)[0]
 
     @property
     def threshold(self) -> float | None:
         import numpy as np
         if self._frozen is not None:
             return self._frozen
-        return float(np.quantile(np.fromiter(self.buf, float), 1 - self.budget)) if len(self.buf) >= self.min_seen else None
+        from .stats import budget_cut
+        return budget_cut(list(self.buf), self.budget)[0] if len(self.buf) >= self.min_seen else None
 
     @property
     def frozen(self) -> bool:
@@ -277,7 +278,8 @@ class TextMonitor:
         # the escalation cut, label-free: the top `budget` of the fitted model's scores on these actions. (A cut from
         # out-of-fold scores sits on another scale when data are few: a user test saw 18-62% escalated at "5%".)
         # On a new kind of task any stored cut fails (results/tool/cut_under_shift_public.json): set it on live traffic.
-        cut = float(np.quantile(self.lr.decision_function(X), 1 - budget))
+        from .stats import budget_cut                       # the quantile; tied scores at the cut do not exceed the budget
+        cut = budget_cut(self.lr.decision_function(X), budget)[0]
         src = f"the top {budget:.0%} of the model's scores on its {len(y)} training actions (no labels used)"
         if chat is None:
             chat = all(isinstance(s, dict) and isinstance(s.get("context"), str) and "instructions" in s for s in steps)
