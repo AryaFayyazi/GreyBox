@@ -62,9 +62,18 @@ On our example logs, the importer reproduces the research units byte for byte (9
 give identical steps.</p>
 
 <p><b>What the monitor sees.</b> For a proposed call, the guard gives the monitor everything <i>before</i> the assistant reply that holds
-the call, then the call itself. Whether your <code>messages</code> already include that reply (and results of sibling calls) does not
-change the score. Each tool result is cut to its first 2,000 characters, and a context of 30,000 characters or more keeps its first 6,000
+the call, then the earlier calls of that reply (with no results yet), then the call. The reply's own text is not included (it is, for
+later calls). Results of sibling calls that already ran do not change the score. Each tool result is cut to its first 2,000 characters, and a context of 30,000 characters or more keeps its first 6,000
 and last 24,000, as in training: text deep inside a very long tool result is not seen.</p>
+<p><b>The review cut on a new kind of task.</b> A monitor file stores a cut set on its training actions. When the tasks change, the
+scores shift as a whole, and a stored cut can escalate almost nothing: we trained the text monitor on our GPT example logs without 8
+task families and scored those families. The stored cut caught 0 of 18 violations (0.9% of actions escalated); a cut set on the new
+traffic itself escalated 5.1% and caught 5 of 18 (<code>results/tool/cut_under_shift.json</code>, three splits). So in a new deployment,
+set the cut on the agent's own traffic without labels: <code>Guard(monitor, gate=QuantileGate(0.05))</code>, or <code>"gate": true</code>
+with a <code>"stream"</code> on the server (seed it from past traffic with <code>POST /v1/monitor/calibrate {"monitor": "text", ...}</code>).
+The text monitor's ranking also weakens on new task families (AUROC 0.81–0.94 here): label actions of the new tasks.</p>
+<p><b>Parallel calls.</b> When one reply holds several calls, pass the reply in <code>messages</code> before you check its calls: each call
+is then scored with the earlier calls of the same reply (with no results yet), as the trainer builds its steps.</p>
 <p><b>Units.</b> For the text monitor and the browser reader, <code>v.score</code> (and the server's <code>"score"</code>) is a logit, compared
 with the file's <code>threshold_logit</code>; <code>v.unit</code> says so. For the reader monitor with a gate it is a probability, but act on
 <code>v.allow</code>: the probability does not transfer between agents.</p>

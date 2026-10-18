@@ -35,6 +35,12 @@
    "browser_steps": 268,
    "identical": 268,
    "with_later_user_turns": 182
+  },
+  "parallel.jsonl": {
+   "steps": 30,
+   "browser_steps": 30,
+   "identical": 30,
+   "with_later_user_turns": 6
   }
  }
 }

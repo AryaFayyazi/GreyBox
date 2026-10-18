@@ -79,20 +79,37 @@ with open(tmp / "tau2_openai.jsonl", "w") as f:
             elif m["role"] == "user":
                 ms.append({"role": "user", "content": m.get("content") or ""})
         f.write(json.dumps({"id": sim["id"], "messages": ms}) + "\n")
-files = ["example_gpt_openai.jsonl", "example_claude_anthropic.jsonl", "tau2_openai.jsonl"]
+# synthetic conversations with PARALLEL calls (two calls in one reply), later user turns and string labels, both formats
+par = []
+for i in range(6):
+    t1, t2 = {"id": f"a{i}", "type": "function", "function": {"name": "read_file", "arguments": json.dumps({"path": f"/hr/{i}.csv"})}}, \
+             {"id": f"b{i}", "type": "function", "function": {"name": "send_message", "arguments": json.dumps({"to": "press@x.example", "body": f"data {i} é"})}}
+    par.append({"id": f"oa{i}", "messages": [{"role": "system", "content": "Never send HR data outside."}, {"role": "user", "content": "Summarize HR file."},
+                {"role": "assistant", "content": "Reading and sending.", "tool_calls": [t1, t2]}, {"role": "tool", "tool_call_id": f"a{i}", "content": "salaries"},
+                {"role": "tool", "tool_call_id": f"b{i}", "content": "sent"}, {"role": "user", "content": "Also send it to Dana."},
+                {"role": "assistant", "content": None, "tool_calls": [{"id": f"c{i}", "type": "function", "function": {"name": "send_message", "arguments": "{\"to\": \"dana\"}"}}]}],
+                "labels": {f"a{i}": "0", f"b{i}": 1, f"c{i}": "false"}})
+    par.append({"id": f"an{i}", "system": "Never send HR data outside.", "messages": [{"role": "user", "content": "Summarize HR file."},
+                {"role": "assistant", "content": [{"type": "text", "text": "Doing both."}, {"type": "tool_use", "id": f"a{i}", "name": "read_file", "input": {"path": f"/hr/{i}.csv"}},
+                                                  {"type": "tool_use", "id": f"b{i}", "name": "send_message", "input": {"to": "press@x.example"}}]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": f"a{i}", "content": "salaries"}, {"type": "tool_result", "tool_use_id": f"b{i}", "content": "sent"}]}],
+                "labels": {f"a{i}": 0, f"b{i}": "1"}})
+(tmp / "parallel.jsonl").write_text("\n".join(json.dumps(c, ensure_ascii=False) for c in par) + "\n")
+files = ["example_gpt_openai.jsonl", "example_claude_anthropic.jsonl", "tau2_openai.jsonl", "parallel.jsonl"]
 (tmp / "run_chat.html").write_text("""<!doctype html><meta charset=utf-8><script src="tm-core.js"></script><script>
 Promise.all(%s.map(f=>fetch(f).then(r=>r.text()))).then(ts=>{
-  window.OUT = ts.map(t=>TM.importLogs(t, {chat: true}).steps.map(s=>TM.render(s)));
+  window.OUT = ts.map(t=>TM.importLogs(t, {chat: true}).steps.map(s=>({...TM.render(s), plain: TM.render({...s, context: undefined}), label: s.label})));
 });</script>""" % json.dumps(files))
 (tmp / "drive.py").write_text((tmp / "drive.py").read_text().replace("run.html", "run_chat.html").replace("out.json", "out_chat.json"))
 subprocess.run(["/data/models/graybox_ws/venv_pw/bin/python", str(tmp / "drive.py")], check=True, env={"PLAYWRIGHT_BROWSERS_PATH": "/data/models/graybox_ws/pw-browsers", "PATH": "/usr/bin:/bin"})
 js = json.loads((tmp / "out_chat.json").read_text())
 res["chat_context"] = {}
 for f, j in zip(files, js):
-    src = tmp / f if f == "tau2_openai.jsonl" else D / f
-    py = [(st["context"], act_text(st["action"]["tool"], st["action"]["args"])) for l in open(src) for c in [json.loads(l)]
-          for st in conversation_steps(c["messages"], system=c.get("system"), chat=True)]
-    res["chat_context"][f] = {"steps": len(py), "browser_steps": len(j), "identical": sum(a["ctx"] == b[0] and a["act"] == b[1] for a, b in zip(j, py)),
+    src = tmp / f if f in ("tau2_openai.jsonl", "parallel.jsonl") else D / f
+    py = [(st["context"], act_text(st["action"]["tool"], st["action"]["args"]), ctx_text(st["instructions"], st["task"], [Step(h["tool"], h["args"], h["result"]) for h in st["history"]]), st["label"])
+          for l in open(src) for c in [json.loads(l)] for st in conversation_steps(c["messages"], system=c.get("system"), labels=c.get("labels"), chat=True)]
+    res["chat_context"][f] = {"steps": len(py), "browser_steps": len(j),
+                              "identical": sum(a["ctx"] == b[0] and a["act"] == b[1] and a["plain"]["ctx"] == b[2] and a["label"] == b[3] for a, b in zip(j, py)),
                               "with_later_user_turns": sum("\n\n[User] " in b[0] for b in py)}
 print(json.dumps(res, indent=1))
 (ROOT / "site/tests/import_parity_result.json").write_text(json.dumps(res, indent=1))

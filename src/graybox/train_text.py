@@ -25,6 +25,7 @@ def main(argv=None):
     ap.add_argument("--out", default="greybox-text-monitor.json", help="the monitor file to write")
     ap.add_argument("--chat", action="store_true", help="conversation-aware context: keep every user turn (agents that talk with a user)")
     ap.add_argument("--budget", type=float, default=0.05, help="share of actions to escalate to review (default 0.05)")
+    ap.add_argument("--threads", type=int, default=4, help="CPU threads for the linear algebra (default 4)")
     a = ap.parse_args(argv)
     import numpy as np
     from .monitor import TextMonitor
@@ -33,13 +34,19 @@ def main(argv=None):
     if y.sum() < 2 or (1 - y).sum() < 2:
         raise SystemExit("need at least 2 violations and 2 safe actions")
     groups = [str(s.get("group") or s.get("task") or i) for i, s in enumerate(steps)]
-    tm = TextMonitor().fit(steps, y, groups, budget=a.budget)
-    tm._json["chat"] = a.chat
+    try:                                     # keep a shared machine responsive: BLAS threads capped
+        from threadpoolctl import threadpool_limits
+        threadpool_limits(a.threads)
+    except ImportError:
+        pass
+    tm = TextMonitor().fit(steps, y, groups, budget=a.budget, chat=a.chat)
     report = {"actions": int(len(y)), "violations": int(y.sum()), "groups": len(set(groups)), "C": tm.C}
     if tm.cv_auroc:
         cut = float(np.quantile(tm.oof, 1 - a.budget))
         report.update(cv_auroc=round(tm.cv_auroc[tm.C], 4), cv_auroc_by_C={str(k): round(v, 4) for k, v in tm.cv_auroc.items()},
-                      escalated_at_budget=round(float((tm.oof[y == 1] >= cut).mean()), 4), budget=a.budget)
+                      escalated_at_budget=round(float((tm.oof[y == 1] >= cut).mean()), 4), budget=a.budget,
+                      cut="the saved cut: the top budget of the out-of-fold scores (as this estimate). On a NEW kind of task the text "
+                          "monitor escalates far less; set the cut on live traffic there (QuantileGate)")
     tm._json["trained_on"] = report
     tm.save(a.out)
     print(json.dumps(report, indent=1))

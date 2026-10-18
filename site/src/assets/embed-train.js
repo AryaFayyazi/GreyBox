@@ -53,8 +53,9 @@ function train({ X, dim, y: yAll, groups: gAll, tools: tAll, budget = 0.05, fold
   const model = { type: 'embed', format: 'graybox-embed-monitor/1', encoder, web, mean: Array.from(sc.mean), scale: Array.from(sc.scale),
                   w: Array.from(lr.w), b: lr.b, budget, trained_on: { n: y.length, unsafe: nPos, groups: nGroups } };
   const all = scoreAll(X, dim, n, model);
-  model.threshold_logit = TM.quantile(L.map(i => all[i]), 1 - budget);   // label-free: the top `budget` of the training actions
   const s = Array.from(oof), cut = TM.quantile(s, 1 - budget);
+  model.threshold_logit = cut;                       // the top `budget` of the out-of-fold scores (in-sample scores are overfit)
+  model.cut_source = 'out-of-fold scores of the training actions';
   const caught = s.filter((v, i) => y[i] && v >= cut).length, safeEsc = s.filter((v, i) => !y[i] && v >= cut).length, nEsc = caught + safeEsc;
   const perTool = {};
   tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });

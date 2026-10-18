@@ -5,4 +5,4 @@ bridge) needs the optional extras and is imported explicitly.
 """
 from .sdk import AgentGuard, Reader, Reading  # noqa: F401
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"

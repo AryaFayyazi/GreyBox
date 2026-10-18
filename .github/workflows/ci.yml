@@ -7,8 +7,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
-      - run: pip install ".[server]" pytest httpx scikit-learn scipy
+      - run: pip install ".[server,text]" pytest httpx pandas
       - run: pytest -q tests
+      - name: recompute the headline results from the public per-unit release
+        run: python scripts/109_recompute_public.py
   docker:
     runs-on: ubuntu-latest
     steps:

@@ -15,7 +15,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .guard import conversation_steps
+from .guard import conversation_steps, parse_label
 from .monitor import Q, act_text, ctx_text, Step
 
 
@@ -26,7 +26,7 @@ def load_steps(path: str, chat: bool = False) -> list[dict]:
     steps = []
     for i, r in enumerate(rows):
         if "action" in r or "context" in r:
-            steps.append(r)
+            steps.append({**r, "label": parse_label(r.get("label"))})      # strict: "0" is safe, "yes" is dropped
         else:
             for s in conversation_steps(r.get("messages", r if isinstance(r, list) else []), system=r.get("system"), labels=r.get("labels"), chat=chat):
                 s["group"] = str(r.get("id", f"conversation-{i + 1}"))
@@ -59,13 +59,13 @@ def main(argv=None):
     from sklearn.model_selection import GroupKFold
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
-    from .monitor import ReaderMonitor
+    from .reader_load import make_reader
     steps = load_steps(a.data, chat=a.chat)
     y = np.array([int(bool(s["label"])) for s in steps])
     if y.sum() < 2 or (1 - y).sum() < 2:
         raise SystemExit("need at least 2 violations and 2 safe actions")
     groups = np.array([str(s.get("group") or s.get("task") or i) for i, s in enumerate(steps)])
-    mon = ReaderMonitor(probe=None, layer=a.layer, reader=a.reader)
+    mon = make_reader(probe=None, layer=a.layer, reader=a.reader)      # the standard Hugging Face cache
     X = np.vstack([mon.features(prompt_of(s)) for s in steps])
     mk = lambda n: make_pipeline(StandardScaler(), PCA(min(256, n - 1), random_state=0), LogisticRegression(C=0.05, max_iter=4000))  # noqa: E731
     k = min(5, len(set(groups)))

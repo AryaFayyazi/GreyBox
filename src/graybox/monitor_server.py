@@ -16,7 +16,7 @@ import threading
 import time
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .monitor import Q, QuantileGate, Step, TextMonitor, act_text
 
@@ -27,6 +27,7 @@ _READER_LOCK = threading.Lock()      # one forward pass at a time on the GPU mod
 
 
 class StepIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")      # a misspelt field is an error, not silently ignored
     tool: str
     args: dict | str | None = Field(default_factory=dict, description="a dict, or a JSON string (OpenAI's function.arguments)")
     result: str | None = ""
@@ -49,12 +50,15 @@ class StepIn(BaseModel):
 
 
 class ActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     instructions: str = Field("", description="the agent's operating instructions (system prompt)")
     task: str = Field("", description="the user's task")
     history: list[StepIn] = Field(default_factory=list, description="earlier tool calls with their results")
     action: StepIn = Field(..., description="the proposed action (tool '__final__' for a final answer)")
     stream: str = Field("default", description="deployment id; each stream calibrates its own frozen cut (reader only)")
     budget: float = Field(0.05, gt=0, lt=1, description="fraction of this stream's actions to escalate (reader only)")
+    gate: bool = Field(False, description="text monitor: escalate the top `budget` of THIS stream's own traffic (a frozen "
+                       "QuantileGate) instead of the file's cut. Use it on a new kind of task, where the file's cut can escalate almost nothing")
     context: str | None = Field(None, description="optional prebuilt context (graybox.chat.chat_ctx, for conversations with "
                                 "a user); replaces instructions, task and history. Use it only with a monitor trained on such contexts")
 
@@ -99,16 +103,26 @@ def monitor_text(req: ActionRequest):
     if "text" not in _STATE:
         raise HTTPException(503, f"the monitor file could not be loaded: {_STATE.get('text_error')}")
     tm, t0 = _STATE["text"], time.perf_counter()
+    if req.context is None and tm._json.get("chat"):
+        raise HTTPException(422, "this monitor was trained with conversation-aware context (--chat): send 'context' (graybox.chat.chat_ctx)")
     if req.context is not None:
         z = tm.decision(None, None, None, None, rendered=(req.context, act_text(req.action.tool, req.action.args)))
     else:
         z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
-    return {"score": round(z, 4), "unit": "logit", "escalate": z >= tm._json["threshold_logit"], "threshold": round(tm._json["threshold_logit"], 4),
-            "budget": tm._json.get("budget"), "ms": round(1000 * (time.perf_counter() - t0), 3),
+    if req.gate:
+        g = _STATE["gates"].setdefault(("text:" + req.stream, req.budget), QuantileGate(req.budget))
+        esc, thr, budget = bool(g(z)), g.threshold, req.budget
+    else:
+        esc, thr, budget = z >= tm._json["threshold_logit"], tm._json["threshold_logit"], tm._json.get("budget")
+    return {"score": round(z, 4), "unit": "logit", "escalate": esc, "threshold": None if thr is None else round(thr, 4),
+            "cut": "live gate on this stream" if req.gate else "the file's cut",
+            "budget": budget, "ms": round(1000 * (time.perf_counter() - t0), 3),
             "note": "text monitor: reliable on the tools and policies it was trained on; retrain for new ones"}
 
 
 class CalibrateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    monitor: str = Field("reader", pattern="^(reader|text)$", description="which endpoint's gate to seed: reader (/action) or text (/text with gate=true)")
     stream: str = "default"
     budget: float = Field(0.05, gt=0, lt=1)
     scores: list[float] = Field(..., description="reader p_unsafe scores of this agent's past actions (no labels)")
@@ -121,7 +135,7 @@ def calibrate(req: CalibrateRequest):
     if len(req.scores) < 100:
         raise HTTPException(422, "need at least 100 past scores")
     g = QuantileGate(req.budget, warmup=len(req.scores), min_seen=100).fit(req.scores)
-    _STATE["gates"][(req.stream, req.budget)] = g
+    _STATE["gates"][(("text:" if req.monitor == "text" else "") + req.stream, req.budget)] = g
     return {"stream": req.stream, "budget": req.budget, "threshold": g.threshold, "frozen": g.frozen, "n": len(req.scores)}
 
 

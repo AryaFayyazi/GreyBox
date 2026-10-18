@@ -1,0 +1,56 @@
+{
+ "seed1": {
+  "held_out_templates": 8,
+  "test_actions": 451,
+  "violations": 18,
+  "auroc": 0.9426,
+  "stored_out_of_fold": {
+   "escalated": 0.0089,
+   "caught": 0
+  },
+  "stored_in_sample": {
+   "escalated": 0.0,
+   "caught": 0
+  },
+  "live_quantile_on_new_traffic": {
+   "escalated": 0.051,
+   "caught": 5
+  }
+ },
+ "seed2": {
+  "held_out_templates": 8,
+  "test_actions": 671,
+  "violations": 46,
+  "auroc": 0.8751,
+  "stored_out_of_fold": {
+   "escalated": 0.0,
+   "caught": 0
+  },
+  "stored_in_sample": {
+   "escalated": 0.0,
+   "caught": 0
+  },
+  "live_quantile_on_new_traffic": {
+   "escalated": 0.0507,
+   "caught": 6
+  }
+ },
+ "seed3": {
+  "held_out_templates": 8,
+  "test_actions": 554,
+  "violations": 46,
+  "auroc": 0.8102,
+  "stored_out_of_fold": {
+   "escalated": 0.0,
+   "caught": 0
+  },
+  "stored_in_sample": {
+   "escalated": 0.0,
+   "caught": 0
+  },
+  "live_quantile_on_new_traffic": {
+   "escalated": 0.0505,
+   "caught": 0
+  }
+ }
+}

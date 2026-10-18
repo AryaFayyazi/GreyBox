@@ -72,10 +72,23 @@ def _as_dict(m):
     return m if isinstance(m, dict) else m.model_dump(exclude_none=True)
 
 
+def parse_label(v):
+    """A label value: 0/1, True/False, or the strings "0", "1", "true", "false"; anything else is None (not guessed)."""
+    if v is True or v == 1 and not isinstance(v, str) or v in ("1", "true"):
+        return 1
+    if v is False or v == 0 and not isinstance(v, str) or v in ("0", "false"):
+        return 0
+    return None
+
+
 def conversation_steps(messages: list, system=None, labels: dict | None = None, chat: bool = False) -> list[dict]:
     """One step per tool call in an OpenAI or Anthropic conversation (dict messages or SDK objects).
-    labels: optional {call_id: 0/1}; a step gets label None when its call has no label.
-    chat: also give each step a "context" with every user turn and agent message before the call (graybox.chat)."""
+    labels: optional {call_id: 0/1}; a step gets label None when its call has no label (or an invalid one).
+    chat: also give each step a "context" with every user turn and agent message before the call (graybox.chat).
+
+    A step sees everything before the assistant reply that holds its call, plus the EARLIER calls of the same reply
+    with empty results (no call of a reply runs before the reply is complete). The reply's own text is part of the
+    context of later replies only. The browser importer (site/src/assets/tm-core.js) uses the same rule."""
     msgs = [_as_dict(m) for m in messages]
     sys_text = _text(system) if system else ""
     if not sys_text:
@@ -102,19 +115,20 @@ def conversation_steps(messages: list, system=None, labels: dict | None = None, 
         if m.get("role") != "assistant":
             continue
         said = m.get("content") if isinstance(m.get("content"), str) else "\n".join(b.get("text", "") for b in m.get("content") or [] if isinstance(b, dict) and b.get("type") == "text")
-        turns.append({"agent": said or ""})
         calls = [(tc.get("id"), (tc.get("function") or {}).get("name"), _args((tc.get("function") or {}).get("arguments"))) for tc in m.get("tool_calls") or []]
         if isinstance(m.get("content"), list):
             calls += [(b.get("id"), b.get("name"), _args(b.get("input"))) for b in m["content"] if isinstance(b, dict) and b.get("type") == "tool_use"]
-        for cid, name, args in calls:
-            if not name:
-                continue
-            lab = (labels or {}).get(cid) if cid is not None else None
-            st = {"instructions": sys_text, "task": task, "history": [dict(h) for h in hist], "action": {"tool": name, "args": args},
-                  "call_id": cid, "label": None if lab is None else int(bool(lab))}
+        calls = [c for c in calls if c[1]]
+        for k, (cid, name, args) in enumerate(calls):
+            sib = [{"tool": n, "args": a, "result": ""} for _, n, a in calls[:k]]
+            lab = parse_label((labels or {}).get(cid)) if cid is not None else None
+            st = {"instructions": sys_text, "task": task, "history": [dict(h) for h in hist] + sib, "action": {"tool": name, "args": args},
+                  "call_id": cid, "label": lab}
             if chat:
-                st["context"] = chat_ctx(sys_text, turns)
+                st["context"] = chat_ctx(sys_text, turns + [{"call": (h["tool"], h["args"]), "result": ""} for h in sib])
             steps.append(st)
+        turns.append({"agent": said or ""})
+        for cid, name, args in calls:
             hist.append({"tool": name, "args": args, "result": results.get(cid, "")})
             turns.append({"call": (name, args), "result": results.get(cid, "")})
     return steps
@@ -176,22 +190,34 @@ class Guard:
         return self.check_step({"instructions": instructions, "task": task, "history": history, "action": {"tool": tool, "args": args}})
 
     @staticmethod
-    def _before_reply(msgs: list, call_id, name) -> list:
-        """The canonical context of a proposed call: everything BEFORE the assistant reply that holds it. That reply can
-        only be the LATEST assistant message (followed at most by results of sibling calls); if the messages include it
-        (same id and tool), it and what follows are dropped, so the score is the same with or without it."""
+    def _prefix(msgs: list, call_id, name, args, as_reply) -> list:
+        """The conversation as the importer sees it for this call: everything before the assistant reply that holds the
+        call, then that reply cut after the call (its earlier calls are siblings with no results yet).
+        The reply can only be the LATEST assistant message, and only if it holds a call with this tool and these
+        arguments (and this id, when both have one) that has no result yet; otherwise the messages do not include
+        the reply, and the call is appended as a reply of its own (pass the reply for parallel calls)."""
+        done = {m.get("tool_call_id") for m in msgs if m.get("role") == "tool"}
+        done |= {b.get("tool_use_id") for m in msgs if m.get("role") == "user" and isinstance(m.get("content"), list) for b in m["content"] if isinstance(b, dict)}
         k = max((i for i, m in enumerate(msgs) if m.get("role") == "assistant"), default=None)
-        if k is None or not call_id:
-            return msgs
-        m = msgs[k]
-        calls = [(tc.get("id"), (tc.get("function") or {}).get("name")) for tc in m.get("tool_calls") or []]
-        if isinstance(m.get("content"), list):
-            calls += [(b.get("id"), b.get("name")) for b in m["content"] if isinstance(b, dict) and b.get("type") == "tool_use"]
-        return msgs[:k] if (call_id, name) in calls else msgs
+        if k is not None:
+            m = msgs[k]
+            calls = [(tc.get("id"), (tc.get("function") or {}).get("name"), _args((tc.get("function") or {}).get("arguments")), ("oa", tc))
+                     for tc in m.get("tool_calls") or []]
+            if isinstance(m.get("content"), list):
+                calls += [(b.get("id"), b.get("name"), _args(b.get("input")), ("an", b)) for b in m["content"] if isinstance(b, dict) and b.get("type") == "tool_use"]
+            for i, (cid, n, a, _) in enumerate(calls):
+                if n == name and a == args and (not call_id or not cid or cid == call_id) and (cid is None or cid not in done):
+                    keep = [x[3] for x in calls[: i + 1]]
+                    reply = {"role": "assistant", "tool_calls": [c for t, c in keep if t == "oa"]}
+                    if any(t == "an" for t, _ in keep):
+                        reply = {"role": "assistant", "content": [c for t, c in keep if t == "an"]}
+                    return msgs[:k] + [reply]
+        return msgs + [as_reply]
 
     def _check_proposed(self, steps, name, args) -> Verdict:
-        st = steps[-1]                          # the proposed call is the last step: never looked up by id
-        assert st["action"]["tool"] == name, (st["action"], name)
+        st = steps[-1] if steps else None
+        if not name or st is None or st["action"]["tool"] != name:   # malformed call: fail closed, never score another action
+            return Verdict(allow=False, score=None, unit=self._unit(), review_error=f"malformed tool call (tool name {name!r}): blocked")
         return self.check_step(st)
 
     def check_openai(self, messages: list, tool_call) -> Verdict:
@@ -199,12 +225,12 @@ class Guard:
         The monitor sees everything before that reply, then the call."""
         tc = _as_dict(tool_call)
         name, args = (tc.get("function") or {}).get("name"), _args((tc.get("function") or {}).get("arguments"))
-        prefix = self._before_reply([_as_dict(m) for m in messages], tc.get("id"), name) + [{"role": "assistant", "tool_calls": [tc]}]
+        prefix = self._prefix([_as_dict(m) for m in messages], tc.get("id"), name, args, {"role": "assistant", "tool_calls": [tc]})
         return self._check_proposed(conversation_steps(prefix, chat=self.chat), name, args)
 
     def check_anthropic(self, system, messages: list, tool_use) -> Verdict:
         """system: the system prompt; messages: the conversation (with or without the reply that holds the block);
         tool_use: the proposed tool_use block. The monitor sees everything before that reply, then the call."""
         b = _as_dict(tool_use)
-        prefix = self._before_reply([_as_dict(m) for m in messages], b.get("id"), b.get("name")) + [{"role": "assistant", "content": [b]}]
+        prefix = self._prefix([_as_dict(m) for m in messages], b.get("id"), b.get("name"), _args(b.get("input")), {"role": "assistant", "content": [b]})
         return self._check_proposed(conversation_steps(prefix, system=system, chat=self.chat), b.get("name"), _args(b.get("input")))

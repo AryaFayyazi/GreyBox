@@ -8,7 +8,7 @@ python scripts/87b_t14_conf_only.py
 """
 import os
 for k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
-    os.environ[k] = "4"
+    os.environ[k] = "1"                       # as scripts/87 (T14): BLAS results depend on the thread count
 import importlib  # noqa: E402
 import json  # noqa: E402
 import sys  # noqa: E402

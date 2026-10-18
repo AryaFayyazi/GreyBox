@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
-**Replicating the hidden state of closed agents from their transcripts, to predict and prevent violations.**
+**Replicating agents' hidden states from their transcripts, to predict and prevent the violations of closed agents.**
 
 ![Seeing inside closed agents](results/figures/teaser.png)
 
@@ -26,36 +26,45 @@ closed models.
 ## Quick start
 
 ```
-pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"
+pip install "graybox[server,text] @ git+https://github.com/AryaFayyazi/GreyBox"   # [reader] adds the GPU reader
 ```
 
 | Monitor | Hardware and speed | Use it when |
 |---|---|---|
 | `TextMonitor` (TF-IDF and logistic regression) | CPU, about 0.2 ms for each action | your tools and policies are the same as in your labelled data |
-| `ReaderMonitor` (Qwen3-8B reads the transcript; a linear probe) | 1 GPU, 41 ms for each action | your tasks change; it is more robust to new tasks |
+| Reader monitor (Qwen3-8B reads the transcript; a linear probe) | 1 GPU, 41 ms for each action | your tasks change; it is more robust to new tasks |
 
-```python
-from graybox.guard import Guard
-from graybox.monitor import TextMonitor
+1. Train a monitor on your own labelled logs (OpenAI or Anthropic conversations with a `"labels"` field
+   `{call_id: 0/1}`), in seconds on a CPU, or in the [browser trainer](https://aryafayyazi.github.io/GreyBox/train.html):
+   ```
+   python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json   # --chat for agents that talk with a user
+   ```
+2. Put it in your agent's loop:
+   ```python
+   from graybox.guard import Guard
+   from graybox.monitor import QuantileGate, TextMonitor
 
-guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))   # trained in the browser trainer
-for call in reply.tool_calls or []:                                   # OpenAI; check_anthropic for tool_use blocks
-    v = guard.check_openai(messages, call)
-    result = run_tool(call) if v.allow else v.block_message
-```
+   guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))
+   for call in reply.tool_calls or []:            # OpenAI; check_anthropic for tool_use blocks
+       v = guard.check_openai(messages, call)     # pass the reply in messages when it holds several calls
+       result = run_tool(call) if v.allow else v.block_message
+   ```
+3. On a new kind of task, set the review cut on the agent's own traffic: `Guard(monitor, gate=QuantileGate(0.05))`
+   (or the server's `"gate": true`). A cut stored in the file can escalate almost nothing there: on held-out task
+   families we measured 0 of 18 violations caught with the stored cut, while a live cut kept the 5% budget
+   (`results/tool/cut_under_shift.json`). The text monitor's ranking also weakens on new tasks: label those tasks, or
+   use the reader.
 
-Train the stronger reader monitor on your own labels with one command on a GPU:
-`python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib`.
+Train the reader monitor on your own labels with one command on a GPU:
+`python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib`, then load it with
+`graybox.reader_load.load_reader`. The released probes are in
+[release v0.2.0](https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0): `reader_probe.joblib` (CAPE-Bench) and
+`reader_probe_cape_agentdojo.joblib` (CAPE-Bench and prompt injection). For the reader, always use `QuantileGate`: its
+probability does not transfer between agents.
 
-The browser trainer imports OpenAI and Anthropic agent logs, lets you label actions (a review queue shows the riskiest
-first), and trains the monitor. Its importer and the guard build the same steps as our research pipeline (979/979 GPT
-and 373/373 Claude units identical; `results/tool/`).
-
-The reader's probes are in [release v0.2.0](https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0):
-`reader_probe.joblib` (CAPE-Bench) and `reader_probe_cape_agentdojo.joblib` (CAPE-Bench and prompt injection).
-
-For the reader, use `QuantileGate` to set the review threshold. It takes the top 5% of the agent's first 500
-actions, then it freezes the threshold. Do not use the raw probability: it does not transfer between agents.
+The browser trainer imports OpenAI and Anthropic agent logs, shows each action with the conversation before it, lets
+you label actions (a review queue shows the riskiest first), and trains the monitor. Its importer and the guard build
+the same steps as our research pipeline (979/979 GPT and 373/373 Claude units identical; `results/tool/`).
 
 Self-host the HTTP API: `uvicorn graybox.monitor_server:app` (see `deploy/` for Docker). Your transcripts stay on your
 machine.
@@ -84,8 +93,8 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T11: a second closed family (GPT) | GPT-6-luna, 3,627 actions, 66 violations in 6 families. Pooled AUROC 0.996 (judge 0.778; tool identity alone 0.856). Within tool 0.994 (judge 0.956). At a 5% budget it catches 98.5% (judge 37.9%). All three preregistered endpoints pass. |
 | T12: labels for a new policy, prospective | We held out a credentials policy. With no labels of it, the reader caught all 18 of GPT's violations of it. The preregistered H1 (labels improve the catch rate) fails: there was nothing to fix. A new policy that resembles a trained one can transfer; one that does not (T10) needs labels. |
 | T13, T13b: a closed agent on an external benchmark | GPT-6-luna on AgentDojo. With the spotlighting defense, attacks succeed in 2.1% of episodes (4 injected calls): not tested. Without the defense, 36 injected calls: reader 0.840 vs judge 0.787 (+0.052 [−0.026, +0.130]). The preregistered test fails: on an external benchmark the reader is not significantly better than a zero-shot judge for this closed agent. |
-| T14: labels of the new policy, from open agents | We added labelled AgentDojo calls of the two open agents to the training data, and tested on the closed GPT agent. AUROC 0.840 → 0.922 (judge 0.787); injected calls caught at the label-free 5% cut 28% → 58% (36% → 92% with a cut set on benign calls). Both preregistered endpoints pass. Exploratory: on the confirmation split only, whose user tasks the training calls never saw, 0.929 vs judge 0.786 (+0.143 [0.075, 0.226]). On this benchmark, labels of a policy transferred from open agents to a closed one. |
-| T15: does the grey box replicate the hidden state? | From the transcript alone, the reader replica reconstructs 66.4% of the variance of the agent's decision state (text: 58.6%). A probe trained on the true state scores 0.987 on the replica vs 0.984 on the true state. |
+| T14: labels of the new policy, from open agents | We added labelled AgentDojo calls of the two open agents to the training data, and tested on the closed GPT agent. AUROC 0.840 → 0.922 (judge 0.787); injected calls caught at the label-free 5% cut 28% → 58% (36% → 92% with a cut set on benign calls). Both preregistered endpoints pass. Exploratory: on the confirmation split only, whose user tasks the training calls never saw, 0.929 vs judge 0.786 (+0.143 [0.075, 0.227]). On this benchmark, labels of a policy transferred from open agents to a closed one. |
+| T15: does the grey box replicate the hidden state? | From the transcript and the proposed action, the reader replica reconstructs 66.4% of the variance of the 128 main components of the agent's decision state (51–54% of each full layer; text features: 58.6%). A probe trained on the true state scores 0.987 on the replica and 0.984 on the true state; on a replica from text features it scores 0.983, so the information that decides a violation is in the tokens. |
 | T17: replication on three more open agents | gpt-oss-20b (mixture of experts), Qwen3.8-27B (hybrid linear attention), Muse-Glimmer-30B (dense), on scenarios that the map never saw. The same reader replicates each agent's decision state better than text features: R² 0.49, 0.54, 0.46 (text 0.39, 0.44, 0.40). A probe trained on the true states works on every replica (0.900 → 0.924, 0.955 → 0.972, 0.929 → 0.969). All six endpoints pass. Replication is partial (about half of the variance), and the readout also works on a text replica. |
 | T16: live prevention on a closed agent | The monitor in GPT-6-luna's loop (500 scenarios, with and without the gate). Episodes with an executed violation: 6.6% → 0.2% (−0.064 [−0.088, −0.044]). No violation after a block. Goals reached 47.4% → 45.6%. Round trip 89 ms. |
 | T16b: live prevention on Claude | The same live test on Claude Haiku 5.5 (450 scenarios). Episodes with an executed violation: 6.7% → 0.2% (−0.064 [−0.087, −0.044]). No violation after a block. Goals reached 40.7% → 34.9%. Round trip 80 ms. |
@@ -140,15 +149,22 @@ Claude will not refuse". Each message uses 4 Claude calls on the viewer's own ac
 Checks:
 - `python scripts/99_verify_all.py` verifies each lock hash, re-derives each pass/fail from its saved interval, and
   prints the headline numbers. About 20 locked files (frozen models and per-action scores under `/data/models`) are
-  not public, so from a clone it reports them as missing; the repository files all verify.
+  not public, so from a clone it lists them as NOT PUBLIC (not as mismatches); the repository files all verify.
 - `python scripts/98_audit_numbers.py paper/main.tex README.md` checks that each decimal in a document occurs somewhere
   in the saved results. This is a weak check (most short decimals occur somewhere); the paper's main result numbers
   are written from named result fields by `paper/make_numbers.py`.
 - `pytest tests` runs the SDK tests (also in CI).
 
-What you can reproduce from this repository alone: the SDK and its tests, the browser–Python parity tests, the lock
-hashes of the repository files, and every summary number from `results/`. The experiments themselves need data that
-is not public (agent episodes, hidden states, reader features, CAPE-Bench internals), GPUs, and paid API calls.
+What you can reproduce from this repository alone:
+- the SDK and its tests, the browser–Python parity tests, and the lock hashes of the repository files;
+- the headline confirmatory numbers, recomputed from the per-unit release in `results/units/` (labels, strata,
+  clusters and each monitor's score per action; the true and replicated states on 128 components; the live
+  episodes): `python scripts/109_recompute_public.py` recomputes 45 numbers (AUROCs, catch rates, R², the T16c
+  intervals) and checks them against `results/t1/` (CI runs it). `scripts/108_release_units.py` built the release
+  and checked each array against the published value.
+
+The experiments themselves (episodes, hidden states, reader features, CAPE-Bench internals) need data that is not
+public, GPUs, and paid API calls.
 
 Lock times are self-reported in each lock file. For T13b, T16 and T20 the lock was also published (git) before the
 result; from T20 on, every lock is pushed before its test runs.

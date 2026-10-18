@@ -139,11 +139,12 @@ class TextMonitor:
         r = [cls._rendered(s) for s in steps]
         return [c for c, _ in r], [a for _, a in r]
 
-    def fit(self, steps, labels, groups=None, budget: float = 0.05, grid=(0.1, 1, 10)):
+    def fit(self, steps, labels, groups=None, budget: float = 0.05, grid=(0.1, 1, 10), chat: bool | None = None):
         """Fit on labelled steps (dicts or tuples). With groups, C is chosen from `grid` by grouped 5-fold
         cross-validation (as in the browser trainer; self.cv_auroc). The fitted monitor works with Guard and the
-        server: save it with .save(path). The escalation cut is the (1 - budget) quantile of the training scores
-        (no labels used)."""
+        server: save it with .save(path). The escalation cut is the (1 - budget) quantile of the out-of-fold scores
+        (no labels used). For a new deployment, also consider a QuantileGate on the agent's own live traffic.
+        chat: the context setting, recorded in the file (default: inferred from conversation_steps(chat=True) steps)."""
         import numpy as np
         import scipy.sparse as sp
         from sklearn.feature_extraction.text import TfidfVectorizer
@@ -172,8 +173,16 @@ class TextMonitor:
         allix = list(range(len(y)))
         self.v, X, _ = design(allix, [])
         self.lr = LogisticRegression(C=self.C, max_iter=4000).fit(X, y)
-        z = self.lr.decision_function(X)
-        self._json = self.to_dict(threshold_logit=float(np.quantile(z, 1 - budget)), budget=budget)
+        # the escalation cut: the (1 - budget) quantile of OUT-OF-FOLD scores (in-sample scores are overfit and extreme,
+        # so a cut set on them escalates far fewer than `budget` of new actions); in-sample only without groups
+        if self.cv_auroc is not None:
+            cut, src = float(np.quantile(self.oof, 1 - budget)), "out-of-fold scores of the training actions"
+        else:
+            cut, src = float(np.quantile(self.lr.decision_function(X), 1 - budget)), "in-sample scores (no groups for cross-validation): optimistic"
+        if chat is None:
+            chat = all(isinstance(s, dict) and isinstance(s.get("context"), str) and "instructions" in s for s in steps)
+        self._json = self.to_dict(threshold_logit=cut, budget=budget)
+        self._json.update(cut_source=src, chat=bool(chat))
         return self
 
     def to_dict(self, threshold_logit: float, budget: float = 0.05) -> dict:

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 license = {text = "MIT"}
 name = "graybox"
-version = "0.3.0"
+version = "0.3.1"
 description = "Monitor tool-calling agents (open or closed) from their transcripts: score each proposed action before it runs"
 readme = "README.md"
 requires-python = ">=3.10"

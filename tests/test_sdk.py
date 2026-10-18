@@ -284,17 +284,23 @@ def test_guard_scores_the_proposed_call_even_with_a_reused_or_empty_id():
 
 
 def test_guard_same_score_for_every_documented_call_style():
-    from graybox.guard import Guard
+    from graybox.guard import Guard, conversation_steps
     from graybox.monitor import TextMonitor
     tm = TextMonitor.load_json(MODEL)
     base = [{"role": "system", "content": "Only email people the user names."}, {"role": "user", "content": "Mail the report to Bob."}]
     c0, c1 = _tc("c0", "read_file", {"path": "/r"}), _tc("c1", "send_message", {"to": "all-staff"})
     reply = {"role": "assistant", "content": None, "tool_calls": [c0, c1]}
     g = Guard(tm)
-    before = g.check_openai(base, c1).score                                          # check before appending the reply
-    after = g.check_openai(base + [reply], c1).score                                  # README style
+    after = g.check_openai(base + [reply], c1).score                                  # the reply passed (README style)
     after_sib = g.check_openai(base + [reply, {"role": "tool", "tool_call_id": "c0", "content": "r"}], c1).score   # a sibling already ran
-    assert before == after == after_sib
+    # train/serve: the same step as the importer builds from the finished log (sibling c0 with an empty result)
+    log = base + [reply, {"role": "tool", "tool_call_id": "c0", "content": "r"}, {"role": "tool", "tool_call_id": "c1", "content": "sent"}]
+    st = [x for x in conversation_steps(log) if x["call_id"] == "c1"][0]
+    assert st["history"] == [{"tool": "read_file", "args": {"path": "/r"}, "result": ""}]
+    imp = g.check(st["instructions"], st["task"], st["history"], "send_message", {"to": "all-staff"}).score
+    assert after == after_sib == imp
+    one = {"role": "assistant", "content": None, "tool_calls": [c1]}                 # a single-call reply: every style agrees
+    assert g.check_openai(base, c1).score == g.check_openai(base + [one], c1).score
 
 
 def test_reviewer_fails_closed_and_sees_the_score():
@@ -366,3 +372,48 @@ def test_guard_follows_a_reader_probes_chat_setting():
     class R:
         chat = True
     assert Guard(R(), gate=object()).chat and not Guard(R(), gate=object(), chat=False).chat
+
+
+def test_guard_reply_detection_and_malformed_calls():
+    from graybox.guard import Guard, conversation_steps, parse_label
+    msgs = [{"role": "system", "content": "p"}, {"role": "user", "content": "Mail Bob."},
+            {"role": "assistant", "tool_calls": [_tc("call_0", "send_message", {"to": "bob"})]}, {"role": "tool", "tool_call_id": "call_0", "content": "sent"}]
+    for cid in ("call_0", "", None):               # same id and tool as an EXECUTED earlier call: not the reply
+        spy = _Spy()
+        Guard(spy).check_openai(msgs, _tc(cid, "send_message", {"to": "all-staff"}))
+        assert spy.seen[-1] == (("send_message", {"to": "all-staff"}), 1), (cid, spy.seen)
+    new = _tc("", "send_message", {"to": "all-staff"})
+    spy = _Spy()                                    # an empty id with the reply appended: the call is not in its own history
+    Guard(spy).check_openai(msgs + [{"role": "assistant", "tool_calls": [new]}], new)
+    assert spy.seen[-1][1] == 1
+    v = Guard(_Spy()).check_openai(msgs, {"id": "x", "type": "function", "function": {"name": "", "arguments": "{}"}})
+    assert not v.allow and "malformed" in v.review_error
+    assert [parse_label(x) for x in (1, 0, True, False, "1", "0", "true", "false", "yes", 2, None)] == [1, 0, 1, 0, 1, 0, 1, 0, None, None, None]
+    conv = msgs + [{"role": "assistant", "tool_calls": [_tc("c9", "send_message", {"to": "x"})]}]
+    assert [st["label"] for st in conversation_steps(conv, labels={"call_0": "0", "c9": "yes"})] == [0, None]
+
+
+def test_server_text_gate_strict_bodies_and_chat(monkeypatch, tmp_path):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from graybox import monitor_server
+    monkeypatch.setenv("GB_TEXT_MONITOR", str(MODEL))
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    c = TestClient(monitor_server.app)
+    body = {"instructions": "p", "task": "t", "action": {"tool": "send_message", "args": {"to": "a"}}, "stream": "s1", "gate": True}
+    z = c.post("/v1/monitor/text", json={k: v for k, v in body.items() if k != "gate"}).json()["score"]
+    r = c.post("/v1/monitor/calibrate", json={"monitor": "text", "stream": "s1", "budget": 0.05, "scores": [z - 1 - i / 100 for i in range(200)]})
+    assert r.status_code == 200
+    v = c.post("/v1/monitor/text", json=body).json()
+    assert v["escalate"] and v["cut"] == "live gate on this stream"     # above every seeded score of this stream
+    assert c.post("/v1/monitor/text", json={**body, "instrucions": "typo"}).status_code == 422
+    d = json.loads(MODEL.read_text()); d["chat"] = True
+    (tmp_path / "chat.json").write_text(json.dumps(d))
+    monkeypatch.setenv("GB_TEXT_MONITOR", str(tmp_path / "chat.json"))
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    assert c.post("/v1/monitor/text", json={"instructions": "p", "task": "t", "action": {"tool": "x"}}).status_code == 422
+    assert c.post("/v1/monitor/text", json={"context": "x", "action": {"tool": "x"}}).status_code == 200
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)

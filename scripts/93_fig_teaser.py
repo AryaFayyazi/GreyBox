@@ -95,7 +95,7 @@ def main():
     axs = [fig.add_subplot(gs[0, k]) for k in range(ncol)]
     panel(axs[0], Yf, yg, "(a) Open agent", "true hidden state, weights open\n12,128 fresh actions")
     panel(axs[1], rep, yg, "(b) Its replica",
-          f"transcript only; {t15['r2_fresh']['READER']:.0%} of variance\n3 more agents: {r17lo:.0%}–{r17hi:.0%}", seed=1)
+          f"from transcript + action: {t15['r2_fresh']['READER']:.0%}\n(3 more agents: {r17lo:.0%}–{r17hi:.0%})", seed=1)
     Zc, yc = closed["claude"]
     panel(axs[2], Zc, yc, "(c) Claude (closed)",
           f"Haiku 5.5; weights never seen\nprobe: {lf['claude_T8b']['READER']['label_free_cut']:.1%} caught at 5% review", seed=2)

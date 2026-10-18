@@ -83,7 +83,8 @@ def results_page():
         trs.append(f"<tr><td>{md_inline(test)}</td><td>{outcome_tag(out)}</td><td>{md_inline(out)}</td><td class=muted>{md_inline(data)}</td><td class=n>{lockcell}</td></tr>")
     body = f"""<h1>Evidence</h1>
 <p class="lede">Every test was preregistered: hypotheses, data, metrics and pass criteria were written down and hash-locked
-(SHA-256) before the data it is judged on existed or was scored. The table below is the project's record, reproduced
+(SHA-256) before the test ran. The lock times are self-reported; for T13b, T16 and T20 the lock was also published before the result.
+The table below is the project's record, reproduced
 verbatim, including every failure, deviation and correction.</p>
 <div class="note">How to read it: <span class="tag pass">pass</span> the preregistered criterion was met;
 <span class="tag fail">fail</span> it was not; <span class="tag mixed">mixed</span> some endpoints passed and some failed;
@@ -129,11 +130,11 @@ def index_page():
     body = f"""<h1>Monitor AI agents that you cannot open.</h1>
 <p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
-proposed action. It does not need the model's weights, so it works on closed models. Each claim on this site comes from a
-preregistered, hash-locked test. We show the failures too.</p>
+proposed action. It does not need the model's weights, so it works on closed models. The confirmatory claims on this site come from
+preregistered, hash-locked tests (lock times self-reported); exploratory results are marked. We show the failures too.</p>
 <figure style="margin:20px 0 6px"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, and replicas of two closed agents" loading="eager">
 <figcaption><b>Seeing inside closed agents.</b> All panels share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
-replica, computed from the transcript only. (c, d) Two closed agents, replicated in the same way: we never saw their weights. Red: policy
+replica, computed from the transcript only. (c, d) Two closed agents, mapped through the same reader: we never saw their weights, and their replica cannot be checked, so we test prediction. Red: policy
 violations. In every agent they occupy their own region.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
@@ -168,7 +169,7 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   For the label "does this action break the policy?", a monitor that reads the transcript and the proposed action is
   Bayes-sufficient. Internals read at or before the action cannot do better. White-box probes win against turn-start
   monitors only because they read later (probe {t2['auroc']['I_dec']:.3f} after the reasoning, {t2['auroc']['WB_ts']:.3f} before it).</p></div>
-<div class="card"><h3>The limit is the policy, not the agent</h3><p>We removed a policy family from the training data. A credentials
+<div class="card"><h3>The limit is policy coverage</h3><p>We removed a policy family from the training data. A credentials
   policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
   service-restart policy without similar ones did not: the monitor ranked Claude's violations well (AUROC
   {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught

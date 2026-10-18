@@ -11,18 +11,23 @@ and keeps the probe's "chat" setting, which Guard and the server then follow.
 from __future__ import annotations
 
 
-def load_reader(path, device: str = "cuda", cache_dir: str | None = None):
-    import joblib
+def make_reader(probe, layer: int, reader: str = "Qwen/Qwen3-8B", device: str = "cuda", cache_dir: str | None = None):
+    """A ReaderMonitor (same attributes and methods) whose model comes from the standard Hugging Face cache."""
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from .monitor import ReaderMonitor
-    d = joblib.load(path)
-    name = d.get("reader", "Qwen/Qwen3-8B")
     kw = {"cache_dir": cache_dir} if cache_dir else {}
-    m = object.__new__(ReaderMonitor)               # same attributes and methods as ReaderMonitor; a standard model cache
-    m.tok = AutoTokenizer.from_pretrained(name, **kw)
-    m.model = AutoModelForCausalLM.from_pretrained(name, dtype=torch.bfloat16, device_map=device, **kw).eval()
-    m.probe, m.layer, m.torch = d["probe"], d["layer"], torch
+    m = object.__new__(ReaderMonitor)
+    m.tok = AutoTokenizer.from_pretrained(reader, **kw)
+    m.model = AutoModelForCausalLM.from_pretrained(reader, dtype=torch.bfloat16, device_map=device, **kw).eval()
+    m.probe, m.layer, m.torch = probe, layer, torch
+    return m
+
+
+def load_reader(path, device: str = "cuda", cache_dir: str | None = None):
+    import joblib
+    d = joblib.load(path)
+    m = make_reader(d["probe"], d["layer"], d.get("reader", "Qwen/Qwen3-8B"), device, cache_dir)
     m.chat = bool(d.get("chat", False))
     m.trained_on = d.get("trained_on")
     return m

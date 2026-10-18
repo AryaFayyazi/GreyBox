@@ -99,7 +99,11 @@
   <p class="muted" id="details" style="margin-top:10px"></p>
   <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole conversations or tasks. Thus it estimates
     the performance on new tasks <i>of the same type</i>. It does not cover a new policy, new tools or a different benchmark. In
-    our tests, a policy that was absent from the training data was missed, until 20 to 40 labelled actions of it were added.</div>
+    our tests, a policy that was absent from the training data was missed, until 20 to 40 labelled actions of it were added.
+    <br><b>The review cut in the file</b> is set on your labelled actions. On a new kind of task the scores shift, and a stored cut
+    can send almost nothing to review: on task families held out from training, it caught 0 of 18 violations, while a cut set on
+    the new traffic kept the 5% budget. In a new deployment, set the cut on the agent's own traffic: <code>Guard(monitor,
+    gate=QuantileGate(0.05))</code> or the server's <code>"gate": true</code>.</div>
   <div id="queueBox" class="card" hidden style="margin-top:14px">
     <h3 style="margin-top:0">Review queue</h3>
     <p id="queueText"></p>
@@ -119,7 +123,7 @@
       <p>The file holds the vocabulary, the weights and the review threshold learned from your data (the top <i>budget</i> of your
         actions, without labels).</p>
       <label class="row" style="gap:8px;font-size:13px;margin:0 0 8px"><input type="checkbox" id="privacyFilter" checked style="width:auto">
-        Remove words with digits, "@" or long codes from the file (recommended: the file holds words from your logs)</label>
+        Remove words with digits, "@" or long codes, and rare words, from the file (recommended: the file holds words from your logs)</label>
       <p><button id="exportBtn">Download model (.json)</button></p>
       <p id="exportNote" class="muted" style="font-size:13px"></p>
 <pre id="useCode">pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"
