@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-18T00:17:27-07:00",
+ "sha256": {
+  "docs/prereg_T25_adaptive_attack.md": "fe800ee576aa41016c66ce5795ea52fd3d99a3625eba885b6f0eea3f7d80cb8e",
+  "scripts/116_t25_adaptive_attack.py": "4de24fcd3a870c0edb94a144e9fa206048890cff47ad276c5cd8d477f2285106"
+ }
+}
