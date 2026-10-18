@@ -196,7 +196,7 @@ gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.
   (reader 0.535, word counts 0.519; an earlier 0.987 for word counts came from test tasks that were also in training). Word counts
   memorize entities and tasks, and neither monitor checks rules over numbers, dates or recipients it has not seen. A zero-shot reasoning judge, with no labels, separates violating from allowed
   calls of the same tool better than chance (AUROC 0.766 on four closed frontier agents, preregistered T23), but at a 5% review
-  budget it caught fewer violations than the reader and than the tool alone (11.7% vs 18.4% and 13.1%). Label steps of
+  budget it caught fewer violations than the reader and than the tool alone (11.7% vs 18.4% and 13.0%). Label steps of
   each new type of policy and of each new task.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
   the reader on the training benchmark (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).

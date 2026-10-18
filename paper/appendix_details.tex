@@ -58,4 +58,4 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \item Each preregistration (the document and its analysis code) is locked by its SHA-256 hash before its data exist. One script checks every lock and every number in this paper again from the saved results.
 \end{itemize}
 
-\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two: PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in T16 and T16b was 89 and 80~ms.
+\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two (and one accidental 4-second overlap): PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in T16 and T16b was 89 and 80~ms.

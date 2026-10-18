@@ -24,6 +24,18 @@ def tex(s: str) -> str:
     return out
 
 
+PATH = re.compile(r"\b(?:src|scripts|tests|results|docs|paper|site|deploy)/[\w./*\-]+")
+JOB = re.compile(r"\bjob \d+\b")
+COMMIT = re.compile(r"\b(?:in |commit )?[0-9a-f]{7}\b")
+
+
+def anon(s: str) -> str:
+    """Double-blind: no repository paths, job ids or commit hashes in the paper (the released record keeps them)."""
+    s = PATH.sub("[released file]", s)
+    s = JOB.sub("a GPU job", s)
+    return COMMIT.sub(lambda m: "[a public commit]" if m.group(0).strip()[:6] != "commit" else "[a public commit]", s)
+
+
 def main():
     rows = []
     for line in (ROOT / "docs/PREREGISTRATION_RECORD.md").read_text().split("\n"):
@@ -32,11 +44,14 @@ def main():
         cells = [c.strip() for c in line.strip().strip("|").split(" | ")]
         if len(cells) < 4:
             continue
-        rows.append((cells[0], cells[-1]))
+        rows.append((anon(cells[0]), anon(cells[-1])))
     body = "\n".join(f"{tex(t)} & {tex(o)}\\\\[2pt]" for t, o in rows)
     (ROOT / "paper/appendix_record.tex").write_text(
-        "Every confirmatory test, as in the record (generated from docs/PREREGISTRATION\\_RECORD.md by paper/make\\_record.py). "
-        "Locks (SHA-256 of the preregistration and its code) and outcomes are in the released record; lock times are self-reported.\n\n"
+        "Every confirmatory test, as in the released record (generated from it by a script; file paths and commit ids are "
+        "replaced for review). Locks (SHA-256 of the preregistration and its code) and outcomes are in the released record; lock "
+        "times are self-reported. Later tests changed two readings fixed in advance: T21 refuted T20's reading that the labels "
+        "transfer through word counts (the test tasks were in training); T23's ``checks rules'' means that the judge separates "
+        "violating from allowed writes of the same tool.\n\n"
         "{\\small\\begin{longtable}{p{0.24\\textwidth}p{0.71\\textwidth}}\n\\toprule Test & Outcome (verbatim from the record)\\\\\\midrule\\endhead\n"
         + body + "\n\\bottomrule\n\\end{longtable}}\n")
     print("appendix_record.tex:", len(rows), "tests")

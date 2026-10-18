@@ -972,7 +972,7 @@ Dated log of every experiment, decision and correction. Newest last.
     0.959 / 0.976);
   - Bayes-sufficiency is stated with its condition;
   - "every confirmatory test" is preregistered;
-  - T23's judge "separates within a tool" but is not a usable review queue alone (11.7% < tool 13.1% at 5%);
+  - T23's judge "separates within a tool" but is not a usable review queue alone (11.7% < tool 13.0% at 5%);
   - masking is marked exploratory, and the readout mechanism is stated as a hypothesis;
   - T19's decoder list and the 14B claim are corrected;
   - the abstract now scopes 94/98% to the training benchmark, and the T16c reviewer is an oracle;
