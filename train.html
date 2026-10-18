@@ -113,6 +113,10 @@
     Privacy filter (on by default): emails and URLs are masked, and terms with digits, long codes, random strings or rare words are left
     out of the model file. Names and company names that recur in your logs stay: the file is a partial copy of your logs' vocabulary, so
     keep it internal if they name people. The numbers you see are for the model you download.</label>
+  <label class="row" style="gap:8px;font-size:13px;margin:6px 0 0"><input type="checkbox" id="canonicalMode" style="width:auto">
+    Canonical actions: the model reads only the decisive fields of each call. Free text that the agent writes about its own call (a
+    message body, a subject, a reason) and quoted prose are removed, so an agent cannot talk its way past the monitor by rewording them.
+    Costly when the text itself is the violation (a leaked draft in a message body): leave it off unless your policies never depend on free text.</label>
   <progress id="prog" value="0" max="1" hidden style="margin-top:12px"></progress>
   <p id="progMsg" class="muted" style="margin:6px 0 0"></p>
 </div>

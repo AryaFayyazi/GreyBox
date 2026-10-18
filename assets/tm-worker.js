@@ -7,13 +7,13 @@ self.onmessage = ev => {
   try { train(ev.data); } catch (e) { self.postMessage({ type: 'error', msg: String(e && e.message || e) }); }
 };
 
-function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = false }) {
+function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = false, canonical = false }) {
   const drop = privacy ? TM.privacyDrop : null;   // applied in every fold and in the final fit: the report is about the saved model
   const P = (msg, frac) => self.postMessage({ type: 'progress', msg, frac });
   const R = [], y = [], groups = [], tools = [];
   rows.forEach((ex, i) => {
     if (ex.label !== 0 && ex.label !== 1 && ex.label !== true && ex.label !== false) throw new Error(`row ${i + 1}: "label" must be 0 or 1`);
-    const r = TM.render(ex);
+    const r0 = TM.render(ex), r = canonical ? TM.canonical(r0) : r0;   // canonical mode: decisive fields only
     R.push(privacy ? { ctx: TM.maskPII(r.ctx), act: TM.maskPII(r.act) } : r); y.push(ex.label ? 1 : 0);   // emails, URLs masked
     groups.push(String(ex.group ?? ex.task ?? r.ctx.slice(0, 400)));
     tools.push(r.act.split(' ')[0]);
@@ -54,6 +54,7 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = 
   const model = TM.fit(R, y, best, { drop });
   model.privacy = privacy;
   if (privacy) model.mask_pii = true;                // the rows were masked: scoring masks the same way
+  if (canonical) model.canonical = true;             // the rows were canonical: scoring reads the same form
   done++;
   P('evaluating', done / steps);
   const s = Array.from(oof[best]), cut = TM.quantile(s, 1 - budget);

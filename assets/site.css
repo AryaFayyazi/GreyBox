@@ -80,3 +80,52 @@ select { max-width: 100%; }
 figure a.zoom { display: block; cursor: zoom-in; }
 .zoomhint { display: none; }
 @media (max-width: 640px) { .zoomhint { display: inline; } }
+
+/* animated workflow (index): CSS + SMIL; colours from the tokens; static when the reader prefers reduced motion */
+.workflow { margin: 18px 0 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px 4px; }
+.workflow svg { width: 100%; height: auto; display: block; font-family: var(--display); }
+.wf-h { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.wf-t { font-size: 11.5px; fill: var(--ink); }
+.wf-mono { font-family: var(--mono); font-size: 10.5px; }
+.wf-small { font-size: 10.5px; fill: var(--mute); }
+.wf-tw { font-size: 12px; font-weight: 700; fill: #fff; }
+.wf-card { fill: var(--bg); stroke: var(--line); }
+.wf-ins { fill: color-mix(in srgb, var(--mute) 14%, var(--panel)); }
+.wf-task { fill: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.wf-act { fill: color-mix(in srgb, var(--flag) 10%, var(--panel)); stroke: var(--flag); stroke-width: 2; animation: wfPulse 2.4s ease-in-out infinite; }
+.wf-acth { font-weight: 700; fill: var(--flag); }
+.wf-path { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 4 4; }
+.wf-tok { fill: var(--accent); }
+.wf-tok2 { fill: var(--mute); }
+.wf-agent { fill: #1b2126; }
+.wf-reader { fill: var(--accent); }
+.wf-lock rect { fill: #fff; } .wf-lock path { stroke: #fff; stroke-width: 2; }
+.wf-layers rect { fill: rgba(255,255,255,.28); }
+.wf-scan rect { animation: wfScan 2.4s ease-in-out infinite; }
+.wf-scan rect:nth-child(2) { animation-delay: .25s; } .wf-scan rect:nth-child(3) { animation-delay: .5s; }
+.wf-scan rect:nth-child(4) { animation-delay: .75s; } .wf-scan rect:nth-child(5) { animation-delay: 1s; }
+.wf-state rect { fill: var(--flag); fill-opacity: var(--o); stroke: var(--panel); stroke-width: 1.5; }
+.wf-gauge rect { animation: wfShuffle 4.8s ease-in-out infinite; }
+.wf-replica rect { animation: wfFill 2.4s ease-in-out infinite; }
+.wf-link { stroke: var(--flag); stroke-width: 1.5; stroke-dasharray: 3 3; fill: none; }
+.wf-linkt { fill: var(--flag); }
+.wf-arrowhead { fill: var(--mute); }
+.wf-safe { fill: color-mix(in srgb, var(--accent) 22%, transparent); stroke: var(--accent); stroke-width: 2; }
+.wf-viol { fill: color-mix(in srgb, var(--flag) 25%, transparent); stroke: var(--flag); stroke-width: 2; }
+.wf-axis { stroke: var(--mute); stroke-width: 1.5; }
+.wf-cut { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 4; }
+.wf-cutt { fill: var(--ink); }
+.wf-needle { fill: var(--ink); stroke: var(--panel); stroke-width: 2; }
+.wf-chip text { font-size: 12px; font-weight: 700; fill: #fff; }
+.wf-allow rect { fill: var(--ok); } .wf-block rect { fill: var(--flag); }
+.wf-loop { fill: none; stroke: var(--ok); stroke-width: 2; }
+.wf-loopt { fill: var(--ok); font-weight: 600; }
+@keyframes wfPulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: .35; } }
+@keyframes wfScan { 0%, 100% { fill: rgba(255,255,255,.25); } 30% { fill: rgba(255,255,255,.85); } }
+@keyframes wfFill { 0% { fill-opacity: .05; } 50%, 100% { fill-opacity: var(--o); } }
+@keyframes wfShuffle { 0%, 40% { fill-opacity: var(--o); } 50%, 90% { fill-opacity: var(--p); } 100% { fill-opacity: var(--o); } }
+@media (prefers-reduced-motion: reduce) {
+  .wf-act, .wf-scan rect, .wf-replica rect, .wf-gauge rect { animation: none; }
+  .wf-tok { display: none; }
+}
+@media (max-width: 700px) { .workflow { overflow-x: auto; } .workflow svg { min-width: 760px; } }
