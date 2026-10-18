@@ -28,5 +28,20 @@
   "cosine_min": 1.0,
   "cosine_mean": 1.0,
   "max_abs_diff": 1.6577541828155518e-07
+ },
+ "qemb06": {
+  "encoder": "qemb06",
+  "steps": 40,
+  "views": 1,
+  "browser": {
+   "type": "ready",
+   "encoder": "qemb06",
+   "device": "wasm",
+   "dtype": "fp16"
+  },
+  "seconds_incl_download": 1039.1,
+  "cosine_min": 0.999997,
+  "cosine_mean": 0.999998,
+  "max_abs_diff": 0.00036203116178512573
  }
 }

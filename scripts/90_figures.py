@@ -147,6 +147,8 @@ def fig_generalization():
             ("GPT on AgentDojo, no defense (T13b)", t13b["auroc_within_suite"]["READER"], t13b["auroc_within_suite"]["J_act"], None, t13b["auroc_within_suite"]["TXT"])]
     fig, ax = plt.subplots(figsize=(5.8, 4.5))
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
+    ax.axvline(0.5, color=MUTE, ls="--", lw=0.9, zorder=0.5)                 # chance: AUROC 0.5
+    ax.text(0.507, 1.5, "chance (0.5)", fontsize=7.5, color=MUTE, va="center", ha="left")
     for i, (name, r, j, w, t) in enumerate(rows[::-1]):
         ax.plot([min(j, t), max(r, t)], [i, i], color=GRID, lw=3, zorder=1)
         ax.plot(t, i, "s", mfc="white", mec=MUTE, ms=6.5, mew=1.4, zorder=3)
@@ -154,9 +156,9 @@ def fig_generalization():
         ax.plot(r, i, "o", color=C[0], ms=8, mec="white", mew=1.5, zorder=4)
         if w is not None:
             ax.plot(w, i, "D", color=C[1], ms=6, mec="white", mew=1.2, zorder=5)
-        ax.text(1.012, i, f"{r:.3f}", va="center", fontsize=8, color=INK)
+        ax.text(1.016, i, f"{r:.3f}", va="center", fontsize=8, color=INK)
     ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=8.5, color=INK)
-    ax.set_xlim(0.28, 1.06); ax.set_xlabel("AUROC, unsafe action (within template; within suite for AgentDojo)")
+    ax.set_xlim(0.28, 1.065); ax.set_xlabel("AUROC, unsafe action (within template; within suite for AgentDojo)")
     ax.set_title("Trained transcript reader (blue), trained bag-of-words (hollow square), zero-shot\njudge (green); agent's own internals (orange) where available",
                  loc="left", fontsize=9, color=INK)
     save(fig, "generalization")

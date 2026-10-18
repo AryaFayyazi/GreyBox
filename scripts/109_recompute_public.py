@@ -86,6 +86,25 @@ def main():
         d, t20 = pd.read_csv(U / "t20_tau2_two_closed.csv.gz"), j("t20_tau2_two_closed.json")
         for k in ("READER", "TXT"):
             check(f"T20 {k} within-tool AUROC", within_auroc(d.y.values, d[k].values, d.tool.values), t20["auroc_within_tool"][k], 1e-4)
+    if (U / "t21_t22_tau2_unseen_tasks.csv.gz").exists():
+        d, t21 = pd.read_csv(U / "t21_t22_tau2_unseen_tasks.csv.gz"), j("t21_tau2_unseen_tasks.json")
+        for k in ("READER", "TXT", "TXT_masked"):
+            check(f"T21 {k} within-tool AUROC (unseen tasks)", within_auroc(d.y.values, d[k].values, d.tool.values), t21["auroc_within_tool"][k], 1e-4)
+        if "JUDGE" in d:
+            check("T22 judge within-tool AUROC", within_auroc(d.y.values, d.JUDGE.values, d.tool.values), j("t22_tau2_judge.json")["t20"]["auroc_within_tool"], 1e-4)
+    if (U / "t23_tau2_judge_frontier.csv.gz").exists():
+        d, t23 = pd.read_csv(U / "t23_tau2_judge_frontier.csv.gz"), j("t23_tau2_judge_frontier.json")
+        d["JUDGE"], d["JUDGE_mean4"] = d.JUDGE_s0, d[[f"JUDGE_s{s}" for s in range(4)]].mean(1)
+        for k in ("JUDGE", "JUDGE_mean4", "READER_cv", "TXT_cv"):
+            check(f"T23 {k} within-tool AUROC (frontier writes)", within_auroc(d.y.values, d[k].values, d.tool.values), t23["auroc_within_tool"][k], 1e-4)
+    if (U / "t19_small_readers.csv.gz").exists():
+        from sklearn.metrics import roc_auc_score
+        d, t19 = pd.read_csv(U / "t19_small_readers.csv.gz", keep_default_na=False), j("t19_small_readers.json")
+        for st in ("T7", "T13b", "T8b", "T11"):
+            z = d[d["set"] == st]
+            for k in ("qemb06", "q8", "TXT"):
+                got = within_auroc(z.y.values, z[k].values, z.stratum.values) if st in ("T7", "T13b") else roc_auc_score(z.y.values, z[k].values)
+                check(f"T19 {k} AUROC on {st}", got, t19["auroc"][k][st], 1e-4)
     w = max(len(r[0]) for r in rows)
     for r in rows:
         print(f"  {r[0]:{w}s}  recomputed {r[1]:<8}  saved {r[2]:<8}  {r[3]}")

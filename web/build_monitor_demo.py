@@ -38,8 +38,14 @@ if space_p.exists():
             s["pi"] = i
         assert k == len(idx), e["id"]
 D["pooled"] = json.loads((ROOT / "results/t1/t8b_breakdown_exploratory.json").read_text())["auroc_pooled"]
+D["label_free"] = json.loads((ROOT / "results/t1/label_free_cuts.json").read_text())["claude_T8b"]   # the 5% cut set without labels
 if space_p.exists():
+    xs = np.sort(x)
+    pct = (np.searchsorted(xs, x, "left") + np.searchsorted(xs, x, "right")) / 2 / len(x)   # share of actions with a lower score (midrank)
+    esc = x >= S["cut_logit_label_free"]
+    assert abs(D["label_free"]["READER"]["label_free_cut"] - esc[np.array(S["y"]) == 1].mean()) < 1e-3, "space cut must match the label-free result"
     D["space"] = {"p": np.round(np.c_[X, Y, Z], 3).ravel().tolist(), "y": S["y"], "act": S["act"], "ep": S["episode_id"],
+                  "s": [float(f"{v:.3g}") for v in 1 / (1 + np.exp(-x))], "pct": np.round(pct, 4).tolist(), "esc": esc.astype(int).tolist(),
                   "cut": round(cut, 4), "logit_range": [round(float(lo), 2), round(float(hi), 2)],
                   "var23": S["var_explained_axes23"], "clipped": int(((x < lo) | (x > hi)).sum())}
 t = (ROOT / "web/claude_monitor_demo.html").read_text()

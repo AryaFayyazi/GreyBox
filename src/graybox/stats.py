@@ -21,6 +21,19 @@ def within_auroc(y, s, strata) -> float:
     return num / den if den else np.nan
 
 
+def caught_at_budget(y, s, budget: float = 0.05) -> float:
+    """Share of positives caught when exactly `budget` of the units go to review, ranked by s. Units tied at the cut
+    are sent in proportion (the expected value of a random tie-break). "s >= 95th percentile" sends more than 5% when
+    scores are tied (a tool rate, a judge's 0/100 answers): on T23 the judge's cut sent 28% of writes."""
+    y, s = np.asarray(y).astype(bool), np.asarray(s, float)
+    k = budget * len(s)                                      # units to review
+    order = np.sort(s)[::-1]
+    c = order[min(int(np.ceil(k)) - 1, len(s) - 1)] if k > 0 else np.inf   # the score of the last unit reviewed
+    above, tie = s > c, s == c
+    frac = (k - above.sum()) / tie.sum() if tie.sum() else 0.0
+    return float((above[y].sum() + frac * tie[y].sum()) / max(y.sum(), 1))
+
+
 def cluster_boot(fn, clusters, n_boot=1000, seed=0):
     """Bootstrap over clusters. fn(idx) -> statistic (or tuple). Returns array (n_boot, ...)."""
     rng = np.random.default_rng(seed)

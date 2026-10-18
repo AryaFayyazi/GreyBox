@@ -1,0 +1,59 @@
+{
+ "train": {
+  "writes": 554,
+  "violations": 144,
+  "tasks": 28,
+  "dropped_writes_of_test_tasks": 340
+ },
+ "test": {
+  "writes": 262,
+  "violations": 19,
+  "tasks": 13
+ },
+ "auroc_within_tool": {
+  "READER": 0.5353,
+  "TXT": 0.5186,
+  "TOOL": 0.5,
+  "TXT_masked": 0.3655
+ },
+ "auroc_pooled": {
+  "READER": 0.6264,
+  "TXT": 0.716,
+  "TOOL": 0.6784,
+  "TXT_masked": 0.6346
+ },
+ "caught_label_free_5pct": {
+  "READER": 0.1579,
+  "TXT": 0.1053,
+  "TOOL": 0.6316,
+  "TXT_masked": 0.1053
+ },
+ "t20_same_tasks_for_comparison": {
+  "READER": 0.7377,
+  "TXT": 0.9874,
+  "TOOL": 0.5,
+  "CAPE0": 0.7037
+ },
+ "H1_READER_minus_TXT": [
+  0.0166,
+  -0.5138,
+  0.5388
+ ],
+ "H1_pass": false,
+ "H2_READER_minus_TOOL": [
+  0.0353,
+  -0.2296,
+  0.2593
+ ],
+ "H2_pass": false,
+ "reported_TXT_minus_TOOL": [
+  0.0186,
+  -0.349,
+  0.3782
+ ],
+ "exploratory_TXTmasked_minus_TOOL": [
+  -0.1345,
+  -0.3712,
+  0.2449
+ ]
+}

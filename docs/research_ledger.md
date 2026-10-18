@@ -898,3 +898,62 @@ Dated log of every experiment, decision and correction. Newest last.
   credentials policy transferred with 0 labels. The interpretation (policy similarity) is labelled a hypothesis.
 - Paper: section 4.6 rewritten around the decomposition, plus Figure 6 (policy coverage). Introduction, related work
   and Appendix A.4b added. The site is redeployed, the code pushed, CI green. OpenAI spend $0.81 of $5.
+
+### 2026-10-17 afternoon and evening: generality, an outside benchmark, and three independent user tests
+
+- **T17 (replication on three more open agents) PASSED 3/3.** gpt-oss-20b, Qwen3.8-27B and Muse-Glimmer-30B, on a
+  scenario-disjoint split. R² of the 128 main components: reader 0.49/0.54/0.46, text 0.39/0.44/0.40; a probe trained
+  on true states works on every replica (and on text replicas). Fidelity check: each agent's own model predicts 91–100%
+  of the next 16 tokens of its actual tool call. Muse needed transformers 5.20.1 (overlay venv venv_tf520). A finer
+  text-ridge grid (dual form, exact) shows α = 1 is the text map's optimum (exploratory).
+- **T16c (hold for review) R1 pass, R2 FAIL.** Violations 6.7% → 0.0%; goals −2.0 points [−5.1, +0.7] against a
+  3-point margin. Deviation 1: the first start ran 0 episodes; the server loaded the reader outside its lock and six
+  concurrent first requests raced on lazy imports. Fixed (load inside the lock) with a regression test.
+- **T18 (τ²-bench, Claude) NOT TESTED**: 9 violations < 15 in 600 episodes. **T20** (both closed agents, 20 dev
+  tasks, persistent customer) locked and its lock PUBLISHED before any result (commit 9c55ea1): 19 violations in
+  262 writes; analysis pending. API budget used: Anthropic $14.59/$14.80, OpenAI $4.89/$5.00.
+- **Three independent user tests** (agent personas: an agent developer, a non-programmer safety lead on the website, a
+  skeptical reviewer), each with a re-test after fixes. Main corrections:
+  - Paper: one label-free operating point everywhere (Claude 94.1%, not 95.6%); T15 scoped to the 128 main components
+    with the text-replica control; the goal cost and T16c's failure in the abstract; transfer scoped to AgentDojo
+    (T14 holds on the confirmation split with disjoint user tasks, exploratory); lock times stated as self-reported;
+    the appendix record generated from the record; the title scoped to "agents' hidden states".
+  - Reproducibility: a per-unit public release (results/units) and scripts/109, which recomputes 45 headline numbers
+    from public files only (CI runs it). It caught one inconsistency: my exploratory T14 run used 4 BLAS threads; with
+    1 thread (as T14) the upper bound is 0.227, not 0.226.
+  - Tool: a headless training path (graybox.train_text); the guard scores the proposed call directly and uses one
+    step rule with the importer (sibling calls, reply text); fail-closed reviewer and malformed calls; strict labels;
+    the server accepts OpenAI shapes and reports load errors; the labelling view shows the whole conversation;
+    content-hashed label storage; a privacy filter on export.
+  - Found by a tester and measured (results/tool/cut_under_shift.json): on held-out task families a cut stored in a
+    monitor file escalates almost nothing (0/18 caught), while a cut set on the new traffic keeps the budget. The docs
+    now recommend a live QuantileGate; the server's /text has one.
+- Practice from now on: push each lock publicly before its test runs (memory: feedback-publish-locks-first).
+- **T20 G2 pass, G1 fail; T21 overturns T20's reading.** T20: word counts 0.987, reader 0.738 within tool. All 13 test
+  tasks were also in training. T21 (lock published first, 4a5c153) removed them: reader 0.535, word counts 0.519, both
+  endpoints fail; entity-masked word counts 0.366. T20's word-count result was task memorisation. Paper, README, site
+  and docs corrected. τ² violations break explicit rules over facts of the case; label-trained readouts do not learn
+  these checks for new tasks.
+- **T22 J1, J2 FAIL (wide).** A zero-shot reasoning judge (Qwen3-32B, thinking, no labels; lock 1b26040) on T20's
+  writes: within tool 0.804 (T21's reader 0.535), judge − tool +0.304 [−0.084, 0.427]. Only 8 tasks have a violation.
+  88% of its scores are exactly 0.
+- **T23 locked** (b002a85): the same judge on 894 writes of four closed frontier agents (227 violations, 29 tasks).
+  The baselines are cross-validated by task. Amendment 1 (c801e95, published before any judge output): a dry run
+  showed the fold-wise TOOL baseline scored 0.217 within tool (not constant), which would inflate K1. Now it is the
+  tool's rate on all writes.
+- **Browser reader precision bug found and fixed.** The 8-bit ONNX Qwen3-Embedding gave features at cosine 0.85 to the
+  PyTorch features the probe was trained on, in onnxruntime and in Chromium alike. So it was quantization, not a page
+  bug. fp16 matches (cosine ≥ 0.999997 in Chromium, 40 steps; results/tool/browser_parity_qemb06.json). The page now
+  loads fp16 (1.2 GB).
+- **Tool:** train_text and the browser trainer report within-tool AUROC. They warn when the AUROC comes from the tool
+  identity, and they warn that word counts memorize entities; --group-by task estimates the score on unseen tasks.
+  On τ² frontier data grouped by task the report shows 0.818 pooled vs 0.490 within tool, with the warning.
+- **Release:** results/units now holds T19, T21 and T22; scripts/109 recomputes 63 numbers (0 mismatches). T19's
+  probes need 8 BLAS threads, as in its analysis, to match to 1e-4.
+- **T23 K1 PASS, K2 fail.** T22's judge on 894 frontier writes: within tool 0.766 (+0.266 [0.151, 0.338] over the
+  tool); vs the reader cross-validated by task (0.646) +0.120 [−0.047, 0.274]. The 4-sample mean is better (0.838).
+  At an exact 5% budget the reader catches more (18.4% vs 11.7%; ceiling 19.7%).
+- **Metric bug found and corrected: tied scores.** "≥ 95th percentile" escalated up to 37% for tool baselines and 28%
+  for the 0/100 judge. graybox.stats.caught_at_budget (exact budget, ties in proportion) + scripts/111 recompute every
+  released catch rate. Headline reader numbers unchanged; Table 2's tool row 61.8/60.6% → 42.3/13.6%; TF-IDF
+  64.7/50.0% → 63.8/49.0%. No endpoint used a catch rate. T8b TF-IDF scores added to the public units.

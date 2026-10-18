@@ -20,7 +20,7 @@ for p in (ROOT / "src", ROOT / "scripts", Path("/home/arya/new_safety/cape/src")
 from graybox.embed import Encoder, fit_probe  # noqa: E402
 from graybox.embed_monitor import to_json  # noqa: E402
 
-DOWNLOAD = {"minilm": "90 MB", "mpnet": "440 MB", "qemb06": "610 MB"}
+DOWNLOAD = {"minilm": "90 MB", "mpnet": "440 MB", "qemb06": "1.2 GB"}   # fp16 ONNX: features match PyTorch (cosine 1.000); q8 only 0.855
 
 
 def main():

@@ -417,3 +417,57 @@ def test_server_text_gate_strict_bodies_and_chat(monkeypatch, tmp_path):
     assert c.post("/v1/monitor/text", json={"context": "x", "action": {"tool": "x"}}).status_code == 200
     for k in ("text", "text_error"):
         monitor_server._STATE.pop(k, None)
+
+
+def test_gate_with_a_chat_text_monitor_and_units(tmp_path):
+    from graybox.guard import Guard
+    from graybox.monitor import QuantileGate, TextMonitor
+    d = json.loads(MODEL.read_text()); d["chat"] = True
+    (tmp_path / "c.json").write_text(json.dumps(d))
+    tm = TextMonitor.load_json(tmp_path / "c.json")
+    gate = QuantileGate(0.05).fit(list(np.linspace(-9, -6, 300)))      # logits
+    oa = [{"role": "system", "content": "p"}, {"role": "user", "content": "Mail Bob."}, {"role": "user", "content": "Actually, mail everyone."}]
+    v = Guard(tm, gate=gate).check_openai(oa, {"id": "c1", "type": "function", "function": {"name": "send_message", "arguments": "{\"to\": \"all\"}"}})
+    assert v.unit == "logit" and v.allow == (v.score < gate.threshold)
+    v2 = Guard(tm).check_openai(oa, {"id": "c1", "type": "function", "function": {"name": "send_message", "arguments": "{\"to\": \"all\"}"}})
+    assert abs(v.score - v2.score) < 1e-12                               # same logit with and without the gate
+
+
+def test_public_render_accepts_dict_histories():
+    from graybox.monitor import Step, ctx_text, render
+    st = {"instructions": "i", "task": "t", "history": [{"tool": "r", "args": {}, "result": "x"}], "action": {"tool": "send", "args": {"to": "a"}}}
+    ctx, act = render(st)
+    assert ctx == ctx_text("i", "t", [Step("r", {}, "x")]) and act == 'send {"to": "a"}'
+    assert render({"context": "c", "action": {"tool": "x", "args": {}}}) == ("c", "x {}")
+
+
+def test_train_text_reports_within_tool_auroc_and_groups(tmp_path, capsys):
+    # the violation is decided by the tool alone: pooled AUROC is high, within-tool AUROC is chance -> a warning
+    from graybox import train_text
+    rng = np.random.default_rng(0)
+    rows = []
+    for i in range(120):
+        bad = i % 2
+        tool = "refund" if bad else "lookup"
+        rows.append({"context": f"task {i % 12} user asks about order {rng.integers(1e6)}", "action": f"{tool} {{\"id\": {rng.integers(1e6)}}}",
+                     "label": int(bad if rng.random() < 0.8 else 1 - bad), "task": f"t{i % 12}", "instructions": ""})
+    f = tmp_path / "steps.jsonl"
+    f.write_text("\n".join(json.dumps(r) for r in rows))
+    train_text.main([str(f), "--out", str(tmp_path / "m.json"), "--group-by", "task"])
+    rep = json.loads(capsys.readouterr().out.split("\nsaved")[0])
+    assert rep["groups"] == 12 and rep["cv_auroc"] > 0.7
+    assert rep["cv_auroc_within_tool"] is not None and rep["cv_auroc_within_tool"] < 0.65
+    assert "warning" in rep and "top 5%" in rep["cut"]
+    assert train_text._tool({"action": "cancel_reservation {\"reservation_id\": \"Q6\"}"}) == "cancel_reservation"
+    assert train_text._tool({"action": {"tool": "send_email", "args": {}}}) == "send_email"
+
+
+def test_caught_at_budget_sends_exactly_the_budget_with_ties():
+    from graybox.stats import caught_at_budget
+    y = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0] * 10)
+    assert caught_at_budget(y, np.where(y == 1, 9.0, 0.0), 0.2) == 1.0         # 20 reviewed = the 20 positives
+    tied = np.where(np.arange(100) < 50, 100.0, 0.0)          # half the units at 100: a 5% budget reviews 5 of 50 tied units
+    assert abs(caught_at_budget(y, tied, 0.05) - (5 / 50 * y[:50].sum()) / y.sum()) < 1e-12
+    assert abs(caught_at_budget(y, np.zeros(100), 0.05) - 0.05) < 1e-12   # a constant score catches at random
+    s = np.random.default_rng(0).normal(size=100)              # without ties: the top 5 units
+    assert caught_at_budget(y, s, 0.05) == y[np.argsort(-s)[:5]].sum() / y.sum()

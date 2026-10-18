@@ -153,22 +153,25 @@ class Guard:
             chat = bool((getattr(monitor, "_json", None) or {}).get("chat", getattr(monitor, "chat", False)))
         self.monitor, self.gate, self.reviewer, self.chat = monitor, gate, reviewer, chat
 
+    def _is_text(self) -> bool:
+        """Text and browser-reader monitors score in logits (decision); the reader scores probabilities."""
+        return getattr(self.monitor, "_json", None) is not None and hasattr(self.monitor, "decision")
+
     def _unit(self) -> str:
-        return "probability" if self.gate is not None else "logit"
+        return "logit" if self._is_text() or self.gate is None else "probability"
 
     def _escalated(self, step: dict) -> tuple[bool, float]:
         tool, args = step["action"]["tool"], step["action"].get("args") or {}
-        if isinstance(step.get("context"), str):                   # a prebuilt (conversation-aware) context
-            if self.gate is None:
-                z = self.monitor.decision(None, None, None, None, rendered=(step["context"], act_text(tool, args)))
-                return z >= self.monitor._json["threshold_logit"], z
-            p = float(self.monitor.probe.predict_proba(self.monitor.features(Q.format(ctx=step["context"], cot="", act=act_text(tool, args))))[0, 1])
-            return bool(self.gate(p)), p
+        ctx = step.get("context") if isinstance(step.get("context"), str) else None   # a prebuilt (conversation-aware) context
         hist = [Step(h["tool"], h.get("args") or {}, h.get("result", "")) for h in step.get("history") or []]
-        if self.gate is None:
-            z = self.monitor.decision(step.get("instructions", ""), step.get("task", ""), hist, (tool, args))
-            return z >= self.monitor._json["threshold_logit"], z
-        p = self.monitor.score(step.get("instructions", ""), step.get("task", ""), hist, (tool, args))
+        if self._is_text():                                         # text / browser reader: a logit, gated on logits
+            z = self.monitor.decision(step.get("instructions", ""), step.get("task", ""), hist, (tool, args),
+                                      rendered=(ctx, act_text(tool, args)) if ctx is not None else None)
+            return (z >= self.monitor._json["threshold_logit"] if self.gate is None else bool(self.gate(z))), z
+        if ctx is not None:                                         # the reader: a probability, gated on probabilities
+            p = float(self.monitor.probe.predict_proba(self.monitor.features(Q.format(ctx=ctx, cot="", act=act_text(tool, args))))[0, 1])
+        else:
+            p = self.monitor.score(step.get("instructions", ""), step.get("task", ""), hist, (tool, args))
         return bool(self.gate(p)), p
 
     def check_step(self, step: dict) -> Verdict:

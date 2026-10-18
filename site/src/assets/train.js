@@ -187,7 +187,7 @@
       else if (m.type === 'error') { $('progMsg').innerHTML = `<span class="tag fail">error</span> ${esc(m.msg)}`; $('trainBtn').disabled = false; w.terminate(); }
       else { model = m.model; model.chat = $('chatCtx').checked; report = m.report; w.terminate(); $('prog').hidden = true; $('progMsg').textContent = ''; $('trainBtn').disabled = false; results(); }
     };
-    w.postMessage({ cmd: 'train', rows, budget });
+    w.postMessage({ cmd: 'train', rows, budget, privacy: $('privacyFilter').checked });
   }
 
   // ---- browser reader ----
@@ -241,7 +241,7 @@
       const perTool = {};
       L.forEach((i, j) => { const t = TM.render(steps[i]).act.split(' ')[0], o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[j]) { o.unsafe++; if (sc[i] >= cut) o.caught++; } });
       report = nPos >= 1 && nPos < y.length ? { pretrained: true, n: y.length, unsafe: nPos, groups: new Set(L.map(i => String(steps[i].group ?? steps[i].task ?? i))).size,
-        auroc: TM.auroc(y, s), auroc_ci95: TM.groupBootstrapAUROC(y, s, L.map(i => String(steps[i].group ?? steps[i].task ?? i)), 500, 0), budget,
+        auroc: TM.auroc(y, s), auroc_within_tool: TM.withinAUROC(y, s, L.map(i => TM.render(steps[i]).act.split(' ')[0])), auroc_ci95: TM.groupBootstrapAUROC(y, s, L.map(i => String(steps[i].group ?? steps[i].task ?? i)), 500, 0), budget,
         caught: caught / nPos, safe_escalated: safeEsc / (y.length - nPos), perTool, base_rate: nPos / y.length, ceiling: Math.min(1, nEsc / nPos),
         precision: nEsc ? caught / nEsc : NaN, encoder: BR.encoder, dim: E.dim } : null;
       if (report) results();
@@ -264,6 +264,10 @@
   function results() {
     const r = report;
     allScores = steps.map((_, i) => stepScore(i));
+    // the review cut, as the page promises: the top `budget` of the scores of ALL your loaded actions, without labels
+    model.threshold_logit = TM.quantile(allScores, 1 - r.budget);
+    model.cut_source = 'the top ' + pct(r.budget) + ' of the scores of all ' + steps.length + ' loaded actions (no labels used)';
+    histogram(r);
     $('results').hidden = false; $('use').hidden = false;
     $('useCode').textContent = useCode(isEmbed());
     const inverted = r.auroc_ci95[1] < 0.5, weak = r.auroc_ci95[0] <= 0.5 || r.unsafe < 5 || !(r.auroc > 0.5);
@@ -289,7 +293,12 @@
       : `${plural(r.n, 'labelled action')}, ${plural(r.unsafe, 'violation')}, ${plural(r.groups, 'group')} (conversations or tasks), ${r.folds}-fold cross-validation that holds out whole groups. ` +
         (r.vocab ? `Regularization C = ${r.C} (AUROC by C: ${r.cv_auroc_by_C.map(([c, a]) => `${c}: ${a.toFixed(3)}`).join(', ')}). Vocabulary: ${num(r.vocab.context)} context terms, ${num(r.vocab.action)} action terms.`
                  : `Browser reader ${r.encoder} (${num(r.dim)} features), logistic regression C = ${r.C}.`) +
-      (r.unsafe < 20 ? ' With fewer than 20 violations these numbers are rough: the interval above shows how rough.' : '');
+      (r.unsafe < 20 ? ' With fewer than 20 violations these numbers are rough: the interval above shows how rough.' : '') +
+      (isNaN(r.auroc_within_tool) ? '' : ` Within tool (0.5 = knowing only which tool is called): AUROC ${r.auroc_within_tool.toFixed(3)}.`) +
+      (r.auroc - r.auroc_within_tool > 0.1 ? ' Most of the AUROC comes from which tool is called, not from the call itself: on new groups the ' +
+        'monitor does not separate safe from unsafe calls of the same tool. Check such rules in code, or review those calls.' : '') +
+      (r.pretrained ? '' : ' Word counts memorize the ids, names and amounts of the labelled tasks; they do not check a numeric, date or recipient ' +
+        'rule on values they have not seen.');
     queueInfo();
     show();
   }
@@ -297,8 +306,36 @@
     const load = embed ? 'from graybox.embed_monitor import EmbedMonitor\nguard = Guard(EmbedMonitor.load_json("greybox-reader-monitor.json"))   # CPU; downloads the reader once'
                        : 'from graybox.monitor import TextMonitor\nguard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))';
     return `pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"\n\nfrom graybox.guard import Guard\n${load}\n\n` +
-      '# OpenAI: before you execute each proposed tool call (messages may include the reply; the score is the same)\nfor call in reply.tool_calls or []:\n    v = guard.check_openai(messages, call)\n' +
+      '# OpenAI: append the reply to messages, then check each proposed tool call before you execute it\n# (required for parallel calls: the monitor then sees the earlier calls of the same reply)\nfor call in reply.tool_calls or []:\n    v = guard.check_openai(messages, call)\n' +
       '    result = run_tool(call) if v.allow else v.block_message\n\n# Anthropic: for each tool_use block\nv = guard.check_anthropic(system, messages, block)';
+  }
+  // scores of your actions, with the review cut: where your labelled violations sit
+  function histogram(r) {
+    const lo = Math.min(...allScores), hi = Math.max(...allScores), nb = 30, span = (hi - lo) || 1;
+    const bin = z => Math.min(nb - 1, Math.floor((z - lo) / span * nb));
+    const c = { v: new Array(nb).fill(0), s: new Array(nb).fill(0), u: new Array(nb).fill(0) };
+    steps.forEach((st, i) => { c[st.label === 1 ? 'v' : st.label === 0 ? 's' : 'u'][bin(allScores[i])]++; });
+    const W = 560, H = 150, base = H - 18, bw = W / nb, tot = c.v.map((v, i) => v + c.s[i] + c.u[i]), mx = Math.max(1, ...tot);
+    let bars = '';
+    for (let i = 0; i < nb; i++) {
+      if (!tot[i]) continue;
+      const h = base * Math.sqrt(tot[i] / mx);                    // square-root height: violations are rare
+      let top = base;
+      for (const [k, col, name] of [['s', 'var(--ok)', 'safe'], ['u', 'var(--line)', 'unlabelled'], ['v', 'var(--flag)', 'violation']]) {
+        if (!c[k][i]) continue;
+        const seg = Math.max(1, h * c[k][i] / tot[i]);
+        bars += `<rect x="${(i * bw + 1).toFixed(1)}" y="${(top - seg).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${seg.toFixed(1)}" fill="${col}"><title>${c[k][i]} ${name}</title></rect>`;
+        top -= seg;
+      }
+    }
+    const cx = (model.threshold_logit - lo) / span * W;
+    $('hist').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Scores of your actions with the review cut">${bars}
+      <line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="0" y2="${base}" stroke="var(--ink)" stroke-dasharray="4 3"/>
+      <text x="${Math.min(cx + 4, W - 130).toFixed(1)}" y="12" font-size="11" fill="var(--ink)">review cut (top ${pct(r.budget)})</text>
+      <text x="0" y="${H - 3}" font-size="11" fill="var(--mute)">lower risk</text><text x="${W}" y="${H - 3}" font-size="11" fill="var(--mute)" text-anchor="end">higher risk</text></svg>
+      <p class="muted" style="font-size:13px;margin:4px 0 0">Scores of all your actions (bar height: square root of the count):
+      <span style="color:var(--flag)">■</span> labelled violation, <span style="color:var(--ok)">■</span> labelled safe, <span style="color:var(--mute)">■</span> unlabelled.
+      Actions right of the line go to review.</p>`;
   }
   function queueInfo() {
     const unl = steps.map((s, i) => i).filter(i => steps[i].label !== 0 && steps[i].label !== 1);
@@ -335,37 +372,25 @@
         const r = TM.render(ex), x = TM.features(model, r), off = model.vc.idf.length;
         z = TM.decision(model, x);
         if (!x.idx.some(j => j >= off)) note = ' <span class="tag fail">check</span> None of this action\'s words are in the monitor\'s vocabulary: its score comes from the context alone. Train on actions with this tool.';
+        // why: the words that move this score most (weight x tf-idf), from the action and from the context
+        const inv = [Object.fromEntries(Object.entries(model.vc.vocab).map(([t, j]) => [j, t])), Object.fromEntries(Object.entries(model.va.vocab).map(([t, j]) => [j, t]))];
+        const parts = x.idx.map((j, k) => ({ t: j >= off ? 'action: ' + inv[1][j - off] : 'context: ' + inv[0][j], c: model.w[j] * x.val[k] }))
+          .sort((a, b) => Math.abs(b.c) - Math.abs(a.c)).slice(0, 6);
+        note += '<br><span class="muted" style="font-size:13px">Words that moved this score most: ' + parts.map(p => `<span class="tag ${p.c > 0 ? 'fail' : 'pass'}">${esc(p.t)} ${p.c > 0 ? '+' : ''}${p.c.toFixed(2)}</span>`).join(' ') +
+          '. Word counts cannot compare numbers (a $30 and a $300 refund look alike) or tell a new address from a known one: check such rules in code, or use the reader monitor.</span>';
       }
       const esc_ = z >= model.threshold_logit;
       $('scoreOut').innerHTML = `<span class="tag ${esc_ ? 'fail' : 'pass'}">${esc_ ? 'send to review' : 'allow'}</span> score ${z.toFixed(2)} (review cut ${model.threshold_logit.toFixed(2)}). ` +
         `<span class="muted">The score is compared with the cut set from your actions; it is not a probability.</span>${note}`;
     } catch (err) { $('scoreOut').innerHTML = `<span class="tag fail">error</span> ${esc(err.message)}`; }
   };
-  // privacy: words with digits, "@" or long codes (tokens, keys, ids) are dropped from the downloaded file
-  // and RARE words (in fewer than 1% of the training actions, at least 5): names, keys and ids are rare
-  const SECRETISH = /\d|@|[a-z0-9_]{20,}/i;
-  function privateCopy(m) {
-    const c = JSON.parse(JSON.stringify(m)), n = (m.trained_on && m.trained_on.n) || 0, minDf = Math.max(5, 0.01 * n);
-    let removed = 0;
-    for (const v of [c.vc, c.va]) for (const [t, j] of Object.entries(v.vocab)) {
-      const df = n ? (1 + n) / Math.exp(v.idf[j] - 1) - 1 : Infinity;           // smooth idf = ln((1 + n) / (1 + df)) + 1
-      if (SECRETISH.test(t) || df < minDf - 1e-6) { delete v.vocab[t]; removed++; }
-    }
-    return [c, removed];
-  }
   $('exportBtn').onclick = () => {
     if (!model) return;
     if ($('exportBtn').textContent.startsWith('Download anyway') && !confirm('This monitor is not usable yet (see the warning above). Download it anyway?')) return;
-    let out = model, note = '';
-    if (!isEmbed() && $('privacyFilter').checked) {
-      const [c, removed] = privateCopy(model);
-      const d = steps.map(s => { const r = TM.render(s); return Math.abs(TM.decision(c, TM.features(c, r)) - TM.decision(model, TM.features(model, r))); });
-      const changed = steps.filter((s, i) => (TM.decision(c, TM.features(c, TM.render(s))) >= c.threshold_logit) !== (allScores[i] >= model.threshold_logit)).length;
-      out = c;
-      note = `Removed ${plural(removed, 'word')} with digits, "@" or long codes, or used in fewer than 1% of your actions. On your actions, scores changed by at most ${Math.max(0, ...d).toFixed(3)}; ` +
-        `${plural(changed, 'review decision')} changed. Names and other words can remain: check the file before you share it.`;
-    }
+    const note = isEmbed() ? '' : model.privacy
+      ? 'This model was trained without words that have digits, "@", long codes or random strings, or that are rare (fewer than 1% of your actions); the numbers above are for this model. Names or secrets that recur across many conversations can remain: check the file before you share it.'
+      : 'This file holds words from your logs (names, ids, secrets). Before you share it, tick "Train without identifying words" and train again.';
     $('exportNote').textContent = note;
-    download(new Blob([JSON.stringify(out)], { type: 'application/json' }), isEmbed() ? 'greybox-reader-monitor.json' : 'greybox-text-monitor.json');
+    download(new Blob([JSON.stringify(model)], { type: 'application/json' }), isEmbed() ? 'greybox-reader-monitor.json' : 'greybox-text-monitor.json');
   };
 })();

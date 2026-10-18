@@ -12,7 +12,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 R = ROOT / "results"
-EXPLAINED = {   # (lock, file) -> documented reason for an intended later change
+EXPLAINED = {
+    ("prereg_T19_small_readers_lock.json", "scripts/100_t19_small_readers.py"): "T19 deviation 1: bool() cast so the result JSON can be written; no computation changed",
+    ("prereg_T23_tau2_judge_frontier_lock.json", "docs/prereg_T23_tau2_judge_frontier.md"): "T23 amendment 1 (own lock, published c801e95 before any judge output): TOOL baseline constant within tool",
+    ("prereg_T23_tau2_judge_frontier_lock.json", "scripts/103e_t23_tau2_judge_frontier.py"): "T23 amendment 1 (own lock, published c801e95 before any judge output): TOOL baseline constant within tool",   # (lock, file) -> documented reason for an intended later change
     ("prereg_T1_agents_lock.json", "scripts/25_t1_confirm.py"): "addendum 1 added F4/F5 (re-locked in prereg_T1_agents_addendum1_lock.json)",
     ("prereg_L3b_claude_livebench_lock.json", "scripts/41_claude_livebench.py"): "L3b deviation 1: checkpoint/resume after a rate-limit crash",
     ("prereg_L3c_claude_batch_lock.json", "src/graybox/batch.py"): "append-only extension for L3d; the L3c part hashes to the lock (verified)",
@@ -140,7 +143,7 @@ def numbers():
 
 def criteria():
     """T14-T19: re-derive every pass flag from its saved interval and the preregistered criterion."""
-    print("== preregistered criteria re-derived from saved intervals (T14-T19)")
+    print("== preregistered criteria re-derived from saved intervals (T14-T20)")
     bad = 0
 
     def chk(name, flag, ci, rule):
@@ -190,6 +193,25 @@ def criteria():
         sel = max(("minilm", "mpnet", "qemb06"), key=lambda r: d["auroc"][r]["T7"])
         bad += sel != d["selected_browser_reader"]
         print(f"  T19 selection rule (best browser reader on T7): {sel} (saved {d['selected_browser_reader']})")
+    d = j("t1/t20_tau2_two_closed.json")
+    if d:
+        if d["test"]["violations"] < 15:
+            print(f"  T20 not tested: {d['test']['violations']} violations < 15"); bad += "G1_pass" in d
+        else:
+            chk("T20 G1 within-tool reader - tool", d["G1_pass"], d["G1_READER_minus_TOOL"], "lo>0")
+            chk("T20 G2 within-tool TF-IDF - tool", d["G2_pass"], d["G2_TXT_minus_TOOL"], "lo>0")
+    d = j("t1/t21_tau2_unseen_tasks.json")
+    if d:
+        chk("T21 H1 within-tool reader - TF-IDF (unseen tasks)", d["H1_pass"], d["H1_READER_minus_TXT"], "lo>0")
+        chk("T21 H2 within-tool reader - tool (unseen tasks)", d["H2_pass"], d["H2_READER_minus_TOOL"], "lo>0")
+    d = j("t1/t22_tau2_judge.json")
+    if d:
+        chk("T22 J1 within-tool judge - tool", d["t20"]["J1_pass"], d["t20"]["J1_JUDGE_minus_TOOL"], "lo>0")
+        chk("T22 J2 within-tool judge - reader (unseen tasks)", d["t20"]["J2_pass"], d["t20"]["J2_JUDGE_minus_READER_unseen_tasks"], "lo>0")
+    d = j("t1/t23_tau2_judge_frontier.json")
+    if d:
+        chk("T23 K1 within-tool judge - tool (frontier writes)", d["K1_pass"], d["K1_JUDGE_minus_TOOL"], "lo>0")
+        chk("T23 K2 within-tool judge - reader cv (frontier writes)", d["K2_pass"], d["K2_JUDGE_minus_READER_cv"], "lo>0")
     print(f"  criterion mismatches: {bad}")
 
 

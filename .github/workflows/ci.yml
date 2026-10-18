@@ -11,6 +11,8 @@ jobs:
       - run: pytest -q tests
       - name: recompute the headline results from the public per-unit release
         run: python scripts/109_recompute_public.py
+      - name: catch rates at an exact budget reproduce the committed corrections
+        run: python scripts/111_catch_exact_budget.py && git diff --exit-code results/t1/catch_exact_budget.json
   docker:
     runs-on: ubuntu-latest
     steps:

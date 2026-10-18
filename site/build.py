@@ -90,6 +90,17 @@ verbatim, including every failure, deviation and correction.</p>
 <span class="tag fail">fail</span> it was not; <span class="tag mixed">mixed</span> some endpoints passed and some failed;
 <span class="tag nt">not tested</span> the data did not allow the preregistered test. AUROC: 0.5 is chance, 1.0 perfect.
 Brackets are 95% bootstrap confidence intervals.</div>
+<details style="margin:10px 0"><summary><b>Words used in this table</b></summary><ul style="margin-top:8px">
+<li><b>AUROC</b>: the chance that a random violation gets a higher score than a random safe action (0.5 = guessing, 1.0 = perfect).</li>
+<li><b>Caught at 5%</b>: the share of violations among the 5% of actions with the highest scores (what a human reviewer would see).</li>
+<li><b>Reader</b>: an open language model (Qwen3-8B) that reads the transcript; a simple classifier on its internal state is the monitor.</li>
+<li><b>Probe</b>: a simple (linear) classifier on a model's internal state.</li>
+<li><b>Replica</b>: an estimate of an agent's hidden state, computed from the reader; <b>R²</b> is the share of the state's variation that it reproduces.</li>
+<li><b>TF-IDF</b>: a word-count classifier (the browser trainer's default monitor).</li>
+<li><b>Preregistered, hash-locked</b>: the plan and the analysis code were fixed, and their fingerprint saved, before the test ran.</li>
+<li><b>Exploratory</b>: an analysis decided after seeing data; it suggests, it does not confirm.</li>
+<li><b>Open / closed agent</b>: a model with public weights (we can read its internals) / a model behind an API (we cannot).</li>
+</ul></details>
 <div class="tablewrap"><table><thead><tr><th>Test</th><th>Outcome</th><th>Result</th><th>Data</th><th>Locked</th></tr></thead>
 <tbody>{''.join(trs)}</tbody></table></div>
 <h2>Figures</h2>
@@ -97,7 +108,7 @@ Brackets are 95% bootstrap confidence intervals.</div>
 and its replica from the transcript (b), on fresh steps; (c) the variance replicated per principal component (T15, preregistered).</figcaption></figure>
 <figure><img src="figures/generalization.png" alt="AUROC of monitors under increasing shift" loading="lazy"><figcaption>Monitoring an agent's next
 action from its transcript, under increasing shift: trained reader (blue), trained bag-of-words (hollow square), zero-shot 70B judge (green),
-the agent's own internals (orange). The two Claude rows rest on one stratum (136 actions, 26 violations).</figcaption></figure>
+the agent's own internals (orange). The dashed line is chance (AUROC 0.5). The two Claude rows rest on one stratum (136 actions, 26 violations).</figcaption></figure>
 <figure><img src="figures/time_vs_access.png" alt="Time, not access" loading="lazy"><figcaption>The same 12,128 fresh steps read at the start of
 the agent's turn and after its reasoning. Reading later helps every method; access alone does not.</figcaption></figure>
 <figure><img src="figures/label_efficiency.png" alt="Label efficiency" loading="lazy"><figcaption>Reader accuracy against the number of labelled
@@ -132,10 +143,16 @@ def index_page():
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
 proposed action. It does not need the model's weights, so it works on closed models. The confirmatory claims on this site come from
 preregistered, hash-locked tests (lock times self-reported); exploratory results are marked. We show the failures too.</p>
-<figure style="margin:20px 0 6px"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, and replicas of two closed agents" loading="eager">
-<figcaption><b>Seeing inside closed agents.</b> All panels share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
+<div class="note" style="margin-top:14px"><b>In plain words.</b> Before an AI agent runs an action (send an email, delete a file, issue a
+refund), Grey Box gives it a risk score from the conversation so far, and sends the riskiest few percent to a person. It needs no access
+to the model's internals. It learns your policy from examples that you label. It works best on the kinds of tasks that you labelled; on
+a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
+<a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, replicas of two closed agents, and live prevention rates" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span><b>Seeing inside closed agents.</b> Panels (a–d) share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
 replica, computed from the transcript only. (c, d) Two closed agents, mapped through the same reader: we never saw their weights, and their replica cannot be checked, so we test prediction. Red: policy
-violations. In every agent they occupy their own region.</figcaption></figure>
+violations. In every agent they occupy their own region. (e) Live prevention: the share of episodes in which a violation ran, without the
+gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
@@ -175,8 +192,12 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught
   {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])} (exploratory). On prompt injections (AgentDojo),
   labelled calls of open agents raised the catch rate on a closed agent from 28% to 58% at the label-free cut (AUROC 0.840 → 0.922),
-  also on user tasks that the training never saw (exploratory). On τ²-bench the closed agents broke the policy too rarely to test
-  this. Label steps of each new type of policy.</p></div>
+  also on user tasks that the training never saw (exploratory). On τ²-bench, no trained monitor transferred to tasks it had not seen
+  (reader 0.535, word counts 0.519; an earlier 0.987 for word counts came from test tasks that were also in training). Word counts
+  memorize entities and tasks, and neither monitor checks rules over numbers, dates or recipients it has not seen. A zero-shot reasoning judge, with no labels, checks such written rules
+  within a tool (AUROC 0.766 on four closed frontier agents, preregistered T23), but at a 5% review budget it caught fewer
+  violations than the reader (11.7% vs 18.4%). Label steps of
+  each new type of policy and of each new task.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
   the reader on the training benchmark (Claude: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
   On a new benchmark of prompt injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}). The reader stayed at
@@ -301,10 +322,11 @@ def main():
     # the Claude replay, wrapped with the site header
     tmp = DIST / "_monitor_raw.html"
     subprocess.run([sys.executable, str(ROOT / "web/build_monitor_demo.py"), "/data/models/graybox_ws/outputs/t8b/space.json", str(tmp)], check=True)
-    raw = tmp.read_text()
+    raw = re.sub(r"<title>.*?</title>", "", tmp.read_text(), count=1)       # the page title goes in <head> below
     tmp.unlink()
     nav = "".join(f'<a href="{h}"{" aria-current=page" if h == "monitor.html" else ""}>{t}</a>' for h, t in NAV)
     (DIST / "monitor.html").write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent replay · Grey Box</title><meta name="description" content="Recorded episodes of Claude Haiku 5.5 as a tool-using agent, with the monitor's decision on each action and its 3D feature space.">
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
 {raw}</body></html>""")
@@ -312,10 +334,11 @@ def main():
     tmp = DIST / "_chat_raw.html"
     subprocess.run([sys.executable, str(ROOT / "web/build_replay.py"), "/data/models/graybox_ws/outputs/live/session_v2_claude_haiku55.json",
                     str(ROOT / "web/data/meta_v2_claude.json"), str(tmp)], check=True)
-    raw = tmp.read_text()
+    raw = re.sub(r"<title>.*?</title>", "", tmp.read_text(), count=1)
     tmp.unlink()
     nav = "".join(f'<a href="{h}"{" aria-current=page" if h == "chat.html" else ""}>{t}</a>' for h, t in NAV)
     (DIST / "chat.html").write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recorded chat replay · Grey Box</title><meta name="description" content="A recorded chat session with Claude Haiku 5.5, replayed turn by turn with the grey-box readouts.">
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
 {raw}</body></html>""")

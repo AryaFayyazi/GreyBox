@@ -38,6 +38,16 @@ def tool_prior():
     return pd.Series(Ug.y.values.astype(int)).groupby(T.act.str.split(" ", n=1).str[0].values).mean()
 
 
+def t8b_txt(U):
+    """T9's TF-IDF on Claude's T8b actions: trained on Gemma dev + fresh, as in scripts/77 (main, block T7 and T8b)."""
+    t9 = importlib.import_module("77_t9_text_baseline")
+    Ud, Uf = pd.read_parquet(I / "gemma4_clean_units.parquet"), pd.read_parquet(I / "gemma4_fresh_units.parquet")
+    Td, Tf = t9.gemma_texts("clean"), t9.gemma_texts("fresh")
+    ca, aa = pd.concat([Td.ctx, Tf.ctx]).values, pd.concat([Td.act, Tf.act]).values
+    ya = np.concatenate([Ud.y.values.astype(int), Uf.y.values.astype(int)])
+    ga = np.concatenate([Ud.scenario_id.values, Uf.scenario_id.values])
+    return t9.TXT().fit(ca, aa, ya, ga).score(U.ctx, U.act)
+
 def closed_agents(rate):
     from sklearn.metrics import roc_auc_score
     t8b, t11 = importlib.import_module("76_t8b_claude_all_actions"), importlib.import_module("81_t11_gpt_monitor")
@@ -45,7 +55,10 @@ def closed_agents(rate):
     d = pd.DataFrame({"episode_id": U.episode_id, "scenario_id": U.scenario_id, "template": U.template, "tool": U.act.str.split(" ", n=1).str[0],
                       "y": U.y.astype(int), "READER": np.load(W / "t8b/reader.npz")["p"], "J_act": pd.read_parquet(W / "t8b/judge.parquet").p.values})
     d["TOOL_PRIOR"] = d.tool.map(rate).fillna(0).values
+    d["TXT"] = t8b_txt(U)
     close(within_auroc(d.y.values, d.READER.values, d.template.values), j("t8b_claude_all_actions.json")["auroc"]["READER"], 1e-4, "T8b READER")
+    close(float((d.TXT.values[d.y.values == 1] >= np.quantile(d.TXT.values, .95)).mean()),
+          j("t9_text_baseline.json")["T8b_claude"]["caught_at_5pct"]["TXT"]["label_free_cut"], 1e-4, "T8b TXT caught (T9)")
     d.to_csv(OUT / "t8b_claude.csv.gz", index=False)
     U = t11.units()
     d = pd.DataFrame({"episode_id": U.episode_id, "scenario_id": U.scenario_id, "template": U.template, "tool": U.tool, "y": U.y.astype(int),
@@ -198,10 +211,97 @@ def tau2():
         d.to_csv(OUT / f"{name}.csv.gz", index=False)
 
 
+def small_readers_t19():
+    """T19: every test unit's score from each of the nine monitors, rebuilt as in scripts/100 (stage analyze), which ran
+    with 8 BLAS threads: the probes are refit under the same limit (with 1 thread, minilm on T13b moves by 2.5e-4)."""
+    from threadpoolctl import threadpool_limits
+    with threadpool_limits(8):
+        _small_readers_t19()
+
+
+def _small_readers_t19():
+    import joblib
+    from sklearn.decomposition import PCA
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    from graybox.embed import fit_probe
+    m, t9 = importlib.import_module("100_t19_small_readers"), importlib.import_module("77_t9_text_baseline")
+    r19 = j("t19_small_readers.json")
+    tr = m.data("train")
+    sets = {s: m.data(s) for s in m.SETS[1:]}
+    out = {s: pd.DataFrame({"set": s, "stratum": d.stratum.values if d.stratum.iloc[0] is not None else "",
+                            "cluster": d.cluster.astype(str).values, "y": d.y.values}) for s, d in sets.items()}
+    for r in m.BROWSER + list(m.DECODER):
+        if r == "q8":
+            probe = joblib.load(W.parent / "models/monitor/reader_probe.joblib")["probe"]
+        elif r in m.BROWSER:
+            probe = fit_probe(m.features(r, "train"), tr.y.values)
+        else:
+            probe = make_pipeline(StandardScaler(), PCA(256, random_state=0), LogisticRegression(C=0.05, max_iter=4000)).fit(m.features(r, "train"), tr.y.values)
+        for s in sets:
+            out[s][r] = probe.decision_function(m.features(r, s))
+            close(m.auroc(sets[s], out[s][r].values), r19["auroc"][r][s], 1e-4, f"T19 {r} {s}")
+    txt = t9.TXT().fit(tr.ctx.values, tr.act.values, tr.y.values, tr.cluster.values)
+    for s, d in sets.items():
+        out[s]["TXT"] = txt.score(d.ctx.values, d.act.values)
+        close(m.auroc(d, out[s]["TXT"].values), r19["auroc"]["TXT"][s], 1e-4, f"T19 TXT {s}")
+    pd.concat(out.values(), ignore_index=True).to_csv(OUT / "t19_small_readers.csv.gz", index=False)
+
+
+def tau2_unseen_t21_t22():
+    """T21 (monitors trained without the test tasks, as in scripts/103c) and T22 (the zero-shot judge, scripts/103d) on T20's writes."""
+    from sklearn.decomposition import PCA
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    t9, m21 = importlib.import_module("77_t9_text_baseline"), importlib.import_module("103c_t21_tau2_unseen_tasks")
+    D = W / "tau2_claude"
+    tr_all, te = pd.read_parquet(D / "t18_train.parquet"), pd.read_parquet(D / "t20_test.parquet")
+    H_all, Hte = np.load(D / "t18_train_reader.npz")["h"].astype(np.float32), np.load(D / "t20_test_reader.npz")["h"].astype(np.float32)
+    keep = ~tr_all.task_id.isin(set(te.task_id)).values
+    tr, ytr = tr_all[keep].reset_index(drop=True), tr_all.y.values[keep]
+    reader = make_pipeline(StandardScaler(), PCA(min(256, len(tr) - 1), random_state=0), LogisticRegression(C=0.05, max_iter=4000))
+    mk = lambda c: np.array([m21.mask(x) for x in c], dtype=object)  # noqa: E731
+    d = pd.DataFrame({"sim_id": te.sim_id, "task_id": te.task_id, "tool": te.tool, "agent": te["agent"], "y": te.y.astype(int),
+                      "READER": reader.fit(H_all[keep], ytr).decision_function(Hte),
+                      "TXT": t9.TXT().fit(tr.ctx.values, tr.act.values, ytr, tr.task_id.values).score(te.ctx.values, te.act.values),
+                      "TOOL": te.tool.map(tr.groupby("tool").y.mean()).fillna(ytr.mean()).values,
+                      "TXT_masked": t9.TXT().fit(mk(tr.ctx.values), mk(tr.act.values), ytr, tr.task_id.values).score(mk(te.ctx.values), mk(te.act.values))})
+    for k in ("READER", "TXT", "TXT_masked"):
+        close(within_auroc(d.y.values, d[k].values, d.tool.values), j("t21_tau2_unseen_tasks.json")["auroc_within_tool"][k], 1e-4, f"T21 {k}")
+    J = D / "t22_judge_t20.parquet"
+    if J.exists() and (RES / "t22_tau2_judge.json").exists():
+        p = pd.read_parquet(J).p.values
+        d["JUDGE"] = np.where(np.isfinite(p), p, 50.0)
+        close(within_auroc(d.y.values, d.JUDGE.values, d.tool.values), j("t22_tau2_judge.json")["t20"]["auroc_within_tool"], 1e-4, "T22 JUDGE")
+    d.to_csv(OUT / "t21_t22_tau2_unseen_tasks.csv.gz", index=False)
+
+
+def tau2_frontier_t23():
+    """T23: the judge (seeds 0-3) and the task-grouped cross-validated baselines on the 894 frontier writes (scripts/103e)."""
+    m = importlib.import_module("103e_t23_tau2_judge_frontier")
+    if not (RES / "t23_tau2_judge_frontier.json").exists():
+        print("skip t23")
+        return
+    D = W / "tau2_claude"
+    d = pd.read_parquet(D / "t18_train.parquet")
+    out = pd.DataFrame({"sim_id": d.sim_id, "task_id": d.task_id, "tool": d.tool, "agent": d.source, "y": d.y.astype(int)})
+    for seed in m.SEEDS:
+        p = pd.read_parquet(D / f"t23_judge_frontier_s{seed}.parquet").p.values
+        out[f"JUDGE_s{seed}"] = np.where(np.isfinite(p), p, 50.0)
+    out["READER_cv"], out["TXT_cv"], out["TOOL"] = m.cv_scores(d)
+    saved = j("t23_tau2_judge_frontier.json")["auroc_within_tool"]
+    for k, c in (("JUDGE", "JUDGE_s0"), ("READER_cv", "READER_cv"), ("TXT_cv", "TXT_cv")):
+        close(within_auroc(out.y.values, out[c].values, out.tool.values), saved[k], 1e-4, f"T23 {k}")
+    close(within_auroc(out.y.values, out[[f"JUDGE_s{s}" for s in m.SEEDS]].mean(1).values, out.tool.values), saved["JUDGE_mean4"], 1e-4, "T23 JUDGE_mean4")
+    out.to_csv(OUT / "t23_tau2_judge_frontier.csv.gz", index=False)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     rate = tool_prior()
-    for f in (lambda: closed_agents(rate), agentdojo, live, tau2, replication_t15, replication_t17):
+    for f in (lambda: closed_agents(rate), agentdojo, live, tau2, tau2_unseen_t21_t22, tau2_frontier_t23, replication_t15, replication_t17, small_readers_t19):
         f()
         print("done", getattr(f, "__name__", "closed_agents"), flush=True)
     print({p.name: f"{p.stat().st_size / 1e6:.1f} MB" for p in sorted(OUT.iterdir())})

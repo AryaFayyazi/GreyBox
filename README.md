@@ -39,6 +39,7 @@ pip install "graybox[server,text] @ git+https://github.com/AryaFayyazi/GreyBox" 
    ```
    python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json   # --chat for agents that talk with a user
    ```
+   It reports the cross-validated AUROC, pooled and within tool. Add `--group-by task` to estimate the score on tasks it has not seen.
 2. Put it in your agent's loop:
    ```python
    from graybox.guard import Guard
@@ -49,11 +50,11 @@ pip install "graybox[server,text] @ git+https://github.com/AryaFayyazi/GreyBox" 
        v = guard.check_openai(messages, call)     # pass the reply in messages when it holds several calls
        result = run_tool(call) if v.allow else v.block_message
    ```
-3. On a new kind of task, set the review cut on the agent's own traffic: `Guard(monitor, gate=QuantileGate(0.05))`
-   (or the server's `"gate": true`). A cut stored in the file can escalate almost nothing there: on held-out task
-   families we measured 0 of 18 violations caught with the stored cut, while a live cut kept the 5% budget
-   (`results/tool/cut_under_shift.json`). The text monitor's ranking also weakens on new tasks: label those tasks, or
-   use the reader.
+3. On a new kind of task, a cut stored in the file can escalate almost nothing: on held-out task families it caught
+   0 of 110 violations (three splits, `results/tool/cut_under_shift.json`). A live cut on the agent's own traffic,
+   `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review load at 5%, but it
+   caught only 11 of 110 there: it does not restore detection. Label actions of the new tasks and retrain, or use the
+   reader. A new gate sends every action to review until it has seen 100: seed it with `gate.fit(past_scores)`.
 
 Train the reader monitor on your own labels with one command on a GPU:
 `python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib`, then load it with
@@ -98,6 +99,10 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T17: replication on three more open agents | gpt-oss-20b (mixture of experts), Qwen3.8-27B (hybrid linear attention), Muse-Glimmer-30B (dense), on scenarios that the map never saw. The same reader replicates each agent's decision state better than text features: R² 0.49, 0.54, 0.46 (text 0.39, 0.44, 0.40). A probe trained on the true states works on every replica (0.900 → 0.924, 0.955 → 0.972, 0.929 → 0.969). All six endpoints pass. Replication is partial (about half of the variance), and the readout also works on a text replica. |
 | T16: live prevention on a closed agent | The monitor in GPT-6-luna's loop (500 scenarios, with and without the gate). Episodes with an executed violation: 6.6% → 0.2% (−0.064 [−0.088, −0.044]). No violation after a block. Goals reached 47.4% → 45.6%. Round trip 89 ms. |
 | T16b: live prevention on Claude | The same live test on Claude Haiku 5.5 (450 scenarios). Episodes with an executed violation: 6.7% → 0.2% (−0.064 [−0.087, −0.044]). No violation after a block. Goals reached 40.7% → 34.9%. Round trip 80 ms. |
+| T20: a second outside benchmark (τ²-bench), two closed agents | Monitors trained on four frontier agents' published, labelled τ² trajectories; tested on Claude Haiku 5.5 and GPT-6-luna with a persistent customer (19 violations in 262 writes). Within tool: word counts 0.987 (G2 passes), reader 0.738 (G1 fails). But the test tasks also occur in training: see T21. |
+| T21: τ²-bench, unseen tasks | T20 with every training write of a test task removed (554 writes of 28 other tasks remain). Within tool: reader 0.535, word counts 0.519; both preregistered endpoints fail (reader − word counts +0.017 [−0.514, +0.539]; reader − tool +0.035 [−0.230, +0.259]). Word counts with entities masked: 0.366. T20's word-count score was memorization of the tasks. |
+| T22: a zero-shot reasoning judge on τ²-bench | Qwen3-32B with thinking reads the policy, the conversation and the proposed write; no labels. On T20's 262 writes: within tool 0.804 (T21's reader 0.535). Both preregistered endpoints fail: judge − tool +0.304 [−0.084, +0.427], judge − reader +0.268 [−0.074, +0.511]; only 8 tasks have a violation. |
+| T23: the same judge on four closed frontier agents | T22's judge, unchanged, on the 894 published τ² writes of Claude 3.7 Sonnet, GPT-4.1, GPT-4.1-mini and o4-mini (227 violations, 29 tasks). Within tool: judge 0.766, reader trained on other tasks 0.646. K1 passes (judge − tool +0.266 [0.151, 0.338]); K2 fails (judge − reader +0.120 [−0.047, +0.274]). With exactly 5% of writes reviewed the reader catches more: 18.4% vs 11.7% (most possible 19.7%). Explicit rules can be checked without labels within a tool; neither route is enough alone. |
 | T16c: hold for review instead of block | On Claude (450 scenarios), escalated actions go to a reviewer (here an oracle; an upper bound on a human). Episodes with an executed violation: 6.7% → 0.0% (R1 passes). Goals 38.7% (no gate 40.7%, blocking 34.9%); the preregistered "at most 3 points lost" fails (−0.020 [−0.051, +0.007]). Exploratory: episodes in which the reviewer let a held action run kept their goals (60.8% vs 58.8%); the gap is in episodes where nothing was held, which we suggest is variation between runs (untested: the control was not concurrent). 0.20 reviews per episode. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
 
@@ -108,9 +113,18 @@ white-box probe (T1, F3), and resampling scored by an LLM judge loses to the pro
 
 - Most agent tests use one benchmark, CAPE-Bench. On the external test (AgentDojo), the reader beats a zero-shot judge
   for open agents (0.78 vs 0.54), but not significantly for a closed agent (0.840 vs 0.787, T13b).
-- On τ²-bench (T18, 600 Claude Haiku 5.5 episodes), Claude broke the airline policy in only 9 writes from 3 tasks. That is
-  below the preregistered minimum of 15, so the test was not done. Descriptively, word counts trained on other agents'
-  labels did better there than the reader (within-tool AUROC 0.963 vs 0.756).
+- On τ²-bench (T20: Claude Haiku 5.5 and GPT-6-luna with a customer who insists after a refusal; 262 writes, 19
+  violations), monitors trained on four frontier agents' labelled trajectories: word counts reached within-tool AUROC
+  0.987 (preregistered G2 passes), the reader only 0.738 (G1 fails; reader − word counts −0.250 [−0.518, −0.077]).
+  But every test task also occurs in training. With those tasks removed (T21), neither monitor transfers: reader 0.535,
+  word counts 0.519. T20's word-count score was memorization of tasks (codes, names, dates). τ² violations break
+  explicit rules over facts of the case (dates, amounts, cabin); label-trained readouts do not learn these checks for
+  new tasks. A zero-shot reasoning judge, which needs no labels, checks these rules within a tool (T23: 0.766 on four
+  closed frontier agents), but at a 5% review budget it catches fewer violations than the reader. (T18, on Claude
+  alone, had too few violations to test.)
+- Catch rates are at exactly the stated budget. A first computation (score ≥ the 95th percentile) over-counted
+  monitors with tied scores (the tool baseline, a judge's 0/100 answers); the record lists the corrections. The
+  reader's numbers did not change.
 - A monitor can miss a policy that is not like the policies in its training data (T10). Label a few dozen steps of
   each such policy. A policy that is like a trained one can transfer without labels (T12).
 - The sufficiency corollary (Corollary 1 in the paper; Corollary 3 in `docs/theory.md`) applies to action-level labels. It does not apply to labels about later behaviour or about beliefs.

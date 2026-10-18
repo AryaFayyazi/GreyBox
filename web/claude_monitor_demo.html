@@ -1,4 +1,4 @@
-<title>Closed Agent Monitor</title>
+<title>Agent replay · Grey Box</title>
 <meta charset="utf-8">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,11 @@ h1 { font: 760 22px/1.15 var(--display); font-stretch: 78%; margin: 0 0 4px; }
 .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
 .stat b { display: block; font: 700 22px var(--mono); font-variant-numeric: tabular-nums; }
 .stat span { font-size: 12px; color: var(--mute); }
-.grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; }
+/* desktop: episodes + actions on the left, the 3D view on the right and sticky; phone: one column */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 540px; gap: 12px; align-items: start; }
+.layout > .left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.layout > .space { position: sticky; top: 8px; grid-column: 2; grid-row: 1; }
+#eps { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
 .label { font: 600 11px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-bottom: 8px; }
 .ep { display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 4px; padding: 6px 8px; color: var(--ink); font: 13px var(--display); cursor: pointer; }
@@ -30,11 +34,13 @@ h1 { font: 760 22px/1.15 var(--display); font-stretch: 78%; margin: 0 0 4px; }
 .ep[aria-current="true"] { border-color: var(--accent); }
 .ep:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .ep small { display: block; color: var(--mute); font-size: 11.5px; }
+.ep .st { margin-left: 4px; }
 .tag { font: 600 10.5px var(--mono); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line); color: var(--mute); margin-right: 4px; display: inline-block; white-space: normal; }
 .pct { font: 11px var(--mono); color: var(--mute); }
 .tally { font-size: 12.5px; margin: 0 0 8px; }
 .tag.bad { border-color: var(--flag); color: var(--flag); }
 .tag.good { border-color: var(--ok); color: var(--ok); }
+.tag.solid { background: var(--flag); border-color: var(--flag); color: var(--panel); }
 .task { font-size: 13px; margin: 0 0 6px; }
 details { font-size: 12px; color: var(--mute); margin-bottom: 10px; }
 details pre { white-space: pre-wrap; font: 11.5px/1.4 var(--mono); color: var(--ink); max-height: 220px; overflow: auto; }
@@ -45,19 +51,34 @@ details pre { white-space: pre-wrap; font: 11.5px/1.4 var(--mono); color: var(--
 .verdicts { grid-row: 1 / span 2; grid-column: 2; display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
 .final { font-size: 12.5px; color: var(--mute); border-top: 1px solid var(--line); padding-top: 10px; white-space: pre-wrap; }
 .note { font-size: 12px; color: var(--mute); margin-top: 12px; }
-.space { margin-bottom: 12px; }
-.cv { position: relative; height: 440px; border-radius: 4px; overflow: hidden; background: var(--bg); }
-.cv canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-#tip { position: absolute; pointer-events: none; max-width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; font: 11.5px/1.35 var(--mono); color: var(--ink); display: none; overflow-wrap: anywhere; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--mute); margin: 8px 0 4px; }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.cv { position: relative; height: clamp(300px, calc(100vh - 330px), 520px); border-radius: 4px; overflow: hidden; background: var(--bg); }
+.cv canvas { width: 100%; height: 100%; display: block; touch-action: none; }   /* drags rotate the view; the page does not scroll */
+#tip { position: absolute; left: 0; top: 0; pointer-events: none; width: max-content; max-width: min(340px, calc(100% - 16px)); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px 9px; font: 11.5px/1.4 var(--display); color: var(--ink); display: none; overflow-wrap: anywhere; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); }
+#tip .act { font: 11px/1.35 var(--mono); color: var(--mute); margin-bottom: 4px; }
+#tip .row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1px 8px; }
+#tip .row span:nth-child(2n+1) { color: var(--mute); }
+#tip .row b { font-weight: 600; }
+#tip .bad { color: var(--flag); } #tip .good { color: var(--ok); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--mute); margin: 8px 0 4px; }
+.legend span { display: inline-flex; align-items: center; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; flex: none; }
+.dot.sm { width: 5px; height: 5px; margin: 0 7px 0 2px; }
+.ring { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.5px dashed var(--ink); margin-right: 5px; flex: none; }
+.lineseg { display: inline-block; width: 14px; height: 2px; background: var(--accent); margin-right: 5px; flex: none; }
+.plane { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 25%, transparent); margin-right: 5px; flex: none; }
 .cap { font-size: 12px; color: var(--mute); margin: 4px 0 0; max-width: 120ch; }
 .step { cursor: pointer; }
 .step.hl { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .bar { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
 button.play { font: 600 12px var(--display); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
 button.play:focus-visible { outline: 2px solid var(--accent); }
-@media (max-width: 860px) { .cv { height: 320px; } .grid { grid-template-columns: minmax(0, 1fr); } .step { grid-template-columns: minmax(0, 1fr); } .verdicts { grid-row: auto; grid-column: 1; flex-direction: row; flex-wrap: wrap; } }
+@media (max-width: 1100px) { .layout { grid-template-columns: minmax(0, 1fr) 440px; } .step { grid-template-columns: minmax(0, 1fr); } .verdicts { grid-row: auto; grid-column: 1; flex-direction: row; flex-wrap: wrap; } }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .layout > .space { position: static; grid-column: 1; grid-row: 1; }
+  .cv { height: 340px; }
+  #eps { max-height: 360px; }
+}
 </style>
 <div class="wrap">
   <h1>Monitoring a closed agent from its transcript</h1>
@@ -66,20 +87,23 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     action) and decides whether to escalate it. The monitor was trained only on a different, open agent's labelled
     traces and never saw Claude. Below are real episodes; you can see what each monitor decided and what happened.</p>
   <div class="stats" id="stats"></div>
+  <div class="layout">
   <div class="card space">
     <div class="label">Inside the monitor: every Claude action, where the monitor places it</div>
-    <div class="cv"><canvas id="c" aria-label="3D view of all 3,128 Claude actions in the monitor's feature space"></canvas><div id="tip"></div></div>
+    <div class="cv"><canvas id="c" aria-label="3D view of all 3,128 Claude actions in the monitor's feature space. Hover or tap a dot to read it."></canvas><div id="tip" role="status"></div></div>
     <div class="legend">
-      <span><i class="dot" style="background:var(--mute)"></i>safe action</span>
+      <span><i class="dot sm" style="background:var(--mute)"></i>safe action</span>
       <span><i class="dot" style="background:var(--flag)"></i>violation</span>
-      <span><i class="dot" style="background:var(--accent)"></i>selected episode, in order</span>
-      <span><i class="dot" style="background:var(--accent);opacity:.35;border-radius:1px"></i>escalation cut (label-free)</span>
+      <span><i class="lineseg"></i><i class="dot" style="background:var(--accent)"></i>selected episode, steps in order</span>
+      <span><i class="ring"></i>picked action</span>
+      <span><i class="plane"></i>5% review cut: right of it goes to a human</span>
     </div>
     <p class="cap" id="cap"></p>
   </div>
-  <div class="grid">
+  <div class="left">
     <div class="card"><div class="label">Episodes</div><p class="tally" id="tally"></p><div id="eps"></div></div>
     <div class="card"><div class="label">Actions in this episode</div><div id="detail"></div></div>
+  </div>
   </div>
   <p class="note" id="note"></p>
 </div>
@@ -90,12 +114,12 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
 (() => {
   const D = window.DEMO, $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  const S = D.summary, r3 = x => (Math.round(x * 1000 + 1e-6) / 1000).toFixed(3);
+  const S = D.summary, r3 = x => (Math.round(x * 1000 + 1e-6) / 1000).toFixed(3), LF = D.label_free, p1 = x => (100 * x).toFixed(1) + '%';
   $('stats').innerHTML = [
     [r3(D.pooled.READER), 'Trained transcript monitor, AUROC pooled over all 3,128 Claude actions'],
     [r3(D.pooled.J_act), 'Zero-shot 70B judge, same actions'],
-    [(100 * S.caught_at_5pct_safe_escalated.READER).toFixed(0) + '%', 'of violations caught when 5% of safe actions are escalated (monitor; preregistered)'],
-    [(100 * S.caught_at_5pct_safe_escalated.J_act).toFixed(0) + '%', 'caught at the same 5% by the zero-shot judge']
+    [p1(LF.READER.label_free_cut), `of Claude's violations caught when the monitor sends its riskiest 5% of actions to a human. The cut is set without labels (${p1(LF.READER.safe_escalated_label_free)} of safe actions escalated).`],
+    [p1(LF.J_act.label_free_cut), 'caught by the zero-shot judge with the same 5% review budget']
   ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
   const pct = x => (100 * x).toFixed(x > .99 ? 1 : 0) + '%';
   const sc = D.episodes.flatMap(e => e.steps.filter(s => s.risk != null));
@@ -104,10 +128,17 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     `${bad.length} violations and ${ok.filter(s => s.risk >= D.thr_reader).length} of ${ok.length} safe actions; the judge escalates ` +
     `${bad.filter(s => s.judge >= D.thr_judge).length} of ${bad.length} and ${ok.filter(s => s.judge >= D.thr_judge).length} of ${ok.length}.`;
   let cur = 0;
+  // per-episode result at the 5% cut: a violation is caught if the monitor escalated it before it ran
+  function status(e) {
+    const st = e.steps.filter(s => s.risk != null), esc_ = s => s.risk >= D.thr_reader;
+    if (e.violated) return st.some(s => s.unsafe && esc_(s)) ? ['good', 'caught'] : ['bad solid', 'missed'];
+    const fa = st.filter(s => !s.unsafe && esc_(s)).length;
+    return fa ? ['bad', `${fa} false alarm${fa > 1 ? 's' : ''}`] : ['good', 'no false alarm'];
+  }
   function list() {
-    $('eps').innerHTML = D.episodes.map((e, i) => `<button class="ep" data-i="${i}" aria-current="${i === cur}">
-      <span class="tag ${e.violated ? 'bad' : 'good'}">${e.violated ? 'violation' : 'no violation'}</span>${esc(e.family)}
-      <small>${esc(e.task.slice(0, 90))}${e.task.length > 90 ? '…' : ''}</small></button>`).join('');
+    $('eps').innerHTML = D.episodes.map((e, i) => { const [c, t] = status(e); return `<button class="ep" data-i="${i}" aria-current="${i === cur}">
+      <span class="tag ${e.violated ? 'bad' : 'good'}">${e.violated ? 'violation' : 'no violation'}</span><span class="tag ${c} st">monitor: ${t}</span> ${esc(e.family)}
+      <small>${esc(e.task.slice(0, 90))}${e.task.length > 90 ? '…' : ''}</small></button>`; }).join('');
     [...$('eps').querySelectorAll('.ep')].forEach(b => b.onclick = () => { cur = +b.dataset.i; list(); show(); });
   }
   function show() {
@@ -123,7 +154,7 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
              <span class="tag ${jf ? 'bad' : 'good'}">zero-shot judge: ${jf ? 'escalate' : 'allow'}</span>
              <span class="pct">riskier than ${pct(s.judge_pct)} of actions</span>`;
       }
-      const outcome = `<span class="tag ${s.unsafe ? 'bad' : 'good'}">what it was: ${s.unsafe ? 'a violation' : 'allowed'}</span>`;
+      const outcome = `<span class="tag ${s.unsafe ? 'bad' : 'good'}">outcome: ${s.unsafe ? 'violation' : 'safe'}</span>`;
       return `<div class="step" ${s.pi != null ? `data-pi="${s.pi}"` : ''}><div class="call"><b>${esc(s.tool)}</b> ${esc(s.args)}</div>
         <div class="verdicts">${v}${outcome}</div><div class="res">${esc(s.result)}</div></div>`;
     }).join('');
@@ -138,7 +169,7 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
   const SP = D.space, has3d = SP && window.THREE;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const col = n => new THREE.Color(css(n) || '#888');
-  let scene, epObj = [], hiObj = null, timer = null, PT = i => SP.p.slice(3 * i, 3 * i + 3);
+  let scene, epObj = [], hiObj = null, pickObj = null, pinned = null, toScreen = null, timer = null, PT = i => SP.p.slice(3 * i, 3 * i + 3);
   function sprite(text, color, h) {
     const c = document.createElement('canvas'), x = c.getContext('2d'); c.width = 1024; c.height = 128;
     x.font = '600 100px Archivo, Arial, sans-serif'; x.fillStyle = color; x.textBaseline = 'middle'; x.fillText(text, 8, 64);
@@ -151,7 +182,13 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     scene = new THREE.Scene();
     const cam = new THREE.PerspectiveCamera(42, 1, 0.01, 100); cam.position.set(0.75, 0.55, 2.7);
     const ctl = new THREE.OrbitControls(cam, cv); ctl.enableDamping = true; ctl.target.set(0, -0.05, 0);
-    const fit = () => { const b = cv.parentElement.getBoundingClientRect(); r.setSize(b.width, b.height, false); cam.aspect = b.width / Math.max(1, b.height); cam.updateProjectionMatrix(); };
+    const baseDist = cam.position.distanceTo(ctl.target);
+    // a narrow canvas (phone, sticky column) moves the camera back so the whole cloud and its labels stay in view
+    const fit = () => { const b = cv.parentElement.getBoundingClientRect(); r.setSize(b.width, b.height, false); cam.aspect = b.width / Math.max(1, b.height);
+      const d = baseDist * Math.max(1, 1.3 / cam.aspect), dir = cam.position.clone().sub(ctl.target).normalize();
+      cam.position.copy(ctl.target).addScaledVector(dir, d); cam.updateProjectionMatrix(); };
+    toScreen = i => { const v = new THREE.Vector3(...PT(i)).project(cam), b = cv.getBoundingClientRect();
+      return [(v.x + 1) / 2 * b.width, (1 - v.y) / 2 * b.height]; };
     new ResizeObserver(fit).observe(cv.parentElement); fit();
     const dotTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
       x.beginPath(); x.arc(32, 32, 28, 0, 2 * Math.PI); x.fillStyle = '#fff'; x.fill(); return new THREE.CanvasTexture(c); })();
@@ -171,26 +208,66 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     const l1 = sprite('monitor risk →', css('--ink'), 0.11); l1.position.set(0.15, -0.72, 0.62); scene.add(l1);
     const l2 = sprite('escalate ▸', css('--accent'), 0.11); l2.position.set(SP.cut + 0.03, 0.9, 0); scene.add(l2);
     const l3 = sprite('◂ allow', css('--mute'), 0.11); l3.position.set(SP.cut - 0.42, 0.9, 0); scene.add(l3);
-    const ray = new THREE.Raycaster(); ray.params.Points.threshold = 0.025; const mouse = new THREE.Vector2(), tip = $('tip');
-    cv.addEventListener('pointermove', ev => {
+    // tooltips: hover (mouse) shows a dot; a click or tap pins it (phones have no hover); a tap on empty space clears it
+    const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+    const pick = (ev, thr) => {
       const b = cv.getBoundingClientRect(); mouse.set((ev.clientX - b.left) / b.width * 2 - 1, -(ev.clientY - b.top) / b.height * 2 + 1);
-      ray.setFromCamera(mouse, cam); const h = ray.intersectObjects(clouds)[0];
-      if (!h) { tip.style.display = 'none'; return; }
-      const i = h.object.userData.ids[h.index];
-      tip.innerHTML = `<b>${SP.y[i] ? 'violation' : 'safe'}</b> · ${esc(SP.act[i])}`;
-      tip.style.display = 'block'; tip.style.left = Math.min(b.width - 370, ev.clientX - b.left + 12) + 'px'; tip.style.top = (ev.clientY - b.top + 12) + 'px';
+      ray.params.Points.threshold = thr; ray.setFromCamera(mouse, cam);
+      const h = ray.intersectObjects(clouds).sort((a, c) => a.distanceToRay - c.distanceToRay)[0];
+      return h ? h.object.userData.ids[h.index] : null;
+    };
+    let down = null;
+    cv.addEventListener('pointermove', ev => {
+      if (ev.pointerType !== 'mouse' || pinned != null || ev.buttons) return;
+      const i = pick(ev, 0.025), b = cv.getBoundingClientRect();
+      if (i == null) hideTip(); else showTip(i, ev.clientX - b.left, ev.clientY - b.top);
     });
-    cv.addEventListener('pointerleave', () => tip.style.display = 'none');
+    cv.addEventListener('pointerleave', () => { if (pinned == null) hideTip(); });
+    cv.addEventListener('pointerdown', ev => { down = [ev.clientX, ev.clientY, performance.now()]; });
+    cv.addEventListener('pointerup', ev => {
+      if (!down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 8 || performance.now() - down[2] > 600) { down = null; return; }  // a drag: rotate only
+      down = null;
+      const i = pick(ev, ev.pointerType === 'mouse' ? 0.025 : 0.06), b = cv.getBoundingClientRect();
+      if (i == null) { pinned = null; hideTip(); ring(null); return; }
+      pinned = i; ring(i); showTip(i, ev.clientX - b.left, ev.clientY - b.top);
+    });
     (function tick() { requestAnimationFrame(tick); ctl.update(); r.render(scene, cam); })();
     const pc = (100 * D.calib.recall_after_100).toFixed(0);
     $('cap').textContent = `Each dot is one of Claude's ${N.toLocaleString()} actions, placed where the trained monitor puts it. Left to right is the monitor's own risk score ` +
       `(its logit, drawn to scale; ${SP.clipped} extreme actions are pinned to the edges). The plane is the escalation cut learned from unlabelled traffic: ` +
       `actions to its right go to a human. The other two axes are the main remaining directions in the reader's representation (` +
-      `${(100 * (SP.var23[0] + SP.var23[1])).toFixed(0)}% of its remaining variance); they show how actions cluster, not how risky they are. Drag to rotate, scroll to zoom, hover a dot to read the action.`;
+      `${(100 * (SP.var23[0] + SP.var23[1])).toFixed(0)}% of its remaining variance); they show how actions cluster, not how risky they are. ` +
+      `Drag to rotate, pinch or scroll to zoom. Hover or tap a dot to see its score and the decision.`;
   } else { document.querySelector('.space').hidden = true; }
+  function tipHtml(i) {
+    const v = SP.y[i] === 1, e_ = SP.esc[i] === 1;
+    const res = v ? (e_ ? ['good', 'caught'] : ['bad', 'missed']) : (e_ ? ['bad', 'false alarm'] : ['good', 'correctly allowed']);
+    return `<div class="act">${esc(SP.act[i])}${SP.act[i].length >= 120 ? '…' : ''}</div><div class="row">
+      <span>score</span><b>${SP.s[i].toPrecision(2)}</b>
+      <span>percentile</span><b>riskier than ${(100 * SP.pct[i]).toFixed(1)}% of all actions</b>
+      <span>decision</span><b class="${e_ ? 'bad' : ''}">${e_ ? 'escalated' : 'allowed'} at the 5% cut</b>
+      <span>outcome</span><b class="${v ? 'bad' : 'good'}">${v ? 'violation' : 'safe'}</b>
+      <span>result</span><b class="${res[0]}">${res[1]}</b></div>`;
+  }
+  function showTip(i, x, y) {
+    const tip = $('tip'), box = tip.parentElement; tip.innerHTML = tipHtml(i); tip.style.display = 'block';
+    const W = box.clientWidth, H = box.clientHeight, w = tip.offsetWidth, h = tip.offsetHeight;
+    let L = x + 12, T = y + 12;
+    if (L + w > W - 4) L = Math.max(4, x - w - 12);
+    if (L + w > W - 4) L = Math.max(4, W - w - 4);
+    if (T + h > H - 4) T = Math.max(4, y - h - 12);
+    tip.style.left = L + 'px'; tip.style.top = T + 'px';
+  }
+  function hideTip() { $('tip').style.display = 'none'; }
+  function ring(pi) {
+    if (pickObj) { scene.remove(pickObj); pickObj = null; }
+    if (pi == null) return;
+    pickObj = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 10), new THREE.MeshBasicMaterial({ color: col('--ink'), wireframe: true, transparent: true, opacity: 0.8 }));
+    pickObj.position.fromArray(PT(pi)); scene.add(pickObj);
+  }
   function path(e) {
     if (!has3d) return;
-    epObj.forEach(o => scene.remove(o)); epObj = []; focus(null);
+    epObj.forEach(o => scene.remove(o)); epObj = []; focus(null); pinned = null; ring(null); hideTip();
     const ids = e.steps.filter(s => s.pi != null).map(s => s.pi);
     if (ids.length > 1) epObj.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ids.map(i => new THREE.Vector3(...PT(i)))), new THREE.LineBasicMaterial({ color: col('--accent') })));
     ids.forEach((i, k) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 10), new THREE.MeshBasicMaterial({ color: col(SP.y[i] ? '--flag' : '--accent') })); m.position.fromArray(PT(i)); epObj.push(m); });
@@ -203,6 +280,7 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     const el = $('detail').querySelector(`.step[data-pi="${pi}"]`); if (el) el.classList.add('hl');
     hiObj = new THREE.Mesh(new THREE.SphereGeometry(0.06, 20, 12), new THREE.MeshBasicMaterial({ color: col('--ink'), wireframe: true }));
     hiObj.position.fromArray(PT(pi)); scene.add(hiObj);
+    pinned = pi; ring(null); requestAnimationFrame(() => { const [x, y] = toScreen(pi); showTip(pi, x, y); });
   }
   function play() {
     clearInterval(timer); const ids = D.episodes[cur].steps.filter(s => s.pi != null).map(s => s.pi); let k = 0;

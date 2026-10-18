@@ -73,3 +73,10 @@ select { max-width: 100%; }
 .tablewrap { overflow-x: auto; background: linear-gradient(to right, var(--bg) 30%, transparent), linear-gradient(to left, var(--bg) 30%, transparent) 100% 0,
   radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.18), transparent), radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.18), transparent) 100% 0;
   background-repeat: no-repeat; background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%; background-attachment: local, local, scroll, scroll; }
+/* long tool names wrap so that the numbers stay visible on a phone */
+#perTool code, .tablewrap td code { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 520px) { #perTool table { font-size: 13px; } #perTool th, #perTool td { padding: 4px 6px; } }
+/* a figure that links to its full-size image (phones: tap to zoom) */
+figure a.zoom { display: block; cursor: zoom-in; }
+.zoomhint { display: none; }
+@media (max-width: 640px) { .zoomhint { display: inline; } }

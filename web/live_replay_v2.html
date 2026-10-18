@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Grey Box Live v2</title>
+<title>Recorded chat replay · Grey Box</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -39,12 +39,17 @@ header p { margin: 0; color: var(--mute); max-width: 96ch; }
 .chip { font: 600 10.5px var(--mono); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line); color: var(--mute); }
 .chip.flag { border-color: var(--flag); color: var(--flag); }
 .chip.real { border-color: var(--ink); color: var(--ink); }
-.stage { position: relative; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); overflow: hidden; min-height: 300px; }
-#c { position: absolute; inset: 0; width: 100%; height: 100%; }
-.legend { position: absolute; left: 12px; top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--mute); max-width: 75%; pointer-events: none; }
+.stage { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); overflow: hidden; min-height: 300px; display: flex; flex-direction: column; }
+.cvw { position: relative; flex: 1 1 auto; min-height: 260px; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }   /* drags rotate the view; the page does not scroll */
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--mute); padding: 10px 12px 0; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.note { position: absolute; left: 12px; right: 12px; bottom: 8px; font-size: 11.5px; color: var(--mute); pointer-events: none; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.sm { width: 6px; height: 6px; }
+.dot.big { width: 13px; height: 13px; }
+.lineseg { display: inline-block; width: 14px; height: 2px; background: var(--est); flex: none; }
+.snote { font-size: 12px; line-height: 1.45; color: var(--mute); padding: 0 12px 10px; margin: 0; }
+.snote b { color: var(--ink); font-weight: 600; }
 .group { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
 .group:first-of-type { border-top: 0; padding-top: 0; }
 .gname { font-weight: 700; font-size: 13px; }
@@ -66,13 +71,13 @@ button { font: 600 13px var(--display); border-radius: 4px; border: 1px solid va
 button:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
 .facts { font-size: 12.5px; }
 .facts p { margin: 6px 0 0; }
-@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 50vh auto; height: auto; } .col { overflow: visible; } }
+@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; height: auto; } .col { overflow: visible; } .cvw { flex: none; height: max(300px, 52vh); } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 
 <div class="app">
   <header>
-    <h1 id="title">Grey Box Live v2</h1>
+    <h1 id="title">Recorded chat replay</h1>
     <p id="sub"></p>
   </header>
 
@@ -85,9 +90,9 @@ button:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
   </section>
 
   <section class="stage" aria-label="shared state space">
-    <canvas id="c"></canvas>
     <div class="legend" id="legend"></div>
-    <div class="note" id="note"></div>
+    <div class="cvw"><canvas id="c" aria-label="3D view of the answer space. Drag to rotate."></canvas></div>
+    <p class="snote" id="note"></p>
   </section>
 
   <section class="col">
@@ -120,9 +125,9 @@ button:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
   const hasHidden = E.some(e => e.hidden_true);
   let step = E.length - 1, timer = null;
 
-  $('title').textContent = M.title || 'Grey Box Live v2';
+  $('title').textContent = M.title || 'Recorded chat replay';
   $('sub').textContent = M.subtitle || '';
-  $('note').textContent = M.note || '';
+  $('note').innerHTML = M.note || '';
   $('facts').innerHTML = M.facts || '';
 
   function view(canvas, cam) {
@@ -143,9 +148,11 @@ button:focus-visible { outline: 2px solid var(--est); outline-offset: 2px; }
   D.cloud.forEach((p, i) => { pos.set(p, i * 3); const k = col(LAB[D.cloud_label[i]] || '--mute'); cc.set([k.r, k.g, k.b], i * 3); });
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(cc, 3));
   S1.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 0.02, vertexColors: true, transparent: true, opacity: .45 })));
-  $('legend').innerHTML = `<span><i class="dot" style="background:var(--ben)"></i>open models, benign conversations</span>
-    <span><i class="dot" style="background:var(--harm)"></i>open models, harmful latest message</span>
-    <span><i class="dot" style="background:var(--est)"></i>this conversation</span>`;
+  $('legend').innerHTML = `<span><i class="dot sm" style="background:var(--ben)"></i>open models, benign conversations</span>
+    <span><i class="dot sm" style="background:var(--harm)"></i>open models, harmful latest message</span>
+    <span><i class="lineseg"></i><i class="dot" style="background:var(--est)"></i>this conversation, turn by turn</span>
+    <span><i class="dot" style="background:var(--flag)"></i>flagged turn (a readout crossed its threshold)</span>
+    <span><i class="dot big" style="background:var(--est)"></i>selected turn (larger)</span>`;
 
   let o1 = [], o2 = [];
   const line = (pts, c) => new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: col(c) }));

@@ -87,6 +87,9 @@
     <span>% of actions to a human</span>
     <button id="trainBtn" disabled>Train on the labelled actions</button>
   </div>
+  <label class="row" style="gap:8px;font-size:13px;margin:10px 0 0"><input type="checkbox" id="privacyFilter" style="width:auto">
+    Train without identifying words (digits, "@", long codes, random strings, rare words): recommended if you will share the model file.
+    The numbers you see are then for that model.</label>
   <progress id="prog" value="0" max="1" hidden style="margin-top:12px"></progress>
   <p id="progMsg" class="muted" style="margin:6px 0 0"></p>
 </div>
@@ -94,6 +97,7 @@
 <section id="results" hidden>
   <div id="unusable" class="note limit" hidden style="margin-top:14px"></div>
   <div class="grid3" id="stats" style="margin-top:14px"></div>
+  <div id="hist" class="card" style="margin-top:12px"></div>
   <p class="muted" style="font-size:13px;margin:8px 0 0"><b>AUROC</b> is the chance that a random violation gets a higher score than a
     random safe action: 0.5 is guessing, 1.0 is perfect.</p>
   <p class="muted" id="details" style="margin-top:10px"></p>
@@ -101,9 +105,9 @@
     the performance on new tasks <i>of the same type</i>. It does not cover a new policy, new tools or a different benchmark. In
     our tests, a policy that was absent from the training data was missed, until 20 to 40 labelled actions of it were added.
     <br><b>The review cut in the file</b> is set on your labelled actions. On a new kind of task the scores shift, and a stored cut
-    can send almost nothing to review: on task families held out from training, it caught 0 of 18 violations, while a cut set on
-    the new traffic kept the 5% budget. In a new deployment, set the cut on the agent's own traffic: <code>Guard(monitor,
-    gate=QuantileGate(0.05))</code> or the server's <code>"gate": true</code>.</div>
+    can send almost nothing to review: on task families held out from training, it caught 0 of 110 violations. A cut set on the
+    new traffic (<code>Guard(monitor, gate=QuantileGate(0.05))</code>, or the server's <code>"gate": true</code>) keeps the 5% review load,
+    but it caught only 11 of 110: on a new kind of task, label its actions and train again.</div>
   <div id="queueBox" class="card" hidden style="margin-top:14px">
     <h3 style="margin-top:0">Review queue</h3>
     <p id="queueText"></p>
@@ -120,10 +124,9 @@
   <div class="grid2">
     <div class="card">
       <h3>Download the monitor</h3>
-      <p>The file holds the vocabulary, the weights and the review threshold learned from your data (the top <i>budget</i> of your
-        actions, without labels).</p>
-      <label class="row" style="gap:8px;font-size:13px;margin:0 0 8px"><input type="checkbox" id="privacyFilter" checked style="width:auto">
-        Remove words with digits, "@" or long codes, and rare words, from the file (recommended: the file holds words from your logs)</label>
+      <p>The file holds the vocabulary, the weights and the review cut: the top <i>budget</i> of the scores of all your loaded actions,
+        set without labels. On new traffic of the same kind it sends about that share to review; on a new kind of task, set the cut on live
+        traffic (see the docs).</p>
       <p><button id="exportBtn">Download model (.json)</button></p>
       <p id="exportNote" class="muted" style="font-size:13px"></p>
 <pre id="useCode">pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"

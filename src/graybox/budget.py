@@ -1,8 +1,9 @@
 """Shared spend ledger for paid APIs: one JSON file, updated under an exclusive file lock, so concurrent processes
 (a benchmark run, the Live server) add to the same total and all stop at the same hard cap.
 
-Ledger(path, cap_usd, price_in, price_out).charge(input_tokens, output_tokens) raises BudgetExceeded once the
-total would pass the cap. Prices are $ per token.
+Ledger(path, cap_usd, price_in, price_out): call .check() before each paid call (it raises BudgetExceeded once the
+total has reached the cap), then .charge(input_tokens, output_tokens), which adds the cost and returns the new total.
+Prices are $ per token.
 """
 from __future__ import annotations
 

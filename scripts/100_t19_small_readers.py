@@ -194,7 +194,7 @@ def stage_analyze(cfg):
            "caught_label_free_5pct": {r: {s: round(caught(data(s), v), 4) for s, v in S[r].items()} for r in S},
            "n": {s: int(len(data(s))) for s in SETS}, "positives": {s: int(data(s).y.sum()) for s in SETS}}
     pub = {"T7": 0.7814, "T13b": 0.8403, "T8b": 0.9887, "T11": 0.9959}  # the shipped reader's published AUROCs
-    res["q8_reproduces_published"] = {s: abs(res["auroc"]["q8"][s] - pub[s]) < 0.002 for s in pub}
+    res["q8_reproduces_published"] = {s: bool(abs(res["auroc"]["q8"][s] - pub[s]) < 0.002) for s in pub}   # deviation 1: bool() for JSON
     # selection on T7 only, among the browser readers
     best = max(BROWSER, key=lambda r: res["auroc"][r]["T7"])
     res["selected_browser_reader"] = best

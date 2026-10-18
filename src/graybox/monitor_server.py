@@ -125,7 +125,7 @@ class CalibrateRequest(BaseModel):
     monitor: str = Field("reader", pattern="^(reader|text)$", description="which endpoint's gate to seed: reader (/action) or text (/text with gate=true)")
     stream: str = "default"
     budget: float = Field(0.05, gt=0, lt=1)
-    scores: list[float] = Field(..., description="reader p_unsafe scores of this agent's past actions (no labels)")
+    scores: list[float] = Field(..., description="this agent's past scores, no labels: p_unsafe for the reader, the logit 'score' for the text monitor")
 
 
 @app.post("/v1/monitor/calibrate")
@@ -134,6 +134,8 @@ def calibrate(req: CalibrateRequest):
     scores, frozen at once. Replaces the stream's gate."""
     if len(req.scores) < 100:
         raise HTTPException(422, "need at least 100 past scores")
+    if req.monitor == "text" and all(0.0 <= x <= 1.0 for x in req.scores):
+        raise HTTPException(422, "text monitors gate on logits: send the 'score' values of /v1/monitor/text (or Guard's v.score), not probabilities")
     g = QuantileGate(req.budget, warmup=len(req.scores), min_seen=100).fit(req.scores)
     _STATE["gates"][(("text:" if req.monitor == "text" else "") + req.stream, req.budget)] = g
     return {"stream": req.stream, "budget": req.budget, "threshold": g.threshold, "frozen": g.frozen, "n": len(req.scores)}

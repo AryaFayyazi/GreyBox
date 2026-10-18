@@ -1,0 +1,31 @@
+{
+ "what": "browser reader features vs graybox.embed.Encoder (PyTorch float32 CPU) on 40 T13b steps; site/tests/embed_parity.py and an onnxruntime check",
+ "browser_chromium_wasm_fp16": {
+  "cosine_min": 0.999997,
+  "cosine_mean": 0.999998,
+  "max_abs_diff": 0.00036203116178512573,
+  "seconds_incl_download": 1039.1
+ },
+ "browser_chromium_wasm_q8_before": {
+  "cosine_min": 0.758633,
+  "cosine_mean": 0.851916
+ },
+ "onnxruntime_cpu": {
+  "q8": {
+   "cos_min": 0.7957,
+   "cos_mean": 0.8553,
+   "sec_per_step": 0.88
+  },
+  "fp16": {
+   "cos_min": 1.0,
+   "cos_mean": 1.0,
+   "sec_per_step": 1.17
+  },
+  "fp32": {
+   "cos_min": 1.0,
+   "cos_mean": 1.0,
+   "sec_per_step": 1.19
+  }
+ },
+ "decision": "ship fp16 (1.2 GB): q8 features do not match the features the probe was trained on"
+}
