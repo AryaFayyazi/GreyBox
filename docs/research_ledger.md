@@ -935,7 +935,7 @@ Dated log of every experiment, decision and correction. Newest last.
   and docs corrected. τ² violations break explicit rules over facts of the case; label-trained readouts do not learn
   these checks for new tasks.
 - **T22 J1, J2 FAIL (wide).** A zero-shot reasoning judge (Qwen3-32B, thinking, no labels; lock 1b26040) on T20's
-  writes: within tool 0.804 (T21's reader 0.535), judge − tool +0.304 [−0.084, 0.427]. Only 8 tasks have a violation.
+  writes: within tool 0.804 (T21's reader 0.535), judge − tool +0.304 [−0.084, 0.427]. Only 7 tasks have a violation.
   88% of its scores are exactly 0.
 - **T23 locked** (b002a85): the same judge on 894 writes of four closed frontier agents (227 violations, 29 tasks).
   The baselines are cross-validated by task. Amendment 1 (c801e95, published before any judge output): a dry run
@@ -957,3 +957,23 @@ Dated log of every experiment, decision and correction. Newest last.
   for the 0/100 judge. graybox.stats.caught_at_budget (exact budget, ties in proportion) + scripts/111 recompute every
   released catch rate. Headline reader numbers unchanged; Table 2's tool row 61.8/60.6% → 42.3/13.6%; TF-IDF
   64.7/50.0% → 63.8/49.0%. No endpoint used a catch rate. T8b TF-IDF scores added to the public units.
+- **Paper audit (independent agent, ~190 numbers verified; no wrong pass/fail; no remaining tie-inflated rates).**
+  Fixed:
+  - T22 had 7 violating tasks, not 8 (erratum noted for the locked T23 document);
+  - Table 2 TF-IDF on Claude is the pooled 0.975 (the footnote said it was not saved);
+  - API spend from the ledgers ($19.58 total, including tool tests), not an old $13.49;
+  - reader latency 41 ms vs the 80/89 ms round trips;
+  - GPU use (one 8-hour period with two jobs);
+  - the browser q8 cosine is 0.852 (0.855 was onnxruntime);
+  - Fig. 4b caption names its labelled benign-call cut;
+  - one label-free cut definition (exact 5%; live cuts frozen from earlier actions).
+  Wording:
+  - closed-agent results are a probe on the reader's state, not the replica (the replica route is exploratory:
+    0.959 / 0.976);
+  - Bayes-sufficiency is stated with its condition;
+  - "every confirmatory test" is preregistered;
+  - T23's judge "separates within a tool" but is not a usable review queue alone (11.7% < tool 13.1% at 5%);
+  - masking is marked exploratory, and the readout mechanism is stated as a hypothesis;
+  - T19's decoder list and the 14B claim are corrected;
+  - the abstract now scopes 94/98% to the training benchmark, and the T16c reviewer is an oracle;
+  - TF-IDF is the one name for the text baseline.

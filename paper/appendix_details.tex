@@ -6,13 +6,13 @@
   \item Gemma-4 (26B-A4B): temperature 1.0, top-$p$ 0.95, top-$k$ 64, thinking on.
   \item gpt-oss-20b: temperature 1.0, top-$p$ 1.0, reasoning effort ``medium''.
   \end{itemize}
-  The episodes of the open agents in T17 come from CAPE-Bench's released rollouts, made with the same harness.
+  The episodes of the open agents in T17 come from the released CAPE-Bench rollouts.
 \item Closed agents use their public tool-use APIs:
   \begin{itemize}
   \item Claude Haiku~5.5: thinking disabled, effort ``low'', at most 1{,}024 tokens per turn.
   \item GPT-6-luna: reasoning effort ``none'', no parallel tool calls, at most 2{,}048 tokens per turn.
   \end{itemize}
-  All API work in the paper cost \$13.49 (Anthropic \$9.60, OpenAI \$3.89).
+  The shared spend ledgers record \$19.58 of API use in total (Anthropic \$14.65, OpenAI \$4.92), including tests of the released tool.
 \end{itemize}
 
 \textbf{Units.} A unit is one proposed action that is not a read, after the step that reveals the deciding fact. Each
@@ -32,9 +32,10 @@ the last prompt token, at hidden-state index 32 (the output of block 31 of 36), 
 
 \textbf{Monitor.} The monitor standardizes the features, keeps the top 256 principal components, and fits a logistic
 regression with $C=0.05$. It is trained on Gemma-4's CAPE-Bench steps only (17{,}623; development and fresh). The
-review cut has no labels: it is the 95th percentile of the scores of the agent's earlier actions, and it is then
-frozen. (In T16 and T16b these were the agent's earlier unlabelled actions; in the tool, its first 500. A rolling cut
-fails under bursts of similar actions.)
+review cut has no labels. Offline (Table 2), it sends exactly 5\% of the agent's actions in the test set, the
+highest-scored, to review (actions tied at the cut count in proportion). Live (T16, T16b), it was the 95th percentile of
+the agent's earlier unlabelled actions, then frozen; the tool freezes it after the first 500. A rolling cut fails under
+bursts of similar actions.
 
 \textbf{Replica (T15, T17).}
 \begin{itemize}
@@ -57,4 +58,4 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \item Each preregistration (the document and its analysis code) is locked by its SHA-256 hash before its data exist. One script checks every lock and every number in this paper again from the saved results.
 \end{itemize}
 
-\textbf{Compute.} All GPU work runs on one NVIDIA H100 NVL (96~GB), one job at a time: PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes about 80--90~ms for one action (median round trip in T16 and T16b).
+\textbf{Compute.} All GPU work runs on NVIDIA H100 NVL GPUs (96~GB), one job at a time except for one 8-hour period with two: PyTorch 2.11, Transformers 5.14.1 (5.20.1 for Muse-Glimmer, whose architecture the earlier version does not know), scikit-learn 1.9.0. The reader takes 41~ms for one action on one GPU; the median server round trip in T16 and T16b was 89 and 80~ms.

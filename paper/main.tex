@@ -31,8 +31,8 @@
 \includegraphics[width=\textwidth]{figures/teaser.pdf}\par\vspace{-2mm}
 \captionof{figure}{\textbf{Seeing inside closed agents.} All panels share the two main axes of one reference open agent's hidden state (Gemma-4, at the moment before it acts). Blue: density of safe actions; red: violations of the policy.
 (a) The open agent's true hidden state on 12{,}128 fresh actions.
-(b) The grey-box replica of the same actions, computed from the transcript and the proposed action only (\cref{sec:replica}). The same reader replicates three more open agents on unseen scenarios (46--54\% of variance; \cref{fig:replica_agents}).
-(c, d) Actions of two closed agents, mapped through the same reader and map. Here the replica cannot be checked (no true state), so we test what it is for: prediction. We never saw their weights and fit nothing on them; their own coordinates are not identifiable (\cref{prop:gauge}), so we show them in the reference agent's coordinates.
+(b) The grey-box replica of the same actions, computed from the transcript and the proposed action only (\cref{sec:replica}). The same reader replicates three more open agents on unseen scenarios (46--54\% of the variance of the main components; \cref{fig:replica_agents}).
+(c, d) Actions of two closed agents, mapped through the same reader and map. Here the replica cannot be checked (no true state), so we test prediction, with a probe on the same reader state from which the replica is computed. We never saw their weights and fit nothing on them; their own coordinates are not identifiable (\cref{prop:gauge}), so we show them in the reference agent's coordinates.
 In every agent the violations occupy their own region. A probe on the reader's latent state, which holds the replica, catches 94\% and 98\% of them when 5\% of the actions go to review.\TEASERE}
 \label{fig:teaser}
 \end{minipage}}
@@ -59,15 +59,15 @@ Safety tools that read a model's hidden state need its weights, and the agents w
 We ask whether an outside observer can read the hidden state of a closed agent, replicate it, and use the replica to predict and prevent policy violations.
 The raw coordinates of a hidden state are not identifiable from outputs: a rotation of the hidden space changes no output.
 Two objects can be recovered, and we build a ``grey box'' from each.
-The first is the behavioural state: the model's answers to fixed questions asked in side branches.
+The first is the behavioural state, which we estimate from the model's answers to fixed questions asked in side branches (the interrogation state).
 It recovers the hidden state of models with known internals (Othello-GPT: $R^2$ 0.967), but as a safety signal it only ties a text moderator.
 The second follows from a simple theorem: an agent's internal state is a function of its tokens, so an open model that reads the same tokens can hold a replica of it.
 From the transcript alone, a replica in an open reader's latent space reconstructs 66\% of the variance of the 128 main components of an agent's hidden state (51--54\% of each full layer), more than text features do (59\%). White-box readouts work on the replica (AUROC 0.987; true state 0.984) and also on a replica from text features (0.983): the information that decides a violation is in the tokens. The same reader replicates three more open agents with other architectures, on scenarios it never saw (46--54\% of the main components).
-For a policy check on a proposed action, the transcript and the action are Bayes-sufficient.
-A probe on the reader's latent state, trained only on an open agent, catches 94\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna (reasoning off), when the 5\% riskiest actions go to review, with a cut set without labels.
-In the loop of two closed agents, it blocks violations before they run (episodes with an executed violation: GPT 6.6\% $\rightarrow$ 0.2\%; Claude 6.7\% $\rightarrow$ 0.2\%), at a cost in completed tasks (Claude: 40.7\% $\rightarrow$ 34.9\%). With a reviewer for the flagged actions, the safety gain stayed, but a small goal cost could not be excluded.
-On an outside benchmark (AgentDojo), labels of a new policy collected on open agents fixed the monitor for a closed agent. On $\tau^2$-bench, word counts trained on other agents' labels scored 0.987 on two closed agents, but only because the test tasks were also in the training data: on unseen tasks, neither word counts nor the reader transferred (0.519, 0.535). A zero-shot reasoning judge needs no labels: on four closed frontier agents it separated violating from allowed calls of the same tool (0.766, preregistered), but at a 5\% review budget it caught fewer violations than the reader.
-Every test is preregistered and hash-locked; we report the failures and the tests that could not be done.
+When a policy label is decided by the action and the facts in the transcript, the transcript and the action are Bayes-sufficient for it.
+A probe on the reader's latent state, trained only on an open agent, catches 94\% and 98\% of the violations of two closed agents, Claude Haiku~5.5 and GPT-6-luna (reasoning off), on the benchmark it was trained on, when the 5\% riskiest actions go to review, with a cut set without labels.
+In the loop of two closed agents, it blocks violations before they run (episodes with an executed violation: GPT 6.6\% $\rightarrow$ 0.2\%; Claude 6.7\% $\rightarrow$ 0.2\%), at a cost in completed tasks (Claude: 40.7\% $\rightarrow$ 34.9\%). With an oracle reviewer for the flagged actions (an upper bound on a human), the safety gain stayed, but a small goal cost could not be excluded.
+On an outside benchmark (AgentDojo), labels of a new policy collected on open agents made the monitor beat a zero-shot judge on a closed agent (0.922 vs 0.787). On $\tau^2$-bench, TF-IDF trained on other agents' labels scored 0.987 on two closed agents, but fell to 0.519 when the test tasks were removed from training; the reader scored 0.535. A zero-shot reasoning judge needs no labels: on four closed frontier agents it separated violating from allowed calls of the same tool better than chance (0.766, preregistered), but at a 5\% review budget it caught fewer violations than the reader (exploratory).
+Every confirmatory test is preregistered and hash-locked; exploratory analyses are labelled; we report the failures and the tests that could not be done.
 We release an SDK and a website on which anyone can train and audit a monitor.
 \end{abstract}
 
@@ -85,16 +85,16 @@ Their providers give sampled text, and at most top-$k$ log probabilities and a s
 We ask three questions.
 \textbf{(1)} Can an outside observer read the hidden state of a closed model?
 \textbf{(2)} Can it replicate the state well enough that white-box tools work on the replica?
-\textbf{(3)} Can the replica predict and prevent the agent's violations, in real time?
+\textbf{(3)} Can the reader's state, from which the replica is computed, predict and prevent the agent's violations, in real time?
 
 \textbf{Answers.}
 \begin{enumerate}
 \item \emph{What can be read.} The raw coordinates of a hidden state are not identifiable from outputs (\cref{prop:gauge}). The behavioural state is, and a battery of side-branch questions recovers it on models with known internals (\cref{sec:psi}). As a safety signal this ``interrogation state'' is weak.
-\item \emph{What can be replicated.} An agent's internal state is a function of the tokens that it read (\cref{prop:access}). An open reader model on the same tokens replicates 66\% of the agent's hidden-state variance, and readouts trained on the true state work on the replica (\cref{sec:replica}).
+\item \emph{What can be replicated.} An agent's internal state is a function of the tokens that it read (\cref{prop:access}). An open reader model on the same tokens replicates 66\% of the variance of the 128 main components of the agent's decision state (51--54\% of each full layer), and readouts trained on the true state work on the replica (\cref{sec:replica}).
 \item \emph{What it is good for.} For a policy check on a proposed action, the transcript and the action are Bayes-sufficient (\cref{cor:action}). A probe on the reader's latent state (the space that holds the replica), trained only on an open agent, catches most violations of two closed agents before they run, and blocks them live (\cref{sec:closed,sec:prevent}). Its limit is policy coverage (\cref{sec:coverage}).
 \end{enumerate}
 
-\textbf{Rigor.} Every confirmatory test was preregistered: its document and analysis code were hash-locked (SHA-256) before we ran it. The lock times are self-reported; for T13b, T16 and T20 the lock was also published before the result. \Cref{tab:all} lists the agent tests with their outcomes, including the ones that failed or could not be done.
+\textbf{Rigor.} Every confirmatory test was preregistered: its document and analysis code were hash-locked (SHA-256) before we ran it. The lock times are self-reported; for T13b, T16 and T20--T23 the lock was also published before the result. \Cref{tab:all} lists the agent tests with their outcomes, including the ones that failed or could not be done.
 
 % =====================================================================================
 \section{Theory}
@@ -130,11 +130,11 @@ What remains is statistical: learning $P(Y\mid V_t,A_t)$, which depends on the l
 \label{sec:setup}
 \textbf{Agents and data.} CAPE-Bench \citep{fayyazi2026cape} gives matched agent tasks in which one fact decides if an action is authorized; an environment rule checker labels each action. Open agents: Gemma-4 (26B) and gpt-oss-20b. Closed agents, through their public tool-use APIs, with reasoning off: Claude Haiku~5.5 and GPT-6-luna. External benchmark: AgentDojo prompt injections \citep{debenedetti2024agentdojo}.
 
-\textbf{The two grey boxes.} \emph{Interrogation state} $\Psi$: the probabilities of the answer ``yes'' to a fixed battery of questions, each asked in a side branch, so the real conversation never sees it. \emph{Reader replica}: Qwen3-8B reads the agent's instructions, the user's task, the earlier tool calls with their results, and the proposed action. A ridge map from its layer-32 residual stream gives the replica of the agent's state, and a linear probe on the same layer gives the monitor. The reader is trained only on Gemma-4 CAPE-Bench steps (17{,}623) and is never fit on a test agent.
+\textbf{The two grey boxes.} \emph{Interrogation state} $\Psi$: the probabilities of the answer ``yes'' to a fixed battery of questions, each asked in a side branch, so the real conversation never sees it. \emph{Reader replica}: Qwen3-8B reads the agent's instructions, the user's task, the earlier tool calls with their results, and the proposed action. A ridge map from its layer-32 residual stream gives the replica of the agent's state, and a linear probe on the same layer gives the monitor. Unless stated (T14, T18--T23), the reader is trained only on Gemma-4 CAPE-Bench steps (17{,}623) and is never fit on a test agent.
 
 \textbf{Baselines.} The agent's own internals (CAPE's probe); a zero-shot 70B judge (Llama-3.3-70B, same input); TF-IDF with the reader's input and labels; the action's tool alone.
 
-\textbf{Statistics.} AUROC within strata (template, tool or suite) with 95\% intervals from a bootstrap over scenarios or episodes (1{,}000 resamples), and the share of violations caught when the 5\% highest-scored actions go to review, with a cut set without labels (the 95th percentile of the monitor's own scores on the agent's actions). The closed agents ran with reasoning off, so the transcript holds every token that their APIs returned.
+\textbf{Statistics.} AUROC within strata (template, tool or suite) with 95\% intervals from a bootstrap over scenarios or episodes (1{,}000 resamples), and the share of violations caught when exactly 5\% of the agent's actions, the highest-scored, go to review, with a cut set without labels (actions tied at the cut count in proportion). In the live tests the cut came from the agent's earlier unlabelled actions and was then frozen. The closed agents ran with reasoning off, so the transcript holds every token that their APIs returned.
 
 % =====================================================================================
 \section{Results}
@@ -156,7 +156,7 @@ T5 & The same, on unseen task families & 0.969 vs 0.976 (non-inferior) & pass\\
 T6 & Reader trained on Gemma, applied to gpt-oss & 0.915 vs judge 0.833 & pass\\
 T7 & Reader on AgentDojo, no AgentDojo training & 0.781 vs judge 0.537 & pass\\
 T8 & Claude, actions after the reveal & 0 violations in the units & not tested\\
-T8b & Claude, all actions & 94.1\% caught vs 0\% & pass\\
+T8b & Claude, all actions & 0.991 vs judge 0.633; 94.1\% caught vs 0\% & pass\\
 T9 & TF-IDF with the same labels vs the reader & equal in distribution; chance on AgentDojo & mixed\\
 T10 & Claude, a policy family removed from training & 0.912 vs 0.570; 0/26 caught & pass (ranking)\\
 T11 & GPT-6-luna, beyond tool identity & 0.996 vs 0.778; tool 0.856 & pass\\
@@ -192,7 +192,7 @@ On eight open chat models, the answers recover the hidden state better than a te
 On Gemma-4, where the true state is known, we fit a ridge map from the reader's latent space to the agent's hidden state at the decision point (5 layers, top 128 principal components, 80.5\% of the variance) on development steps.
 On 12{,}128 fresh steps, the replica reconstructs 66.4\% of the variance from the transcript alone; text features reconstruct 58.6\% ($+0.079$ [0.075, 0.083]; \cref{fig:replica}).
 A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]): white-box readouts work on the replica.
-The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies. A nonlinear map (an MLP) replicates less than the linear one (0.558 vs 0.664, exploratory), as expected when the reader represents the agent's main latents completely \citep{zhou2026identifiabilities}. Viewing attention as an associative memory over the tokens \citep{wang2026memory} predicts more interference in longer transcripts. Replication does fall with length (from 0.693 to 0.478 across quintiles of context length), but the probe on the replica stays at the level of the true state in every quintile (exploratory): the part of the state that decides a violation survives.
+The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies. A nonlinear map (an MLP) replicates less than the linear one (0.558 vs 0.664, exploratory), consistent with a reader that represents the agent's main latents completely \citep{zhou2026identifiabilities}. Viewing attention as an associative memory over the tokens \citep{wang2026memory} predicts more interference in longer transcripts. Replication does fall with length (from 0.693 to 0.478 across quintiles of context length; longer contexts also differ in content), but the probe on the replica stays at the level of the true state in every quintile (exploratory): the part of the state that decides a violation survives.
 
 \textbf{Three more agents (T17).} One agent can be a special case. We repeated the test on three open agents with different architectures: a mixture of experts (gpt-oss-20b), hybrid linear attention (Qwen3.8-27B) and a dense model (Muse-Glimmer-30B). The split was stricter: development and fresh steps come from different scenarios. Before we read an agent's state, we checked that we give it the context that it saw. Teacher-forced, its own model predicts 91--100\% of the next 16 tokens of its actual tool call. The same reader (Qwen3-8B, layer 32) replicated each agent's decision state better than text features, and the probe trained on true states worked on every replica. All six preregistered endpoints pass (\cref{fig:replica_agents}). \REPLAGENTSTEXT{} Replication is partial: about half of the variance on unseen scenarios (Gemma-4 under the same split: \REPLGEMMASPLIT). The text map is at its best setting: its regularization chose the edge of the grid, and smaller values are worse for every agent (exploratory). The readout also works on the text replica, so again the part of the state that decides a violation is largely in the tokens.
 
@@ -214,7 +214,7 @@ The replica is a conditional mean, so it is less spread than the true state, and
 \textbf{Timing.} A probe on the agent's internals scores 0.841 at the start of the turn and 0.979 after the reasoning (T2): the white-box advantage over turn-start monitors is when it reads.
 \textbf{Labels.} Resampling scored by a 70B judge gets 0.782, below the probe (T3); the label function is the bottleneck.
 With labels, a probe on the reader scores 0.994, above the agent's own internals (0.979; $+0.015$ [0.007, 0.026]; T4), and it is non-inferior on unseen task families (0.969 vs 0.976; T5).
-Given the action, the agent's hidden reasoning adds nothing: $-0.0014$ [$-0.0046$, $+0.0014$] AUROC (exploratory), as \cref{cor:action} predicts.
+Given the action, the agent's hidden reasoning adds no detectable AUROC: $-0.0014$ [$-0.0046$, $+0.0014$] AUROC (exploratory), as \cref{cor:action} predicts.
 \textbf{Representation.} TF-IDF with the same labels equals the reader on the training benchmark, but is worse on unseen families (0.950 vs 0.969) and at chance on AgentDojo (0.503 vs 0.781; T9).
 
 \begin{figure*}[t]
@@ -242,12 +242,12 @@ The probabilities do not transfer between agents (on Claude a 0.5 cut catches 3\
  & AUROC & caught & AUROC & caught\\
 \midrule
 Reader & 0.989 & 94.1\% & 0.996 & 98.5\%\\
-TF-IDF & 0.997$^\dagger$ & 63.8\% & 0.964 & 49.0\%\\
+TF-IDF & 0.975 & 63.8\% & 0.964 & 49.0\%\\
 Zero-shot judge & 0.570 & 0.0\% & 0.778 & 37.9\%\\
 Tool identity & 0.857 & 42.3\% & 0.856 & 13.6\%\\
 \bottomrule
 \end{tabular}\\[2pt]
-\footnotesize Pooled AUROC. $^\dagger$within the one stratum with both classes (the pooled value was not saved).
+\footnotesize Pooled AUROC.
 \end{table}
 
 \subsection{The limit is policy coverage (T10, T12--T14)}
@@ -257,13 +257,20 @@ A held-out credentials policy with similar trained policies transfers with no la
 Prompt injection on AgentDojo is a new policy: on GPT-6-luna, the monitor is not significantly better than the judge (0.840 vs 0.787; T13b fails).
 We added labelled AgentDojo calls of the two \emph{open} agents and tested on the \emph{closed} agent (T14): 0.922 vs 0.787 ($+0.136$ [0.078, 0.191]). At the label-free cut, 58\% of the injected calls are caught, against 28\% without these labels (92\% vs 36\% with a cut set on benign calls; \cref{fig:policy}b). The open agents' calls came from the development user tasks, which the test shares; restricted to the confirmation split, whose user tasks the training never saw (the injection tasks and the attack template are shared), the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]; label-free 54\% vs 29\%; exploratory).
 On this benchmark, labels of a policy transferred from open agents to a closed agent.
-On $\tau^2$-bench \citep{barres2025tau2}, a customer-service benchmark with an airline policy, we trained the monitors on the labelled writes of four frontier agents' published trajectories and tested them on two closed agents facing a customer who insists after a refusal (T20; 262 writes, 19 violations). Within tool, word counts reached AUROC 0.987 (G2 passes), but the reader reached only 0.738 (G1 fails; reader $-$ word counts $-0.250$ [$-0.518$, $-0.077$]). But all 13 test tasks with writes were also in the training trajectories. In T21 we removed them from training (554 writes of 28 other tasks remain). Then neither monitor transferred: within tool, word counts 0.519 and the reader 0.535 (reader $-$ word counts $+0.017$ [$-0.514$, $+0.539$]; reader $-$ tool identity $+0.035$ [$-0.230$, $+0.259$]; both preregistered endpoints fail). Word counts with entities masked fell to 0.366. So T20's word-count result was memorization of tasks (reservation codes, names, dates), not the policy. A $\tau^2$ violation breaks an explicit rule that depends on facts of the case (a booking older than 24 hours, no insurance, basic economy); a linear readout of labels from other tasks does not compute these checks. A model that reasons over the written policy needs no labels, so it cannot memorize tasks. In T22, a zero-shot judge (Qwen3-32B with thinking, the monitors' input) reached 0.804 within tool on T20's writes, but only 8 tasks had a violation and both endpoints failed (judge $-$ tool $+0.304$ [$-0.084$, $+0.427$]). T23 ran the same judge, unchanged, on the 894 published writes of four closed frontier agents (227 violations, 29 tasks); the labelled monitors were cross-validated by task. The judge separated violating from allowed writes of the same tool (0.766; judge $-$ tool $+0.266$ [$0.151$, $0.338$], K1 passes), but not significantly better than the reader trained on other tasks (0.646; $+0.120$ [$-0.047$, $+0.274$], K2 fails; the mean of four judge samples, reported: $+0.192$ [$0.022$, $0.336$]). As a review queue the order flips: with exactly 5\% of writes reviewed, the reader caught 18.4\% of violations (the most possible is 19.7\%), the judge 11.7\%. So explicit rules can be checked without labels, within a tool, but on these agents neither route is enough alone. A first attempt on Claude alone (T18) had too few violations to test.
+On $\tau^2$-bench \citep{barres2025tau2}, a customer-service benchmark with an airline policy, we trained the monitors on the labelled writes of four frontier agents' published trajectories and tested them on two closed agents facing a customer who insists after a refusal (T20; 262 writes, 19 violations). Within tool, TF-IDF reached AUROC 0.987 (G2 passes), but the reader reached only 0.738 (G1 fails; reader $-$ TF-IDF $-0.250$ [$-0.518$, $-0.077$]). But all 13 test tasks with writes were also in the training trajectories. In T21 we removed them from training (554 writes of 28 other tasks remain). Then neither monitor transferred: within tool, TF-IDF 0.519 and the reader 0.535 (reader $-$ TF-IDF $+0.017$ [$-0.514$, $+0.539$]; reader $-$ tool identity $+0.035$ [$-0.230$, $+0.259$]; both preregistered endpoints fail). TF-IDF with entities masked fell to 0.366 (exploratory). So T20's TF-IDF result came from the overlap of tasks, most likely their entities (reservation codes, names, dates), not the policy. A $\tau^2$ violation breaks an explicit rule that depends on facts of the case (a booking older than 24 hours, no insurance, basic economy); we hypothesize that a linear readout of labels from other tasks does not learn these checks. A reasoning judge needs no labels, so it cannot memorize tasks. On T20's writes, a zero-shot reasoning judge (Qwen3-32B with thinking, the monitors' input) reached 0.804 within tool, but with 7 violating tasks both endpoints failed (T22). T23 ran it, unchanged, on the 894 published writes of four closed frontier agents (227 violations, 29 tasks), with the labelled monitors cross-validated by task. The judge separated violating from allowed writes of the same tool (0.766; judge $-$ tool $+0.266$ [$0.151$, $0.338$], K1 passes), but not significantly better than the reader trained on other tasks (0.646; $+0.120$ [$-0.047$, $+0.274$], K2 fails; the mean of four judge samples, reported: $+0.192$ [$0.022$, $0.336$]). As a review queue the order flips (exploratory, no interval): with exactly 5\% of writes reviewed, the reader caught 18.4\% of violations (the most possible is 19.7\%), the judge 11.7\%, and tool identity alone 13.1\%. So a reasoning judge separates violating from allowed writes of the same tool without labels, but on these agents it is not a usable review queue by itself. A first attempt on Claude alone (T18) had too few violations to test.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.82\textwidth]{figures/policy_labels.pdf}
-\caption{Policy coverage. (a) A CAPE-Bench policy removed from training, against the number of its labelled steps added back (T10 exploratory; T12 preregistered). (b) Prompt injection on the closed GPT agent, against labelled AgentDojo calls from \emph{open} agents (T14, preregistered).}
+\caption{Policy coverage. (a) A CAPE-Bench policy removed from training, against the number of its labelled steps added back (T10 exploratory; T12 preregistered). (b) Prompt injection on the closed GPT agent, against labelled AgentDojo calls from \emph{open} agents (T14, preregistered); caught with the cut at the 95th percentile of benign calls (set with labels; the label-free cut gives 58\%).}
 \label{fig:policy}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/tool.pdf}
+\caption{The released tool. (a) Labelling imported agent logs in the browser, with the review queue: the monitor trained on the labels so far puts the riskiest unlabelled action first (here a newsletter sent to an outside test list, the benchmark's violation). (b) The replay of Claude Haiku~5.5 as an agent: each of its 3{,}128 actions in the monitor's space, with the label-free review cut as a plane.}
+\label{fig:tool}
 \end{figure*}
 
 \subsection{Live prevention on two closed agents (T16, T16b)}
@@ -284,32 +291,26 @@ On the website, a user imports their agent's logs (OpenAI or Anthropic tool-call
 The browser and Python give byte-identical text on 302 real agent steps and the same held-out AUROC (0.9887 vs 0.9886).
 The text monitor takes 0.18~ms per action; the reader takes 41~ms on one GPU, and the server round trip in the loop of a closed agent was \LATENCY.
 A live viewer shows a closed chat model's interrogation state in a 3D space shared with open models.
-\textbf{A reader small enough for a browser (T19).} The browser monitor is word counts, which do not transfer to a new kind of task. We tested three browser-size encoders and four smaller decoder readers, trained on the same steps as the reader (App.~\ref{app:small}). The selected browser encoder (Qwen3-Embedding-0.6B, chosen on open agents' AgentDojo calls) beats word counts on the closed agent's AgentDojo calls (0.605 vs 0.335; $+0.270$ [$0.134$, $0.451$]; F1 passes). But it loses 0.097 [0.079, 0.115] of AUROC against the 8B reader on the closed agents' CAPE-Bench actions (F2, non-inferiority at 0.05, fails), and 0.235 on AgentDojo. By the rule fixed in advance, the website offers it for new kinds of tasks only. No smaller decoder came within 0.02 of the 8B reader, and the 14B reader was worse.
+\textbf{A reader small enough for a browser (T19).} The browser monitor is TF-IDF, which does not transfer to a new kind of task. We tested three browser-size encoders, three smaller decoder readers and a larger one (14B), trained on the same steps as the reader (App.~\ref{app:small}). The selected browser encoder (Qwen3-Embedding-0.6B, chosen on open agents' AgentDojo calls) beats TF-IDF on the closed agent's AgentDojo calls (0.605 vs 0.335; $+0.270$ [$0.134$, $0.451$]; F1 passes). But it loses 0.097 [0.079, 0.115] of AUROC against the 8B reader on the closed agents' CAPE-Bench actions (F2, non-inferiority at 0.05, fails), and 0.235 on AgentDojo. By the rule fixed in advance, the website offers it for new kinds of tasks only. No smaller decoder came within 0.02 of the 8B reader on both test sets (the 0.6B matched it on the closed agents' CAPE-Bench actions, not on AgentDojo); the 14B was worse on the closed agents.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/tool.pdf}
-\caption{The released tool. (a) Labelling imported agent logs in the browser, with the review queue: the monitor trained on the labels so far puts the riskiest unlabelled action first (here a newsletter sent to an outside test list, the benchmark's violation). (b) The replay of Claude Haiku~5.5 as an agent: each of its 3{,}128 actions in the monitor's space, with the label-free review cut as a plane.}
-\label{fig:tool}
-\end{figure*}
 
 % =====================================================================================
 \section{Related work}
 \label{sec:related}
 \textbf{Probes on internals} read truth, refusal and deception \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}; CAPE probes an agent before each action \citep{fayyazi2026cape}.
 \textbf{Chain-of-thought monitors} catch reward hacking that action-only monitors miss \citep{baker2025monitoring,korbak2025cot,chen2025reasoning}; \cref{cor:action} says that for labels that the action and the visible facts decide, the reasoning adds nothing once the monitor sees the action.
-\textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}; we show that the threshold must come from the monitored agent's own traffic.
+\textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}; we show that a cut taken from another agent's scores fails (a 0.5 cut caught 3\% on Claude), while one set on the monitored agent's own traffic keeps the budget.
 \textbf{Identifiability.} Hidden coordinates are identifiable only up to transformations that leave the function unchanged; supervised learning identifies latents linearly when the representation is complete and through sparsity otherwise \citep{zhou2026identifiabilities}. Our gauge result applies the same logic to an observer who sees only outputs.
 \textbf{Black-box access} recovers parts of a model from logits \citep{carlini2024stealing,finlayson2024logits}, detects lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, forecasts behaviour from traces \citep{levy2026forecasting}, and probes closed transcripts with open readers \citep{conti2026hermeneutics}.
-We add the identifiability and sufficiency theory, a direct test that the reader replicates the hidden state, closed agents from two providers, live prevention, and a preregistered test of each claim.
+We add the identifiability and sufficiency theory, a direct test that the reader replicates the hidden state, closed agents from two providers, live prevention, and a preregistered test of each main claim.
 
 % =====================================================================================
 \section{Limitations}
 \label{sec:limits}
 \begin{itemize}
-\item We can test replication only where the true state is known (open agents). For closed agents, we test what the replica is for: prediction and prevention.
+\item We can test replication only where the true state is known (open agents). For closed agents we test prediction and prevention with a probe on the reader's state; the replica itself, mapped into Gemma-4's coordinates, scores lower (AUROC 0.959 and 0.976; exploratory).
 \item The live tests (T16, T16b) compare the gate with no gate. We did not run a baseline gate, such as the judge or the tool identity at the same budget, in the loop.
-\item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b). On $\tau^2$-bench, no trained monitor transferred to unseen tasks (T21: reader 0.535, word counts 0.519); T20's high word-count score (0.987) came from test tasks that were also in training. Rules over facts of the case (dates, amounts, cabin) are a limit of label-trained readouts. A zero-shot reasoning judge checks them within a tool (T23), but at a 5\% review budget it catches fewer violations than the reader. A first test on Claude alone had too few violations (T18). T20--T23 were designed after earlier results; T23's agents are older frontier models with published trajectories.
+\item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b). On $\tau^2$-bench, no trained monitor transferred to unseen tasks (T21), and a reasoning judge was not a usable review queue by itself (T23). Rules over facts of the case (dates, amounts, cabin) remain a limit. A first test on Claude alone had too few violations (T18). T20--T23 were designed after earlier results; T23's agents are older frontier models with published trajectories.
 \item Policy coverage was measured on three held-out policies; the role of similarity is a hypothesis.
 \item \Cref{cor:action} needs a label that the action and the visible facts decide. It does not cover beliefs or later behaviour.
 \item The interrogation state is weak as a safety signal; probes on the reader's latent state carry the safety results.
@@ -317,7 +318,7 @@ We add the identifiability and sufficiency theory, a direct test that the reader
 
 \section{Conclusion}
 The hidden state of a closed agent cannot be read in its own coordinates, but it can be partly replicated: an open model that reads the same tokens holds about half to two thirds of its main components, and white-box readouts work on the replica (as they do on text features, because the decisive information is in the tokens).
-For the actions of closed agents with reasoning off, a probe on this grey box predicts and prevents violations on the benchmark it was trained on, at a cost in completed tasks. On a new benchmark it needs labels of the new policy; labels from open agents worked on AgentDojo, while on $\tau^2$-bench no trained monitor transferred to unseen tasks, and a zero-shot reasoning judge checked the explicit rules within a tool but did not beat the reader as a review queue.
+For the actions of closed agents with reasoning off, a probe on the reader's state predicts and prevents violations on the benchmark it was trained on, at a cost in completed tasks. On a new benchmark it needs labels of the new policy; labels from open agents worked on AgentDojo, while on $\tau^2$-bench no trained monitor transferred to unseen tasks, and a zero-shot reasoning judge separated violating from allowed calls of the same tool but did not beat the reader as a review queue.
 
 \section*{Impact Statement}
 This work makes it possible to monitor closed AI agents before they act, from their transcripts alone. The intended effect is fewer harmful actions by deployed agents: in our tests, blocking the flagged actions cut the episodes with a violation from about 7\% to 0.2\% on two closed agents. We see three risks.
