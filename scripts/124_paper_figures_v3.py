@@ -38,40 +38,40 @@ def shift_rows():
 
 
 def fig_transfer():
-    fig = plt.figure(figsize=(v2.FULL, 1.95))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.25, 0.8, 1.05], wspace=0.62)
-    # (a) heat map
-    ax = fig.add_subplot(gs[0])
-    rows = shift_rows()
-    cols = ["reader", "TF-IDF", "70B\njudge", "agent's\ninternals"]
-    M = np.array([[np.nan if v is None else v for v in r[1:]] for r in rows], float)
-    cmap = LinearSegmentedColormap.from_list("gb", ["#fbe3d9", "#ffffff", "#d6e6f8", "#7fb0e8", BLUE])
-    ax.imshow(np.where(np.isnan(M), 0.5, M), cmap=cmap, vmin=0.3, vmax=1.0, aspect="auto")
-    for i in range(M.shape[0]):
-        best = np.nanargmax(M[i])
-        for j in range(M.shape[1]):
-            if np.isnan(M[i, j]):
-                ax.add_patch(Rectangle((j - 0.5, i - 0.5), 1, 1, facecolor="#f3f4f5", edgecolor="white", hatch="////", lw=0))
-                ax.text(j, i, "n/a", ha="center", va="center", fontsize=5.2, color=MUTE)
-                continue
-            v = M[i, j]
-            ax.text(j, i, f"{v:.3f}".lstrip("0") if v < 1 else "1.00", ha="center", va="center", fontsize=6.0,
-                    color="white" if v > 0.9 else INK, fontweight="bold" if j == best else "normal")
-            if j == best:
-                ax.add_patch(Rectangle((j - 0.47, i - 0.47), 0.94, 0.94, fill=False, edgecolor=INK, lw=0.9))
-    ax.set_xticks(range(4)); ax.set_xticklabels(cols, fontsize=5.8)
-    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows], fontsize=5.9)
-    ax.tick_params(length=0)
-    for s in ax.spines.values():
-        s.set_visible(False)
-    ax.xaxis.tick_top()
-    ax.set_title("(a) AUROC under increasing shift", pad=4)
-    ax.axhline(2.5, color=INK, lw=0.7); ax.axhline(4.5, color=INK, lw=0.7)
-    ax.text(3.62, 1.0, "open", rotation=270, va="center", fontsize=5.4, color=MUTE)
-    ax.text(3.62, 3.5, "closed", rotation=270, va="center", fontsize=5.4, color=MUTE)
-    ax.text(3.62, 5.5, "new", rotation=270, va="center", fontsize=5.4, color=MUTE)
+    fig = plt.figure(figsize=(v2.FULL * 0.72, 1.95))
+    gs = fig.add_gridspec(1, 2, width_ratios=[0.85, 1.05], wspace=0.42)
+    if False:                                    # the heat map moved to the paper's Table 1 (same numbers, with intervals)
+      ax = fig.add_subplot(gs[0])
+      rows = shift_rows()
+      cols = ["reader", "TF-IDF", "70B\njudge", "agent's\ninternals"]
+      M = np.array([[np.nan if v is None else v for v in r[1:]] for r in rows], float)
+      cmap = LinearSegmentedColormap.from_list("gb", ["#fbe3d9", "#ffffff", "#d6e6f8", "#7fb0e8", BLUE])
+      ax.imshow(np.where(np.isnan(M), 0.5, M), cmap=cmap, vmin=0.3, vmax=1.0, aspect="auto")
+      for i in range(M.shape[0]):
+          best = np.nanargmax(M[i])
+          for j in range(M.shape[1]):
+              if np.isnan(M[i, j]):
+                  ax.add_patch(Rectangle((j - 0.5, i - 0.5), 1, 1, facecolor="#f3f4f5", edgecolor="white", hatch="////", lw=0))
+                  ax.text(j, i, "n/a", ha="center", va="center", fontsize=5.2, color=MUTE)
+                  continue
+              v = M[i, j]
+              ax.text(j, i, f"{v:.3f}".lstrip("0") if v < 1 else "1.00", ha="center", va="center", fontsize=6.0,
+                      color="white" if v > 0.9 else INK, fontweight="bold" if j == best else "normal")
+              if j == best:
+                  ax.add_patch(Rectangle((j - 0.47, i - 0.47), 0.94, 0.94, fill=False, edgecolor=INK, lw=0.9))
+      ax.set_xticks(range(4)); ax.set_xticklabels(cols, fontsize=5.8)
+      ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows], fontsize=5.9)
+      ax.tick_params(length=0)
+      for s in ax.spines.values():
+          s.set_visible(False)
+      ax.xaxis.tick_top()
+      ax.set_title("(a) AUROC under increasing shift", pad=4)
+      ax.axhline(2.5, color=INK, lw=0.7); ax.axhline(4.5, color=INK, lw=0.7)
+      ax.text(3.62, 1.0, "open", rotation=270, va="center", fontsize=5.4, color=MUTE)
+      ax.text(3.62, 3.5, "closed", rotation=270, va="center", fontsize=5.4, color=MUTE)
+      ax.text(3.62, 5.5, "new", rotation=270, va="center", fontsize=5.4, color=MUTE)
     # (b) labels from open agents applied to a closed agent
-    ax = fig.add_subplot(gs[1]); v2.grid(ax, "both")
+    ax = fig.add_subplot(gs[0]); v2.grid(ax, "both")
     t14 = json.loads((R / "t1/t14_agentdojo_labels.json").read_text())
     ks = [int(k) for k in t14["curve"]]
     xp = np.array([max(k, 30) for k in ks], float)
@@ -87,9 +87,9 @@ def fig_transfer():
     ax.set(xlabel="labelled AgentDojo calls\nof open agents", ylabel="injections caught", ylim=(0, 1.13))
     ax.yaxis.set_major_formatter(PCT)
     ax.text(0.97, 0.03, f"labels: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.3, color=MUTE, va="bottom", ha="right")
-    ax.set_title("(b) Labels of a new policy")
+    ax.set_title("(a) Labels of a new policy")
     # (c) a closed agent told it is monitored
-    ax = fig.add_subplot(gs[2]); v2.grid(ax, "y")
+    ax = fig.add_subplot(gs[1]); v2.grid(ax, "y")
     d = pd.read_csv(U / "t24_monitor_aware.csv.gz")
     t24 = json.loads((R / "t1/t24_monitor_aware.json").read_text())
     lg = lambda p: np.log10(np.clip(p, 1e-13, 1))  # noqa: E731
@@ -113,7 +113,7 @@ def fig_transfer():
     ax.set(xlabel="reader score, log$_{10}$ p", ylabel="density", xlim=(-13, 0), ylim=(-0.08, 0.3))
     ax.set_yticks([0, 0.1, 0.2, 0.3])
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=2, fontsize=5.3, handlelength=1.2, columnspacing=0.8)
-    ax.set_title("(c) Agent told it is monitored")
+    ax.set_title("(b) Agent told it is monitored")
     v2.save(fig, "transfer")
 
 

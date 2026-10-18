@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{4pt}
+\caption{The main preregistered results. Every row is a confirmatory test whose criterion was fixed and hash-locked before the data existed; every row met it. All tests, including those that failed or could not be done, are in \cref{app:limits,app:record}.}
+\label{tab:main}
+\rowcolors{2}{gbrow}{white}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright}p{0.2\textwidth}>{\raggedright}X>{\raggedright\arraybackslash}p{0.37\textwidth}c@{}}
+\toprule
+\rowcolor{gbhead}\textbf{Claim} & \textbf{Test} & \textbf{Result} [95\% interval] & \\
+\midrule
+The reader replicates the state & Gemma-4, 12{,}128 fresh steps, top 128 components & $R^2$ \best{0.664} vs text 0.586; $+0.079$ [0.075, 0.083] & \cmark\\
+\dots{} on other architectures & gpt-oss-20b, Qwen3.8-27B, Muse-Glimmer-30B, unseen scenarios & $R^2$ \best{0.49 / 0.54 / 0.46} vs text 0.39 / 0.44 / 0.40 & \cmark\\
+White-box probes work on the replica & a probe trained on true states, applied to the replica & 0.987 vs true state 0.984 (non-inferior) & \cmark\\
+The transcript is enough & reader with labels vs the agent's own internals & \best{0.994} vs 0.979; $+0.015$ [0.007, 0.026] & \cmark\\
+\dots{} on unseen task families & held-out families of CAPE-Bench & 0.969 vs 0.976 (non-inferior) & \cmark\\
+Transfer to a new benchmark & AgentDojo, open agents, no AgentDojo training & \best{0.781} vs judge 0.537 & \cmark\\
+Closed agent 1 & Claude Haiku~5.5, all 3{,}128 actions; within template & \best{0.991} vs judge 0.633; $+0.360$ [0.302, 0.413] & \cmark\\
+Closed agent 2 & GPT-6-luna, pooled: vs the judge; vs tool identity; within tool & \best{0.996}; $+0.217$ [0.174, 0.265]; $+0.141$ [0.111, 0.171]; $+0.039$ [0.015, 0.066] & \cmark\\
+Live prevention 1 & GPT-6-luna, 500 scenarios $\times$ 2 arms & violations 6.6\% $\to$ \best{0.2\%}; $-0.064$ [$-0.088$, $-0.044$] & \cmark\\
+Live prevention 2 & Claude Haiku~5.5, 450 scenarios $\times$ 2 arms & violations 6.7\% $\to$ \best{0.2\%}; $-0.064$ [$-0.087$, $-0.044$] & \cmark\\
+Hold for review keeps the safety & Claude, an oracle reviewer & violations 6.7\% $\to$ \best{0.0\%}; $-0.067$ [$-0.091$, $-0.044$] & \cmark\\
+Labels of a new policy transfer & AgentDojo labels of open agents, closed GPT-6-luna & \best{0.922} vs judge 0.787; $+0.136$ [0.078, 0.191] & \cmark\\
+\ROBUSTTABLE
+\bottomrule
+\end{tabularx}
+\end{table*}

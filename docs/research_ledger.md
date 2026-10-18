@@ -1201,3 +1201,10 @@ Dated log of every experiment, decision and correction. Newest last.
     of 5%. New `stats.budget_cut`: equal to np.quantile without ties (checked: T28's server cut and the T8b cut are
     unchanged), and it keeps the budget when there are ties. Used by QuantileGate, TextMonitor.fit and the browser
     (TM.budgetCut). Documented post-lock edit 3, reversed exactly in scripts/99 for T26's whole-file lock.
+- **Paper tables redesigned in a formal style (2026-10-18, user request).**
+  - Table 1 is now a method-by-setting comparison: 7 settings in 3 shift groups × 4 monitors, within-template AUROC,
+    best in bold, second underlined, the reader column shaded, and each row's preregistered contrast with its 95%
+    interval. The report-style claim table is archived.
+  - Figure 4's heat map was removed, since it duplicated Table 1. Figure 4 now has 2 panels.
+  - New Table 3: the four preregistered live tests (violations, Δ with CI, goals).
+  - Table 2 restyled to match. The main text still ends on p. 8, and nothing is overfull.

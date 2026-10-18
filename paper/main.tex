@@ -6,6 +6,7 @@
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage{amsmath,amssymb,mathtools,amsthm}
 \usepackage{booktabs}
+\usepackage{makecell}
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{placeins}
@@ -116,31 +117,32 @@ Every confirmatory test was preregistered: its document and analysis code were h
 \label{sec:results}
 
 \begin{table*}[t]
-\centering\footnotesize
-\renewcommand{\arraystretch}{1.08}
-\setlength{\tabcolsep}{4pt}
-\caption{The main preregistered results. Every row is a confirmatory test whose criterion was fixed and hash-locked before the data existed; every row met it. All tests, including those that failed or could not be done, are in \cref{app:limits,app:record}.}
+\centering\small
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{3.6pt}
+\newcommand{\ci}[1]{{\scriptsize\textcolor{gbmute}{[#1]}}}
+\newcommand{\sota}[1]{\textbf{#1}}
+\newcommand{\snd}[1]{\underline{#1}}
+\caption{\textbf{Detecting policy violations before the action runs}, as the distribution moves away from training. AUROC within template (within suite on AgentDojo), so that what the tool or task alone predicts does not count. The judge and TF-IDF see the same transcript and action as the reader; the agent's internals need its weights. Nothing is fit on a test agent. Best in each row in bold, second underlined. Last column: the preregistered contrast of the row (reader $-$ internals, I; non-inferiority to internals, NI; reader $-$ judge, J; the same within tool, J$_\text{tool}$), with its 95\% interval from a bootstrap over scenarios or episodes; each met its criterion.}
 \label{tab:main}
-\rowcolors{2}{gbrow}{white}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright}p{0.2\textwidth}>{\raggedright}X>{\raggedright\arraybackslash}p{0.37\textwidth}c@{}}
+\begin{tabular}{@{}llr ccc>{\columncolor{gbrow}}c l@{}}
 \toprule
-\rowcolor{gbhead}\textbf{Claim} & \textbf{Test} & \textbf{Result} [95\% interval] & \\
+ & & & \multicolumn{4}{c}{\textbf{Monitor}} & \\
+\cmidrule(lr){4-7}
+\textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Grey-box}\\\textbf{reader}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
 \midrule
-The reader replicates the state & Gemma-4, 12{,}128 fresh steps, top 128 components & $R^2$ \best{0.664} vs text 0.586; $+0.079$ [0.075, 0.083] & \cmark\\
-\dots{} on other architectures & gpt-oss-20b, Qwen3.8-27B, Muse-Glimmer-30B, unseen scenarios & $R^2$ \best{0.49 / 0.54 / 0.46} vs text 0.39 / 0.44 / 0.40 & \cmark\\
-White-box probes work on the replica & a probe trained on true states, applied to the replica & 0.987 vs true state 0.984 (non-inferior) & \cmark\\
-The transcript is enough & reader with labels vs the agent's own internals & \best{0.994} vs 0.979; $+0.015$ [0.007, 0.026] & \cmark\\
-\dots{} on unseen task families & held-out families of CAPE-Bench & 0.969 vs 0.976 (non-inferior) & \cmark\\
-Transfer to a new benchmark & AgentDojo, open agents, no AgentDojo training & \best{0.781} vs judge 0.537 & \cmark\\
-Closed agent 1 & Claude Haiku~5.5, all 3{,}128 actions; within template & \best{0.991} vs judge 0.633; $+0.360$ [0.302, 0.413] & \cmark\\
-Closed agent 2 & GPT-6-luna, pooled: vs the judge; vs tool identity; within tool & \best{0.996}; $+0.217$ [0.174, 0.265]; $+0.141$ [0.111, 0.171]; $+0.039$ [0.015, 0.066] & \cmark\\
-Live prevention 1 & GPT-6-luna, 500 scenarios $\times$ 2 arms & violations 6.6\% $\to$ \best{0.2\%}; $-0.064$ [$-0.088$, $-0.044$] & \cmark\\
-Live prevention 2 & Claude Haiku~5.5, 450 scenarios $\times$ 2 arms & violations 6.7\% $\to$ \best{0.2\%}; $-0.064$ [$-0.087$, $-0.044$] & \cmark\\
-Hold for review keeps the safety & Claude, an oracle reviewer & violations 6.7\% $\to$ \best{0.0\%}; $-0.067$ [$-0.091$, $-0.044$] & \cmark\\
-Labels of a new policy transfer & AgentDojo labels of open agents, closed GPT-6-luna & \best{0.922} vs judge 0.787; $+0.136$ [0.078, 0.191] & \cmark\\
-\ROBUSTTABLE
+\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Open agent, the training distribution}}\\
+Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
+Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
+Another architecture & gpt-oss-20b & 5{,}229 & -- & 0.833 & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
+CAPE-Bench & Claude Haiku~5.5 & 3{,}128 & -- & 0.633 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
+CAPE-Bench & GPT-6-luna & 3{,}627 & -- & 0.942 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
+\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{A new benchmark: AgentDojo prompt injection, a policy absent from training}}\\
+No AgentDojo labels & two open & 3{,}455 & -- & \snd{0.537} & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
+Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & \sota{0.922} & J\enspace$+0.136$ \ci{0.078, 0.191}\\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table*}
 
 \subsection{Reading the behavioural state}
@@ -166,13 +168,13 @@ The theory predicts the shape of the replica. Across the 128 components, the rat
 \subsection{The transcript is enough}
 \label{sec:sufficient}
 \Cref{cor:action} says that the agent's internals cannot beat a monitor that reads the transcript and the action. A probe on the agent's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning: the white-box advantage over turn-start monitors is \emph{when} it reads. A reader probe trained on the same labels scores 0.994, above the agent's internals ($+0.015$ [0.007, 0.026]), and it is non-inferior on unseen task families (0.969 vs 0.976). In an exploratory check, adding the agent's hidden reasoning to the reader's input, given the action, changes the AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]: given the action, the hidden reasoning adds no measurable information, as \cref{prop:replica}(a) allows.
-What the reader adds over word counts is robustness to shift (\cref{fig:transfer}a): TF-IDF with the same labels equals the reader on the training benchmark, but it is lower on unseen task families (0.950 vs 0.969) and at chance on AgentDojo (0.503), where the reader keeps 0.781 against a zero-shot judge's 0.537.
+What the reader adds over word counts is robustness to shift (\cref{tab:main}): TF-IDF with the same labels equals the reader on the training benchmark, but it is lower on unseen task families (0.950 vs 0.969) and at chance on AgentDojo (0.503), where the reader keeps 0.781 against a zero-shot judge's 0.537.
 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/transfer.pdf}
-\caption{Transfer and robustness. (a) AUROC of the monitors under increasing shift, from the training scenarios to closed agents and a new benchmark (within template, or within suite on AgentDojo); best in each row boxed. (b) Labels of prompt injection collected on two \emph{open} agents, applied to the \emph{closed} GPT-6-luna: injected calls caught at the 95th percentile of benign calls, against the number of labelled calls (numbers: AUROC). (c) Claude Haiku~5.5 told, or not told, that it is monitored: the reader's scores of safe actions (histograms) and of violations (dots), and the cut frozen on Claude's earlier unlabelled traffic.}
+\includegraphics[width=0.72\textwidth]{figures/transfer.pdf}
+\caption{Transfer and robustness. (a) Labels of prompt injection collected on two \emph{open} agents, applied to the \emph{closed} GPT-6-luna: injected calls caught at the 95th percentile of benign calls, against the number of labelled calls (numbers: AUROC). (b) Claude Haiku~5.5 told, or not told, that it is monitored: the reader's scores of safe actions (histograms) and of violations (dots), and the cut frozen on Claude's earlier unlabelled traffic.}
 \label{fig:transfer}
 \end{figure*}
 
@@ -183,26 +185,47 @@ The scale of the scores does not transfer between agents (on Claude a cut at pro
 
 \begin{table}[t]
 \centering\small
-\renewcommand{\arraystretch}{1.12}\setlength{\tabcolsep}{5pt}
-\caption{Closed agents (reasoning off); monitors trained only on Gemma-4. Caught: violations escalated when exactly 5\% of the actions, the highest-scored, go to review (a cut set without labels). Best in each column in blue.}
+\renewcommand{\arraystretch}{1.15}\setlength{\tabcolsep}{4.5pt}
+\caption{\textbf{Closed agents at a 5\% review budget}, with monitors trained only on Gemma-4. Pooled AUROC and the share of violations caught when exactly 5\% of the actions, the highest-scored, go to review (a cut set without labels). Best in each column in bold, second underlined.}
 \label{tab:closed}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Claude Haiku 5.5}} & \multicolumn{2}{c}{\textbf{GPT-6-luna}}\\
-\rowcolor{gbhead} & AUROC & caught & AUROC & caught\\
+ & \multicolumn{2}{c}{\textbf{Claude Haiku 5.5}} & \multicolumn{2}{c}{\textbf{GPT-6-luna}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Monitor} & AUROC & caught & AUROC & caught\\
 \midrule
-\rowcolor{gbrow}\textbf{Grey-box reader} & \best{0.989} & \best{94.1\%} & \best{0.996} & \best{98.5\%}\\
-TF-IDF (same labels) & 0.975 & 63.8\% & 0.964 & 49.0\%\\
 Zero-shot 70B judge & 0.570 & 0.0\% & 0.778 & 37.9\%\\
 Tool identity & 0.857 & 42.4\% & 0.856 & 13.6\%\\
+TF-IDF (same labels) & \underline{0.975} & \underline{63.8\%} & \underline{0.964} & \underline{49.0\%}\\
+\rowcolor{gbrow}\textbf{Grey-box reader} & \textbf{0.989} & \textbf{94.1\%} & \textbf{0.996} & \textbf{98.5\%}\\
 \bottomrule
-\end{tabular}\\[2pt]
-\footnotesize Pooled AUROC (\cref{tab:main} reports Claude within template).
+\end{tabular}
 \end{table}
 
 \subsection{Live prevention}
 \label{sec:prevent}
-We ran the monitor as a server in the tool loop of each closed agent, on the same scenarios with and without the gate; the cut came from the agent's past unlabelled traffic. A blocked action does not run. On GPT-6-luna (500 scenarios) the share of episodes with an executed violation fell from 6.6\% to 0.2\% ($-0.064$ [$-0.088$, $-0.044$]); on Claude Haiku~5.5 (450 scenarios) from 6.7\% to 0.2\% ($-0.064$ [$-0.087$, $-0.044$]). Neither agent executed a violation after a block (\cref{fig:prevention}a). Holding an escalated action for a reviewer instead of blocking it kept the safety gain (6.7\% $\to$ 0.0\%, $-0.067$ [$-0.091$, $-0.044$]) and, in an exploratory comparison of runs that did not take place at the same time, reached more goals than blocking, 38.7\% against 34.9\% (no gate 40.7\%; \cref{fig:prevention}b). The reviewer here is the environment's oracle, an upper bound on a human, and the preregistered bound on the goal cost of review was not shown (\cref{app:limits}). The round trip was \LATENCY.
+We ran the monitor as a server in the tool loop of each closed agent, on the same scenarios with and without the gate; the cut came from the agent's earlier unlabelled traffic, and a blocked action does not run. In all four preregistered live tests the gate removed nearly all executed violations (\cref{tab:live}), and neither agent executed a violation after a block (\cref{fig:prevention}a). Holding an escalated action for a reviewer kept the safety gain; in an exploratory comparison of runs that did not take place at the same time it reached more goals than blocking (\cref{fig:prevention}b), with the environment's oracle as an upper bound on a human reviewer, and the preregistered bound on its goal cost was not shown (\cref{app:limits}). The round trip was \LATENCY.
+
+\begin{table}[t]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{2.6pt}
+\caption{\textbf{Live prevention} in the closed agents' tool loops (preregistered; each of 500, 450, 450 and 400 scenarios run without and with the gate). Episodes with an executed violation and episodes that reached the task goal, in \%; $\Delta$: gated $-$ ungated violation rate (as a fraction) with its 95\% interval (bootstrap over scenarios).}
+\label{tab:live}
+\begin{tabular}{@{}l c>{\columncolor{gbrow}}c c cc@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Violations}} & & \multicolumn{2}{c}{\textbf{Goals}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){5-6}
+\textbf{Agent, gate} & none & gate & $\Delta$ [95\% CI] & none & gate\\
+\midrule
+GPT-6-luna, block & 6.6 & \textbf{0.2} & $-.064$ {\scriptsize[$-.088$, $-.044$]} & 47.4 & 45.6\\
+Claude, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 40.7 & 34.9\\
+\quad hold for review\textsuperscript{a} & 6.7 & \textbf{0.0} & $-.067$ {\scriptsize[$-.091$, $-.044$]} & 40.7 & 38.7\\
+\quad told, cut re-set\textsuperscript{b} & 6.5 & \textbf{0.0} & $-.065$ {\scriptsize[$-.090$, $-.043$]} & 38.5 & 35.5\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{\columnwidth}{\scriptsize \textsuperscript{a}An oracle reviewer; same scenarios as the row above, run separately. \textsuperscript{b}Block, with the cut set again on the told agent's unlabelled traffic: it escalated 4.7\% [3.5, 6.1] of actions (budget 5\%; the old cut 16.6\%).}
+\end{table}
 
 \begin{figure*}[t]
 \centering
@@ -213,7 +236,7 @@ We ran the monitor as a server in the tool loop of each closed agent, on the sam
 
 \subsection{Labels of a new policy transfer from open agents}
 \label{sec:coverage}
-A monitor learns the policies in its training data, so a new policy needs labels (\cref{app:limits}). These labels need not come from the monitored agent. Prompt injection on AgentDojo is a new policy for our monitor. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]), and the share of injected calls caught doubles, from 28\% to 58\% at the label-free cut (36\% to 92\% at the benign-call cut of \cref{fig:transfer}b). In an exploratory check on the confirmation split, whose user tasks the training never saw, the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]).
+A monitor learns the policies in its training data, so a new policy needs labels (\cref{app:limits}). These labels need not come from the monitored agent. Prompt injection on AgentDojo is a new policy for our monitor. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]), and the share of injected calls caught doubles, from 28\% to 58\% at the label-free cut (36\% to 92\% at the benign-call cut of \cref{fig:transfer}a). In an exploratory check on the confirmation split, whose user tasks the training never saw, the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]).
 
 
 \ROBUSTSECTION
