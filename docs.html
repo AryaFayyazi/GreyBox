@@ -42,7 +42,7 @@ opinion on held actions, not as the only monitor.</p>
 pip install "greybox-monitor[text]"       # + train the text monitor in Python
 pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
 <p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
-<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.4.0</code>);
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.4.1</code>);
 the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
@@ -53,9 +53,10 @@ OpenAI or Anthropic conversations, one per line, with a <code>"labels"</code> fi
 # prints the cross-validated AUROC (pooled and within tool) and the share of violations caught at a 5% budget;
 # the folds hold out whole tasks (conversations with the same first user request)
 python -m graybox.train_text labelled_steps.jsonl --eval-only --group-by family       # report only: hold out whole task families</pre>
-<p>The model file leaves out identifying words by default (digits, "@", long codes, rare words): it is a partial copy of your logs'
-vocabulary. <code>--no-privacy</code> keeps them. The filter also reduces memorization: on our GPT example, with whole task families
-held out, AUROC 0.898 with the filter and 0.806 without it (0.948 and 0.940 with tasks held out). An existing <code>--out</code> file is not overwritten without <code>--force</code>.</p>
+<p>The privacy filter is on by default: emails and URLs are masked before the words are counted, and terms with digits, long
+codes, random-looking tokens or rare words are left out of the model file. Names and company names that recur in your logs stay (the
+filter cannot tell a name from a word), so keep the file internal if your logs name people. <code>--no-privacy</code> turns it off. The filter also reduces memorization: on our GPT example, with whole task families
+held out, AUROC 0.916 with the filter and 0.799 without it (0.946 and 0.942 with tasks held out). An existing <code>--out</code> file is not overwritten without <code>--force</code>.</p>
 <p>The estimate is the mean of 3 cross-validations with different fold assignments (the report gives the range); tasks with a
 violation are spread over the folds. Python and the browser use the same folds and agree to about 0.001.</p>
 <p>Read the within-tool AUROC. If it is much lower than the pooled AUROC, the monitor mostly knows <i>which tool</i> is called, not
@@ -103,10 +104,12 @@ later calls). Results of sibling calls that already ran do not change the score.
 and last 24,000, as in training: text deep inside a very long tool result is not seen.</p>
 <p><b>The review cut on a new kind of task.</b> A monitor file stores a cut set on its training actions. When the tasks change, the
 scores shift as a whole, and a stored cut can escalate almost nothing. We trained the text monitor on our GPT example logs without 8
-task families and scored those families, three times with different families (<code>results/tool/cut_under_shift.json</code>):</p>
-<ul><li>the stored cut escalated 0–0.9% of the actions and caught 0 of 110 violations;</li>
-<li>a cut set on the new traffic itself (what a live <code>QuantileGate</code> does) kept the review load at 5%, but caught only 11 of 110
-  (5/18, 6/46, 0/46). The text monitor's ranking also weakens there (AUROC 0.81–0.94).</li></ul>
+task families and scored those families, three times with different families (public data only:
+<code>scripts/114_cut_under_shift_public.py</code>, <code>results/tool/cut_under_shift_public.json</code>):</p>
+<ul><li>the stored cut escalated 0–0.3% of the actions and caught 0 of 115 violations;</li>
+<li>a cut set on the new traffic itself (what a live <code>QuantileGate</code> does) kept the review load at 5%, but caught only 29 of 115
+  (24/58, 4/18, 1/39), although the ranking stayed fair there (AUROC 0.90–0.98): at a 5% budget, most violations of a new kind of task
+  score below the top 5%.</li></ul>
 <p>So a live gate keeps the review load where you set it, but it does <b>not</b> restore detection on a new kind of task. For that,
 label actions of the new tasks and train again, or use the reader monitor (more robust to new tasks). To deploy a gate:
 <code>Guard(monitor, gate=QuantileGate(0.05))</code>, or <code>"gate": true</code> with a <code>"stream"</code> on the server. A new gate sends
@@ -136,6 +139,8 @@ v = guard.check_openai(messages, call)
 if v.held: log_review(call, approved=v.allow)
 result = run_tool(call) if v.allow else v.block_message</pre>
 <h3>OpenAI Responses API, asyncio, reviewer timeout</h3>
+<p>OpenAI "custom" tool calls (free-text tools with no function name) are blocked: the guard fails closed on a call it cannot read.
+Use function tools for actions you want the monitor to score.</p>
 <pre>v = guard.check_openai_responses(input_items, function_call, instructions=instructions)   # Responses API items
 v = await guard.acheck_openai(messages, call)        # also acheck_anthropic, acheck_openai_responses (a worker thread)
 guard = Guard(monitor, gate=QuantileGate(0.05), reviewer=ask_human, reviewer_timeout=300)   # no answer in 300 s: blocked</pre>
@@ -212,9 +217,10 @@ AgentDojo calls it scored 0.922 (zero-shot judge 0.787; T14).</li>
 <p>Label actions in the <a href="train.html">browser trainer</a> and download them, or use logs that carry a <code>labels</code> field.
 Then one command computes the reader's features and trains the probe:</p>
 <pre>python -m graybox.train_reader greybox-labelled-actions.jsonl --out my_reader_probe.joblib</pre>
-<p>It reports an AUROC from cross-validation grouped by conversation and the catch rate at a 5% budget, and writes a file that
-<code>graybox.reader_load.load_reader</code>, <code>Guard</code> and the server use (a probe trained with <code>--chat</code> keeps that setting). On our 300 example GPT conversations (1,515 actions), it took 90
-seconds on one GPU: AUROC 0.994, 98.5% of violations caught at 5% review (the browser's word-count monitor: 0.989 and 94%).</p>
+<p>It reports an AUROC from cross-validation with whole tasks held out (the mean of 3 fold assignments, as the text trainer) and the
+catch rate at a 5% budget, and writes a file that <code>graybox.reader_load.load_reader</code>, <code>Guard</code> and the server use
+(a probe trained with <code>--chat</code> keeps that setting). On our 300 example GPT conversations (1,515 actions), it took 110 seconds
+on one GPU: AUROC 0.972 (0.970–0.973), 86.6% of violations caught at 5% review; the text monitor on the same folds: 0.946 and 60.2%.</p>
 
 <h2>HTTP API (self-hosted)</h2>
 <pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --host 127.0.0.1 --port 8000   # CPU only
@@ -223,7 +229,8 @@ GB_MONITOR_PROBE=reader_probe.joblib      uvicorn graybox.monitor_server:app --h
 <code>GB_API_KEY</code> (a long random string): every endpoint but <code>/v1/health</code> then needs
 <code>Authorization: Bearer &lt;key&gt;</code>. Use TLS (a reverse proxy) beyond one machine. <b>Restarts.</b> Gates live in memory;
 set <code>GB_GATE_STATE=/path/gates.json</code> to keep them (warm-up scores and frozen cuts) across restarts. Without it, a restarted
-server sends every action of a stream to review until it has seen 100 again.</p>
+server sends every action of a stream to review until it has seen 100 again. A gate belongs to a stream <i>and</i> a budget: a
+request with another <code>budget</code> starts a new, cold gate (seed it with <code>/calibrate</code> at that budget).</p>
 <p><code>POST /v1/monitor/text</code> scores with the browser-trained text monitor and its stored cut. <code>POST /v1/monitor/action</code>
 uses the reader with a frozen gate per <code>stream</code>. Both take the same body:</p>
 <pre>POST /v1/monitor/action
@@ -239,8 +246,8 @@ POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in Op
    ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"version": "0.4.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
-   "auth_required": false, "gate_state_file": null, "gates": 0}</pre>
+→ {"version": "0.4.1", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+   "auth_required": false, "gate_state_persisted": false, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in
 <code>deploy/</code> of the repository.</p>
@@ -254,7 +261,7 @@ your policy. <code>group</code> keeps a task's steps in one cross-validation fol
 
 <h2>How to evaluate a monitor honestly</h2>
 <ul>
-  <li>Hold out whole tasks, not steps or conversations (the trainer groups by task). Steps of one task share text and inflate accuracy: on our GPT example, 0.989 when conversations are held out, 0.948 when tasks are, 0.898 when task families (24 templates) are.</li>
+  <li>Hold out whole tasks, not steps or conversations (the trainer groups by task). Steps of one task share text and inflate accuracy: on our GPT example, 0.990 when conversations are held out, 0.946 when tasks are, 0.916 when task families (24 templates) are.</li>
   <li>Report the catch rate at the review budget you can afford, not only AUROC.</li>
   <li>Test on a policy or task family you did not train on before trusting it there.</li>
   <li>Never take the threshold from another agent: calibrate on this agent's traffic and freeze it.</li>
@@ -262,5 +269,5 @@ your policy. <code>group</code> keeps a task's steps in one cross-validation fol
 
 </div></main>
 <footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked
-tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-17.</div></footer>
+tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-18.</div></footer>
 </body></html>

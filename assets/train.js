@@ -296,7 +296,7 @@
     ].map(([v, l]) => `<div class="card"><div class="num">${v}</div><div class="muted">${l}</div></div>`).join('');
     const tools = Object.entries(r.perTool).sort((a, b) => b[1].n - a[1].n);
     $('perTool').innerHTML = `<table><thead><tr><th>Tool</th><th>Actions</th><th>Violations</th><th>Sent to review</th></tr></thead><tbody>` +
-      tools.map(([t, o]) => `<tr><td><code>${esc(t)}</code></td><td class="n">${num(o.n)}</td><td class="n">${num(o.unsafe)}</td><td class="n">${o.unsafe ? `${o.caught}/${o.unsafe}` : '–'}</td></tr>`).join('') + '</tbody></table>';
+      tools.map(([t, o]) => `<tr><td><code>${esc(t)}</code></td><td class="n">${num(o.n)}</td><td class="n">${num(o.unsafe)}</td><td class="n">${o.unsafe ? `${Number.isInteger(o.caught) ? o.caught : o.caught.toFixed(1)}/${o.unsafe}` : '–'}</td></tr>`).join('') + '</tbody></table>';
     $('details').textContent = r.pretrained
       ? `The pre-trained browser reader (${r.encoder}), trained only on our CAPE-Bench steps, never on your data: evaluated on your ${plural(r.n, 'labelled action')} (${plural(r.unsafe, 'violation')}). The review cut is the top ${pct(r.budget)} of your actions, set without labels.`
       : `${plural(r.n, 'labelled action')}, ${plural(r.unsafe, 'violation')}, ${plural(r.groups, 'group')} (tasks: the first user request; or the file's own groups), ${r.folds}-fold cross-validation that holds out whole groups. ` +

@@ -14,7 +14,7 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = 
   rows.forEach((ex, i) => {
     if (ex.label !== 0 && ex.label !== 1 && ex.label !== true && ex.label !== false) throw new Error(`row ${i + 1}: "label" must be 0 or 1`);
     const r = TM.render(ex);
-    R.push(r); y.push(ex.label ? 1 : 0);
+    R.push(privacy ? { ctx: TM.maskPII(r.ctx), act: TM.maskPII(r.act) } : r); y.push(ex.label ? 1 : 0);   // emails, URLs masked
     groups.push(String(ex.group ?? ex.task ?? r.ctx.slice(0, 400)));
     tools.push(r.act.split(' ')[0]);
   });
@@ -53,13 +53,16 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = 
   P(`final fit on all ${y.length} examples (C = ${best})`, done / steps);
   const model = TM.fit(R, y, best, { drop });
   model.privacy = privacy;
+  if (privacy) model.mask_pii = true;                // the rows were masked: scoring masks the same way
   done++;
   P('evaluating', done / steps);
   const s = Array.from(oof[best]), cut = TM.quantile(s, 1 - budget);
   const caught = s.filter((v, i) => y[i] && v >= cut).length, safeEsc = s.filter((v, i) => !y[i] && v >= cut).length;
   const ci = TM.groupBootstrapAUROC(y, s, groups, 500, 0);
   const perTool = {};
-  tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });
+  tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) o.unsafe++; });
+  reps.forEach(o => { const z = Array.from(o[best]), c = TM.quantile(z, 1 - budget);           // caught: mean over the 3 repeats, as the headline
+    tools.forEach((t, i) => { if (y[i] && z[i] >= c) perTool[t].caught += 1 / reps.length; }); });
   // the report's catch rate uses the top `budget` of the out-of-fold scores (a cross-validated estimate). The saved cut is
   // replaced on the page (train.js results()) by the top `budget` of the final model's scores on ALL loaded actions.
   model.threshold_logit = cut;

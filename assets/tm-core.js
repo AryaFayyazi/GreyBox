@@ -115,13 +115,20 @@
     const nrm = Math.sqrt(val.reduce((s, x) => s + x * x, 0)) || 1;
     return { idx, val: val.map(x => x / nrm) };
   }
+  // privacy mode: the personal part of emails and the path of URLs masked before tokenizing; domains and hosts stay
+  // (as graybox.monitor.mask_pii)
+  function maskPII(text) {
+    return String(text).replace(/[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/g, ' xemailx $1 ')
+      .replace(/(?:https?:\/\/|www\.)([A-Za-z0-9.-]+)[^\s"'<>]*/gi, ' xurlx $1 ');
+  }
   function features(model, r) {
+    if (model.mask_pii) r = { ctx: maskPII(r.ctx), act: maskPII(r.act) };
     const a = transform(model.vc, r.ctx), b = transform(model.va, r.act), off = model.vc.idf.length;
     return { idx: a.idx.concat(b.idx.map(j => j + off)), val: a.val.concat(b.val) };
   }
 
   // ---- logistic regression, L-BFGS ----
-  function fitLR(X, y, C, maxIter = 500, tol = 1e-4) {
+  function fitLR(X, y, C, maxIter = 3000, tol = 1e-6) {    // tight, as graybox.monitor (scikit-learn tol=1e-6): the two trainers give the same model
     const d = X.dim, n = X.rows.length, m = 10;
     let w = new Float64Array(d + 1);   // last entry: intercept
     const z = new Float64Array(n);
@@ -174,12 +181,14 @@
   function decision(model, x) { let s = model.b; for (let k = 0; k < x.idx.length; k++) s += model.w[x.idx[k]] * x.val[k]; return s; }
 
   function fit(rendered, labels, C, opts = {}) {
+    if (opts.mask) rendered = rendered.map(r => ({ ctx: maskPII(r.ctx), act: maskPII(r.act) }));
     const vc = fitVectorizer(rendered.map(r => r.ctx), 3, opts.maxFeatures || 200000, opts.drop || null);
     const va = fitVectorizer(rendered.map(r => r.act), 3, opts.maxFeatures || 200000, opts.drop || null);
     const model = { vc, va, C };
     const rows = rendered.map(r => features(model, r));
     const lr = fitLR({ rows, dim: vc.idf.length + va.idf.length }, labels, C);
     model.w = lr.w; model.b = lr.b;
+    if (opts.mask) model.mask_pii = true;            // scoring masks emails and URLs the same way
     return model;
   }
   const score = (model, r) => sigmoid(decision(model, features(model, r)));
@@ -350,6 +359,6 @@
     return { steps, format: fmt, conversations: count.steps === convs.length ? null : convs.length - count.steps, ...info };
   }
 
-  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, transform, features, fitLR, fit, score, decision, sigmoid,
+  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, maskPII, transform, features, fitLR, fit, score, decision, sigmoid,
               auroc, withinAUROC, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
 })(typeof self !== 'undefined' ? self : this);

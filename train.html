@@ -29,7 +29,7 @@
 
 <div class="note"><b>What this monitor is.</b> It is the word-count monitor (TF-IDF and logistic regression) from our
   preregistered tests, the same model as <code>graybox.monitor.TextMonitor</code> in the Python SDK. The browser and Python give
-  identical results (identical text on 302 real agent steps, held-out AUROC 0.9887 vs 0.9886). On the tools and policies that it was
+  identical results (identical text on 302 real agent steps; with the privacy filter, identical vocabularies and held-out AUROC, 0.9915 in both; trained on the same data, the two give scores within 0.01 and the same review decisions). On the tools and policies that it was
   trained on, it is equal to a much larger reader model, also on closed agents. It does <b>not</b> transfer to a new type of policy
   or task: on a different benchmark it was at chance. For robustness to new tasks, use the reader monitor (<a href="docs.html">self-hosted</a>).</div>
 
@@ -110,8 +110,9 @@
     <button id="trainBtn" disabled>Train on the labelled actions</button>
   </div>
   <label class="row" style="gap:8px;font-size:13px;margin:10px 0 0"><input type="checkbox" id="privacyFilter" checked style="width:auto">
-    Leave identifying words out of the model (digits, "@", long codes, random strings, rare words). On by default: the model file is a
-    partial copy of your logs' vocabulary. Turn it off only if the file stays private. The numbers you see are for the model you download.</label>
+    Privacy filter (on by default): emails and URLs are masked, and terms with digits, long codes, random strings or rare words are left
+    out of the model file. Names and company names that recur in your logs stay: the file is a partial copy of your logs' vocabulary, so
+    keep it internal if they name people. The numbers you see are for the model you download.</label>
   <progress id="prog" value="0" max="1" hidden style="margin-top:12px"></progress>
   <p id="progMsg" class="muted" style="margin:6px 0 0"></p>
 </div>
@@ -125,12 +126,12 @@
   <p class="muted" id="details" style="margin-top:10px"></p>
   <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole tasks (conversations that start with the
     same user request share a fold). It estimates the performance on new tasks <i>like the labelled ones</i>; a new kind of task can
-    score much lower (on our GPT example: 0.95 when tasks are held out, 0.90 when whole task families are). It does not cover a new policy, new tools or a different benchmark. In
+    score much lower (on our GPT example: 0.95 when tasks are held out, 0.92 when whole task families are). It does not cover a new policy, new tools or a different benchmark. In
     our tests, a policy that was absent from the training data was missed, until 20 to 40 labelled actions of it were added.
     <br><b>The review cut in the file</b> is set on your labelled actions. On a new kind of task the scores shift, and a stored cut
-    can send almost nothing to review: on task families held out from training, it caught 0 of 110 violations. A cut set on the
+    can send almost nothing to review: on task families held out from training, it caught 0 of 115 violations. A cut set on the
     new traffic (<code>Guard(monitor, gate=QuantileGate(0.05))</code>, or the server's <code>"gate": true</code>) keeps the 5% review load,
-    but it caught only 11 of 110: on a new kind of task, label its actions and train again.</div>
+    but it caught only 29 of 115: on a new kind of task, label its actions and train again.</div>
   <div id="queueBox" class="card" hidden style="margin-top:14px">
     <h3 style="margin-top:0">Review queue</h3>
     <p id="queueText"></p>
@@ -181,5 +182,5 @@ v = guard.check_anthropic(system, messages, block)</pre>
 
 </div></main>
 <footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked
-tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-17.</div></footer>
+tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-18.</div></footer>
 </body></html>

@@ -65,7 +65,9 @@ function train({ X, dim, y: yAll, groups: gAll, tools: tAll, budget = 0.05, fold
   model.cut_source = 'out-of-fold scores of the training actions';
   const caught = s.filter((v, i) => y[i] && v >= cut).length, safeEsc = s.filter((v, i) => !y[i] && v >= cut).length, nEsc = caught + safeEsc;
   const perTool = {};
-  tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });
+  tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) o.unsafe++; });
+  reps.forEach(o => { const z = Array.from(o), c = TM.quantile(z, 1 - budget);                 // caught: mean over the 3 repeats
+    tools.forEach((t, i) => { if (y[i] && z[i] >= c) perTool[t].caught += 1 / reps.length; }); });
   const meanAuc = aucs.reduce((x, z) => x + z, 0) / aucs.length;
   const report = { n: y.length, unsafe: nPos, groups: nGroups, folds: k, repeats: REPS, C, cv_auroc_by_C: [[C, meanAuc]], auroc: meanAuc,
                    auroc_range: [Math.min(...aucs), Math.max(...aucs)],
