@@ -1,0 +1,9 @@
+{
+ "locked_at": "2026-10-18T14:42:32-07:00",
+ "sha256": {
+  "docs/prereg_G5_answers_vs_replies.md": "7f80be091482d2fc720f6606bb98c0e68b236ed2440d4061233b43f7126f26e1",
+  "scripts/133_g5_answers_vs_replies.py": "bf602f644b4ab0b89cd0ebd41201a77d3d8243a3bd42fb7e77b64ee887823dd3",
+  "scripts/132_g4_shift.py": "067fc02053aa7e494b2eab56c618cafb505866ba4d0acf7dc6a1e7ca8ad131e8",
+  "scripts/129_infogeom.py": "dcfc0fed2d33f8560d75dbcec8c55b7f7d2683593a52148005ec969f5d75eb9a"
+ }
+}

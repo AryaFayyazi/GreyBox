@@ -156,6 +156,19 @@ def p_of(z):
     return np.clip((z["p_yes"] + 1e-6) / (z["p_yes"] + z["p_no"] + 2e-6), 0, 1)
 
 
+def one_sample_angles(z, cols, rng):
+    """One sampled answer per (context, question), as a text API returns it: yes / no / other with the model's raw
+    probabilities (other = neither yes nor no in the top 20). Anscombe angle with n = 1, or n = 0 for other (pi/2:
+    no information)."""
+    from graybox.geometry import fisher_angles_from_counts
+    py = np.clip(z["p_yes"][:, cols].astype(np.float64), 0, 1)
+    pn = np.clip(z["p_no"][:, cols].astype(np.float64), 0, 1)
+    tot = np.maximum(py + pn, 1.0)                     # top-20 sums can exceed 1 by rounding
+    u = rng.random(py.shape)
+    yes, no = u < py / tot, (u >= py / tot) & (u < (py + pn) / tot)
+    return fisher_angles_from_counts(yes.astype(float), (yes | no).astype(float))
+
+
 def signflip_p(Delta, n_flip, rng):
     """Paired test of E[delta] = 0 with the U-statistic T = sum_{i != j} delta_i' delta_j (unbiased for N(N-1)|E delta|^2).
     Under no change the two conditions of a context are exchangeable, so delta_i is symmetric and independent across
@@ -191,6 +204,7 @@ def stage_analyze(cfg):
         items = list(np.load(d / "psi_none.npz")["items"])
         q8 = [items.index(i) for i in items24[:8]]                             # 8 fixed questions: the first 8 of Claude's 24
         P = {c: p_of(np.load(d / f"psi_{c}.npz")) for c in CONDITIONS}
+        RAW = {c: np.load(d / f"psi_{c}.npz") for c in CONDITIONS}                # raw P(yes), P(no): the rest is "other"
         H = {c: np.load(d / f"hidden_{c}.npz")["h"][:, k].astype(np.float64) for c in CONDITIONS}
         E = {c: np.load(d / f"replies_{c}.minilm.npy").reshape(len(C), cfg.replies, -1).astype(np.float64) for c in CONDITIONS}
         r = {"layer": layer, "conditions": {}}
@@ -205,8 +219,7 @@ def stage_analyze(cfg):
             dr = np.linalg.norm(E[c].mean(1) - E["none"].mean(1), axis=1)      # reply displacement (mean of 8 replies)
             disp_ans.append(da); disp_rep.append(dr); disp_hid.append(dh)
             # equal calls per context and condition: 8 one-sample answers (8 questions) vs 8 sampled replies
-            ka = rng.binomial(1, P[c][:, q8]); k0 = rng.binomial(1, P["none"][:, q8])
-            Da = fisher_angles_from_counts(ka, 1) - fisher_angles_from_counts(k0, 1)
+            Da = one_sample_angles(RAW[c], q8, rng) - one_sample_angles(RAW["none"], q8, rng)
             Dr = E[c].mean(1) - E["none"].mean(1)
             Dx = theta(P[c]) - theta(P["none"])                                # exact answers, 88 questions (logprob tier)
             power = {}
@@ -234,8 +247,8 @@ def stage_analyze(cfg):
         lv = []
         for _ in range(cfg.n_sub):
             s = rng.choice(len(C), 20, replace=False)
-            a1, a2 = rng.binomial(1, P["none"][s][:, q8]), rng.binomial(1, P["none"][s][:, q8])
-            lv.append(signflip_p(fisher_angles_from_counts(a1, 1) - fisher_angles_from_counts(a2, 1), cfg.n_flip, rng) <= 0.05)
+            A1, A2 = one_sample_angles(RAW["none"], q8, rng), one_sample_angles(RAW["none"], q8, rng)
+            lv.append(signflip_p(A1[s] - A2[s], cfg.n_flip, rng) <= 0.05)
         r["level_null_N20"] = round(float(np.mean(lv)), 3)
         res["models"][m] = r
         print(m, "rho disp answers/replies vs hidden", r["rho_disp_answers_hidden"], r["rho_disp_replies_hidden"], r["P2_answers_minus_replies"],

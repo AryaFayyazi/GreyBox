@@ -1,0 +1,193 @@
+{
+ "split": "dev",
+ "n_contexts": 480,
+ "models": {
+  "gemma3_4b": {
+   "layer": 34,
+   "rho_answers_exact88": 0.552,
+   "rho_answers_1sample88": 0.5455,
+   "rho_replies_mean8": 0.4557,
+   "rho_reply_1": 0.448,
+   "rho_context_text": 0.2839,
+   "H1_exact88_minus_replies8": [
+    0.0959,
+    0.0543,
+    0.1365
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.0969,
+    0.0592,
+    0.1367
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0079,
+    0.0014,
+    0.0149
+   ]
+  },
+  "gptoss20b": {
+   "layer": 12,
+   "rho_answers_exact88": 0.3775,
+   "rho_answers_1sample88": 0.1832,
+   "rho_replies_mean8": 0.2274,
+   "rho_reply_1": 0.2346,
+   "rho_context_text": 0.2303,
+   "H1_exact88_minus_replies8": [
+    0.1505,
+    0.1065,
+    0.1963
+   ],
+   "H2_1sample88_minus_reply1": [
+    -0.0513,
+    -0.096,
+    -0.0112
+   ],
+   "H3_replies8_minus_reply1": [
+    -0.0065,
+    -0.0195,
+    0.0082
+   ]
+  },
+  "llama31_8b": {
+   "layer": 24,
+   "rho_answers_exact88": 0.7233,
+   "rho_answers_1sample88": 0.669,
+   "rho_replies_mean8": 0.3184,
+   "rho_reply_1": 0.2941,
+   "rho_context_text": 0.2556,
+   "H1_exact88_minus_replies8": [
+    0.4047,
+    0.3658,
+    0.4401
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.3742,
+    0.3319,
+    0.4149
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0238,
+    0.0117,
+    0.0357
+   ]
+  },
+  "mistral7b": {
+   "layer": 8,
+   "rho_answers_exact88": 0.6919,
+   "rho_answers_1sample88": 0.6768,
+   "rho_replies_mean8": 0.2283,
+   "rho_reply_1": 0.2262,
+   "rho_context_text": 0.2325,
+   "H1_exact88_minus_replies8": [
+    0.4616,
+    0.4238,
+    0.5013
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.4499,
+    0.4067,
+    0.494
+   ],
+   "H3_replies8_minus_reply1": [
+    0.002,
+    -0.0066,
+    0.0108
+   ]
+  },
+  "olmo3_7b": {
+   "layer": 29,
+   "rho_answers_exact88": 0.5507,
+   "rho_answers_1sample88": 0.405,
+   "rho_replies_mean8": 0.3476,
+   "rho_reply_1": 0.337,
+   "rho_context_text": 0.2695,
+   "H1_exact88_minus_replies8": [
+    0.2045,
+    0.1647,
+    0.2441
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.0654,
+    0.0178,
+    0.1122
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0104,
+    0.0033,
+    0.0177
+   ]
+  },
+  "phi4mini": {
+   "layer": 29,
+   "rho_answers_exact88": 0.5787,
+   "rho_answers_1sample88": 0.3762,
+   "rho_replies_mean8": 0.2603,
+   "rho_reply_1": 0.26,
+   "rho_context_text": 0.2793,
+   "H1_exact88_minus_replies8": [
+    0.3166,
+    0.2612,
+    0.3614
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.1161,
+    0.0682,
+    0.1571
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0005,
+    -0.0094,
+    0.0095
+   ]
+  },
+  "qwen25_7b": {
+   "layer": 25,
+   "rho_answers_exact88": 0.751,
+   "rho_answers_1sample88": 0.7355,
+   "rho_replies_mean8": 0.3136,
+   "rho_reply_1": 0.3108,
+   "rho_context_text": 0.2802,
+   "H1_exact88_minus_replies8": [
+    0.4363,
+    0.4014,
+    0.4703
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.4237,
+    0.3877,
+    0.4559
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0029,
+    -0.0039,
+    0.0108
+   ]
+  },
+  "qwen3_8b": {
+   "layer": 27,
+   "rho_answers_exact88": 0.6666,
+   "rho_answers_1sample88": 0.6214,
+   "rho_replies_mean8": 0.3532,
+   "rho_reply_1": 0.343,
+   "rho_context_text": 0.2962,
+   "H1_exact88_minus_replies8": [
+    0.3114,
+    0.2749,
+    0.3457
+   ],
+   "H2_1sample88_minus_reply1": [
+    0.2775,
+    0.2388,
+    0.3142
+   ],
+   "H3_replies8_minus_reply1": [
+    0.0104,
+    0.0049,
+    0.016
+   ]
+  }
+ },
+ "H1_pass": true,
+ "H2_pass": true,
+ "H3_pass": true
+}
