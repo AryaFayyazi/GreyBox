@@ -143,6 +143,22 @@ if tm.escalate(system_prompt, user_task, history, action):    # the cut learned 
     hold_for_review()</pre>
 <p>Or train it without a browser: <code>python -m graybox.train_text</code> (see "Get a monitor without a browser" above).</p>
 
+<h2>The browser reader (no GPU, for new kinds of tasks)</h2>
+<p>A small neural reader (Qwen3-Embedding-0.6B with a probe trained on our CAPE-Bench steps) runs in the
+<a href="train.html">trainer</a>, with no server. It is for a new kind of task only (preregistered test T19): on prompt
+injections against a closed agent it scored AUROC 0.605, against 0.335 for word counts and 0.840 for the GPU reader. On tasks like
+the training data it is lower (closed agents on CAPE-Bench: 0.912 and 0.884, against 0.989 and 0.996 for the GPU reader): use the text
+monitor or the GPU reader there.</p>
+<ul>
+  <li>Download: 1.2 GB once, then cached. The page loads the float16 model, whose features match the Python features to cosine
+    0.99999. (The 8-bit model is smaller but its features differ, cosine 0.85, so the probe would be wrong.)</li>
+  <li>Speed on a CPU, measured in Chromium: about 7 s per action with 8 threads, 28 s with one. The trainer page enables several
+    threads with a small service worker (<code>coi-sw.js</code>, which only adds isolation headers to that page). With WebGPU it runs
+    on the GPU; we did not measure that speed.</li>
+  <li>In Python: <code>EmbedMonitor.load_json("greybox-reader-monitor.json")</code> (<code>pip install "graybox[browser-reader]"</code>)
+    scores the same features on a CPU (median 0.54 s per action with 16 threads).</li>
+</ul>
+
 <h2>The reader monitor (GPU, better on new kinds of tasks)</h2>
 <pre>curl -LO https://github.com/AryaFayyazi/GreyBox/releases/download/v0.2.0/reader_probe_cape_agentdojo.joblib</pre>
 <pre>from graybox.monitor import QuantileGate, Step

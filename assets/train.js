@@ -258,7 +258,13 @@
     }
     BR = b;
     $('mtypeRow').hidden = false;
-    $('mtypeNote').innerHTML = b.note;
+    // measured on CPU in Chromium (12 AgentDojo steps): 28 s per action on one thread, 7 s on 8 threads (this page is
+    // cross-origin isolated by coi-sw.js where the browser allows it). WebGPU is faster; we did not measure it.
+    const speed = navigator.gpu ? 'If this browser gives WebGPU, it runs on the GPU, faster than on the CPU. On the CPU: '
+      : 'This browser has no WebGPU, so it runs on the CPU: ';
+    const cpu = self.crossOriginIsolated ? 'about 7 s per action with several threads (we measured 7 s with 8 threads)'
+      : 'about 30 s per action on one thread (this browser does not allow several)';
+    $('mtypeNote').innerHTML = b.note + ` <b>Speed.</b> ${speed}${cpu}. 100 actions take ${self.crossOriginIsolated ? 'about 12 minutes' : 'about 50 minutes'} on the CPU. The progress bar shows the time left.`;
     $('mtype').onchange = () => { $('pretrainedBtn').hidden = $('mtype').value !== 'embed'; };
   }).catch(() => {});
   function results() {
