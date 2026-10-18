@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-18T00:14:44-07:00",
+ "sha256": {
+  "docs/prereg_T24_monitor_aware.md": "a208d9f8395b1c150cfff9fc7fb802e6f650ac733c3b712b24a1194bb6933a55",
+  "scripts/115_t24_monitor_aware.py": "20f7d04d36fa7def47307af859a94191354618bece66e0ab71ce257b9f1abcd7"
+ }
+}
