@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-18T09:21:29-07:00",
+ "sha256": {
+  "docs/prereg_T28_recalibrated_gate.md": "9d320d01f350b5638b1224c84f14d5deef629192ca96fb9ed89e95236980bde0",
+  "scripts/126_t28_recalibrated_gate.py": "7ff6a1d29b9d8032364955bbe93db3fa59b988a7597f58203c10dda83cd1c14c"
+ }
+}
