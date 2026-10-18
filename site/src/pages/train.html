@@ -17,6 +17,7 @@
     <button id="exGpt" class="secondary">Example: 300 GPT-6-luna conversations (OpenAI format)</button>
     <button id="exClaude" class="secondary">Example: 150 Claude conversations (Anthropic format)</button>
     <button id="exCape" class="secondary">Example: 1,500 labelled steps</button>
+    <button id="exAdojo" class="secondary">Example: a new kind of task (GPT on AgentDojo, 500 steps)</button>
   </div>
   <div class="row" style="margin-top:10px">
     <label class="btn" for="file" style="background:var(--panel);color:var(--ink);border:1px solid var(--line)">Open your logs (.json or .jsonl)</label>
@@ -26,6 +27,8 @@
       <p style="margin-top:8px"><button id="pasteBtn" class="secondary">Load pasted text</button></p>
     </details>
   </div>
+  <label class="row" style="margin-top:10px;gap:8px;font-size:14px"><input type="checkbox" id="chatCtx" style="width:auto">
+    My agent talks with a user during the task: keep every user message in the context (not only the first)</label>
   <p id="dataInfo" class="muted" style="margin:12px 0 0">No data loaded yet.</p>
   <p id="labelChoice" class="row" hidden style="margin:8px 0 0">
     <button id="useLabels" class="secondary">Use the benchmark's labels</button>
@@ -66,6 +69,15 @@
 
 <h2>3. Train and evaluate</h2>
 <div class="card">
+  <div class="row" id="mtypeRow" hidden style="margin-bottom:10px">
+    <label for="mtype">Monitor</label>
+    <select id="mtype" style="width:auto">
+      <option value="text" selected>Word counts (TF-IDF): instant; for tasks like the ones you labelled</option>
+      <option value="embed">Browser reader: a small neural reader; transfers to new kinds of tasks</option>
+    </select>
+    <button id="pretrainedBtn" class="secondary" hidden>Score with the pre-trained reader (no labels needed)</button>
+  </div>
+  <p id="mtypeNote" class="muted" style="margin:0 0 10px;font-size:13px"></p>
   <div class="row">
     <label for="budget">Review budget: send the riskiest</label>
     <select id="budget" style="width:auto"><option>1</option><option>2</option><option selected>5</option><option>10</option></select>
@@ -101,7 +113,7 @@
       <p>The file holds the vocabulary, the weights and the review threshold learned from your data (the top <i>budget</i> of your
         actions, without labels).</p>
       <p><button id="exportBtn">Download model (.json)</button></p>
-<pre>pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"
+<pre id="useCode">pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"
 
 from graybox.guard import Guard
 from graybox.monitor import TextMonitor

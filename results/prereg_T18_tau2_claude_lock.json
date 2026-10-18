@@ -1,0 +1,10 @@
+{
+ "locked_at": "2026-10-17T15:12:06-07:00",
+ "sha256": {
+  "docs/prereg_T18_tau2_claude.md": "036b3c8a0e172b3b6d0e2df29bec80e0a6d56e806667e4d1ac79944f47a3b3bb",
+  "scripts/101_claude_openai_proxy.py": "7a1a7eafb242734c288ac29c9b0ec040b552566e539be3c972b30b28bb5ccb86",
+  "scripts/102_tau2_claude.py": "f607674d5ac4c4eb1e7315484baff0620c2267e01abfb41f0b595ad627aad63b",
+  "scripts/103_t18_tau2_claude.py": "3de09dffdd019ea82195ba5e7d1a2daa301f9acb5ce66ad40df16fa0b31b6322",
+  "src/graybox/chat.py": "aca1c8eb589a4f7b4119d302319cf47138be00ae6530f3ef698ab8c9d84dbe49"
+ }
+}

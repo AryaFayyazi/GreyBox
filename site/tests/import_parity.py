@@ -63,5 +63,36 @@ for (name, fn), j in zip((("gpt_openai", "example_gpt_openai.jsonl"), ("claude_a
                        "act": act_text(st["action"]["tool"], st["action"]["args"]), "label": st["label"]})
     same = sum(a["ctx"] == b["ctx"] and a["act"] == b["act"] and a["label"] == b["label"] for a, b in zip(j["steps"], py))
     res[name].update({"browser_format": j["format"], "browser_steps": len(j["steps"]), "python_steps": len(py), "browser_python_identical": same})
+# (3) conversation-aware context (chat=True): browser vs Python on the two example files and on 40 real tau2-bench
+# conversations with mid-conversation user turns (Claude Haiku 5.5, development screen), converted to OpenAI format
+tau = json.load(open("/data/models/cape_ws/datasets/tau2-bench/data/simulations/gb_tau2_claude_devscreen/results.json"))
+pol = json.loads(Path("/home/arya/new_safety/cape/results/v30/tau2_airline_agent_context.json").read_text())["system_prompt"]
+with open(tmp / "tau2_openai.jsonl", "w") as f:
+    for sim in tau["simulations"]:
+        ms = [{"role": "system", "content": pol}]
+        for m in sim["messages"]:
+            if m["role"] == "assistant":
+                ms.append({"role": "assistant", "content": m.get("content"), **({"tool_calls": [{"id": tc["id"], "type": "function", "function": {
+                    "name": tc["name"], "arguments": json.dumps(tc["arguments"])}} for tc in m["tool_calls"]]} if m.get("tool_calls") else {})})
+            elif m["role"] == "tool":
+                ms.append({"role": "tool", "tool_call_id": m["id"], "content": m.get("content") or ""})
+            elif m["role"] == "user":
+                ms.append({"role": "user", "content": m.get("content") or ""})
+        f.write(json.dumps({"id": sim["id"], "messages": ms}) + "\n")
+files = ["example_gpt_openai.jsonl", "example_claude_anthropic.jsonl", "tau2_openai.jsonl"]
+(tmp / "run_chat.html").write_text("""<!doctype html><meta charset=utf-8><script src="tm-core.js"></script><script>
+Promise.all(%s.map(f=>fetch(f).then(r=>r.text()))).then(ts=>{
+  window.OUT = ts.map(t=>TM.importLogs(t, {chat: true}).steps.map(s=>TM.render(s)));
+});</script>""" % json.dumps(files))
+(tmp / "drive.py").write_text((tmp / "drive.py").read_text().replace("run.html", "run_chat.html").replace("out.json", "out_chat.json"))
+subprocess.run(["/data/models/graybox_ws/venv_pw/bin/python", str(tmp / "drive.py")], check=True, env={"PLAYWRIGHT_BROWSERS_PATH": "/data/models/graybox_ws/pw-browsers", "PATH": "/usr/bin:/bin"})
+js = json.loads((tmp / "out_chat.json").read_text())
+res["chat_context"] = {}
+for f, j in zip(files, js):
+    src = tmp / f if f == "tau2_openai.jsonl" else D / f
+    py = [(st["context"], act_text(st["action"]["tool"], st["action"]["args"])) for l in open(src) for c in [json.loads(l)]
+          for st in conversation_steps(c["messages"], system=c.get("system"), chat=True)]
+    res["chat_context"][f] = {"steps": len(py), "browser_steps": len(j), "identical": sum(a["ctx"] == b[0] and a["act"] == b[1] for a, b in zip(j, py)),
+                              "with_later_user_turns": sum("\n\n[User] " in b[0] for b in py)}
 print(json.dumps(res, indent=1))
 (ROOT / "site/tests/import_parity_result.json").write_text(json.dumps(res, indent=1))

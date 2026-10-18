@@ -2,9 +2,10 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subcaption}
-\usepackage{hyperref}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage{amsmath,amssymb,mathtools,amsthm}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{placeins}
 \usepackage{xcolor}
@@ -143,7 +144,7 @@ What remains is statistical: learning $P(Y\mid V_t,A_t)$, which depends on the l
 \centering\small
 \caption{All agent tests, in the order in which they were locked. Pass: the preregistered criterion was met.}
 \label{tab:all}
-\begin{tabular}{llll}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright}X>{\raggedright\arraybackslash}Xl@{}}
 \toprule
 Test & Question & Key result & Outcome\\
 \midrule
@@ -164,10 +165,13 @@ T13 & GPT-6-luna on AgentDojo, with spotlighting & attack success 2.1\%; 4 injec
 T13b & The same, without the defense & 0.840 vs judge 0.787 & fail\\
 T14 & T13b after adding AgentDojo labels of open agents & 0.922 vs judge 0.787; 92\% caught & pass\\
 T15 & Does the reader replicate the agent's hidden state? & $R^2$ 0.664 (text 0.586); readout 0.987 vs 0.984 & pass\\
+T17 & Replication on three more open agents, unseen scenarios & \REPLAGENTSTAB & \REPLAGENTSOUT\\
 T16 & Live prevention: the gate blocks GPT-6-luna's actions & \PREVENTTAB & \PREVENTOUT\\
 T16b & Live prevention on Claude Haiku~5.5 & \PREVENTBTAB & \PREVENTBOUT\\
+T16c & Hold for review instead of block (Claude) & \REVIEWTAB & \REVIEWOUT\\
+T18 & A second outside benchmark: Claude on $\tau^2$-bench & 9 violations ($<$15) & not tested\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table*}
 
 \subsection{Reading the state: the interrogation state}
@@ -184,6 +188,15 @@ On Gemma-4, where the true state is known, we fit a ridge map from the reader's 
 On 12{,}128 fresh steps, the replica reconstructs 66.4\% of the variance from the transcript alone; text features reconstruct 58.6\% ($+0.079$ [0.075, 0.083]; \cref{fig:replica}).
 A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]): white-box readouts work on the replica.
 The replica is a conditional mean, so it is less spread than the true state, and a text replica also supports the readout (0.983): the part of the state that decides a violation is largely in the tokens, as \cref{prop:access} implies. A nonlinear map (an MLP) replicates less than the linear one (0.558 vs 0.664, exploratory), as expected when the reader represents the agent's main latents completely \citep{zhou2026identifiabilities}. Viewing attention as an associative memory over the tokens \citep{wang2026memory} predicts more interference in longer transcripts. Replication does fall with length (from 0.693 to 0.478 across quintiles of context length), but the probe on the replica stays at the level of the true state in every quintile (exploratory): the part of the state that decides a violation survives.
+
+\textbf{Three more agents (T17).} One agent can be a special case. We repeated the test on three open agents with different architectures: a mixture of experts (gpt-oss-20b), hybrid linear attention (Qwen3.8-27B) and a dense model (Muse-Glimmer-30B). The split was stricter: development and fresh steps come from different scenarios. Before we read an agent's state, we checked that we give it the context that it saw. Teacher-forced, its own model predicts 91--100\% of the next 16 tokens of its actual tool call. The same reader (Qwen3-8B, layer 32) replicated each agent's decision state better than text features, and the probe trained on true states worked on every replica. All six preregistered endpoints pass (\cref{fig:replica_agents}). \REPLAGENTSTEXT{} Replication is partial: about half of the variance on unseen scenarios (Gemma-4 under the same split: \REPLGEMMASPLIT). The readout also works on the text replica, so again the part of the state that decides a violation is largely in the tokens.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/replica_agents.pdf}
+\caption{One reader replicates four open agents with different architectures (T17; Gemma-4 is T15's development data under the same split, exploratory). Development and fresh steps come from different scenarios. (a) The share of variance of the agent's decision state (top 128 principal components) that a linear map reconstructs on fresh scenarios, from the reader's latent state or from text features of the same transcript. (b) A probe trained on the agent's \emph{true} states, applied to the true fresh states and to the two replicas.}
+\label{fig:replica_agents}
+\end{figure*}
 
 \begin{figure*}[t]
 \centering
@@ -252,8 +265,10 @@ Labels of a policy transfer from open agents to closed ones.
 We ran the monitor as a server in the loop of GPT-6-luna on 500 CAPE-Bench scenarios, each with and without the gate (preregistered).
 The threshold came from GPT's past, unlabelled traffic.
 A blocked action does not run; the agent is told that it went to a human.
-\PREVENTTEXT
+\PREVENTTEXT{}
 \PREVENTBTEXT
+
+\textbf{Hold for review (T16c).} Blocking has a cost: on Claude, goals fell by 5.8 points. In T16 and T16b, nearly all of that loss came from blocked \emph{safe} actions (96\% of it on Claude; exploratory). T16c sends an escalated action to a reviewer instead. The reviewer here is the environment's policy oracle, an upper bound on a human reviewer: it blocks a violation and lets a safe action run. \REVIEWTEXT
 
 % =====================================================================================
 \section{The tool}
@@ -286,7 +301,7 @@ We add the identifiability and sufficiency theory, a direct test that the reader
 \label{sec:limits}
 \begin{itemize}
 \item We can test replication only where the true state is known (open agents). For closed agents, we test what the replica is for: prediction and prevention.
-\item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b).
+\item Most agent tests use one benchmark. On AgentDojo, a monitor without labels of the new policy is not significantly better than a judge on a closed agent (T13b). On $\tau^2$-bench \citep{barres2025tau2} (T18, 600 episodes), Claude Haiku~5.5 broke the airline policy in only 9 writes from 3 tasks, below the preregistered minimum of 15, so the test was not done. Descriptively, word counts trained on other agents' labels did better there than the reader (within-tool AUROC 0.963 vs 0.756).
 \item Policy coverage was measured on three held-out policies; the role of similarity is a hypothesis.
 \item \Cref{cor:action} needs a label that the action and the visible facts decide. It does not cover beliefs or later behaviour.
 \item The interrogation state is weak as a safety signal; probes on the reader's latent state carry the safety results.
@@ -295,6 +310,13 @@ We add the identifiability and sufficiency theory, a direct test that the reader
 \section{Conclusion}
 The hidden state of a closed agent cannot be read in its own coordinates, but it can be replicated: an open model that reads the same tokens holds most of it, and white-box readouts work on the replica.
 For the actions of closed agents, a probe on this grey box predicts and prevents violations; the limit is labels of each policy, which transfer from open agents to closed ones.
+
+\section*{Impact Statement}
+This work makes it possible to monitor closed AI agents before they act, from their transcripts alone. The intended effect is fewer harmful actions by deployed agents: in our tests, blocking the flagged actions cut the episodes with a violation from about 7\% to 0.2\% on two closed agents. We see three risks.
+(1) A monitor can give false confidence. It catches violations of the policies that it was trained on, and it can miss a new policy until that policy has labels (\cref{sec:results}). We state this limit in the paper and in the tool.
+(2) Blocking has a cost for users: goal completion fell by 1.8 points on GPT and 5.8 points on Claude.
+(3) Methods that read the state of a model from outside could help an attacker to probe a closed model. Our methods use only the transcripts that the operator already has. They do not extract weights or private data.
+We release the code under the MIT license. The tool runs in the user's browser and does not upload the user's logs.
 
 \FloatBarrier
 \bibliography{refs}
@@ -306,6 +328,10 @@ For the actions of closed agents, a probe on this grey box predicts and prevents
 \section{Proofs}
 \label{app:proofs}
 \input{appendix_proofs}
+
+\section{Experimental details}
+\label{app:details}
+\input{appendix_details}
 
 \section{The interrogation state in chat}
 \label{app:psi}

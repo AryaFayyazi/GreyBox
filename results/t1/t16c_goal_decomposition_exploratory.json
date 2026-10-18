@@ -1,0 +1,21 @@
+{
+ "a_violation_held_and_blocked": {
+  "episodes": 31,
+  "goal_review": 0.0,
+  "goal_same_instances_ungated": 0.0645,
+  "ungated_had_a_violation": 0.871
+ },
+ "held_and_approved_no_block": {
+  "episodes": 51,
+  "goal_review": 0.6078,
+  "goal_same_instances_ungated": 0.5882,
+  "ungated_had_a_violation": 0.0
+ },
+ "never_held": {
+  "episodes": 368,
+  "goal_review": 0.3886,
+  "goal_same_instances_ungated": 0.4103,
+  "ungated_had_a_violation": 0.0082
+ },
+ "note": "In never-held episodes the two arms ran the same way (the monitor did nothing), so their goal difference is run-to-run variation: the control is T16b's earlier run, not a concurrent arm."
+}

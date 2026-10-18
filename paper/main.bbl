@@ -1,4 +1,4 @@
-\begin{thebibliography}{20}
+\begin{thebibliography}{21}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -13,6 +13,11 @@ Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery, N., Gurnee, W., and Na
 Baker, B., Huizinga, J., Gao, L., Dou, Z., Guan, M.~Y., Madry, A., Zaremba, W., Pachocki, J., and Farhi, D.
 \newblock Monitoring reasoning models for misbehavior and the risks of promoting obfuscation.
 \newblock \emph{arXiv preprint arXiv:2503.11926}, 2025.
+
+\bibitem[Barres et~al.(2025)Barres, Dong, Ray, Si, and Narasimhan]{barres2025tau2}
+Barres, V., Dong, H., Ray, S., Si, X., and Narasimhan, K.
+\newblock $\tau^2$-bench: Evaluating conversational agents in a dual-control environment.
+\newblock \emph{arXiv preprint arXiv:2506.07982}, 2025.
 
 \bibitem[Burns et~al.(2023)Burns, Ye, Klein, and Steinhardt]{burns2023ccs}
 Burns, C., Ye, H., Klein, D., and Steinhardt, J.

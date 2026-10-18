@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-17T15:01:37-07:00",
+ "sha256": {
+  "docs/prereg_T19_small_readers.md": "e85637134020fff3880d07c67b97e47e4afe2443ec08879336abc968b2216019",
+  "scripts/100_t19_small_readers.py": "348136b7e158452f8d02fb7dee1ad29709e0f15aee0af0eb60c8b2dfa2ad5f9e",
+  "src/graybox/embed.py": "eea9ca25d6c2e889aa15fa3da1c5e40adf64b4aa91880a2af6d9b6059be365b3"
+ }
+}

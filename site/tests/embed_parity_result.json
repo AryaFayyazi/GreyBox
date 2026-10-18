@@ -1,0 +1,32 @@
+{
+ "minilm": {
+  "encoder": "minilm",
+  "steps": 40,
+  "views": 3,
+  "browser": {
+   "type": "ready",
+   "encoder": "minilm",
+   "device": "wasm",
+   "dtype": "fp32"
+  },
+  "seconds_incl_download": 19.5,
+  "cosine_min": 1.0,
+  "cosine_mean": 1.0,
+  "max_abs_diff": 1.9505387172102928e-07
+ },
+ "mpnet": {
+  "encoder": "mpnet",
+  "steps": 40,
+  "views": 3,
+  "browser": {
+   "type": "ready",
+   "encoder": "mpnet",
+   "device": "wasm",
+   "dtype": "fp32"
+  },
+  "seconds_incl_download": 126.8,
+  "cosine_min": 1.0,
+  "cosine_mean": 1.0,
+  "max_abs_diff": 1.6577541828155518e-07
+ }
+}

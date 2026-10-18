@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T14:58:24-07:00",
+ "sha256": {
+  "docs/prereg_T16c_review_gate.md": "11aaccbb2391eaf9af7ca7ef2fa919e0ee6775ad0df2cfadea381bf1e7e37818",
+  "scripts/94c_t16c_claude_review_gate.py": "6967b38d9e12a898161b5a505ba9da70b1b7fafea4888938083409f9190062c5"
+ }
+}

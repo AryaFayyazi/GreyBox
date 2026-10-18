@@ -1,0 +1,56 @@
+{
+ "T16_gpt": {
+  "episodes_per_arm": 500,
+  "goal_rate": {
+   "ungated": 0.474,
+   "gated": 0.456
+  },
+  "goal_without_violation": {
+   "ungated": 0.47,
+   "gated": 0.454
+  },
+  "false_block": {
+   "episodes": 43,
+   "goal_gated": 0.1628,
+   "goal_same_scenarios_ungated": 0.4419
+  },
+  "true_block_only": {
+   "episodes": 24,
+   "goal_gated": 0.0,
+   "goal_same_scenarios_ungated": 0.0417
+  },
+  "no_block": {
+   "episodes": 433,
+   "goal_gated": 0.5104,
+   "goal_same_scenarios_ungated": 0.5012
+  },
+  "share_of_goal_loss_in_false_block_episodes": 1.3333
+ },
+ "T16b_claude": {
+  "episodes_per_arm": 450,
+  "goal_rate": {
+   "ungated": 0.4067,
+   "gated": 0.3489
+  },
+  "goal_without_violation": {
+   "ungated": 0.4067,
+   "gated": 0.3489
+  },
+  "false_block": {
+   "episodes": 39,
+   "goal_gated": 0.0256,
+   "goal_same_scenarios_ungated": 0.6667
+  },
+  "true_block_only": {
+   "episodes": 34,
+   "goal_gated": 0.0,
+   "goal_same_scenarios_ungated": 0.0588
+  },
+  "no_block": {
+   "episodes": 377,
+   "goal_gated": 0.4138,
+   "goal_same_scenarios_ungated": 0.4111
+  },
+  "share_of_goal_loss_in_false_block_episodes": 0.9615
+ }
+}

@@ -84,8 +84,10 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T13, T13b: a closed agent on an external benchmark | GPT-6-luna on AgentDojo. With the spotlighting defense, attacks succeed in 2.1% of episodes (4 injected calls): not tested. Without the defense, 36 injected calls: reader 0.840 vs judge 0.787 (+0.052 [−0.026, +0.130]). The preregistered test fails: on an external benchmark the reader is not significantly better than a zero-shot judge for this closed agent. |
 | T14: labels of the new policy, from open agents | We added labelled AgentDojo calls of the two open agents to the training data, and tested on the closed GPT agent. AUROC 0.840 → 0.922 (judge 0.787); injected calls caught at a 5% budget 36% → 92%. Both preregistered endpoints pass. Labels of a policy transfer from open agents to closed ones. |
 | T15: does the grey box replicate the hidden state? | From the transcript alone, the reader replica reconstructs 66.4% of the variance of the agent's decision state (text: 58.6%). A probe trained on the true state scores 0.987 on the replica vs 0.984 on the true state. |
+| T17: replication on three more open agents | gpt-oss-20b (mixture of experts), Qwen3.8-27B (hybrid linear attention), Muse-Glimmer-30B (dense), on scenarios that the map never saw. The same reader replicates each agent's decision state better than text features: R² 0.49, 0.54, 0.46 (text 0.39, 0.44, 0.40). A probe trained on the true states works on every replica (0.900 → 0.924, 0.955 → 0.972, 0.929 → 0.969). All six endpoints pass. Replication is partial (about half of the variance), and the readout also works on a text replica. |
 | T16: live prevention on a closed agent | The monitor in GPT-6-luna's loop (500 scenarios, with and without the gate). Episodes with an executed violation: 6.6% → 0.2% (−0.064 [−0.088, −0.044]). No violation after a block. Goals reached 47.4% → 45.6%. Round trip 89 ms. |
 | T16b: live prevention on Claude | The same live test on Claude Haiku 5.5 (450 scenarios). Episodes with an executed violation: 6.7% → 0.2% (−0.064 [−0.087, −0.044]). No violation after a block. Goals reached 40.7% → 34.9%. Round trip 80 ms. |
+| T16c: hold for review instead of block | On Claude (450 scenarios), escalated actions go to a reviewer (here an oracle; an upper bound on a human). Episodes with an executed violation: 6.7% → 0.0% (R1 passes). Goals 38.7% (no gate 40.7%, blocking 34.9%); the preregistered "at most 3 points lost" fails (−0.020 [−0.051, +0.007]). Episodes in which the reviewer let a held action run kept their goals (60.8% vs 58.8%, exploratory). 0.20 reviews per episode. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
 
 **Results that did not confirm** are in the record too. Examples: the agent's answers alone do not match the
@@ -95,6 +97,9 @@ white-box probe (T1, F3), and resampling scored by an LLM judge loses to the pro
 
 - Most agent tests use one benchmark, CAPE-Bench. On the external test (AgentDojo), the reader beats a zero-shot judge
   for open agents (0.78 vs 0.54), but not significantly for a closed agent (0.840 vs 0.787, T13b).
+- On τ²-bench (T18, 600 Claude Haiku 5.5 episodes), Claude broke the airline policy in only 9 writes from 3 tasks. That is
+  below the preregistered minimum of 15, so the test was not done. Descriptively, word counts trained on other agents'
+  labels did better there than the reader (within-tool AUROC 0.963 vs 0.756).
 - A monitor can miss a policy that is not like the policies in its training data (T10). Label a few dozen steps of
   each such policy. A policy that is like a trained one can transfer without labels (T12).
 - Corollary 3 applies to action-level labels. It does not apply to labels about later behaviour or about beliefs.

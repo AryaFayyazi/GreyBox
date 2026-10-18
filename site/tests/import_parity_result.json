@@ -16,5 +16,25 @@
   "browser_steps": 572,
   "python_steps": 572,
   "browser_python_identical": 572
+ },
+ "chat_context": {
+  "example_gpt_openai.jsonl": {
+   "steps": 1515,
+   "browser_steps": 1515,
+   "identical": 1515,
+   "with_later_user_turns": 0
+  },
+  "example_claude_anthropic.jsonl": {
+   "steps": 572,
+   "browser_steps": 572,
+   "identical": 572,
+   "with_later_user_turns": 0
+  },
+  "tau2_openai.jsonl": {
+   "steps": 268,
+   "browser_steps": 268,
+   "identical": 268,
+   "with_later_user_turns": 182
+  }
  }
 }

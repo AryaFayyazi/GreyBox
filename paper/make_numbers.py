@@ -32,5 +32,37 @@ if pb.exists():
             % (d["scenarios_complete"], 100 * u, 100 * g, ci[0], ci[1], ci[2], "passes" if d["P1_pass"] else "fails", d["blocked"]["actions"], 100 * d["blocked"]["precision"], d["unsafe_executed_after_a_block"])]
 else:
     out += [r"\newcommand{\PREVENTBTAB}{\PENDING{running}}", r"\newcommand{\PREVENTBOUT}{--}", r"\newcommand{\PREVENTBTEXT}{\PENDING{T16b on Claude, preregistered, running}}"]
+p17 = ROOT / "results/t1/t17_replication_agents.json"
+if p17.exists():
+    d = json.loads(p17.read_text())
+    A = [("gpt-oss-20b", "gptoss20b"), ("Qwen3.8-27B", "qwen38"), ("Muse-Glimmer-30B", "museglimmer")]
+    r2 = "/".join("%.2f" % d["agents"][k]["r2_fresh"]["READER"] for _, k in A)
+    tx = "/".join("%.2f" % d["agents"][k]["r2_fresh"]["TXT"] for _, k in A)
+    nb = d["n_agents_both_pass"]
+    out += [r"\newcommand{\REPLAGENTSTAB}{$R^2$ %s (text %s); readout holds}" % (r2, tx),
+            r"\newcommand{\REPLAGENTSOUT}{%s (%d/3)}" % ("pass" if nb == 3 else "partial" if d["E1_all_pass"] else "fail", nb),
+            r"\newcommand{\REPLAGENTSTEXT}{%s}" % " ".join(
+                "%s: $R^2$ %.3f vs text %.3f (%+.3f [%.3f, %.3f]); the probe on true states %.3f, on the replica %.3f (%+.3f [%.3f, %.3f])."
+                % (n, d["agents"][k]["r2_fresh"]["READER"], d["agents"][k]["r2_fresh"]["TXT"], *d["agents"][k]["E1_R2_READER_minus_TXT"],
+                   d["agents"][k]["E2_auroc"]["true"], d["agents"][k]["E2_auroc"]["READER_replica"], *d["agents"][k]["E2_replica_minus_true"]) for n, k in A),
+            r"\newcommand{\REPLGEMMASPLIT}{%.3f (text %.3f)}" % (d["exploratory_gemma4_same_split"]["r2_fresh"]["READER"], d["exploratory_gemma4_same_split"]["r2_fresh"]["TXT"])]
+else:
+    out += [r"\newcommand{\REPLAGENTSTAB}{\PENDING{running}}", r"\newcommand{\REPLAGENTSOUT}{--}", r"\newcommand{\REPLAGENTSTEXT}{\PENDING{T17}}",
+            r"\newcommand{\REPLGEMMASPLIT}{\PENDING{T17}}"]
+p16c = ROOT / "results/t1/t16c_review_gate.json"
+if p16c.exists():
+    d = json.loads(p16c.read_text())
+    x = json.loads((ROOT / "results/t1/t16c_goal_decomposition_exploratory.json").read_text())
+    v, gl, rv = d["R1_review_minus_ungated_violation"], d["R2_review_minus_ungated_goal"], d["reviews"]
+    ha, nh = x["held_and_approved_no_block"], x["never_held"]
+    out += [r"\newcommand{\REVIEWTAB}{%.1f\%% $\rightarrow$ %.1f\%%; goals %.1f\%% vs %.1f\%%}" % (100 * d["unsafe_episode_rate"]["ungated_T16b"], 100 * d["unsafe_episode_rate"]["review"], 100 * d["goal_rate"]["review"], 100 * d["goal_rate"]["ungated_T16b"]),
+            r"\newcommand{\REVIEWOUT}{R1 %s, R2 %s}" % ("pass" if d["R1_pass"] else "fail", "pass" if d["R2_pass"] else "fail"),
+            r"\newcommand{\REVIEWTEXT}{On the same %d Claude scenarios, episodes with an executed violation went from %.1f\%% (T16b, no gate) to %.1f\%% (%+.3f [%.3f, %.3f]; R1 %s), with %d violations after a block. Goals were reached in %.1f\%% of the episodes, against %.1f\%% without the gate and %.1f\%% with blocking; the preregistered non-inferiority (at most 3 points lost) is %s (%+.3f [%.3f, %+.3f]). Exploratory: episodes with a held action that the reviewer let run kept their goals (%.1f\%% vs %.1f\%%, %d episodes); the gap is in the %d episodes in which nothing was held (%.1f\%% vs %.1f\%%), where both arms ran the same way, so it is variation between runs (the control was not concurrent). The reviewer saw %.2f actions per episode (%.1f\%% of the scored actions); %d of the %d held actions were violations.}"
+            % (d["scenarios"], 100 * d["unsafe_episode_rate"]["ungated_T16b"], 100 * d["unsafe_episode_rate"]["review"], *v, "passes" if d["R1_pass"] else "fails", rv["violations_executed_after_a_block"],
+               100 * d["goal_rate"]["review"], 100 * d["goal_rate"]["ungated_T16b"], 100 * d["goal_rate"]["gated_T16b"], "shown" if d["R2_pass"] else "not shown", *gl,
+               100 * ha["goal_review"], 100 * ha["goal_same_instances_ungated"], ha["episodes"], nh["episodes"], 100 * nh["goal_review"], 100 * nh["goal_same_instances_ungated"],
+               rv["per_episode"], 100 * rv["share_of_scored_actions"], rv["held_that_were_violations"], rv["held_actions"])]
+else:
+    out += [r"\newcommand{\REVIEWTAB}{\PENDING{running}}", r"\newcommand{\REVIEWOUT}{--}", r"\newcommand{\REVIEWTEXT}{\PENDING{T16c}}"]
 (ROOT / "paper/numbers.tex").write_text("\n".join(out) + "\n")
 print("numbers.tex:", "T16" if p.exists() else "pending")

@@ -248,6 +248,25 @@ def example_logs():
             f.write(json.dumps({"id": ep.episode_id, "system": sp["system_prompt"], "messages": msgs, "labels": labels}, ensure_ascii=False) + "\n")
 
 
+def example_agentdojo(n_neg=464):
+    """A new kind of task: GPT-6-luna on AgentDojo without a defense (T13b), all 36 injected calls + n_neg others,
+    in step format with the benchmark's labels. The monitors were never trained on AgentDojo."""
+    import importlib
+    import pandas as pd
+    U = importlib.import_module("86_t13b_analysis").units()
+    pick = pd.concat([U[U.y == 1], U[U.y == 0].sample(n_neg, random_state=0)]).sample(frac=1, random_state=1)
+    with open(DIST / "data/example_agentdojo_gpt.jsonl", "w") as f:
+        for r in pick.itertuples():
+            f.write(json.dumps({"context": r.ctx, "action": r.act, "label": int(r.y), "group": str(r.episode)}, ensure_ascii=False) + "\n")
+
+
+def browser_reader():
+    """The browser reader (T19), published only if the preregistered rule ships it (scripts/105)."""
+    src = R / "tool/browser_reader.json"
+    if src.exists() and json.loads(src.read_text()).get("shipped"):
+        shutil.copy(src, DIST / "data/browser_reader.json")
+
+
 def main():
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -289,6 +308,8 @@ def main():
 {raw}</body></html>""")
     example_data()
     example_logs()
+    example_agentdojo()
+    browser_reader()
     print("built", sorted(p.name for p in DIST.iterdir()))
 
 

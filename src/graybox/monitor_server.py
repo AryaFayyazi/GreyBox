@@ -16,7 +16,7 @@ import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from .monitor import QuantileGate, Step, TextMonitor
+from .monitor import Q, QuantileGate, Step, TextMonitor, act_text
 
 app = FastAPI(title="Grey Box monitor", version="0.2")
 _STATE: dict = {"gates": {}}
@@ -36,6 +36,8 @@ class ActionRequest(BaseModel):
     action: StepIn = Field(..., description="the proposed action (tool '__final__' for a final answer)")
     stream: str = Field("default", description="deployment id; each stream calibrates its own frozen cut (reader only)")
     budget: float = Field(0.05, gt=0, lt=1, description="fraction of this stream's actions to escalate (reader only)")
+    context: str | None = Field(None, description="optional prebuilt context (graybox.chat.chat_ctx, for conversations with "
+                                "a user); replaces instructions, task and history. Use it only with a monitor trained on such contexts")
 
 
 def _hist(req):
@@ -56,7 +58,10 @@ def monitor_text(req: ActionRequest):
     if "text" not in _STATE:
         _STATE["text"] = TextMonitor.load_json(path)
     tm, t0 = _STATE["text"], time.perf_counter()
-    z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
+    if req.context is not None:
+        z = tm.decision(None, None, None, None, rendered=(req.context, act_text(req.action.tool, req.action.args)))
+    else:
+        z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
     return {"score": round(z, 4), "escalate": z >= tm._json["threshold_logit"], "threshold": round(tm._json["threshold_logit"], 4),
             "budget": tm._json.get("budget"), "ms": round(1000 * (time.perf_counter() - t0), 3),
             "note": "text monitor: reliable on the tools and policies it was trained on; retrain for new ones"}
@@ -84,12 +89,17 @@ def monitor_action(req: ActionRequest):
     path = os.environ.get("GB_MONITOR_PROBE")
     if not path:
         raise HTTPException(503, "set GB_MONITOR_PROBE to reader_probe.joblib (needs a GPU and torch)")
-    if "reader" not in _STATE:
-        from .monitor import ReaderMonitor
-        _STATE["reader"] = ReaderMonitor.load(path)
     t0 = time.perf_counter()
-    with _READER_LOCK:
-        p = _STATE["reader"].score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
+    with _READER_LOCK:            # the first load is inside the lock: concurrent first requests raced on the lazy imports
+        if "reader" not in _STATE:
+            from .monitor import ReaderMonitor
+            _STATE["reader"] = ReaderMonitor.load(path)
+            t0 = time.perf_counter()
+        rm = _STATE["reader"]
+        if req.context is not None:
+            p = float(rm.probe.predict_proba(rm.features(Q.format(ctx=req.context, cot="", act=act_text(req.action.tool, req.action.args))))[0, 1])
+        else:
+            p = rm.score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
         g = _STATE["gates"].setdefault((req.stream, req.budget), QuantileGate(req.budget))
         t = g.threshold
         esc = g(p)
