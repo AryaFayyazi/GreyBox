@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-18T12:28:38-07:00",
+ "sha256": {
+  "docs/prereg_G_information_geometry.md": "636ac07124892b0884ea49b95210eb7a5842ca1ffb59b9b5db3720d4bf785da4",
+  "scripts/129_infogeom.py": "dcfc0fed2d33f8560d75dbcec8c55b7f7d2683593a52148005ec969f5d75eb9a",
+  "docs/theory_infogeom.md": "79999d4c6b1c2236bdc8572799764cfc6cfd56c23713bee7d41a356b06395cd5"
+ }
+}
