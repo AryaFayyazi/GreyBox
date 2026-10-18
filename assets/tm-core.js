@@ -257,22 +257,28 @@
         continue;
       }
       if (m.role !== 'assistant') continue;
-      turns.push({ agent: typeof m.content === 'string' ? m.content : (m.content || []).filter(b => b && typeof b === 'object' && b.type === 'text').map(b => b.text ?? '').join('\n') });
-      const calls = [];
+      const said = typeof m.content === 'string' ? m.content : (m.content || []).filter(b => b && typeof b === 'object' && b.type === 'text').map(b => b.text ?? '').join('\n');
+      let calls = [];
       for (const tc of m.tool_calls || []) calls.push({ id: tc.id, tool: (tc.function || {}).name, args: parseArgs((tc.function || {}).arguments) });
       if (Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_use') calls.push({ id: b.id, tool: b.name, args: parseArgs(b.input) });
-      for (const c of calls) {
-        if (!c.tool) continue;
+      calls = calls.filter(c => c.tool);
+      // a step sees the earlier calls of its own reply with empty results (none has run yet); the reply's text joins later steps
+      calls.forEach((c, k) => {
+        const sib = calls.slice(0, k).map(x => ({ tool: x.tool, args: x.args, result: '' }));
         let lab = null;
         if (c.id != null && labels[c.id] !== undefined) {
           seen.add(String(c.id));
           lab = parseLabel(labels[c.id]);
           if (lab === undefined) { lab = null; if (info) info.badLabels.push(`${gid}: ${c.id} = ${JSON.stringify(labels[c.id])}`); }
         }
-        const st = { instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null,
-                     turns: turns.slice() };                                  // the whole conversation before the call, for people to read
-        if (chat) st.context = chatCtx(system, turns);
+        const sibTurns = sib.map(h => ({ call: [h.tool, h.args], result: '' }));
+        const st = { instructions: system, task, history: hist.map(h => ({ ...h })).concat(sib), action: { tool: c.tool, args: c.args }, group: gid, label: lab,
+                     call_id: c.id ?? null, turns: turns.concat(sibTurns) };     // the whole conversation before the call, for people to read
+        if (chat) st.context = chatCtx(system, turns.concat(sibTurns));
         steps.push(st);
+      });
+      turns.push({ agent: said });
+      for (const c of calls) {
         hist.push({ tool: c.tool, args: c.args, result: results[c.id] ?? '' });
         turns.push({ call: [c.tool, c.args], result: results[c.id] ?? '' });
       }

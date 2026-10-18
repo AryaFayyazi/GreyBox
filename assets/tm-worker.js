@@ -49,8 +49,10 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05 }) {
   const perTool = {};
   tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });
   // the frozen gate cut for deployment: (1 - budget) quantile of the model's own scores on all training rows (label-free)
-  const sc = R.map(r => TM.decision(model, TM.features(model, r)));
-  model.threshold_logit = TM.quantile(sc, 1 - budget);
+  // the escalation cut: the top `budget` of the OUT-OF-FOLD scores (in-sample scores are overfit: a cut set on them
+  // escalates far fewer than `budget` of new actions). The same scores give the report's catch rate.
+  model.threshold_logit = cut;
+  model.cut_source = 'out-of-fold scores of the training actions';
   model.budget = budget;
   model.format = 'graybox-text-monitor/1';
   model.trained_on = { n: y.length, unsafe: nPos, groups: nGroups };

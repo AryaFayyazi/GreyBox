@@ -42,7 +42,7 @@
     }
     last = [text, src, opts];
     steps = r.steps.map((s, i) => ({ ...s, label: s.label === 1 || s.label === 0 ? s.label : null, _i: i }));
-    key = 'gb-labels:v2:' + fnv(text) + (chat ? ':chat' : '');
+    key = 'gb-labels:v2:' + fnv(text);                 // the same labels in both context modes: a label judges the action
     hidden = null; model = null; report = null; emb = null; embScores = null; allScores = null;
     const fileLabels = nLab(), filePos = nPos();
     let restored = 0;
@@ -63,6 +63,9 @@
     const warn = [];
     if (r.badLabels && r.badLabels.length) warn.push(`${plural(r.badLabels.length, 'label value')} ignored (use 0, 1, true or false): ${esc(r.badLabels.slice(0, 3).join('; '))}${r.badLabels.length > 3 ? '; …' : ''}`);
     if (r.unknownIds && r.unknownIds.length) warn.push(`${plural(r.unknownIds.length, 'label names', 'labels name')} a call id that is not in the conversation: ${esc(r.unknownIds.slice(0, 3).join('; '))}${r.unknownIds.length > 3 ? '; …' : ''}`);
+    const later = !chat ? steps.filter(s => (s.turns || []).filter(t => t.user !== undefined).length > 1).length : 0;
+    if (later) warn.push(`${plural(later, 'action comes', 'actions come')} after a later user message. The monitor does not read those messages unless you tick ` +
+      '"My agent talks with a user" above (you see them in the labelling view).');
     $('loadWarn').hidden = !warn.length;
     $('loadWarn').innerHTML = warn.map(w => `<span class="tag fail">check</span> ${w}`).join('<br>');
     $('exampleNote').hidden = !NOTES[src];
@@ -71,7 +74,7 @@
     order = steps.map((_, i) => i); pos = 0;
     $('labelSec').hidden = false; $('labelEmpty').hidden = true; $('results').hidden = true; $('use').hidden = true;
     const pick = steps.findIndex(s => s.label === 1);
-    $('step').value = JSON.stringify(stepForBox(steps[pick >= 0 ? pick : 0]), null, 1);
+    $('step').value = JSON.stringify(stepForBox(steps[pick >= 0 && !hidden ? pick : 0]), null, 1);
     refresh(); show();
   }
   function stepForBox(s) {
@@ -91,12 +94,12 @@
     return ` (top ${Math.max(0.1, (100 * (above + 1)) / allScores.length).toFixed(1)}% of your actions)`;
   }
   function transcriptHtml(s) {
-    const T = s.turns, out = [];
+    const T = s.turns, out = [], unseen = !$('chatCtx').checked ? ' <span class="muted">(the monitor does not read this: tick "My agent talks with a user")</span>' : '';
     let first = true;
     for (const t of T) {
       if (t.user !== undefined) {
         out.push(first ? `<div class="tx-task"><b>User (the task):</b> ${esc(t.user)}</div>`
-                       : `<div class="tx-user-later"><b>User, later in the conversation:</b> ${esc(t.user)}</div>`);
+                       : `<div class="tx-user-later"><b>User, later in the conversation:</b> ${esc(t.user)}${unseen}</div>`);
         first = false;
       } else if (t.agent !== undefined) {
         if (t.agent && t.agent.trim()) out.push(`<div class="tx-agent"><b>Agent said:</b> ${esc(t.agent)}</div>`);
@@ -117,7 +120,7 @@
     let body;
     if (s.turns) {
       body = (s.instructions ? `<details><summary class="muted">Operating instructions</summary><pre style="max-height:220px">${esc(s.instructions)}</pre></details>` : '') +
-        `<p style="margin:8px 0 4px"><b>The conversation up to this action</b> (${plural(s.turns.length, 'turn')}):</p><div class="transcript" id="tx">${transcriptHtml(s)}</div>`;
+        `<p style="margin:8px 0 4px"><b>The conversation up to this action</b> (${plural(s.turns.filter(t => t.agent === undefined || (t.agent && t.agent.trim())).length, 'turn')}):</p><div class="transcript" id="tx">${transcriptHtml(s)}</div>`;
     } else if (typeof s.context === 'string') {
       body = `<p style="margin:8px 0 4px"><b>Context</b> (instructions, task and earlier calls, as the monitor reads them):</p><pre class="transcript" id="tx">${esc(s.context)}</pre>`;
     } else {
@@ -142,7 +145,11 @@
     if (k === 'v') setLabel(1); else if (k === 's') setLabel(0); else if (k === 'n') { pos++; show(); } else if (k === 'b') { pos--; show(); }
   });
   $('useLabels').onclick = () => { if (hidden) { hidden.forEach((l, i) => { steps[i].label = l; }); hidden = null; } $('labelChoice').hidden = true; refresh(); show(); };
-  $('hideLabels').onclick = () => { hidden = steps.map(s => s.label); steps.forEach(s => { s.label = null; }); $('labelChoice').hidden = true; refresh(); show(); };
+  $('hideLabels').onclick = () => {
+    hidden = steps.map(s => s.label); steps.forEach(s => { s.label = null; }); $('labelChoice').hidden = true;
+    $('step').value = JSON.stringify(stepForBox(steps[0]), null, 1);          // never pre-fill a hidden answer
+    refresh(); show();
+  };
   $('clearLabels').onclick = () => {
     if (!last || !confirm('Clear the labels that you saved in this browser for this file?')) return;
     store.del(key); load(...last);
@@ -259,11 +266,14 @@
     allScores = steps.map((_, i) => stepScore(i));
     $('results').hidden = false; $('use').hidden = false;
     $('useCode').textContent = useCode(isEmbed());
-    const weak = r.auroc_ci95[0] <= 0.5 || r.unsafe < 5 || !(r.auroc > 0.5);
+    const inverted = r.auroc_ci95[1] < 0.5, weak = r.auroc_ci95[0] <= 0.5 || r.unsafe < 5 || !(r.auroc > 0.5);
     $('unusable').hidden = !weak;
-    $('unusable').innerHTML = `<b>Not usable yet.</b> ` + (r.auroc <= 0.5 ? `An AUROC of ${r.auroc.toFixed(3)} is no better than guessing. ` : '') +
-      (r.auroc_ci95[0] <= 0.5 ? 'Its 95% interval includes 0.5 (guessing). ' : '') + (r.unsafe < 5 ? `Only ${plural(r.unsafe, 'violation')} labelled. ` : '') +
-      'Label more actions, and more violations: use the review queue below to find them.';
+    $('unusable').innerHTML = `<b>Not usable yet.</b> ` + (inverted
+      ? `It ranks violations <i>below</i> safe actions (AUROC ${r.auroc.toFixed(3)}; the whole 95% interval is under 0.5). Check that the labels are not ` +
+        'swapped (1 = violation). If they are right, the policy is not learnable from these examples: label more, and more varied, actions.'
+      : (r.auroc <= 0.5 ? `An AUROC of ${r.auroc.toFixed(3)} is no better than guessing. ` : '') +
+        (r.auroc_ci95[0] <= 0.5 ? 'Its 95% interval includes 0.5 (guessing). ' : '') + (r.unsafe < 5 ? `Only ${plural(r.unsafe, 'violation')} labelled. ` : '') +
+        'Label more actions, and more violations: the review queue below ranks the unlabelled actions by risk.');
     $('exportBtn').textContent = weak ? 'Download anyway (not usable yet)' : 'Download model (.json)';
     $('stats').innerHTML = [
       [r.auroc.toFixed(3), (r.pretrained ? 'AUROC on your labelled actions; the reader never saw them' : 'AUROC on conversations held out in cross-validation') +
@@ -272,7 +282,7 @@
       [isNaN(r.precision) ? '–' : pct(r.precision), `of the actions sent to review are real violations (${pct(r.safe_escalated)} of safe actions sent)`]
     ].map(([v, l]) => `<div class="card"><div class="num">${v}</div><div class="muted">${l}</div></div>`).join('');
     const tools = Object.entries(r.perTool).sort((a, b) => b[1].n - a[1].n);
-    $('perTool').innerHTML = `<table><thead><tr><th>Tool</th><th>Actions</th><th>Violations</th><th>Sent to review at the budget</th></tr></thead><tbody>` +
+    $('perTool').innerHTML = `<table><thead><tr><th>Tool</th><th>Actions</th><th>Violations</th><th>Sent to review</th></tr></thead><tbody>` +
       tools.map(([t, o]) => `<tr><td><code>${esc(t)}</code></td><td class="n">${num(o.n)}</td><td class="n">${num(o.unsafe)}</td><td class="n">${o.unsafe ? `${o.caught}/${o.unsafe}` : '–'}</td></tr>`).join('') + '</tbody></table>';
     $('details').textContent = r.pretrained
       ? `The pre-trained browser reader (${r.encoder}), trained only on our CAPE-Bench steps, never on your data: evaluated on your ${plural(r.n, 'labelled action')} (${plural(r.unsafe, 'violation')}). The review cut is the top ${pct(r.budget)} of your actions, set without labels.`
@@ -332,11 +342,15 @@
     } catch (err) { $('scoreOut').innerHTML = `<span class="tag fail">error</span> ${esc(err.message)}`; }
   };
   // privacy: words with digits, "@" or long codes (tokens, keys, ids) are dropped from the downloaded file
+  // and RARE words (in fewer than 1% of the training actions, at least 5): names, keys and ids are rare
   const SECRETISH = /\d|@|[a-z0-9_]{20,}/i;
   function privateCopy(m) {
-    const c = JSON.parse(JSON.stringify(m));
+    const c = JSON.parse(JSON.stringify(m)), n = (m.trained_on && m.trained_on.n) || 0, minDf = Math.max(5, 0.01 * n);
     let removed = 0;
-    for (const v of [c.vc, c.va]) for (const t of Object.keys(v.vocab)) if (SECRETISH.test(t)) { delete v.vocab[t]; removed++; }
+    for (const v of [c.vc, c.va]) for (const [t, j] of Object.entries(v.vocab)) {
+      const df = n ? (1 + n) / Math.exp(v.idf[j] - 1) - 1 : Infinity;           // smooth idf = ln((1 + n) / (1 + df)) + 1
+      if (SECRETISH.test(t) || df < minDf - 1e-6) { delete v.vocab[t]; removed++; }
+    }
     return [c, removed];
   }
   $('exportBtn').onclick = () => {
@@ -348,7 +362,7 @@
       const d = steps.map(s => { const r = TM.render(s); return Math.abs(TM.decision(c, TM.features(c, r)) - TM.decision(model, TM.features(model, r))); });
       const changed = steps.filter((s, i) => (TM.decision(c, TM.features(c, TM.render(s))) >= c.threshold_logit) !== (allScores[i] >= model.threshold_logit)).length;
       out = c;
-      note = `Removed ${plural(removed, 'word')} with digits, "@" or long codes. On your actions, scores changed by at most ${Math.max(0, ...d).toFixed(3)}; ` +
+      note = `Removed ${plural(removed, 'word')} with digits, "@" or long codes, or used in fewer than 1% of your actions. On your actions, scores changed by at most ${Math.max(0, ...d).toFixed(3)}; ` +
         `${plural(changed, 'review decision')} changed. Names and other words can remain: check the file before you share it.`;
     }
     $('exportNote').textContent = note;
