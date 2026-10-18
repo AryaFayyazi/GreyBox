@@ -22,11 +22,20 @@ interface. Pick by how much your deployment differs from your labelled data.</p>
 <tr><td>Same tools and policies as training</td><td>as good as the reader (Claude: 0.997 vs 0.991)</td><td>0.99</td></tr>
 <tr><td>Unseen task families</td><td>0.950</td><td>0.969</td></tr>
 <tr><td>Unseen benchmark (AgentDojo)</td><td>0.50 (chance)</td><td>0.78</td></tr>
+<tr><td>Unseen tasks, explicit rules over facts (τ²-bench, closed agents)</td><td>0.52</td><td>0.54</td></tr>
 <tr><td>Train on your labels</td><td>in the browser (<a href="train.html">trainer</a>) or Python</td><td>Python (features + scikit-learn)</td></tr>
 </tbody></table></div>
 <p class="muted" style="margin-top:8px">AUROC from preregistered tests T4–T12 (<a href="results.html">evidence</a>). A monitor can miss a policy that is not like the policies in
 its training data. In one test (T10), the monitor ranked such violations high but escalated none at a 5% budget, until we added 20–40
 labelled steps of that policy. In another (T12), a policy with similar trained policies transferred with no labels.</p>
+<p class="muted"><b>What neither monitor does.</b> On τ²-bench (T21), a violation breaks a written rule that depends on facts of the case:
+a booking older than 24 hours, a cabin, an amount. Trained on other tasks, both monitors were near chance on new tasks (within-tool
+AUROC: word counts 0.52, reader 0.54). With the same tasks in training, word counts scored 0.99, because they memorize entities
+(reservation codes, names, dates) of those tasks. So: word counts need labels of the same tasks and entities; neither monitor checks a
+numeric, date or recipient rule on values it has not seen. For such rules, write the check in code, or hold the action for review.
+A zero-shot reasoning model that reads the written policy (T23, Qwen3-32B, no labels) separated violating from allowed calls of the same tool
+on four closed frontier agents (AUROC 0.77), but at a 5% review budget it caught fewer violations than the reader. Use it as a second
+opinion on held actions, not as the only monitor.</p>
 
 <h2>Install</h2>
 <pre>pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"     # core + HTTP server (scoring needs only numpy)
@@ -38,7 +47,10 @@ pip install "graybox[reader] @ git+https://github.com/AryaFayyazi/GreyBox"     #
 OpenAI or Anthropic conversations, one per line, with a <code>"labels"</code> field <code>{"call_id": 0 or 1}</code>
 (<a href="data/example_gpt_openai.jsonl">example: 300 GPT conversations</a>, <a href="data/example_claude_anthropic.jsonl">150 Claude conversations</a>).</p>
 <pre>python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json      # add --chat for agents that talk with a user
-# prints the cross-validated AUROC and the share of violations escalated at a 5% budget</pre>
+# prints the cross-validated AUROC (pooled and within tool) and the share of violations caught at a 5% budget
+python -m graybox.train_text labelled_steps.jsonl --group-by task                     # folds hold out whole tasks: the score on unseen tasks</pre>
+<p>Read the within-tool AUROC. If it is much lower than the pooled AUROC, the monitor mostly knows <i>which tool</i> is called, not
+whether this call breaks the rule; the report then warns. On τ²-bench grouped by task, a monitor scored 0.82 pooled and 0.49 within tool.</p>
 <p>Or in Python: <code>tm = TextMonitor().fit(steps, labels, groups); tm.save("greybox-text-monitor.json")</code>, with steps from
 <code>graybox.guard.conversation_steps</code>. The file is the same format as the browser trainer's, and the model gives the same
 scores in both (to 10<sup>−13</sup>).</p>
@@ -54,13 +66,14 @@ guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))      # or Guar
 
 # OpenAI Chat Completions
 reply = client.chat.completions.create(model=..., messages=messages, tools=tools).choices[0].message
-messages.append(reply)               # appended or not: the score is the same
+messages.append(reply)               # append the reply first: required for parallel calls
 for call in reply.tool_calls or []:
     v = guard.check_openai(messages, call)
     result = run_tool(call) if v.allow else v.block_message
     messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
 # Anthropic Messages
+messages.append({"role": "assistant", "content": response.content})   # append the reply first: required for parallel calls
 for block in response.content:
     if block.type == "tool_use":
         v = guard.check_anthropic(system, messages, block)
@@ -75,12 +88,17 @@ the call, then the earlier calls of that reply (with no results yet), then the c
 later calls). Results of sibling calls that already ran do not change the score. Each tool result is cut to its first 2,000 characters, and a context of 30,000 characters or more keeps its first 6,000
 and last 24,000, as in training: text deep inside a very long tool result is not seen.</p>
 <p><b>The review cut on a new kind of task.</b> A monitor file stores a cut set on its training actions. When the tasks change, the
-scores shift as a whole, and a stored cut can escalate almost nothing: we trained the text monitor on our GPT example logs without 8
-task families and scored those families. The stored cut caught 0 of 18 violations (0.9% of actions escalated); a cut set on the new
-traffic itself escalated 5.1% and caught 5 of 18 (<code>results/tool/cut_under_shift.json</code>, three splits). So in a new deployment,
-set the cut on the agent's own traffic without labels: <code>Guard(monitor, gate=QuantileGate(0.05))</code>, or <code>"gate": true</code>
-with a <code>"stream"</code> on the server (seed it from past traffic with <code>POST /v1/monitor/calibrate {"monitor": "text", ...}</code>).
-The text monitor's ranking also weakens on new task families (AUROC 0.81–0.94 here): label actions of the new tasks.</p>
+scores shift as a whole, and a stored cut can escalate almost nothing. We trained the text monitor on our GPT example logs without 8
+task families and scored those families, three times with different families (<code>results/tool/cut_under_shift.json</code>):</p>
+<ul><li>the stored cut escalated 0–0.9% of the actions and caught 0 of 110 violations;</li>
+<li>a cut set on the new traffic itself (what a live <code>QuantileGate</code> does) kept the review load at 5%, but caught only 11 of 110
+  (5/18, 6/46, 0/46). The text monitor's ranking also weakens there (AUROC 0.81–0.94).</li></ul>
+<p>So a live gate keeps the review load where you set it, but it does <b>not</b> restore detection on a new kind of task. For that,
+label actions of the new tasks and train again, or use the reader monitor (more robust to new tasks). To deploy a gate:
+<code>Guard(monitor, gate=QuantileGate(0.05))</code>, or <code>"gate": true</code> with a <code>"stream"</code> on the server. A new gate sends
+<b>every</b> action to review until it has seen 100; seed it from past unlabelled traffic: <code>gate.fit(past_scores)</code>, or
+<code>POST /v1/monitor/calibrate {"monitor": "text", "scores": [...]}</code>. For the text monitor the scores are logits (the guard's
+<code>v.score</code>, the server's <code>"score"</code>); the server rejects probabilities there.</p>
 <p><b>Parallel calls.</b> When one reply holds several calls, pass the reply in <code>messages</code> before you check its calls: each call
 is then scored with the earlier calls of the same reply (with no results yet), as the trainer builds its steps.</p>
 <p><b>Units.</b> For the text monitor and the browser reader, <code>v.score</code> (and the server's <code>"score"</code>) is a logit, compared
@@ -125,7 +143,7 @@ if tm.escalate(system_prompt, user_task, history, action):    # the cut learned 
     hold_for_review()</pre>
 <p>Or train it without a browser: <code>python -m graybox.train_text</code> (see "Get a monitor without a browser" above).</p>
 
-<h2>The reader monitor (GPU, robust to new tasks)</h2>
+<h2>The reader monitor (GPU, better on new kinds of tasks)</h2>
 <pre>curl -LO https://github.com/AryaFayyazi/GreyBox/releases/download/v0.2.0/reader_probe_cape_agentdojo.joblib</pre>
 <pre>from graybox.monitor import QuantileGate, Step
 

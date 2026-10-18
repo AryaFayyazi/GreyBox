@@ -7,7 +7,8 @@ self.onmessage = ev => {
   try { train(ev.data); } catch (e) { self.postMessage({ type: 'error', msg: String(e && e.message || e) }); }
 };
 
-function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05 }) {
+function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05, privacy = false }) {
+  const drop = privacy ? TM.privacyDrop : null;   // applied in every fold and in the final fit: the report is about the saved model
   const P = (msg, frac) => self.postMessage({ type: 'progress', msg, frac });
   const R = [], y = [], groups = [], tools = [];
   rows.forEach((ex, i) => {
@@ -27,7 +28,7 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05 }) {
     const tr = [], te = [];
     fold.forEach((v, i) => (v === f ? te : tr).push(i));
     P(`fold ${f + 1}/${k}: building vocabulary`, done / steps);
-    const vc = TM.fitVectorizer(tr.map(i => R[i].ctx)), va = TM.fitVectorizer(tr.map(i => R[i].act));
+    const vc = TM.fitVectorizer(tr.map(i => R[i].ctx), 3, 200000, drop), va = TM.fitVectorizer(tr.map(i => R[i].act), 3, 200000, drop);
     const base = { vc, va }, Xtr = tr.map(i => TM.features(base, R[i])), Xte = te.map(i => TM.features(base, R[i]));
     done++;
     for (const C of grid) {
@@ -40,7 +41,8 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05 }) {
   const cvAuc = Object.fromEntries(grid.map(C => [C, TM.auroc(y, Array.from(oof[C]))]));
   const best = grid.reduce((a, b) => (cvAuc[b] > cvAuc[a] ? b : a));
   P(`final fit on all ${y.length} examples (C = ${best})`, done / steps);
-  const model = TM.fit(R, y, best);
+  const model = TM.fit(R, y, best, { drop });
+  model.privacy = privacy;
   done++;
   P('evaluating', done / steps);
   const s = Array.from(oof[best]), cut = TM.quantile(s, 1 - budget);
@@ -48,16 +50,15 @@ function train({ rows, grid = [0.1, 1, 10], folds = 5, budget = 0.05 }) {
   const ci = TM.groupBootstrapAUROC(y, s, groups, 500, 0);
   const perTool = {};
   tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });
-  // the frozen gate cut for deployment: (1 - budget) quantile of the model's own scores on all training rows (label-free)
-  // the escalation cut: the top `budget` of the OUT-OF-FOLD scores (in-sample scores are overfit: a cut set on them
-  // escalates far fewer than `budget` of new actions). The same scores give the report's catch rate.
+  // the report's catch rate uses the top `budget` of the out-of-fold scores (a cross-validated estimate). The saved cut is
+  // replaced on the page (train.js results()) by the top `budget` of the final model's scores on ALL loaded actions.
   model.threshold_logit = cut;
-  model.cut_source = 'out-of-fold scores of the training actions';
+  model.cut_source = 'out-of-fold scores of the training actions (replaced on the page)';
   model.budget = budget;
   model.format = 'graybox-text-monitor/1';
   model.trained_on = { n: y.length, unsafe: nPos, groups: nGroups };
   const nEsc = caught + safeEsc;
-  const report = { n: y.length, unsafe: nPos, groups: nGroups, folds: k, cv_auroc_by_C: grid.map(C => [C, cvAuc[C]]), C: best, auroc: cvAuc[best], auroc_ci95: ci,
+  const report = { n: y.length, unsafe: nPos, groups: nGroups, folds: k, cv_auroc_by_C: grid.map(C => [C, cvAuc[C]]), C: best, auroc: cvAuc[best], auroc_ci95: ci, auroc_within_tool: TM.withinAUROC(y, s, tools),
                    budget, caught: caught / nPos, safe_escalated: safeEsc / (y.length - nPos), perTool,
                    base_rate: nPos / y.length, ceiling: Math.min(1, nEsc / nPos), precision: nEsc ? caught / nEsc : NaN,
                    vocab: { context: model.vc.idf.length, action: model.va.idf.length } };

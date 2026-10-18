@@ -12,10 +12,16 @@
 the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
 proposed action. It does not need the model's weights, so it works on closed models. The confirmatory claims on this site come from
 preregistered, hash-locked tests (lock times self-reported); exploratory results are marked. We show the failures too.</p>
-<figure style="margin:20px 0 6px"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, and replicas of two closed agents" loading="eager">
-<figcaption><b>Seeing inside closed agents.</b> All panels share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
+<div class="note" style="margin-top:14px"><b>In plain words.</b> Before an AI agent runs an action (send an email, delete a file, issue a
+refund), Grey Box gives it a risk score from the conversation so far, and sends the riskiest few percent to a person. It needs no access
+to the model's internals. It learns your policy from examples that you label. It works best on the kinds of tasks that you labelled; on
+a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
+<a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, replicas of two closed agents, and live prevention rates" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span><b>Seeing inside closed agents.</b> Panels (a–d) share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
 replica, computed from the transcript only. (c, d) Two closed agents, mapped through the same reader: we never saw their weights, and their replica cannot be checked, so we test prediction. Red: policy
-violations. In every agent they occupy their own region.</figcaption></figure>
+violations. In every agent they occupy their own region. (e) Live prevention: the share of episodes in which a violation ran, without the
+gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
@@ -55,8 +61,12 @@ violations. In every agent they occupy their own region.</figcaption></figure>
   0.912) but escalated none at a 5% budget. With 20 labelled steps it caught
   85%; with 40, 94% (exploratory). On prompt injections (AgentDojo),
   labelled calls of open agents raised the catch rate on a closed agent from 28% to 58% at the label-free cut (AUROC 0.840 → 0.922),
-  also on user tasks that the training never saw (exploratory). On τ²-bench the closed agents broke the policy too rarely to test
-  this. Label steps of each new type of policy.</p></div>
+  also on user tasks that the training never saw (exploratory). On τ²-bench, no trained monitor transferred to tasks it had not seen
+  (reader 0.535, word counts 0.519; an earlier 0.987 for word counts came from test tasks that were also in training). Word counts
+  memorize entities and tasks, and neither monitor checks rules over numbers, dates or recipients it has not seen. A zero-shot reasoning judge, with no labels, checks such written rules
+  within a tool (AUROC 0.766 on four closed frontier agents, preregistered T23), but at a 5% review budget it caught fewer
+  violations than the reader (11.7% vs 18.4%). Label steps of
+  each new type of policy and of each new task.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
   the reader on the training benchmark (Claude: 0.997 vs 0.991).
   On a new benchmark of prompt injections it fell to chance (0.50). The reader stayed at

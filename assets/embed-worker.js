@@ -10,7 +10,7 @@ const Q = (ctx, act) => 'You review actions proposed by an AI agent that acts th
 const ENCODERS = {
   minilm: { web: 'Xenova/all-MiniLM-L6-v2', maxLen: 256, pool: 'mean', views: 3, dtype: 'fp32' },
   mpnet: { web: 'Xenova/all-mpnet-base-v2', maxLen: 384, pool: 'mean', views: 3, dtype: 'fp32' },
-  qemb06: { web: 'onnx-community/Qwen3-Embedding-0.6B-ONNX', maxLen: 2048, pool: 'last', views: 1, dtype: 'q8' },
+  qemb06: { web: 'onnx-community/Qwen3-Embedding-0.6B-ONNX', maxLen: 2048, pool: 'last', views: 1, dtype: 'fp16' },
 };
 const VIEW_CHARS = 1000;
 const QEMB_INSTRUCT = "Instruct: Represent the AI agent's proposed action in its context, to decide whether executing it would " +
@@ -27,10 +27,19 @@ const post = (o, t) => self.postMessage(o, t || []);
 
 async function load(enc) {
   name = enc; cfg = ENCODERS[enc];
-  const device = (typeof navigator !== 'undefined' && navigator.gpu && enc === 'qemb06') ? 'webgpu' : 'wasm';
+  // WebGPU only when the browser really gives an adapter (navigator.gpu can exist without one); else, or on failure, WASM
+  let device = 'wasm';
+  if (enc === 'qemb06' && typeof navigator !== 'undefined' && navigator.gpu) {
+    try { if (await navigator.gpu.requestAdapter()) device = 'webgpu'; } catch (e) { device = 'wasm'; }
+  }
   const progress_callback = p => { if (p.status === 'progress' && p.total) post({ type: 'progress', msg: `downloading ${p.file}`, frac: p.loaded / p.total }); };
   tok = await AutoTokenizer.from_pretrained(cfg.web, { progress_callback });
-  model = await AutoModel.from_pretrained(cfg.web, { dtype: cfg.dtype, device, progress_callback });
+  try { model = await AutoModel.from_pretrained(cfg.web, { dtype: cfg.dtype, device, progress_callback }); }
+  catch (e) {
+    if (device === 'wasm') throw e;
+    device = 'wasm';
+    model = await AutoModel.from_pretrained(cfg.web, { dtype: cfg.dtype, device, progress_callback });
+  }
   post({ type: 'ready', encoder: enc, device, dtype: cfg.dtype });
 }
 

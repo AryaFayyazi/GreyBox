@@ -86,7 +86,13 @@
     for (let i = 0; i + 1 < t.length; i++) out.push(t[i] + ' ' + t[i + 1]);
     return out;
   }
-  function fitVectorizer(docs, minDf = 3, maxFeatures = 200000) {
+  // privacy mode: words that identify people or secrets are left out of the vocabulary before training
+  const SECRETISH = /\d|@|[a-z0-9_]{20,}/i;
+  function randomish(w) {                      // a long token with few vowels: keys, ids, hashes ("kzxqvbnmwqprtj")
+    return w.split(/[_\s]+/).some(t => t.length >= 10 && (t.match(/[aeiouy]/gi) || []).length / t.length < 0.2);
+  }
+  function privacyDrop(w, df, n) { return SECRETISH.test(w) || randomish(w) || df < Math.max(5, 0.01 * n); }
+  function fitVectorizer(docs, minDf = 3, maxFeatures = 200000, drop = null) {
     const df = new Map(), tf = new Map();
     for (const d of docs) {
       const seen = new Set();
@@ -95,7 +101,7 @@
         if (!seen.has(w)) { seen.add(w); df.set(w, (df.get(w) || 0) + 1); }
       }
     }
-    let keep = [...df.keys()].filter(w => df.get(w) >= minDf);
+    let keep = [...df.keys()].filter(w => df.get(w) >= minDf && !(drop && drop(w, df.get(w), docs.length)));
     if (keep.length > maxFeatures) keep = keep.sort((a, b) => tf.get(b) - tf.get(a) || (a < b ? -1 : 1)).slice(0, maxFeatures);
     keep.sort();
     const n = docs.length, vocab = {}, idf = new Float64Array(keep.length);
@@ -168,8 +174,8 @@
   function decision(model, x) { let s = model.b; for (let k = 0; k < x.idx.length; k++) s += model.w[x.idx[k]] * x.val[k]; return s; }
 
   function fit(rendered, labels, C, opts = {}) {
-    const vc = fitVectorizer(rendered.map(r => r.ctx), 3, opts.maxFeatures || 200000);
-    const va = fitVectorizer(rendered.map(r => r.act), 3, opts.maxFeatures || 200000);
+    const vc = fitVectorizer(rendered.map(r => r.ctx), 3, opts.maxFeatures || 200000, opts.drop || null);
+    const va = fitVectorizer(rendered.map(r => r.act), 3, opts.maxFeatures || 200000, opts.drop || null);
     const model = { vc, va, C };
     const rows = rendered.map(r => features(model, r));
     const lr = fitLR({ rows, dim: vc.idf.length + va.idf.length }, labels, C);
@@ -190,6 +196,17 @@
     }
     const nNeg = y.length - nPos;
     return nPos && nNeg ? (sumPos - nPos * (nPos + 1) / 2) / (nPos * nNeg) : NaN;
+  }
+  // pair-weighted AUROC within strata (tools) that hold both classes, as graybox.stats.within_auroc: 0.5 = the tool alone
+  function withinAUROC(y, s, strata) {
+    const by = new Map(); strata.forEach((k, i) => { if (!by.has(k)) by.set(k, []); by.get(k).push(i); });
+    let num = 0, den = 0;
+    for (const ix of by.values()) {
+      const yy = ix.map(i => y[i]), np = yy.reduce((a, b) => a + b, 0), nn = yy.length - np;
+      if (!np || !nn) continue;
+      num += np * nn * auroc(yy, ix.map(i => s[i])); den += np * nn;
+    }
+    return den ? num / den : NaN;
   }
   function quantile(a, q) { const s = Float64Array.from(a).sort(); const p = (s.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return s[lo] + (s[hi] - s[lo]) * (p - lo); }
   // GroupKFold like scikit-learn: groups sorted by size (desc), each assigned to the currently smallest fold
@@ -323,6 +340,6 @@
     return { steps, format: fmt || 'unknown', conversations: convs.length, ...info };
   }
 
-  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, transform, features, fitLR, fit, score, decision, sigmoid,
-              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
+  root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, transform, features, fitLR, fit, score, decision, sigmoid,
+              auroc, withinAUROC, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx, parseLabel };
 })(typeof self !== 'undefined' ? self : this);

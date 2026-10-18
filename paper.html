@@ -12,7 +12,11 @@
 <h1>Grey Box</h1>
 <p class="lede">Replicating agents' hidden states from their transcripts, to predict and prevent the violations of closed agents.</p>
 <p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
-<figure><img src="figures/teaser.png" alt="Seeing inside closed agents" loading="eager"></figure>
+<figure><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="Seeing inside closed agents" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span>Seeing inside closed agents. Panels (a–d)
+share the main axes of one open agent's hidden state. (a) Its true state. (b) Its replica from the transcript. (c, d) Replicas of two closed
+agents through the same reader; red dots are policy violations. (e) The share of episodes in which a violation ran, without and with the
+monitor in the agent's loop (T16).</figcaption></figure>
 
 <h2>Summary</h2>
 <p>Safety tools that read a model's hidden state need its weights, and the agents with the most capability are closed. We ask whether an
@@ -39,7 +43,8 @@ outside observer can read the hidden state of a closed agent, replicate it, and 
 
 <h2>Figures</h2>
 <figure><img src="figures/generalization.png" alt="Monitor AUROC under increasing shift" loading="lazy"><figcaption>Transcript monitors under increasing
-shift.</figcaption></figure>
+shift: trained reader (blue), trained bag-of-words (hollow square), zero-shot judge (green), the agent's own internals (orange). The dashed
+line is chance (AUROC 0.5).</figcaption></figure>
 <figure><img src="figures/time_vs_access.png" alt="Time, not access" loading="lazy"><figcaption>Reading after the agent's reasoning helps every
 method.</figcaption></figure>
 <figure><img src="figures/label_efficiency.png" alt="Label efficiency" loading="lazy"><figcaption>A few hundred labels match white-box monitoring.</figcaption></figure>
