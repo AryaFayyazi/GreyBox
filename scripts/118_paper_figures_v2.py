@@ -57,25 +57,35 @@ def fig_replication():
     g = np.load(U / "t15_gemma_replication.npz")
     rr, rt = r2_per_pc(g["Y_true"], g["Y_reader"]), r2_per_pc(g["Y_true"], g["Y_text"])
     assert abs(np.average(rr, weights=g["Y_true"].astype(np.float64).var(0)) - 0.664) < 0.002
-    fig, axs = plt.subplots(1, 4, figsize=(FULL, 1.72), gridspec_kw={"width_ratios": [1.15, 1.0, 1.05, 0.85], "wspace": 0.72})
-    ax = axs[0]; grid(ax, "both")
-    # (a) every one of the 128 components, paired: R^2 of the reader replica against R^2 of the TF-IDF replica on the same
-    # fresh steps; marker area = the component's share of the state's variance (the weights of the preregistered R^2)
-    w = g["Y_true"].astype(np.float64).var(0); w = w / w.sum()
-    order = np.argsort(-w)                                       # draw small components last, on top
-    ax.plot([0, 1], [0, 1], color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
-    ax.fill_between([0, 1], [0, 1], [1, 1], color=BLUE, alpha=0.05, lw=0, zorder=0)
-    sc = ax.scatter(rt[order], rr[order], s=5 + 240 * w[order], c=np.log10(w[order]), cmap="Blues", vmin=np.log10(w.min()) - 0.6,
-                    vmax=np.log10(w.max()), edgecolor=BLUE, linewidths=0.35, alpha=0.9, zorder=3)
-    t15 = json.loads((R / "t1/t15_latent_replication.json").read_text())["E1_R2_READER_minus_TXT"]
-    wr, wt = float((w * rr).sum()), float((w * rt).sum())
-    ax.scatter([wt], [wr], marker="*", s=70, color=ORANGE, edgecolor="white", linewidths=0.5, zorder=5)
-    ax.annotate("weighted mean", (wt, wr), xytext=(0.78, 0.38), textcoords="data", fontsize=5.3, color=INK, ha="center",
-                arrowprops=dict(arrowstyle="-", color=MUTE, lw=0.5))
-    ax.text(0.03, 0.97, f"{int((rr > rt).sum())} of {len(rr)}\nabove the diagonal", transform=ax.transAxes, fontsize=5.4, color=INK, va="top")
-    ax.text(0.97, 0.03, "below: text better", transform=ax.transAxes, fontsize=5.0, color=MUTE, ha="right")
-    ax.set(xlim=(0, 1), ylim=(0, 1), xlabel="$R^2$, TF-IDF replica", ylabel="$R^2$, reader replica")
-    ax.set_title("(a) Every component")
+    fig, axs = plt.subplots(1, 4, figsize=(FULL, 1.72), gridspec_kw={"width_ratios": [1.3, 0.95, 1.05, 0.85], "wspace": 0.7})
+    ax = axs[0]; grid(ax, "y")
+    # (a) why a white-box probe works on the replica: the true-state probe's score, on the true state and on the replicas,
+    # for every fresh step (split violins: safe left, violations right). The replica keeps the class means and shrinks the
+    # spread within each class (the conditional mean; Proposition: Rao-Blackwell): separation d' rises.
+    from scipy.stats import gaussian_kde
+    from sklearn.metrics import roc_auc_score
+    yy = g["y"].astype(bool)
+    cols = [("true\nstate", "probe_true"), ("reader\nreplica", "probe_READER"), ("TF-IDF\nreplica", "probe_TXT")]
+    grid_y = np.linspace(-13, 6, 400)
+    for i0, (lab_, key) in enumerate(cols):
+        i = 1.3 * i0
+        sc_ = g[key].astype(np.float64)
+        a_, b_ = sc_[yy], sc_[~yy]
+        for part, side, col in ((b_, -1, MUTE), (a_, 1, ORANGE)):
+            kd = gaussian_kde(part, bw_method=0.18)(grid_y)
+            wdt = 0.42 * kd / kd.max()
+            face = (BLUE if key == "probe_READER" else col) if side < 0 else col
+            ax.fill_betweenx(grid_y, i, i + side * wdt, color=face, alpha=0.55 if side < 0 else 0.7, lw=0)
+            ax.plot(i + side * wdt, grid_y, color=face, lw=0.6)
+            ax.plot([i, i + side * 0.3], [np.median(part)] * 2, color=INK, lw=0.8)
+        dp = (a_.mean() - b_.mean()) / np.sqrt((a_.var() + b_.var()) / 2)
+        ax.text(i, 6.6, f"d$'$ {dp:.2f}", ha="center", va="bottom", fontsize=5.6,
+                color=BLUE if key == "probe_READER" else INK, fontweight="bold" if key == "probe_READER" else "normal")
+    ax.set(xlim=(-0.6, 3.2), ylim=(-13, 8.4), ylabel="true-state probe score (logit)")
+    ax.set_xticks([0, 1.3, 2.6]); ax.set_xticklabels([c[0] for c in cols], fontsize=5.6)
+    ax.set_yticks([-10, -5, 0, 5])
+    ax.set_xlabel("left half: safe  |  right half: violations", fontsize=5.6, color=INK)
+    ax.set_title("(a) Why probes transfer")
     t17 = json.loads((R / "t1/t17_replication_agents.json").read_text())
     names = ["Gemma", "gpt-oss", "Qwen", "Muse"]
     rd = [t17["exploratory_gemma4_same_split"]["r2_fresh"]] + [t17["agents"][a]["r2_fresh"] for a in ("gptoss20b", "qwen38", "museglimmer")]

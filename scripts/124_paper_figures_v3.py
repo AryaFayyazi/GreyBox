@@ -67,11 +67,14 @@ def burst_panel(ax):
         caught[name] = float(esc[1000:][lab[1000:]].mean())
         ax.plot(x, lg(th), color=col, lw=1.1 if "ours" in name else 0.9, ls=ls, label=f"{name}: {caught[name]:.0%}")
     ax.axvline(500, color=MUTE, lw=0.5, ls=":")
-    ax.text(505, -0.3, "frozen", fontsize=5.0, color=MUTE, va="top")
-    ax.text(1500, -5.55, "burst: half are violations", fontsize=5.2, color=ORANGE, ha="center", va="center", bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.85))
-    ax.set(xlim=(0, 2000), ylim=(-6.2, 0.15), xlabel="actions, in order", ylabel="reader score, log$_{10}$ p")
-    ax.legend(loc="lower left", fontsize=5.0, title="cut (violations caught in the burst)", title_fontsize=5.0, handlelength=1.3,
-              frameon=True, facecolor="white", edgecolor=GRID, framealpha=0.95, borderaxespad=0.3, labelspacing=0.25)
+    ax.axhline(0.05, color=GRID, lw=0.6)                       # the band above holds the labels; scores never exceed 0
+    ax.text(250, 0.55, "warm-up", fontsize=5.0, color=MUTE, ha="center", va="center")
+    ax.text(750, 0.55, "cut frozen", fontsize=5.0, color=MUTE, ha="center", va="center")
+    ax.text(1500, 0.55, "burst: half are violations", fontsize=5.0, color=ORANGE, ha="center", va="center")
+    ax.set(xlim=(0, 2000), ylim=(-6.2, 1.05), xlabel="actions, in order", ylabel="reader score, log$_{10}$ p")
+    ax.set_yticks([-6, -4, -2, 0])
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.27), ncol=1, fontsize=5.0, title="cut  (violations caught in the burst)",
+              title_fontsize=5.0, handlelength=1.3, frameon=False, labelspacing=0.2)
     ax.set_title("(a) The cut under an attack burst")
     return caught
 
@@ -119,14 +122,16 @@ def fig_transfer():
     au = [t14["curve"][str(k)]["auroc"] for k in ks]
     ax.fill_between(xp, 0, yc, color=BLUE, alpha=0.12, lw=0)
     ax.plot(xp, yc, color=BLUE, lw=1.4, marker="o", ms=4.2, mec="white", mew=0.6, zorder=4)
-    for x, y, a in zip(xp, yc, au):
-        ax.text(x, y + 0.06, f"{a:.2f}", ha="center", fontsize=5.6, color=BLUE)
+    for k, (x, y, a) in enumerate(zip(xp, yc, au)):
+        last = k == len(xp) - 1
+        ax.annotate(f"{a:.2f}", (x, y), xytext=(-5, 5) if last else (6, -9), textcoords="offset points",
+                    ha="right" if last else "left", fontsize=5.6, color=BLUE)
     ax.axhline(0.05, color=MUTE, lw=0.6, ls=":")
     ax.text(xp[0], 0.085, "5% cut", fontsize=5.2, color=MUTE)
     ax.set_xscale("log"); ax.set_xticks(xp); ax.set_xticklabels([str(k) for k in ks]); ax.minorticks_off()
     ax.set(xlabel="labelled AgentDojo calls\nof open agents", ylabel="injections caught", ylim=(0, 1.13))
     ax.yaxis.set_major_formatter(PCT)
-    ax.text(0.97, 0.03, f"labels: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.3, color=MUTE, va="bottom", ha="right")
+    ax.text(0.03, 0.97, f"numbers: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.3, color=MUTE, va="top", ha="left")
     ax.set_title("(b) Labels of a new policy")
     # (c) a closed agent told it is monitored
     ax = fig.add_subplot(gs[2]); v2.grid(ax, "y")

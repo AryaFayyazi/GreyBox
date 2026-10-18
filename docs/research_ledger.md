@@ -1215,3 +1215,10 @@ Dated log of every experiment, decision and correction. Newest last.
   - 4a is new: the label-free cut over time under an attack burst. One run of the 76c protocol from the public per-unit
     release (seed 1): frozen 93%, rolling 5,000 37%, rolling 500 20% (50-run means 94/36/20). Figure 4 has three
     panels again.
+- **Figures 3a and 4 revised again (2026-10-18, user request).**
+  - 3a is now "Why probes transfer": split densities of the true-state probe's score for safe actions and violations,
+    on the true state, the reader replica and the TF-IDF replica, over all 12,128 fresh steps. The class means are
+    kept and the within-class spread shrinks (safe sd 1.90 → 1.57; violations 1.50 → 1.23), so d' rises 4.28 → 4.92;
+    the TF-IDF replica reaches 4.52. This is the Rao–Blackwell mechanism.
+  - Figure 4 overlaps fixed: (a) labels in a headroom band above the data and the legend below the axes; (b) point
+    labels beside their points and the note in the empty corner.
