@@ -56,9 +56,26 @@
   }
   // One example: {context, action, label} pre-rendered, or {instructions, task, history, action: {tool, args}, label}
   function render(ex) {
-    if (typeof ex.context === 'string' && typeof ex.action === 'string') return { ctx: ex.context, act: ex.action };
     const a = ex.action || {};
+    if (typeof ex.context === 'string') return { ctx: ex.context, act: typeof ex.action === 'string' ? ex.action : actText(a.tool, a.args) };
     return { ctx: ctxText(ex.instructions, ex.task, ex.history), act: actText(a.tool, a.args) };
+  }
+  // Conversation-aware context (graybox.chat.chat_ctx): every user turn and agent message, in order.
+  // turns: {user} | {agent} | {call: [tool, args], result}
+  function chatCtx(instructions, turns) {
+    const lines = ['[Operating instructions]\n' + (instructions || '')];
+    let first = true;
+    for (const t of turns) {
+      if (t.user !== undefined) { lines.push(first ? '[User task]\n' + t.user : '[User] ' + t.user); first = false; }
+      else if (t.agent !== undefined) { if (t.agent && t.agent.trim()) lines.push('[Agent said] ' + t.agent); }
+      else {
+        const r = cp(String(t.result || ''));
+        lines.push('[Agent called] ' + t.call[0] + ' ' + pyDumps(t.call[1] || {}));
+        lines.push('[Tool result] ' + r.slice(0, 2000).join('') + (r.length > 2000 ? ' ...' : ''));
+      }
+    }
+    const out = lines.join('\n\n'), o = cp(out);
+    return o.length < 30000 ? out : o.slice(0, 6000).join('') + '\n...\n' + o.slice(-24000).join('');
   }
 
   // ---- TF-IDF ----
@@ -210,7 +227,7 @@
     if (typeof a === 'object') return a;
     try { const v = JSON.parse(a); return v && typeof v === 'object' && !Array.isArray(v) ? v : { _raw: a }; } catch (e) { return { _raw: a }; }
   }
-  function conversationSteps(conv, gid) {
+  function conversationSteps(conv, gid, chat = false) {
     // conv: {messages: [...], system?} or a bare array of messages
     const msgs = Array.isArray(conv) ? conv : (conv.messages || []);
     let system = Array.isArray(conv) ? '' : textOf(conv.system);
@@ -224,22 +241,32 @@
       if (m.role === 'user' && Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_result') results[b.tool_use_id] = textOf(b.content);
     }
     const labels = (!Array.isArray(conv) && conv.labels) || {};          // optional {call_id: 0/1}
-    const steps = [], hist = [];
+    const steps = [], hist = [], turns = [];
+    const isResults = c => Array.isArray(c) && c.every(b => b && b.type === 'tool_result');
     for (const m of msgs) {
+      if (m.role === 'user') {
+        if (!isResults(m.content) && textOf(m.content).trim())
+          turns.push({ user: Array.isArray(m.content) ? m.content.filter(b => !(b && b.type === 'tool_result')).map(textOf).join('\n') : textOf(m.content) });
+        continue;
+      }
       if (m.role !== 'assistant') continue;
+      turns.push({ agent: typeof m.content === 'string' ? m.content : (m.content || []).filter(b => b && typeof b === 'object' && b.type === 'text').map(b => b.text ?? '').join('\n') });
       const calls = [];
       for (const tc of m.tool_calls || []) calls.push({ id: tc.id, tool: (tc.function || {}).name, args: parseArgs((tc.function || {}).arguments) });
       if (Array.isArray(m.content)) for (const b of m.content) if (b && b.type === 'tool_use') calls.push({ id: b.id, tool: b.name, args: parseArgs(b.input) });
       for (const c of calls) {
         if (!c.tool) continue;
         const lab = c.id != null && labels[c.id] !== undefined ? (labels[c.id] ? 1 : 0) : null;
-        steps.push({ instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null });
+        const st = { instructions: system, task, history: hist.map(h => ({ ...h })), action: { tool: c.tool, args: c.args }, group: gid, label: lab, call_id: c.id ?? null };
+        if (chat) st.context = chatCtx(system, turns);
+        steps.push(st);
         hist.push({ tool: c.tool, args: c.args, result: results[c.id] ?? '' });
+        turns.push({ call: [c.tool, c.args], result: results[c.id] ?? '' });
       }
     }
     return steps;
   }
-  function importLogs(text) {
+  function importLogs(text, opts = {}) {
     text = text.trim();
     let convs, whole;
     try { whole = JSON.parse(text); } catch (e) { whole = undefined; }      // one JSON document, or JSON lines
@@ -254,12 +281,12 @@
     convs.forEach((c, i) => {
       const msgs = Array.isArray(c) ? c : (c.messages || []);
       if (!fmt) fmt = msgs.some(m => m.tool_calls) ? 'openai' : msgs.some(m => Array.isArray(m.content) && m.content.some(b => b && b.type === 'tool_use')) ? 'anthropic' : null;
-      steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`)));
+      steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`), !!opts.chat));
     });
     if (!steps.length) throw new Error('no tool calls found: expected OpenAI messages with "tool_calls" or Anthropic messages with "tool_use" blocks');
     return { steps, format: fmt || 'unknown', conversations: convs.length };
   }
 
   root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, transform, features, fitLR, fit, score, decision, sigmoid,
-              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps };
+              auroc, quantile, groupFolds, groupBootstrapAUROC, importLogs, conversationSteps, chatCtx };
 })(typeof self !== 'undefined' ? self : this);
