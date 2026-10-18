@@ -1229,3 +1229,12 @@ Dated log of every experiment, decision and correction. Newest last.
     disclosed in the limits appendix, and the TF-IDF replica stays in 3a.
   - Every figure and table caption was rewritten to 30–75 words (they were up to 143). Each says what is plotted and
     defines its symbols; conclusions stay in the text.
+- **Qwen3.8-27B and Muse-Glimmer-30B added to the monitoring table (2026-10-18; exploratory, scripts/127).**
+  - Until now these agents appeared only in the replication test (T17). Monitoring was never measured on them.
+  - Protocol: T6's reader probe (Gemma clean units, layer 32), T9's TF-IDF, and the 70B judge (new GPU run, held-out
+    scenarios), plus the agent's own internals probe from T17. All four on the same held-out actions.
+  - Qwen (2,378 actions, 73 violations): reader 0.972, TF-IDF 0.966, judge 0.835, internals 0.955.
+  - Muse (2,657 actions, 335 violations): reader 0.968, TF-IDF 0.960, judge 0.911, internals 0.929.
+  - Reader − judge: +0.135 [0.035, 0.258] and +0.059 [0.017, 0.131]. Reader − own internals: +0.021 [−0.037,
+    +0.073] and +0.040 [0.017, 0.068].
+  - In Table 1 the rows are marked † exploratory, with reader − judge as the contrast, the same as the gpt-oss row.

@@ -1,0 +1,42 @@
+{
+ "qwen38": {
+  "n": 2378,
+  "n_unsafe": 73,
+  "auroc_within_template": {
+   "READER": 0.9723,
+   "TXT": 0.9663,
+   "J_act": 0.8346,
+   "INTERNALS": 0.9554
+  },
+  "READER_minus_J_act": [
+   0.1346,
+   0.0353,
+   0.2583
+  ],
+  "READER_minus_INTERNALS": [
+   0.0213,
+   -0.0365,
+   0.0732
+  ]
+ },
+ "museglimmer": {
+  "n": 2657,
+  "n_unsafe": 335,
+  "auroc_within_template": {
+   "READER": 0.9682,
+   "TXT": 0.9599,
+   "J_act": 0.9109,
+   "INTERNALS": 0.9286
+  },
+  "READER_minus_J_act": [
+   0.0588,
+   0.0165,
+   0.1307
+  ],
+  "READER_minus_INTERNALS": [
+   0.04,
+   0.0167,
+   0.0682
+  ]
+ }
+}

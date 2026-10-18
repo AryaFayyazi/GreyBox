@@ -119,7 +119,7 @@ Every confirmatory test was preregistered: its document and analysis code were h
 \newcommand{\ci}[1]{{\scriptsize\textcolor{gbmute}{[#1]}}}
 \newcommand{\sota}[1]{\textbf{#1}}
 \newcommand{\snd}[1]{\underline{#1}}
-\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval.}
+\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels.}
 \label{tab:main}
 \begin{tabular}{@{}llr ccc>{\columncolor{gbrow}}c l@{}}
 \toprule
@@ -127,10 +127,12 @@ Every confirmatory test was preregistered: its document and analysis code were h
 \cmidrule(lr){4-7}
 \textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Grey-box}\\\textbf{reader}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
 \midrule
-\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Open agent, the training distribution}}\\
+\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Open agents: the training agent, then three other architectures}}\\
 Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
 Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
-Another architecture & gpt-oss-20b & 5{,}229 & -- & 0.833 & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+Mixture of experts & gpt-oss-20b & 5{,}229 & -- & 0.833 & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
+Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
 \rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
 CAPE-Bench & Claude Haiku~5.5 & 3{,}128 & -- & 0.633 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
 CAPE-Bench & GPT-6-luna & 3{,}627 & -- & 0.942 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
@@ -164,7 +166,7 @@ The theory predicts the shape of the replica. Across the 128 components, the rat
 \subsection{The transcript is enough}
 \label{sec:sufficient}
 \Cref{cor:action} says that the agent's internals cannot beat a monitor that reads the transcript and the action. A probe on the agent's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning: the white-box advantage over turn-start monitors is \emph{when} it reads. A reader probe trained on the same labels scores 0.994, above the agent's internals ($+0.015$ [0.007, 0.026]), and it is non-inferior on unseen task families (0.969 vs 0.976). In an exploratory check, adding the agent's hidden reasoning to the reader's input, given the action, changes the AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]: given the action, the hidden reasoning adds no measurable information, as \cref{prop:replica}(a) allows.
-What the reader adds over word counts is robustness to shift (\cref{tab:main}): TF-IDF with the same labels equals the reader on the training benchmark, but it is lower on unseen task families (0.950 vs 0.969) and at chance on AgentDojo (0.503), where the reader keeps 0.781 against a zero-shot judge's 0.537.
+On two more architectures (exploratory), the reader trained only on Gemma-4 is the best monitor and beats a probe on each agent's own internals trained on its own labels: 0.972 vs 0.955 on Qwen3.8 ($+0.021$ [$-0.037$, $+0.073$]) and 0.968 vs 0.929 on Muse-Glimmer ($+0.040$ [0.017, 0.068]). What the reader adds over word counts is robustness to shift (\cref{tab:main}): TF-IDF with the same labels equals the reader on the training benchmark, but it is lower on unseen task families (0.950 vs 0.969) and at chance on AgentDojo (0.503), where the reader keeps 0.781 against a zero-shot judge's 0.537.
 
 
 \begin{figure*}[t]
