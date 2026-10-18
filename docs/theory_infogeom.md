@@ -74,3 +74,31 @@ Limit, stated plainly: it needs full log-probabilities and d(d+1)/2 contexts (5�
   (Theorem 5).
 - It connects to the hidden state through the pulled-back Fisher metric (Theorem 4), which is testable where the
   hidden state is known.
+
+## Correction 1 (2026-10-18, after the lock of G; the text above is the locked version)
+Theorem 5 above states its error terms wrongly. A numerical check after the lock (exact binomial sums) shows:
+- The Anscombe angle is biased at order 1/n, not n⁻²: for fixed p in (0, 1),
+  E ϑ̂ = ϑ + cot(ϑ)/(4n) + O(n⁻²) (n = 32: bias 0.0102 vs 0.0104 at p = 0.1; 0.0033 vs 0.0034 at p = 0.3).
+  So E‖ϑ̂(x) − ϑ̂(x')‖² − 2m/n differs from d_Q² by a term of order d_Q²/n, not only O(m n⁻²).
+- The variance 1/(n + ½) holds only where n p(1 − p) is large. Near p = 0 or 1 it is smaller (0.68/(n + ½) at
+  p = 0.1, n = 8), so subtracting 2m/(n + ½) over-corrects for saturated answers. Saturated answers are common for
+  language models.
+- With n samples the estimated angles cannot leave [2 arcsin √(3/8/(n + 3/4)), π − the same], so large distances
+  between saturated answers are contracted (in a test with saturated P: true d² 48.4, debiased estimate 30.1). This
+  is a limit of what n samples identify, not of the formula.
+
+### Theorem 5′ (exact, replaces the bias claim of Theorem 5)
+Fix n and let μ_n(p) = E ϑ̂ for k ~ Binomial(n, p). μ_n is a known, strictly increasing function of p (ϑ̂ is
+increasing in k, and k is stochastically increasing in p), and μ_n → ϑ pointwise as n → ∞. Split each cell's 2n
+samples into two independent halves A and B of n. Then the cross-fit estimator
+    D̂²(x, x') = Σ_q (ϑ̂ᴬ_q(x) − ϑ̂ᴬ_q(x'))(ϑ̂ᴮ_q(x) − ϑ̂ᴮ_q(x'))
+satisfies E D̂² = Σ_q (μ_n(Ψ_q(x)) − μ_n(Ψ_q(x')))² EXACTLY, for every Ψ in [0, 1]: no variance model, no
+asymptotics. Proof: the halves are independent, so E[(a_A − a'_A)(a_B − a'_B)] = (E a_A − E a'_A)(E a_B − E a'_B),
+and both factors equal μ_n(Ψ_q(x)) − μ_n(Ψ_q(x')). ∎ (Monte Carlo, 20,000 draws, saturated P: mean 25.76 vs target
+25.79.)
+So with n samples per half, the observable geometry is the Euclidean geometry of μ_n(Ψ_Q), and it is estimated without
+bias. As n grows it tends to the Fisher–Rao geometry of Theorem 1.
+
+Effect on the locked analyses: none on their definitions. F2 measures the real loss of the locked estimator (as a rank
+correlation), and C1/C2 use the locked estimator as specified. Analyses with the cross-fit estimator are exploratory and
+are labelled so.

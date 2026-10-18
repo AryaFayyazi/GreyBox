@@ -1238,3 +1238,85 @@ Dated log of every experiment, decision and correction. Newest last.
   - Reader − judge: +0.135 [0.035, 0.258] and +0.059 [0.017, 0.131]. Reader − own internals: +0.021 [−0.037,
     +0.073] and +0.040 [0.017, 0.068].
   - In Table 1 the rows are marked † exploratory, with reader − judge as the contrast, the same as the gpt-oss row.
+- **New direction (2026-10-18, user): a genuinely novel and principled grey box. Pilot of "imitation synchronizes
+  internals" (scripts/128; development data only; the preregistered fresh set is untouched).**
+  - Physics: drive–response synchronization (Pecora–Carroll 1990; generalized synchronization, Rulkov–Abarbanel 1995).
+    The agent and an open model are driven by the same tokens. The reader is driven by inputs only; a twin is also
+    coupled to the agent's outputs (LoRA trained to predict the agent's actions).
+  - Maths: computational mechanics. The causal state is the minimal sufficient statistic of the past for the future
+    (Shalizi–Crutchfield 2001). It is gauge-invariant and identifiable from outputs, and imitation is its
+    maximum-likelihood estimator.
+  - Predictions written down BEFORE any twin result:
+    (P1) R² of the agent's decision state from the twin's decision-point state > from the base model at the same
+         point and prompt;
+    (P2) R² rises with coupling (25% < 50% < 100% of the imitation data);
+    (P3) the gain concentrates on behavioural components. The per-component weight (how well the component alone
+         predicts the action's tool, grouped CV on half A, saved as behavioural_weight_A.npy before any twin result)
+         correlates positively with the per-component R² gain.
+  - Design: Gemma-4 clean units split by T17's scenario hash; half A (2,725 steps, 460 scenarios) trains the twins
+    and the map; half B scores. If P1 fails, report it and stop this direction.
+- **Twin pilot stopped (2026-10-18, user decision): no training or fine-tuning of other models.** The user wants the
+  latent space of closed models estimated with mathematics or physics, not with a trained surrogate. All twin jobs
+  were cancelled before any twin feature existed; no result of this direction is used.
+- **Training-free grey box: the observable latent geometry (2026-10-18; theory docs/theory_infogeom.md, code
+  scripts/129_infogeom.py, preregistration docs/prereg_G_information_geometry.md, not yet locked).**
+  - Core (A): the Fisher–Rao geometry of a model's yes/no answers. In ϑ = 2 arcsin √P(yes) it is exactly Euclidean
+    (Theorem 1), and by Čencov it is the only invariant output geometry. It is estimated from samples with a known bias
+    (Theorem 5). Exact part (B): with full log-probabilities, the final hidden-state Gram matrix follows from the
+    RMSNorm sphere ‖u‖² = d by a linear solve (Theorem 6).
+  - No model is trained, and no second model stands in for the one studied. Open models are subjects whose hidden
+    states give the ground truth. For Claude, G2 now tests only Claude's own answers (split-half stability and
+    distinctness from text). The comparison with open models' hidden states is reported only.
+  - Dry run of G1 on dev contexts (800 dev contexts, layer chosen on 1,000 other dev contexts). First run crashed on
+    phi4mini: 2 of 38,400 cells per model have P(yes) + P(no) = 0. Fixed with the project's existing rule
+    (p_yes + 1e-6)/(p_yes + p_no + 2e-6) (scripts/13, 16, 18), then rerun.
+  - G3 pilot on Qwen3-0.6B, generation seed 100 (the confirmatory run uses seed 0): 1,152,000 contexts; the centered
+    log-probabilities have rank d (σ_d/σ_{d+1} = 1,068; σ_1/σ_d = 1,583). Below d(d+1)/2 the solution is not
+    determined, as predicted: 0.25× Pearson 0.30, 0.5× 0.36, 0.75× 0.03, 0.9× undefined (the minimum-norm S is
+    indefinite; median cosine error 0.51–0.56).
+  - G3 pilot, 1.1×–2.0×: Pearson 0.9915, 0.99999997, 0.99999999 (median cosine error 1.6e-2, 2.5e-5, 1.3e-5);
+    baselines without the sphere 0.40 (raw) and 0.11 (whitened). A synthetic check of the solver (d = 16, 48; known K)
+    gives cosine errors of 1e-10 to 1e-12 above d(d+1)/2 and 0.04–0.09 below. A trace preconditioner did not help.
+  - Before the lock, from dev and pilot only: F2 changed from an absolute margin (0.02; 5 of 8 on dev) to the ratio
+    ρ_sampled/ρ_exact > 0.95 (7 of 8 on dev; gpt-oss 0.938). C1's bound raised 0.5 → 0.7 after the open-model
+    calibration (split-half 0.76–0.96). Both disclosed in the preregistration.
+  - **Locked 2026-10-18T12:28:38-07:00 and published first (GitHub ebb89b1, 19:28:56Z),** before any confirmatory run.
+  - **G2 (Claude Haiku 5.5, confirmatory): passes.** C1 split-half ρ 0.950 [0.939, 0.960] (> 0.7); C2 split-half −
+    text +0.438 [0.391, 0.485]. Reported: ρ(Claude geometry, text) 0.52, higher than for the open models (about 0.25);
+    vs open models' hidden geometry 0.45–0.51; negative MDS mass 15% (sampling noise and debiasing).
+- **Correction 1 to Theorem 5 (2026-10-18, after the lock of G).** An exact binomial check showed that the locked
+  Theorem 5 states its error terms wrongly. The Anscombe angle's bias is cot(ϑ)/(4n) (order 1/n, not n⁻²). Its
+  variance 1/(n + ½) fails near p = 0 or 1, so subtracting 2m/(n + ½) over-corrects for saturated answers. Large
+  distances between saturated answers are contracted, which no estimator from n samples can undo.
+  - Replacement, Theorem 5′ (proof by independence): the cross-fit of two independent halves is EXACTLY unbiased,
+    for every P, for the Euclidean geometry of μ_n(P) = E[Anscombe angle]. μ_n is known, strictly increasing, and tends
+    to ϑ. Monte Carlo: 25.76 vs target 25.79.
+  - The correction is appended to docs/theory_infogeom.md under a marker. 99_verify_all strips it and verifies the
+    locked text (ADDITIVE).
+  - The locked endpoints are unchanged by definition; analyses with the cross-fit are exploratory. The tool
+    (graybox.geometry) uses the cross-fit (crossfit_distances, mu_n), with tests.
+- **Exploratory (scripts/131, after the lock): cross-fit (Theorem 5′, 4 + 4 samples) vs the locked subtraction (8).**
+  Open models, confirm split: the share of the exact ρ kept is the same (cross-fit 0.959–1.002, subtraction
+  0.958–1.002). The non-Euclidean MDS mass falls from 12–19% to 1.7–15% (under 4% for Gemma, Mistral, Qwen2.5,
+  Qwen3; gpt-oss unchanged at 15%). Claude: 15.1% → 2.0%; ρ with text unchanged (0.52); ρ with the open models' hidden
+  geometry 0.45–0.51 (unchanged). The paper's Claude coordinates use the cross-fit (claude_mds_crossfit.npz).
+- **G3 (confirmatory, Qwen3-0.6B, generation seed 0): E1, E2, E3 pass.** 1,152,000 contexts; rank-d gap
+  σ_d/σ_{d+1} = 1,005. Pearson of recovered vs true cosines on 2,000 held-out contexts: 0.30, 0.36, 0.00, 0.04 at
+  0.25–0.9 × d(d+1)/2; 0.9915 at 1.1×; 0.99999998 at 1.5×; 1.0 (8 digits) at 2.0×, median cosine error 7.0e-6, max
+  1.5e-4. Baselines without the sphere 0.40 (raw) and 0.11 (whitened). The pilot (seed 100) replicates to the 4th digit.
+  Prior art, stated in the paper: Finlayson et al. 2024 (logits span a d-dimensional image); Carlini et al. 2024 (the
+  output projection up to an orthogonal map, via the normalization symmetry). Ours is the hidden-state Gram
+  (gauge-invariant), the linear sphere system, and the counting transition.
+- **G4 designed (scripts/132): label-free detection of a hidden system-prompt change, with an exact level.** Five
+  conditions (none, helpful, monitor = T24's notice for chat, DAN, pirate); 480 contexts per split (80 per source,
+  seed 4). Equal calls per context: 8 one-sample answers vs 8 sampled replies (MiniLM; prior-art model-equality tests
+  use replies). Ground truth: the hidden displacement at G1's dev layer. Sign-flip test on a U-statistic, checked exact
+  (Gaussian null 0.0488 ± 0.0022; Cauchy 0.048; binary 0.041). Dev data first (job 4004); the preregistration follows.
+- **G1 (confirmatory, 8 open models, 1,440 confirm contexts): F1, F2, F3 pass, each 8 of 8.**
+  - ρ(answers, own hidden geometry) 0.41–0.74; ρ(text, hidden) 0.22–0.30. F1 gains +0.16 to +0.49, lower bounds
+    0.141–0.466.
+  - F2 ρ_sampled/ρ_exact lower bounds 0.957–0.997. gpt-oss, below 0.95 on dev, passes on confirm.
+  - F3 (88 vs 8 questions) +0.02 to +0.25, all lower bounds > 0.
+  - Layers chosen on dev: Gemma 34, gpt-oss 12, Llama 24, Mistral 8 (the first stored layer, as on dev), OLMo 29,
+    Phi 29, Qwen2.5 25, Qwen3 27.
+  - **All preregistered G endpoints pass (G1 F1–F3, G2 C1–C2, G3 E1–E3).**

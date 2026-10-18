@@ -1,0 +1,83 @@
+{
+ "seed": 0,
+ "d": 1024,
+ "unknowns": 524800,
+ "n_train_available": 1150000,
+ "n_validation": 2000,
+ "norm_check_true_u": 5.735815544749556e-08,
+ "by_N": {
+  "0.25x": {
+   "N": 131200,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 6.321512310687872e-08,
+   "pearson_cos": 0.29933445,
+   "median_abs_err_cos": 0.5603312878212978,
+   "max_abs_err_cos": 1.1631829318928983,
+   "norm_constraint_val_median_rel": 0.07793228627175147
+  },
+  "0.5x": {
+   "N": 262400,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 1.7942230723419458e-07,
+   "pearson_cos": 0.36367546,
+   "median_abs_err_cos": 0.5506531787164313,
+   "max_abs_err_cos": 2.7915937467201952,
+   "norm_constraint_val_median_rel": 0.06518613145914243
+  },
+  "0.75x": {
+   "N": 393600,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 2.6349404662686743e-07,
+   "pearson_cos": -0.0,
+   "median_abs_err_cos": 0.5345104213719056,
+   "max_abs_err_cos": 5.873296564206994e+302,
+   "norm_constraint_val_median_rel": 0.06764683852467246
+  },
+  "0.9x": {
+   "N": 472320,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 5.036289698853466e-07,
+   "pearson_cos": 0.04491743,
+   "median_abs_err_cos": 0.5060615246942299,
+   "max_abs_err_cos": 6.525545985323002e+151,
+   "norm_constraint_val_median_rel": 0.06840169453521167
+  },
+  "1.1x": {
+   "N": 577280,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 4.424475020510355e-06,
+   "pearson_cos": 0.99152145,
+   "median_abs_err_cos": 0.015982350385912725,
+   "max_abs_err_cos": 0.1437595049931589,
+   "norm_constraint_val_median_rel": 0.004454352385074023
+  },
+  "1.5x": {
+   "N": 787200,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 1.486665744277294e-08,
+   "pearson_cos": 0.99999998,
+   "median_abs_err_cos": 1.797833756145284e-05,
+   "max_abs_err_cos": 0.0003111595780359716,
+   "norm_constraint_val_median_rel": 1.0204858316265053e-05
+  },
+  "2.0x": {
+   "N": 1049600,
+   "cg_iterations": 5000,
+   "cg_rel_residual": 1.7391141467827567e-10,
+   "pearson_cos": 1.0,
+   "median_abs_err_cos": 6.994660655401663e-06,
+   "max_abs_err_cos": 0.00014896902054443995,
+   "norm_constraint_val_median_rel": 7.825847776588013e-06
+  }
+ },
+ "baseline_raw_centered_logprob_pearson": 0.403876,
+ "baseline_whitened_no_constraint_pearson": 0.107613,
+ "E1_pearson_cos_at_largest_N": 1.0,
+ "E1_pass": true,
+ "E2_err_below_best_vs_largest": [
+  0.5060615246942299,
+  6.994660655401663e-06
+ ],
+ "E2_pass": true,
+ "E3_pass": true
+}

@@ -2,6 +2,17 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## Unreleased
+**Added**
+- `graybox.geometry`: the observable latent geometry of any model, from its outputs alone. Nothing is trained.
+  - `interrogate`, `fisher_angles`, `fisher_angles_from_counts`, `observable_distances`: Fisher-Rao distances
+    between contexts from yes/no answers. They are exact in the angles 2 arcsin √P(yes). From sampled answers, the
+    known sampling bias is removed.
+  - `mds`, `rsa`: coordinates up to a rigid motion; comparison of two geometries with no fit.
+  - `logprob_basis`, `recover_gram`: with full log-probabilities, the exact Gram matrix of the final normalized hidden
+    states, by one linear solve (the RMSNorm sphere). It needs d(d+1)/2 contexts and warns with fewer.
+  - Numpy only. Tests check each theorem on cases with a known answer (tests/test_geometry.py).
+
 ## 0.7.0 (2026-10-18)
 **Added**
 - `graybox.recalibrate` (`graybox-recalibrate`): set the review cut again on new, unlabelled traffic after a change of

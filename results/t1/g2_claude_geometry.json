@@ -1,0 +1,41 @@
+{
+ "n_contexts": 192,
+ "questions": 24,
+ "samples": 8,
+ "C1_split_half_rho": [
+  0.95,
+  0.9392,
+  0.96
+ ],
+ "C2_split_half_minus_text": [
+  0.4377,
+  0.3912,
+  0.4851
+ ],
+ "rho_claude_full_vs_text": 0.5204,
+ "C1_pass": true,
+ "C2_pass": true,
+ "reported_only_claude_answers_vs_open_hidden": {
+  "gemma3_4b": 0.478,
+  "gptoss20b": 0.5125,
+  "llama31_8b": 0.4897,
+  "mistral7b": 0.4533,
+  "olmo3_7b": 0.4647,
+  "phi4mini": 0.4824,
+  "qwen25_7b": 0.4616,
+  "qwen3_8b": 0.5028
+ },
+ "mds_eigenvalues_top10": [
+  649.6673,
+  433.0345,
+  149.2239,
+  133.493,
+  111.5556,
+  95.7287,
+  92.6323,
+  75.3298,
+  63.5818,
+  53.4799
+ ],
+ "mds_negative_mass_share": 0.1511
+}

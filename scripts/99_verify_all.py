@@ -78,6 +78,9 @@ ADDITIVE = {   # (lock, file) -> strip the documented additions; the rest must h
     ("prereg_T7_agentdojo_lock.json", "src/graybox/monitor.py"): _monitor_locked_part,
     ("prereg_T8_claude_agent_lock.json", "src/graybox/monitor.py"): _monitor_locked_part,
     ("prereg_T26_canonical_monitor_lock.json", "src/graybox/monitor.py"): lambda text: _reverse(text, [_CANON_EDIT, *_GATE_EDITS]),
+    # documented post-lock addition (after G2 reported): a dated correction of Theorem 5, appended; the text before it is locked
+    ("prereg_G_information_geometry_lock.json", "docs/theory_infogeom.md"):
+        lambda text: text.split("\n\n## Correction 1 (2026-10-18, after the lock of G")[0] + "\n",
 }
 
 
