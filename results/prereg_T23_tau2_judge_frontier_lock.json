@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T19:09:50-07:00",
+ "sha256": {
+  "docs/prereg_T23_tau2_judge_frontier.md": "9e475b9f1b2f2c3eafcbf2e767d0d4e1e32a70ce162f14e4ccd6ae1dcab694a8",
+  "scripts/103e_t23_tau2_judge_frontier.py": "4cb3e2ebb84aaa6e0e5e2e8100da835d6c4edf0b5924432671da3721eff741af"
+ }
+}
