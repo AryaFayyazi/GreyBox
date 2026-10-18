@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T18:49:10-07:00",
+ "sha256": {
+  "docs/prereg_T22_tau2_judge.md": "501d6e69a7e57b87b58be78994560ce6d53f27839f5d66a1e91335cc452f9318",
+  "scripts/103d_t22_tau2_judge.py": "7e9e59e3950bbc08189825d95ed4f9948a6509b0fb6b2a69ae7a9df1882ddee9"
+ }
+}
