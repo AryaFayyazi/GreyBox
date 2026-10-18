@@ -2,7 +2,7 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
-## 0.6.0 (unreleased)
+## 0.6.0 (2026-10-18)
 **Added**
 - `graybox.integrations`: the Guard in three agent frameworks, tested offline against the real SDKs:
   - `claude_agent_hook(guard)`: a PreToolUse hook for the Claude Agent SDK. The history comes from the session

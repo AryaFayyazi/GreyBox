@@ -33,7 +33,7 @@ opinion on held actions, not as the only monitor.</p>
 pip install "greybox-monitor[text]"       # + train the text monitor in Python
 pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
 <p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
-<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.5.0</code>);
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.6.0</code>);
 the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
@@ -283,7 +283,7 @@ POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in Op
    ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"version": "0.5.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+→ {"version": "0.6.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
    "auth_required": false, "gate_state_persisted": false, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in

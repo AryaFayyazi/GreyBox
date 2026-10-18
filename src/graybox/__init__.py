@@ -14,4 +14,4 @@ from .guard import Guard, Verdict, conversation_steps  # noqa: F401
 from .monitor import QuantileGate, TextMonitor  # noqa: F401
 from .sdk import AgentGuard, Reader, Reading  # noqa: F401  (research interface, kept for compatibility)
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
