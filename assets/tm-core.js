@@ -210,9 +210,15 @@
   }
   function quantile(a, q) { const s = Float64Array.from(a).sort(); const p = (s.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return s[lo] + (s[hi] - s[lo]) * (p - lo); }
   // GroupKFold like scikit-learn: groups sorted by size (desc), each assigned to the currently smallest fold
-  function groupFolds(groups, k) {
+  // FNV-1a over UTF-8 bytes, as graybox.stats._fnv1a
+  function fnv1a(text) { let h = 0x811c9dc5; for (const b of new TextEncoder().encode(text)) h = Math.imul(h ^ b, 0x01000193) >>> 0; return h; }
+  // as graybox.stats.group_folds: groups with a violation first, then the largest, same-size groups in an order fixed by a hash of (rep, group),
+  // each to the currently smallest fold. Identical folds in Python and here; rep gives another assignment (repeated CV)
+  function groupFolds(groups, k, rep = 0, y = null) {
     const size = new Map(); groups.forEach(g => size.set(g, (size.get(g) || 0) + 1));
-    const order = [...size.keys()].sort((a, b) => size.get(b) - size.get(a) || (a < b ? -1 : 1));
+    const hv = new Map([...size.keys()].map(g => [g, fnv1a(`${rep}:${g}`)]));
+    const pos = new Set(y ? groups.filter((g, i) => y[i]) : []);       // groups with a violation first: every training fold has some
+    const order = [...size.keys()].sort((a, b) => (pos.has(b) - pos.has(a)) || size.get(b) - size.get(a) || hv.get(a) - hv.get(b) || (a < b ? -1 : a > b ? 1 : 0));
     const load = new Array(k).fill(0), fold = new Map();
     for (const g of order) { let f = 0; for (let i = 1; i < k; i++) if (load[i] < load[f]) f = i; fold.set(g, f); load[f] += size.get(g); }
     return groups.map(g => fold.get(g));
@@ -289,7 +295,7 @@
           if (lab === undefined) { lab = null; if (info) info.badLabels.push(`${gid}: ${c.id} = ${JSON.stringify(labels[c.id])}`); }
         }
         const sibTurns = sib.map(h => ({ call: [h.tool, h.args], result: '' }));
-        const st = { instructions: system, task, history: hist.map(h => ({ ...h })).concat(sib), action: { tool: c.tool, args: c.args }, group: gid, label: lab,
+        const st = { instructions: system, task, history: hist.map(h => ({ ...h })).concat(sib), action: { tool: c.tool, args: c.args }, group: task ? 'task: ' + task : gid, conversation: gid, label: lab,
                      call_id: c.id ?? null, turns: turns.concat(sibTurns) };     // the whole conversation before the call, for people to read
         if (chat) st.context = chatCtx(system, turns.concat(sibTurns));
         steps.push(st);
@@ -319,25 +325,29 @@
       });
     }
     const info = { badLabels: [], unknownIds: [] };
-    // already in step format?
-    if (convs.length && (convs[0].action !== undefined || convs[0].context !== undefined)) {
-      const steps = convs.map((s, i) => {
-        if (s.label === undefined || s.label === null) return { ...s, label: null };
-        const l = parseLabel(s.label);
-        if (l === undefined) info.badLabels.push(`step ${i + 1} = ${JSON.stringify(s.label)}`);
-        return { ...s, label: l === undefined ? null : l };
-      });
-      return { steps, format: 'steps', conversations: null, ...info };
-    }
-    const steps = [];
-    let fmt = null;
+    // each line is a labelled step or a conversation, as in Python (graybox.train_reader.load_steps); a file may mix them
+    const isStep = c => c && !Array.isArray(c) && (c.action !== undefined || c.context !== undefined);
+    const steps = [], count = { openai: 0, anthropic: 0, none: 0, steps: 0 };
     convs.forEach((c, i) => {
+      if (isStep(c)) {
+        count.steps++;
+        if (c.label === undefined || c.label === null) { steps.push({ ...c, label: null }); return; }
+        const l = parseLabel(c.label);
+        if (l === undefined) info.badLabels.push(`line ${i + 1} = ${JSON.stringify(c.label)}`);
+        steps.push({ ...c, label: l === undefined ? null : l });
+        return;
+      }
       const msgs = Array.isArray(c) ? c : (c.messages || []);
-      if (!fmt) fmt = msgs.some(m => m.tool_calls) ? 'openai' : msgs.some(m => Array.isArray(m.content) && m.content.some(b => b && b.type === 'tool_use')) ? 'anthropic' : null;
+      const oa = msgs.some(m => m && m.tool_calls), an = msgs.some(m => m && Array.isArray(m.content) && m.content.some(b => b && b.type === 'tool_use'));
+      count[oa ? 'openai' : an ? 'anthropic' : 'none']++;
       steps.push(...conversationSteps(c, String(c.id ?? c.conversation_id ?? `conversation-${i + 1}`), !!opts.chat, info));
     });
-    if (!steps.length) throw new Error('no tool calls found: expected OpenAI messages with "tool_calls" or Anthropic messages with "tool_use" blocks');
-    return { steps, format: fmt || 'unknown', conversations: convs.length, ...info };
+    if (!steps.length) throw new Error('no tool calls found: expected labelled steps, OpenAI messages with "tool_calls" or Anthropic messages with "tool_use" blocks');
+    const kinds = [['steps', 'labelled step'], ['openai', 'OpenAI conversation'], ['anthropic', 'Anthropic conversation']].filter(([k]) => count[k]);
+    const fmt = kinds.length > 1 ? 'mixed: ' + kinds.map(([k, w]) => `${count[k]} ${w}${count[k] === 1 ? '' : 's'}`).join(', ')
+      : kinds.length ? kinds[0][0] : 'unknown';
+    info.noToolCalls = count.none;                     // conversations without any tool call (they give no steps)
+    return { steps, format: fmt, conversations: count.steps === convs.length ? null : convs.length - count.steps, ...info };
   }
 
   root.TM = { pyDumps, ctxText, actText, render, terms, fitVectorizer, privacyDrop, transform, features, fitLR, fit, score, decision, sigmoid,

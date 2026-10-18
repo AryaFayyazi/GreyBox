@@ -62,6 +62,8 @@
       (restored ? ` <b>Restored ${plural(restored, 'label')} that you saved in this browser for this file${hidden ? ' (the benchmark labels are hidden)' : ''}.</b>` : '');
     const warn = [];
     if (r.badLabels && r.badLabels.length) warn.push(`${plural(r.badLabels.length, 'label value')} ignored (use 0, 1, true or false): ${esc(r.badLabels.slice(0, 3).join('; '))}${r.badLabels.length > 3 ? '; …' : ''}`);
+    if (r.format && r.format.startsWith('mixed')) warn.push(`The file mixes formats (${esc(r.format.slice(7))}). Both are read the same way; check that this is intended.`);
+    if (r.noToolCalls) warn.push(`${plural(r.noToolCalls, 'conversation')} without any tool call: ${r.noToolCalls === 1 ? 'it gives' : 'they give'} no actions.`);
     if (r.unknownIds && r.unknownIds.length) warn.push(`${plural(r.unknownIds.length, 'label names', 'labels name')} a call id that is not in the conversation: ${esc(r.unknownIds.slice(0, 3).join('; '))}${r.unknownIds.length > 3 ? '; …' : ''}`);
     const later = !chat ? steps.filter(s => (s.turns || []).filter(t => t.user !== undefined).length > 1).length : 0;
     if (later) warn.push(`${plural(later, 'action comes', 'actions come')} after a later user message. The monitor does not read those messages unless you tick ` +
@@ -252,7 +254,7 @@
   };
   fetch('data/browser_reader.json').then(r => r.ok ? r.json() : null).then(b => {
     if (!b || !b.shipped) {
-      $('mtypeNote').textContent = 'This trainer uses word counts. A small neural reader that runs in the browser and transfers to new kinds of tasks ' +
+      $('mtypeNote').textContent = 'This trainer uses word counts. A small neural reader that runs in the browser, for new kinds of tasks, ' +
         'is ' + (b && b.status ? b.status : 'being tested') + '. For new kinds of tasks today, use the reader monitor on a GPU (see the docs).';
       return;
     }
@@ -286,8 +288,9 @@
         'Label more actions, and more violations: the review queue below ranks the unlabelled actions by risk.');
     $('exportBtn').textContent = weak ? 'Download anyway (not usable yet)' : 'Download model (.json)';
     $('stats').innerHTML = [
-      [r.auroc.toFixed(3), (r.pretrained ? 'AUROC on your labelled actions; the reader never saw them' : 'AUROC on conversations held out in cross-validation') +
-        ` (95% interval ${r.auroc_ci95[0].toFixed(3)}–${r.auroc_ci95[1].toFixed(3)})`],
+      [r.auroc.toFixed(3), (r.pretrained ? 'AUROC on your labelled actions; the reader never saw them'
+        : `AUROC on tasks held out in cross-validation (mean of ${r.repeats} fold assignments: ${r.auroc_range[0].toFixed(3)}–${r.auroc_range[1].toFixed(3)})`) +
+        ` (95% interval ${r.auroc_ci95[0].toFixed(3)}–${r.auroc_ci95[1].toFixed(3)}${r.pretrained ? '' : ', first assignment'})`],
       [pct(r.caught), `of violations sent to review when ${pct(r.budget)} of actions go to review` + (r.ceiling < 0.999 ? ` (the most this budget allows is ${pct(r.ceiling)}: violations are ${pct(r.base_rate)} of your labelled actions)` : '')],
       [isNaN(r.precision) ? '–' : pct(r.precision), `of the actions sent to review are real violations (${pct(r.safe_escalated)} of safe actions sent)`]
     ].map(([v, l]) => `<div class="card"><div class="num">${v}</div><div class="muted">${l}</div></div>`).join('');
@@ -296,7 +299,7 @@
       tools.map(([t, o]) => `<tr><td><code>${esc(t)}</code></td><td class="n">${num(o.n)}</td><td class="n">${num(o.unsafe)}</td><td class="n">${o.unsafe ? `${o.caught}/${o.unsafe}` : '–'}</td></tr>`).join('') + '</tbody></table>';
     $('details').textContent = r.pretrained
       ? `The pre-trained browser reader (${r.encoder}), trained only on our CAPE-Bench steps, never on your data: evaluated on your ${plural(r.n, 'labelled action')} (${plural(r.unsafe, 'violation')}). The review cut is the top ${pct(r.budget)} of your actions, set without labels.`
-      : `${plural(r.n, 'labelled action')}, ${plural(r.unsafe, 'violation')}, ${plural(r.groups, 'group')} (conversations or tasks), ${r.folds}-fold cross-validation that holds out whole groups. ` +
+      : `${plural(r.n, 'labelled action')}, ${plural(r.unsafe, 'violation')}, ${plural(r.groups, 'group')} (tasks: the first user request; or the file's own groups), ${r.folds}-fold cross-validation that holds out whole groups. ` +
         (r.vocab ? `Regularization C = ${r.C} (AUROC by C: ${r.cv_auroc_by_C.map(([c, a]) => `${c}: ${a.toFixed(3)}`).join(', ')}). Vocabulary: ${num(r.vocab.context)} context terms, ${num(r.vocab.action)} action terms.`
                  : `Browser reader ${r.encoder} (${num(r.dim)} features), logistic regression C = ${r.C}.`) +
       (r.unsafe < 20 ? ' With fewer than 20 violations these numbers are rough: the interval above shows how rough.' : '') +
@@ -311,7 +314,7 @@
   function useCode(embed) {
     const load = embed ? 'from graybox.embed_monitor import EmbedMonitor\nguard = Guard(EmbedMonitor.load_json("greybox-reader-monitor.json"))   # CPU; downloads the reader once'
                        : 'from graybox.monitor import TextMonitor\nguard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))';
-    return `pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"\n\nfrom graybox.guard import Guard\n${load}\n\n` +
+    return `pip install greybox-monitor\n\nfrom graybox.guard import Guard\n${load}\n\n` +
       '# OpenAI: append the reply to messages, then check each proposed tool call before you execute it\n# (required for parallel calls: the monitor then sees the earlier calls of the same reply)\nfor call in reply.tool_calls or []:\n    v = guard.check_openai(messages, call)\n' +
       '    result = run_tool(call) if v.allow else v.block_message\n\n# Anthropic: for each tool_use block\nv = guard.check_anthropic(system, messages, block)';
   }
