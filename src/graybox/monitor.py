@@ -127,6 +127,47 @@ def render(step) -> tuple[str, str]:
     return TextMonitor._rendered(step)
 
 
+FREE_TEXT_FIELDS = frozenset({"body", "subject", "message", "msg", "text", "content", "contents", "description", "desc", "note",
+                              "notes", "comment", "comments", "reason", "justification", "summary", "title", "explanation",
+                              "details", "memo", "caption", "remarks", "rationale", "purpose"})
+FREE_TEXT = "[free text]"
+
+
+def canonical_args(args):
+    """The canonical form of a tool call's arguments (the grey box's robust input): the decisive fields only.
+    Free text that the agent writes about its own call - a message body, a subject, a reason, a comment - is a self-report,
+    not evidence, and a score-querying attacker rewrites it to look approved (adaptive-attack test: 96% -> 29% caught).
+    Rules (general, not benchmark-specific): a field named like free text becomes "[free text]"; in other strings, quoted
+    prose (3 or more words) and '#' comments are removed, short quoted literals ('alice', "q3.pdf") stay (a command keeps its words: no general rule separates its target from prose, so
+    unquoted prose in a command stays readable to the monitor). Applied recursively."""
+    import re
+    if isinstance(args, dict):
+        return {k: (FREE_TEXT if str(k).lower() in FREE_TEXT_FIELDS and isinstance(v, str) else canonical_args(v)) for k, v in args.items()}
+    if isinstance(args, list):
+        return [canonical_args(v) for v in args]
+    if isinstance(args, str):
+        prose = lambda m: "" if len(m.group(0)[1:-1].split()) >= 3 else m.group(0)   # quoted prose; short literals stay  # noqa: E731
+        v = re.sub(r"\s#.*$", "", re.sub(r"'[^']*'|\"[^\"]*\"", prose, args), flags=re.M)
+        return re.sub(r"\s+", " ", v).strip()
+    return args
+
+
+def canonical_act_text(act: str) -> str:
+    """canonical_args applied to a rendered action ("tool {json}"); unparseable text is returned unchanged."""
+    tool, _, rest = act.partition(" ")
+    try:
+        args = json.loads(rest)
+    except (json.JSONDecodeError, ValueError):
+        return act
+    return act_text(tool, canonical_args(args)) if isinstance(args, dict) else act
+
+
+def canonical_ctx_text(ctx: str) -> str:
+    """canonical_args applied to every earlier call in a rendered context ("[Agent called] tool {json}" lines)."""
+    import re
+    return re.sub(r"^\[Agent called\] (.+)$", lambda m: "[Agent called] " + canonical_act_text(m.group(1)), ctx, flags=re.M)
+
+
 def mask_pii(text: str) -> str:
     """Privacy mode: the personal part of emails and the path of URLs are replaced by a placeholder before tokenizing (the
     tokenizer would split "dana.moreau@tidewater.example" into names that survive the term filter). Domains and hosts stay:

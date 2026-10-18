@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-18T00:36:28-07:00",
+ "sha256": {
+  "docs/prereg_T26_canonical_monitor.md": "749576344867d3b38828762446c50e9149833b26c8310be62e6507beac62afbb",
+  "scripts/120_t26_canonical_monitor.py": "eef56ff8fc706c4d8806cff818b9af625458808bd1448863f3bf66e7592a2281",
+  "src/graybox/monitor.py": "ed99332db538e0f07de7d65b6811d759e3e17311e7983c375094959f6126e4bd"
+ }
+}
