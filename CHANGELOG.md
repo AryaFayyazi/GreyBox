@@ -2,6 +2,30 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.4.1 (2026-10-18)
+From a second fresh-install user test (PyPI 0.4.0) and a paper audit.
+
+**Fixed**
+- Privacy filter: the tokenizer split email addresses into names that survived the term filter. Emails and URLs are now
+  masked before the words are counted (the personal part and the path; domains and hosts stay, as policies often
+  depend on them), in training and in scoring, identically in Python and the browser (`mask_pii` / `maskPII`; the
+  model file records `mask_pii`). Names and company names that recur in the logs still stay; the docs now say so.
+- `Guard(hold_tools="tool")` held nothing (a string was read as its characters): fail open. A string is one tool name.
+- A reviewer that timed out kept the process alive: it now runs in a daemon thread.
+- `check_openai_responses` accepts a plain string as input.
+- `--group-by` can use a field of a conversation line (e.g. `"family"`).
+- The browser and Python trained slightly different models (scores up to 0.9 logit apart): both solvers now stop at
+  tolerance 1e-6. On the GPT example: the same vocabulary, weights within 0.005, scores within 0.007, the same review
+  cut and decisions. The browser's per-tool table now uses the same 3 repeats as its headline.
+- `train_text`: `--budget` outside (0, 1) and a missing `--out` folder are errors before training; status lines go to
+  stderr (the JSON report alone on stdout). `train_reader`: `--force`, and the same checks.
+- Server: with `GB_API_KEY`, `/docs` and `/openapi.json` need the key too; `/v1/health` no longer shows file paths.
+- The task-shift check (a stored cut on new task families) is now reproducible from public data (`scripts/114`): the
+  stored cut caught 0 of 115 violations; a live 5% cut 29 of 115.
+
+**Numbers on the GPT example (privacy filter on)**: tasks held out 0.946 (conversations 0.990); task families held out
+0.916 (0.799 without the filter). The GPU reader, tasks held out: 0.972.
+
 ## 0.4.0 (2026-10-18)
 First PyPI release.
 

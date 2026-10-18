@@ -571,6 +571,9 @@ def test_server_api_key_strict_inputs_and_persistent_gates(monkeypatch, tmp_path
     H = {"Authorization": "Bearer s3cret"}
     with TestClient(monitor_server.app) as c:
         assert c.get("/v1/health").json()["auth_required"]                        # health stays open
+        assert c.get("/openapi.json").status_code == 401 and c.get("/docs").status_code == 401
+        assert c.get("/openapi.json", headers={"Authorization": "Bearer s3cret"}).status_code == 200
+        assert "gate_state_file" not in c.get("/v1/health").json()                # no server paths in the open endpoint
         assert c.post("/v1/monitor/text", json=body).status_code == 401           # no key
         assert c.post("/v1/monitor/text", json=body, headers={"Authorization": "Bearer nope"}).status_code == 401
         r = c.post("/v1/monitor/text", json=body, headers=H)
@@ -623,3 +626,31 @@ def test_openai_responses_api_items_score_like_chat_completions():
     a = g.check_openai(chat, {"id": "c2", "type": "function", "function": {"name": "send_message", "arguments": '{"to": "press"}'}})
     b = g.check_openai_responses(items, fc, instructions="policy")
     assert a.score == b.score
+
+
+def test_v041_fixes_hold_tools_string_responses_string_group_by_conversation_field(tmp_path, capsys):
+    from graybox import train_text
+    from graybox.guard import Guard, responses_to_chat
+    from graybox.monitor import QuantileGate, TextMonitor, mask_pii
+
+    class FakeReader:
+        def score(self, instructions, task, history, action):
+            return 0.01
+    g = Guard(FakeReader(), gate=QuantileGate(0.05).fit([0.5] * 600), hold_tools="issue_refund")   # a string: one tool name
+    assert g.check("p", "t", [], "issue_refund", {}).by_rule and g.check("p", "t", [], "read", {}).allow
+    assert responses_to_chat("cancel it", "policy") == [{"role": "system", "content": "policy"}, {"role": "user", "content": "cancel it"}]
+    assert mask_pii("to dana.moreau@tidewater.example via https://evil.example/x?y=1") == "to  xemailx tidewater.example  via  xurlx evil.example "
+    tm = TextMonitor.load_json(MODEL)
+    assert tm.decision("p", "t", [], ("send", {"to": "a@b.example"})) == tm.decision("p", "t", [], ("send", {"to": "a@b.example"}))
+    rows = []
+    for i in range(40):
+        rows.append({"id": f"c{i}", "family": f"f{i % 4}", "messages": [{"role": "user", "content": f"task {i % 8}"}, {"role": "assistant", "tool_calls": [
+            {"id": "x", "type": "function", "function": {"name": "send" if i % 2 else "read", "arguments": "{}"}}]}], "labels": {"x": i % 2}})
+    f = tmp_path / "c.jsonl"
+    f.write_text("\n".join(json.dumps(r) for r in rows))
+    train_text.main([str(f), "--eval-only", "--group-by", "family"])            # a conversation's own field groups its steps
+    assert json.loads(capsys.readouterr().out)["groups"] == 4
+    with pytest.raises(SystemExit, match="between 0 and 1"):
+        train_text.main([str(f), "--eval-only", "--budget", "5"])
+    with pytest.raises(SystemExit, match="folder of --out does not exist"):
+        train_text.main([str(f), "--out", str(tmp_path / "no" / "m.json")])

@@ -87,6 +87,8 @@ def responses_to_chat(items: list, instructions: str | None = None) -> list[dict
     """OpenAI Responses API input items -> Chat Completions messages (consecutive function_call items form one
     assistant reply, as parallel calls do)."""
     out = [{"role": "system", "content": instructions}] if instructions else []
+    if isinstance(items, str):                  # the Responses API also accepts a plain string as input
+        items = [{"role": "user", "content": items}]
     for it in (_as_dict(x) for x in items or []):
         kind = it.get("type")
         if kind == "function_call":
@@ -192,6 +194,8 @@ class Guard:
         if chat is None:            # default: the setting the monitor was trained with (model files and probe files record it)
             chat = bool((getattr(monitor, "_json", None) or {}).get("chat", getattr(monitor, "chat", False)))
         self.monitor, self.gate, self.reviewer, self.chat = monitor, gate, reviewer, chat
+        if isinstance(hold_tools, str):          # one tool name, not its characters (a string used to hold nothing: fail open)
+            hold_tools = [hold_tools]
         self.hold_tools = frozenset(hold_tools or ())
         self.reviewer_timeout = reviewer_timeout      # seconds; no answer in time blocks the action (fail closed)
 
@@ -236,14 +240,22 @@ class Guard:
     def _ask(self, step):
         if self.reviewer_timeout is None:
             return self.reviewer(step)
-        import concurrent.futures as cf
-        ex = cf.ThreadPoolExecutor(max_workers=1)
-        try:
-            return ex.submit(self.reviewer, step).result(timeout=self.reviewer_timeout)
-        except cf.TimeoutError:
-            raise TimeoutError(f"no answer within {self.reviewer_timeout} s") from None
-        finally:
-            ex.shutdown(wait=False)
+        import threading
+        box = {}
+
+        def run():
+            try:
+                box["answer"] = self.reviewer(step)
+            except Exception as e:  # noqa: BLE001
+                box["error"] = e
+        t = threading.Thread(target=run, daemon=True)     # a daemon: a reviewer that never answers does not keep the process alive
+        t.start()
+        t.join(self.reviewer_timeout)
+        if t.is_alive():
+            raise TimeoutError(f"no answer within {self.reviewer_timeout} s")
+        if "error" in box:
+            raise box["error"]
+        return box.get("answer")
 
     async def acheck_openai(self, messages: list, tool_call) -> Verdict:
         """check_openai for asyncio agents: the check runs in a worker thread, so the event loop is not blocked."""

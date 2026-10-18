@@ -8,16 +8,16 @@
  },
  "cv_auroc": {
   "conversation": {
-   "privacy": 0.9892,
-   "no_privacy": 0.9886
+   "privacy": 0.9902,
+   "no_privacy": 0.9888
   },
   "task": {
-   "privacy": 0.9478,
-   "no_privacy": 0.9403
+   "privacy": 0.9456,
+   "no_privacy": 0.9415
   },
   "family": {
-   "privacy": 0.8984,
-   "no_privacy": 0.8064
+   "privacy": 0.9162,
+   "no_privacy": 0.7991
   }
  }
 }

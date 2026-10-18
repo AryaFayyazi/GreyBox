@@ -48,8 +48,11 @@ def load_steps(path: str, chat: bool = False) -> list[dict]:
             for s in conv:
                 cid = str(r.get("id", f"conversation-{i + 1}")) if isinstance(r, dict) else f"conversation-{i + 1}"
                 # cross-validation groups: the task (first user message), so conversations of one task share a fold
-                # (grouping by conversation was optimistic: 0.987 vs 0.939 on the GPT example, a user test); the browser does the same
+                # (grouping by conversation was optimistic: 0.990 vs 0.946 on the GPT example; scripts/113); the browser does the same
                 s["conversation"], s["group"] = cid, ("task: " + s["task"]) if s.get("task") else cid
+                for k, v in r.items():                # other top-level fields of the conversation (e.g. "family"), for --group-by
+                    if k not in ("messages", "labels", "system", "id") and k not in s and isinstance(v, (str, int, float, bool)):
+                        s[k] = v
                 steps.append(s)
     out = [s for s in steps if s.get("label") in (0, 1, True, False)]
     if not out and n_ids:
@@ -70,11 +73,17 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] + " Needs a GPU (about 90 s for 1,500 actions).")
     ap.add_argument("data", help="labelled conversations (OpenAI or Anthropic, with a 'labels' field {call_id: 0/1}) or labelled steps, JSON lines")
     ap.add_argument("--out", default="my_reader_probe.joblib", help="the probe file to write (load with graybox.reader_load.load_reader)")
+    ap.add_argument("--force", action="store_true", help="overwrite --out if it exists")
     ap.add_argument("--layer", type=int, default=32, help="reader layer (hidden-state index; 32 = the tested setting for Qwen3-8B)")
     ap.add_argument("--reader", default="Qwen/Qwen3-8B", help="Hugging Face id of the reader model (downloaded once; needs a GPU)")
     ap.add_argument("--chat", action="store_true", help="conversation-aware context (agents that talk with a user); "
                     "then score with Guard(..., chat=True) or the server's 'context' field")
     a = ap.parse_args(argv)
+    from pathlib import Path
+    if Path(a.out).exists() and not a.force:
+        raise SystemExit(f"{a.out} exists: pass --force to overwrite it, or another --out")
+    if not Path(a.out).resolve().parent.is_dir():
+        raise SystemExit(f"the folder of --out does not exist: {Path(a.out).resolve().parent}")
     import joblib
     import numpy as np
     try:

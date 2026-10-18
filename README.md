@@ -42,7 +42,8 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
    python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json   # --chat for agents that talk with a user
    ```
    It reports the AUROC with whole tasks held out, pooled and within tool, and the catch rate at the review budget. The
-   model file leaves out identifying words (digits, codes, rare words) unless you pass `--no-privacy`.
+   privacy filter (on unless you pass `--no-privacy`) masks emails and URLs and drops terms with digits, codes or rare words;
+   names that recur in your logs stay in the model file.
    `--eval-only --group-by <field>` reports the score with other groups held out (for example task families).
 2. Put it in your agent's loop:
    ```python
@@ -58,9 +59,9 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
    ```
    SDK objects (OpenAI messages, Anthropic content blocks) and plain dicts give the same scores.
 3. On a new kind of task, a cut stored in the file can escalate almost nothing: on held-out task families it caught
-   0 of 110 violations (three splits, `results/tool/cut_under_shift.json`). A live cut on the agent's own traffic,
-   `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review load at 5%, but it
-   caught only 11 of 110 there: it does not restore detection. Label actions of the new tasks and retrain, or use the
+   0 of 115 violations (three splits of the public GPT example, `scripts/114_cut_under_shift_public.py`). A live cut on
+   the agent's own traffic, `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review
+   load at 5%, but it caught only 29 of 115 there (1 of 39 in one split): it does not restore detection. Label actions of the new tasks and retrain, or use the
    reader. A new gate sends every action to review until it has seen 100: seed it with `gate.fit(past_scores)`.
 
 Train the reader monitor on your own labels with one command on a GPU:

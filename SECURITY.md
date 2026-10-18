@@ -15,9 +15,10 @@ open a public issue for a vulnerability. We aim to answer within 7 days.
 ## Data handling
 - Transcripts never leave your machine: the SDK, the server and the browser trainer run locally. The website is
   static; the trainer processes files in the browser tab.
-- **Model files hold vocabulary from your logs.** The trainers drop terms with digits, "@", long codes, random-looking
-  tokens and rare words by default. `--no-privacy` (or unticking the box in the browser) keeps them: then treat the
-  file as sensitive.
+- **Model files hold vocabulary from your logs.** By default the trainers mask emails and URLs and drop terms with
+  digits, long codes, random-looking tokens and rare words. Names and company names that recur in the logs stay (the
+  filter cannot tell a name from a word): keep model files internal if your logs name people. `--no-privacy` (or
+  unticking the box in the browser) keeps every term.
 - **Probe files of the reader monitor are joblib pickles.** Loading a pickle runs code. Load only files you made or
   whose SHA-256 you checked (the docs list the published checksums).
 

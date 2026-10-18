@@ -32,12 +32,17 @@ def main(argv=None):
                     "and a steps file's own field, then 'task'). Every step must have it")
     ap.add_argument("--eval-only", action="store_true", help="print the cross-validated report and write no file")
     ap.add_argument("--force", action="store_true", help="overwrite --out if it exists")
-    ap.add_argument("--no-privacy", action="store_true", help="keep every term in the model file, including terms with digits, '@', "
-                    "long codes and rare words (by default they are dropped: the file is a partial copy of your logs' vocabulary)")
+    ap.add_argument("--no-privacy", action="store_true", help="turn the privacy filter off. By default emails and URLs are masked and "
+                    "terms with digits, long codes or rare words are dropped; names that recur in your logs stay in the file")
     a = ap.parse_args(argv)
+    import sys
     from pathlib import Path
+    if not 0 < a.budget < 1:
+        raise SystemExit(f"--budget is a share of actions between 0 and 1 (0.05 = 5%), not {a.budget}")
     if not a.eval_only and Path(a.out).exists() and not a.force:
         raise SystemExit(f"{a.out} exists: pass --force to overwrite it, another --out, or --eval-only")
+    if not a.eval_only and not Path(a.out).resolve().parent.is_dir():
+        raise SystemExit(f"the folder of --out does not exist: {Path(a.out).resolve().parent}")
     try:
         import numpy as np
         from .monitor import TextMonitor
@@ -97,12 +102,12 @@ def main(argv=None):
                           "hold out a task family with --group-by <field>")
     if a.eval_only:
         print(json.dumps(report, indent=1))
-        print("not saved (--eval-only)")
+        print("not saved (--eval-only)", file=sys.stderr)
         return
     tm._json["trained_on"] = report
     tm.save(a.out)
     print(json.dumps(report, indent=1))
-    print("saved", a.out)
+    print("saved", a.out, file=sys.stderr)
 
 
 def _tool(s) -> str:

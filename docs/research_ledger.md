@@ -1023,3 +1023,20 @@ Dated log of every experiment, decision and correction. Newest last.
   - The wheel installed fresh on 3.11 and 3.13: 35 tests, CLI and server (with auth) pass.
   - GPU train_reader smoke test: 0.972 [0.970, 0.973] on the GPT example.
   - The browser-reader training path ran in Chromium (16 actions, 104 s, no errors).
+- **Second fresh-install test (PyPI 0.4.0) and second paper audit → 0.4.1.**
+  - Paper:
+    - the conclusion had spilled onto page 9: fixed by tightening the τ² and T19 paragraphs;
+    - numbers: Table 2 tool 42.4%, T23 tool 13.0%, browser q8 0.852, "29 of 41 tasks";
+    - the conclusion and impact statement are scoped (replication tested on open agents; results on the training
+      benchmark);
+    - the record appendix is double-blind (no paths, job ids or commits);
+    - the T13b and T16 lock-publication commits are now in the record.
+  - Lock check: monitor.py's post-lock helper moved into the stripped region, and the documented ReaderMonitor loader
+    edit is reversed exactly by scripts/99. 0 unexplained mismatches.
+  - Privacy:
+    - the email masking keeps domains and hosts; whole-email masking had removed the recipient domain, which a toy
+      policy test needed;
+    - names in ordinary text stay, and the docs now say so.
+  - Parity: solver tolerance 1e-6 in both trainers. Same vocabulary, weights within 0.005, scores within 0.007,
+    0 of 1,515 decisions differ when the cuts match.
+  - Task shift, now reproducible from public data (scripts/114): stored cut 0/115, live cut 29/115, AUROC 0.90–0.98.

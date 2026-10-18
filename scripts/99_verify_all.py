@@ -24,8 +24,23 @@ EXPLAINED = {
 
 
 
+_LOADER_EDIT = (   # documented post-lock edit (v0.4.0): load the reader from the standard Hugging Face cache, not a path on
+    # the authors' machine (a user with /data/models but no model there got an error). Same weights; reversed exactly here.
+    "        from transformers import AutoModelForCausalLM, AutoTokenizer\n"
+    "        # the standard Hugging Face cache (HF_HOME / HF_HUB_CACHE); downloads the reader once\n"
+    "        self.tok = AutoTokenizer.from_pretrained(reader)\n"
+    "        self.model = AutoModelForCausalLM.from_pretrained(reader, dtype=torch.bfloat16, device_map=device).eval()\n",
+    "        from huggingface_hub import snapshot_download\n"
+    "        from transformers import AutoModelForCausalLM, AutoTokenizer\n"
+    "        p = snapshot_download(reader, cache_dir=\"/data/models\", local_files_only=True) if Path(\"/data/models\").exists() else reader\n"
+    "        self.tok = AutoTokenizer.from_pretrained(p)\n"
+    "        self.model = AutoModelForCausalLM.from_pretrained(p, dtype=torch.bfloat16, device_map=device).eval()\n")
+
+
 def _monitor_locked_part(text):
-    """monitor.py minus the post-lock additions (docstring thresholds note, QuantileGate, TextMonitor)."""
+    """monitor.py minus the post-lock additions (docstring thresholds note, QuantileGate, TextMonitor), with the one
+    documented post-lock edit (_LOADER_EDIT) reversed exactly."""
+    text = text.replace(*_LOADER_EDIT)
     i, k = text.index("\n\nThresholds: do not cut"), text.index('\n"""', text.index("\n\nThresholds: do not cut"))
     text = text[:i] + text[k:]
     i, k = text.index("class QuantileGate:"), text.index("class ReaderMonitor:")
@@ -57,7 +72,7 @@ def check_locks():
                 continue
             add = ADDITIVE.get((lk.name, f))
             if add and hashlib.sha256(add(p.read_text()).encode()).hexdigest() == h:
-                print(f"  ADDITIVE  {lk.name}: {f} -> post-lock additions only (QuantileGate, TextMonitor, docstring); locked part verified")
+                print(f"  ADDITIVE  {lk.name}: {f} -> post-lock additions only (QuantileGate, TextMonitor, docstring) and the documented loader edit; locked part verified")
                 continue
             why = EXPLAINED.get((lk.name, f))
             print(f"  CHANGED   {lk.name}: {f} -> {why or 'UNEXPLAINED'}")

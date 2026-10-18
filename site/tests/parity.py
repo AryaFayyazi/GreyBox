@@ -3,7 +3,7 @@
 1. render: SDK ctx_text/act_text vs TM.render on 300 structured Claude agent steps (T8b episodes) + synthetic edge cases
 2. model: TextMonitor (scikit-learn, C=10) vs TM.fit on the same 1,200 Gemma dev units; scored on 600 held-out units:
    vocabulary sizes, Spearman correlation of decision values, AUROC of each
-3. privacy filter: TextMonitor.fit(privacy=True) vs TM.fit with TM.privacyDrop on the same units: identical vocabularies
+3. privacy filter: TextMonitor.fit(privacy=True) vs TM.fit with TM.privacyDrop and TM.maskPII on the same units: identical vocabularies
 python site/tests/parity.py   (needs the playwright venv for the browser; run with the cape venv)
 """
 import importlib, json, subprocess, sys, tempfile
@@ -70,7 +70,7 @@ fetch('fx.json').then(r=>r.json()).then(fx=>{
   for (let k = 0; k < 3; k++) rt.forEach(r => TM.decision(m, TM.features(m, r)));
   const scoreMs = (performance.now() - t1) / (3 * rt.length);
   m.format = 'graybox-text-monitor/1'; m.threshold_logit = 0;
-  const mp = TM.fit(fx.train.map(TM.render), fx.train.map(r=>r.label), 10, {drop: TM.privacyDrop});
+  const mp = TM.fit(fx.train.map(TM.render), fx.train.map(r=>r.label), 10, {drop: TM.privacyDrop, mask: true});
   const decp = fx.test.map(r=>TM.decision(mp, TM.features(mp, TM.render(r))));
   window.OUT = {rend, dec, nvc: m.vc.idf.length, nva: m.va.idf.length, ms: performance.now()-t0, model: m, scoreMs,
                 privacy: {vc: Object.keys(mp.vc.vocab), va: Object.keys(mp.va.vocab), dec: decp}};

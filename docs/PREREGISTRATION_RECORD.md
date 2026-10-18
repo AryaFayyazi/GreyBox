@@ -490,3 +490,9 @@ active and every unsafe episode has one violating action, each monitor holds exa
   TF-IDF; GPT +0.49 [0.36, 0.62] vs TF-IDF.
 - safe episodes interrupted: reader 9.0% / 9.3%; TF-IDF 10.2% / 14.2%; judge 16.1% / 14.8%; tool 7.8% / 8.8%.
 (results/t1/offline_gates.json)
+
+## Post-lock code edit (2026-10-18; verified by scripts/99)
+`src/graybox/monitor.py`, locked by T7 and T8: in v0.4.0, ReaderMonitor loads the reader from the standard Hugging Face
+cache instead of a path on the authors' machine (a user with that path but without the model got an error). Same
+weights, so no computation changes. scripts/99 reverses this edit exactly before it hashes the locked part, so the
+check stays a hash check.

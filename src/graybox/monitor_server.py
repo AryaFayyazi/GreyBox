@@ -11,7 +11,8 @@ GET  /v1/health
 Security: bind to localhost unless you set GB_API_KEY; with it, every endpoint but /v1/health needs the header
 "Authorization: Bearer <GB_API_KEY>". Requests carry whole transcripts, which can hold credentials.
 Gates: GB_GATE_STATE=/path/gates.json keeps each stream's gate (warm-up scores, frozen cut) across restarts; without it,
-a restarted server escalates every action of a stream until it has seen 100 again (fail closed).
+a restarted server escalates every action of a stream until it has seen 100 again (fail closed). A gate belongs to a
+(stream, budget) pair: a request with another budget starts a new, cold gate, and /calibrate seeds one budget.
 """
 from __future__ import annotations
 
@@ -96,6 +97,18 @@ async def _lifespan(app):
 app = FastAPI(title="Grey Box monitor", version=__version__, lifespan=_lifespan, dependencies=[Depends(_auth)])
 
 
+@app.middleware("http")
+async def _auth_docs(request: Request, call_next):
+    """The API key also guards the generated docs (/docs, /redoc, /openapi.json), which route dependencies do not cover."""
+    if request.url.path in ("/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect"):
+        try:
+            _auth(request)
+        except HTTPException as e:
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"detail": e.detail}, status_code=e.status_code)
+    return await call_next(request)
+
+
 class StepIn(BaseModel):
     model_config = ConfigDict(extra="forbid")      # a misspelt field is an error, not silently ignored
     tool: str = Field(..., min_length=1, description="the tool name (an empty name is refused: Guard blocks such calls too)")
@@ -159,7 +172,7 @@ def health():
     _load_text()
     return {"version": __version__, "text_monitor": "text" in _STATE, "text_monitor_error": _STATE.get("text_error"),
             "reader_monitor": bool(os.environ.get("GB_MONITOR_PROBE")), "reader_loaded": "reader" in _STATE,
-            "auth_required": bool(os.environ.get("GB_API_KEY")), "gate_state_file": os.environ.get("GB_GATE_STATE"),
+            "auth_required": bool(os.environ.get("GB_API_KEY")), "gate_state_persisted": bool(os.environ.get("GB_GATE_STATE")),
             "gates": len(_STATE["gates"])}
 
 

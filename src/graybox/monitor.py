@@ -23,7 +23,6 @@ that a burst of violations cannot raise it (results/t1/t8b_calibration_explorato
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -51,15 +50,6 @@ def ctx_text(instructions: str, task: str, history: list[Step]) -> str:
 
 def act_text(tool: str, args: dict | None) -> str:
     return "final answer to the user (no tool call)" if tool == "__final__" else f"{tool} {json.dumps(args or {}, ensure_ascii=False)}"
-
-
-_SECRETISH = re.compile(r"\d|@|[a-z0-9_]{20,}", re.I)
-
-
-def _privacy_drop(w: str, df: int, n: int) -> bool:
-    """The browser trainer's privacy rule (site/src/assets/tm-core.js privacyDrop), term by term."""
-    randomish = any(len(t) >= 10 and len(re.findall(r"[aeiouy]", t, re.I)) / len(t) < 0.2 for t in re.split(r"[_\s]+", w))
-    return bool(_SECRETISH.search(w)) or randomish or df < max(5, 0.01 * n)
 
 
 class QuantileGate:
@@ -137,6 +127,22 @@ def render(step) -> tuple[str, str]:
     return TextMonitor._rendered(step)
 
 
+def mask_pii(text: str) -> str:
+    """Privacy mode: the personal part of emails and the path of URLs are replaced by a placeholder before tokenizing (the
+    tokenizer would split "dana.moreau@tidewater.example" into names that survive the term filter). Domains and hosts stay:
+    an outside recipient or site is often what the policy is about. Same patterns as tm-core.js maskPII."""
+    import re
+    text = re.sub(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)", r" xemailx \1 ", text)
+    return re.sub(r"(?:https?://|www\.)([A-Za-z0-9.-]+)[^\s\"'<>]*", r" xurlx \1 ", text, flags=re.I)
+
+
+def _privacy_drop(w: str, df: int, n: int) -> bool:
+    """The browser trainer's privacy rule (site/src/assets/tm-core.js privacyDrop), term by term."""
+    import re
+    randomish = any(len(t) >= 10 and len(re.findall(r"[aeiouy]", t, re.I)) / len(t) < 0.2 for t in re.split(r"[_\s]+", w))
+    return bool(re.search(r"\d|@|[a-z0-9_]{20,}", w, re.I)) or randomish or df < max(5, 0.01 * n)
+
+
 class TextMonitor:
     """CPU monitor: TF-IDF on context and action + logistic regression, trained on YOUR labelled steps (T9's TXT).
 
@@ -176,14 +182,17 @@ class TextMonitor:
         server: save it with .save(path). The escalation cut is the (1 - budget) quantile of the final model's scores
         on these actions (no labels used; recorded as cut_source). For a new deployment, also consider a QuantileGate on the agent's own live traffic.
         chat: the context setting, recorded in the file (default: inferred from conversation_steps(chat=True) steps).
-        privacy (default True): the model file keeps no term with a digit or "@", no long code or random-looking token and
-        no term seen in fewer than max(5, 1%) of the actions, as the browser trainer's filter (tm-core.js privacyDrop). The
-        file is a partial copy of the vocabulary of your logs: without the filter it can hold keys, ids and names."""
+        privacy (default True): emails and URLs are masked (mask_pii, also at scoring), and the model file keeps no term with
+        a digit or "@", no long code or random-looking token and no term seen in fewer than max(5, 1%) of the actions, as the
+        browser trainer (tm-core.js maskPII, privacyDrop). Names that recur in the logs stay: the file is a partial copy of
+        their vocabulary."""
         import numpy as np
         import scipy.sparse as sp
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.linear_model import LogisticRegression
         ctx, act = self._texts(steps)
+        if privacy:                                   # emails and URLs never reach the vocabulary (scoring masks them too)
+            ctx, act = [mask_pii(x) for x in ctx], [mask_pii(x) for x in act]
         y = np.asarray([int(bool(v)) for v in labels])
         mk = lambda: TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=200_000, sublinear_tf=True)  # noqa: E731
 
@@ -213,7 +222,7 @@ class TextMonitor:
                     tr, te = np.where(folds != f)[0], np.where(folds == f)[0]
                     _, Xtr, Xte = design(tr, te)
                     for C in grid:
-                        oof[C][te] = LogisticRegression(C=C, max_iter=4000).fit(Xtr, y[tr]).decision_function(Xte)
+                        oof[C][te] = LogisticRegression(C=C, max_iter=10000, tol=1e-6).fit(Xtr, y[tr]).decision_function(Xte)
                 reps.append(oof)
             per = {C: [float(roc_auc_score(y, o[C])) for o in reps] for C in grid}
             self.cv_auroc = {C: float(np.mean(v)) for C, v in per.items()}         # mean over the fold assignments
@@ -223,16 +232,16 @@ class TextMonitor:
             self.oof = self.oof_reps[0]
         allix = list(range(len(y)))
         self.v, X, _ = design(allix, [])
-        self.lr = LogisticRegression(C=self.C, max_iter=4000).fit(X, y)
+        self.lr = LogisticRegression(C=self.C, max_iter=10000, tol=1e-6).fit(X, y)
         # the escalation cut, label-free: the top `budget` of the fitted model's scores on these actions. (A cut from
         # out-of-fold scores sits on another scale when data are few: a user test saw 18-62% escalated at "5%".)
-        # On a new kind of task any stored cut fails (results/tool/cut_under_shift.json): set it on live traffic.
+        # On a new kind of task any stored cut fails (results/tool/cut_under_shift_public.json): set it on live traffic.
         cut = float(np.quantile(self.lr.decision_function(X), 1 - budget))
         src = f"the top {budget:.0%} of the model's scores on its {len(y)} training actions (no labels used)"
         if chat is None:
             chat = all(isinstance(s, dict) and isinstance(s.get("context"), str) and "instructions" in s for s in steps)
         self._json = self.to_dict(threshold_logit=cut, budget=budget)
-        self._json.update(cut_source=src, chat=bool(chat), privacy=bool(privacy))
+        self._json.update(cut_source=src, chat=bool(chat), privacy=bool(privacy), mask_pii=bool(privacy))
         return self
 
     def to_dict(self, threshold_logit: float, budget: float = 0.05) -> dict:
@@ -280,6 +289,8 @@ class TextMonitor:
         """The monitor's score (logit) for a JSON-loaded model. `rendered=(ctx, act)` skips rendering."""
         d = self._json
         ctx, act = rendered or (ctx_text(instructions, task, _steps(history)), act_text(*action))
+        if d.get("mask_pii"):
+            ctx, act = mask_pii(ctx), mask_pii(act)
         return d["b"] + self._block(d["vc"], ctx, 0, d["w"]) + self._block(d["va"], act, len(d["vc"]["idf"]), d["w"])
 
     def escalate(self, instructions: str, task: str, history: list[Step], action: tuple[str, dict | None]) -> bool:
