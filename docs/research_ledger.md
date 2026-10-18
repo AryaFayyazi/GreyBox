@@ -1208,3 +1208,10 @@ Dated log of every experiment, decision and correction. Newest last.
   - Figure 4's heat map was removed, since it duplicated Table 1. Figure 4 now has 2 panels.
   - New Table 3: the four preregistered live tests (violations, Δ with CI, goals).
   - Table 2 restyled to match. The main text still ends on p. 8, and nothing is overfull.
+- **Figures 3a and 4a redrawn (2026-10-18, user request).**
+  - 3a uses all 128 components, paired: the reader's R² against TF-IDF's on the same fresh steps, marker area = variance
+    share. The reader is better on 128 of 128; the weighted mean is 0.664 vs 0.586 (preregistered +0.079 [0.075,
+    0.083]). It replaces the 110-step sample and the component-1-only hexbin, which cherry-picked R² 0.92.
+  - 4a is new: the label-free cut over time under an attack burst. One run of the 76c protocol from the public per-unit
+    release (seed 1): frozen 93%, rolling 5,000 37%, rolling 500 20% (50-run means 94/36/20). Figure 4 has three
+    panels again.

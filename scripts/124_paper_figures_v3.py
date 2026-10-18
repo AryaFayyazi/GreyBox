@@ -37,9 +37,49 @@ def shift_rows():
             ("closed GPT on AgentDojo", t13b["auroc_within_suite"]["READER"], t13b["auroc_within_suite"]["TXT"], t13b["auroc_within_suite"]["J_act"], None)]
 
 
+def burst_panel(ax):
+    """One realisation of the burst protocol of scripts/76c (Claude's own T8b reader scores, public release): 1,000 normal
+    actions, then 1,000 in which half are violations (seed 1, the first repetition), through the shipped frozen gate and
+    two rolling gates. The cut of each gate after every action, and the violations each catches in the burst."""
+    import sys
+    sys.path.insert(0, str(ROOT / "src"))
+    from graybox.monitor import QuantileGate
+    d = pd.read_csv(U / "t8b_claude.csv.gz")
+    r, y = d.READER.values.astype(float), d.y.values.astype(bool)
+    pos, neg = r[y], r[~y]
+    rng = np.random.default_rng(1)
+    lab = np.r_[np.zeros(1000, bool), rng.random(1000) < 0.5]
+    sc = np.r_[rng.choice(r, 1000), np.where(lab[1000:], rng.choice(pos, 1000), rng.choice(neg, 1000))]
+    gates = {"frozen after 500 (ours)": (QuantileGate(0.05), INK, "-"), "rolling, 5,000": (QuantileGate(0.05, rolling=True, window=5000), AQUA, "-"),
+             "rolling, 500": (QuantileGate(0.05, rolling=True, window=500, warmup=500), "#eda100", "-")}
+    lg = lambda v: np.log10(np.clip(v, 1e-6, 1))  # noqa: E731
+    x = np.arange(len(sc))
+    ax.axvspan(1000, 2000, color=ORANGE, alpha=0.07, lw=0)
+    ax.scatter(x[~lab], lg(sc[~lab]), s=0.6, color=MUTE, alpha=0.35, lw=0, rasterized=True)
+    ax.scatter(x[lab], lg(sc[lab]), s=1.4, color=ORANGE, alpha=0.8, lw=0, rasterized=True)
+    caught = {}
+    for name, (g, col, ls) in gates.items():
+        th, esc = [], []
+        for v in sc:
+            esc.append(g(v)); t = g.threshold
+            th.append(np.nan if t is None else t)
+        th, esc = np.array(th, float), np.array(esc)
+        caught[name] = float(esc[1000:][lab[1000:]].mean())
+        ax.plot(x, lg(th), color=col, lw=1.1 if "ours" in name else 0.9, ls=ls, label=f"{name}: {caught[name]:.0%}")
+    ax.axvline(500, color=MUTE, lw=0.5, ls=":")
+    ax.text(505, -0.3, "frozen", fontsize=5.0, color=MUTE, va="top")
+    ax.text(1500, -5.55, "burst: half are violations", fontsize=5.2, color=ORANGE, ha="center", va="center", bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.85))
+    ax.set(xlim=(0, 2000), ylim=(-6.2, 0.15), xlabel="actions, in order", ylabel="reader score, log$_{10}$ p")
+    ax.legend(loc="lower left", fontsize=5.0, title="cut (violations caught in the burst)", title_fontsize=5.0, handlelength=1.3,
+              frameon=True, facecolor="white", edgecolor=GRID, framealpha=0.95, borderaxespad=0.3, labelspacing=0.25)
+    ax.set_title("(a) The cut under an attack burst")
+    return caught
+
+
 def fig_transfer():
-    fig = plt.figure(figsize=(v2.FULL * 0.72, 1.95))
-    gs = fig.add_gridspec(1, 2, width_ratios=[0.85, 1.05], wspace=0.42)
+    fig = plt.figure(figsize=(v2.FULL, 1.95))
+    gs = fig.add_gridspec(1, 3, width_ratios=[1.45, 0.8, 1.05], wspace=0.48)
+    burst_panel(fig.add_subplot(gs[0]))
     if False:                                    # the heat map moved to the paper's Table 1 (same numbers, with intervals)
       ax = fig.add_subplot(gs[0])
       rows = shift_rows()
@@ -71,7 +111,7 @@ def fig_transfer():
       ax.text(3.62, 3.5, "closed", rotation=270, va="center", fontsize=5.4, color=MUTE)
       ax.text(3.62, 5.5, "new", rotation=270, va="center", fontsize=5.4, color=MUTE)
     # (b) labels from open agents applied to a closed agent
-    ax = fig.add_subplot(gs[0]); v2.grid(ax, "both")
+    ax = fig.add_subplot(gs[1]); v2.grid(ax, "both")
     t14 = json.loads((R / "t1/t14_agentdojo_labels.json").read_text())
     ks = [int(k) for k in t14["curve"]]
     xp = np.array([max(k, 30) for k in ks], float)
@@ -87,9 +127,9 @@ def fig_transfer():
     ax.set(xlabel="labelled AgentDojo calls\nof open agents", ylabel="injections caught", ylim=(0, 1.13))
     ax.yaxis.set_major_formatter(PCT)
     ax.text(0.97, 0.03, f"labels: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.3, color=MUTE, va="bottom", ha="right")
-    ax.set_title("(a) Labels of a new policy")
+    ax.set_title("(b) Labels of a new policy")
     # (c) a closed agent told it is monitored
-    ax = fig.add_subplot(gs[1]); v2.grid(ax, "y")
+    ax = fig.add_subplot(gs[2]); v2.grid(ax, "y")
     d = pd.read_csv(U / "t24_monitor_aware.csv.gz")
     t24 = json.loads((R / "t1/t24_monitor_aware.json").read_text())
     lg = lambda p: np.log10(np.clip(p, 1e-13, 1))  # noqa: E731
@@ -113,7 +153,7 @@ def fig_transfer():
     ax.set(xlabel="reader score, log$_{10}$ p", ylabel="density", xlim=(-13, 0), ylim=(-0.08, 0.3))
     ax.set_yticks([0, 0.1, 0.2, 0.3])
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=2, fontsize=5.3, handlelength=1.2, columnspacing=0.8)
-    ax.set_title("(b) Agent told it is monitored")
+    ax.set_title("(c) Agent told it is monitored")
     v2.save(fig, "transfer")
 
 

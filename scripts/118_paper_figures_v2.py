@@ -59,26 +59,23 @@ def fig_replication():
     assert abs(np.average(rr, weights=g["Y_true"].astype(np.float64).var(0)) - 0.664) < 0.002
     fig, axs = plt.subplots(1, 4, figsize=(FULL, 1.72), gridspec_kw={"width_ratios": [1.15, 1.0, 1.05, 0.85], "wspace": 0.72})
     ax = axs[0]; grid(ax, "both")
-    # (a) the replica in the agent's own state space: true (ring) and replica (dot) positions of the same fresh steps
-    Yt, Yr, yy = g["Y_true"].astype(np.float64), g["Y_reader"].astype(np.float64), g["y"].astype(int)
-    rng = np.random.default_rng(1)
-    pick = np.concatenate([rng.choice(np.where(yy == 0)[0], 70, replace=False), rng.choice(np.where(yy == 1)[0], 40, replace=False)])
-    sd = Yt[:, :2].std(0)
-    for i in pick:
-        c = ORANGE if yy[i] else BLUE
-        ax.plot([Yt[i, 0] / sd[0], Yr[i, 0] / sd[0]], [Yt[i, 1] / sd[1], Yr[i, 1] / sd[1]], color=c, lw=0.45, alpha=0.55, zorder=2)
-    for lab, c in ((0, BLUE), (1, ORANGE)):
-        q = pick[yy[pick] == lab]
-        ax.scatter(Yt[q, 0] / sd[0], Yt[q, 1] / sd[1], s=9, facecolor="white", edgecolor=c, lw=0.6, zorder=3)
-        ax.scatter(Yr[q, 0] / sd[0], Yr[q, 1] / sd[1], s=7, color=c, lw=0, zorder=4)
-    from matplotlib.lines import Line2D
-    ax.legend(handles=[Line2D([], [], marker="o", ls="", mfc="white", mec=INK, ms=3.4, label="true state"),
-                       Line2D([], [], marker="o", ls="", color=INK, ms=3.0, label="replica"),
-                       Line2D([], [], marker="s", ls="", color=ORANGE, ms=3.0, label="violation")],
-              loc="lower right", fontsize=5.2, handletextpad=0.1, borderaxespad=0.1, labelspacing=0.25)
-    ax.set(xlabel="state component 1 (sd)", ylabel="state component 2 (sd)", xlim=(-2.6, 4.6), ylim=(-2.4, 3.0))
-    ax.text(0.97, 0.96, f"$R^2$ = {0.664:.3f}\n(128 comp.)", transform=ax.transAxes, fontsize=5.6, color=INK, ha="right", va="top")
-    ax.set_title("(a) True vs replica")
+    # (a) every one of the 128 components, paired: R^2 of the reader replica against R^2 of the TF-IDF replica on the same
+    # fresh steps; marker area = the component's share of the state's variance (the weights of the preregistered R^2)
+    w = g["Y_true"].astype(np.float64).var(0); w = w / w.sum()
+    order = np.argsort(-w)                                       # draw small components last, on top
+    ax.plot([0, 1], [0, 1], color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
+    ax.fill_between([0, 1], [0, 1], [1, 1], color=BLUE, alpha=0.05, lw=0, zorder=0)
+    sc = ax.scatter(rt[order], rr[order], s=5 + 240 * w[order], c=np.log10(w[order]), cmap="Blues", vmin=np.log10(w.min()) - 0.6,
+                    vmax=np.log10(w.max()), edgecolor=BLUE, linewidths=0.35, alpha=0.9, zorder=3)
+    t15 = json.loads((R / "t1/t15_latent_replication.json").read_text())["E1_R2_READER_minus_TXT"]
+    wr, wt = float((w * rr).sum()), float((w * rt).sum())
+    ax.scatter([wt], [wr], marker="*", s=70, color=ORANGE, edgecolor="white", linewidths=0.5, zorder=5)
+    ax.annotate("weighted mean", (wt, wr), xytext=(0.78, 0.38), textcoords="data", fontsize=5.3, color=INK, ha="center",
+                arrowprops=dict(arrowstyle="-", color=MUTE, lw=0.5))
+    ax.text(0.03, 0.97, f"{int((rr > rt).sum())} of {len(rr)}\nabove the diagonal", transform=ax.transAxes, fontsize=5.4, color=INK, va="top")
+    ax.text(0.97, 0.03, "below: text better", transform=ax.transAxes, fontsize=5.0, color=MUTE, ha="right")
+    ax.set(xlim=(0, 1), ylim=(0, 1), xlabel="$R^2$, TF-IDF replica", ylabel="$R^2$, reader replica")
+    ax.set_title("(a) Every component")
     t17 = json.loads((R / "t1/t17_replication_agents.json").read_text())
     names = ["Gemma", "gpt-oss", "Qwen", "Muse"]
     rd = [t17["exploratory_gemma4_same_split"]["r2_fresh"]] + [t17["agents"][a]["r2_fresh"] for a in ("gptoss20b", "qwen38", "museglimmer")]

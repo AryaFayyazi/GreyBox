@@ -151,7 +151,7 @@ On models with known internals, the interrogation state recovers the state. A ba
 
 \subsection{Replicating the hidden state}
 \label{sec:replica}
-On Gemma-4, where the true state is known, we fit the map from the reader's state to the agent's decision-point state (five layers, top 128 principal components, 80.5\% of the variance) on development steps. On 12{,}128 fresh steps the replica reconstructs 66.4\% of the variance from the transcript alone, against 58.6\% for TF-IDF features ($+0.079$ [0.075, 0.083]; \cref{fig:replication}a shows two components). A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]).
+On Gemma-4, where the true state is known, we fit the map from the reader's state to the agent's decision-point state (five layers, top 128 principal components, 80.5\% of the variance) on development steps. On 12{,}128 fresh steps the replica reconstructs 66.4\% of the variance from the transcript alone, against 58.6\% for TF-IDF features ($+0.079$ [0.075, 0.083]), and it is better on every one of the 128 components (\cref{fig:replication}a). A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]).
 The same reader replicates three more architectures, a mixture of experts (gpt-oss-20b), hybrid linear attention (Qwen3.8-27B) and a dense model (Muse-Glimmer-30B), on scenarios that the map never saw: $R^2$ 0.494, 0.542 and 0.462, each above text features ($+0.102$, $+0.101$, $+0.061$, all intervals above 0), and the true-state probe works on every replica (\cref{fig:replication}b,c). Before reading an agent's state we checked that we reproduce its context: teacher-forced, its own model predicts 91--100\% of the next 16 tokens of its actual tool call.
 The theory predicts the shape of the replica. Across the 128 components, the ratio of the replica's variance to the state's variance closely tracks the component's $R^2$ (\cref{fig:replication}d; correlation 0.99, slope 0.89 on fresh steps), the identity of \cref{prop:replica}(b).
 
@@ -161,7 +161,7 @@ The theory predicts the shape of the replica. Across the 128 components, the rat
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/replication.pdf}
-\caption{Replicating an agent's hidden state from its transcript. (a) 110 fresh steps of Gemma-4 on the two main components of its decision state: the true state (ring) and the replica computed from the transcript (dot), joined; violations in orange. (b) Variance-weighted $R^2$ on unseen scenarios for four architectures. (c) A probe trained on the agent's \emph{true} states, applied to the true states (diamond), the reader replica (blue) and the TF-IDF replica (ring); within-template AUROC. (d) Per component, the replica's variance relative to the state's closely tracks the replicated share, as \cref{prop:replica}(b) predicts for a conditional mean.}
+\caption{Replicating an agent's hidden state from its transcript. (a) Each of the 128 principal components of Gemma-4's decision state (marker area: its share of the state's variance): the share of its variance that the reader replicates on 12{,}128 fresh steps, against TF-IDF features on the same steps. The reader is better on all 128; star, the variance-weighted mean, 0.664 against 0.586 ($+0.079$ [0.075, 0.083], preregistered). (b) predicts for a conditional mean. (b) Variance-weighted $R^2$ on unseen scenarios for four architectures. (c) A probe trained on the agent's \emph{true} states, applied to the true states (diamond), the reader replica (blue) and the TF-IDF replica (ring); within-template AUROC. (d) Per component, the replica's variance relative to the state's closely tracks the replicated share, as \cref{prop:replica}(b) predicts for a conditional mean.}
 \label{fig:replication}
 \end{figure*}
 
@@ -173,15 +173,15 @@ What the reader adds over word counts is robustness to shift (\cref{tab:main}): 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.72\textwidth]{figures/transfer.pdf}
-\caption{Transfer and robustness. (a) Labels of prompt injection collected on two \emph{open} agents, applied to the \emph{closed} GPT-6-luna: injected calls caught at the 95th percentile of benign calls, against the number of labelled calls (numbers: AUROC). (b) Claude Haiku~5.5 told, or not told, that it is monitored: the reader's scores of safe actions (histograms) and of violations (dots), and the cut frozen on Claude's earlier unlabelled traffic.}
+\includegraphics[width=\textwidth]{figures/transfer.pdf}
+\caption{Robustness of the label-free cut, and transfer. (a) Claude Haiku~5.5's reader scores in order (grey; violations in orange): 1{,}000 normal actions, then a burst in which half the actions are violations (one run of the protocol behind \cref{fig:prevention}c). A cut frozen after 500 actions holds; cuts that keep moving rise with the burst and let it through (legend: violations caught in the burst; mean of 50 runs 94\%, 36\%, 20\%). (b) Labels of prompt injection collected on two \emph{open} agents, applied to the \emph{closed} GPT-6-luna: injected calls caught at the 95th percentile of benign calls, against the number of labelled calls (numbers: AUROC). (c) Claude told, or not told, that it is monitored: the reader's scores of safe actions (histograms) and of violations (dots), and the cut frozen on Claude's earlier unlabelled traffic.}
 \label{fig:transfer}
 \end{figure*}
 
 \subsection{Two closed agents}
 \label{sec:closed}
 Nothing was fit on the closed agents (\cref{tab:closed}). On Claude Haiku~5.5 the monitor catches 94.1\% of 68 violations when 5\% of the actions go to review, with a cut set without labels; the zero-shot judge catches none. One family that is absent from training makes up 62\% and 59\% of the two agents' violations; without it, the monitor catches 92.3\% and 96.3\% (exploratory). On GPT-6-luna all three preregistered endpoints pass: pooled AUROC 0.996 vs the judge's 0.778 ($+0.217$ [0.174, 0.265]), beyond tool identity ($+0.141$ [0.111, 0.171]), and within tool ($+0.039$ [0.015, 0.066]).
-The scale of the scores does not transfer between agents (on Claude a cut at probability 0.5 catches 3\%), but the ranking does. In an exploratory replay, a cut at the top 5\% of the agent's own unlabelled traffic, frozen after 500 actions, catches 95.4\% online on Claude and 98.4\% on GPT. Under bursts of attacks in which half the actions are violations it stays at 94\%, while a cut that keeps moving over a window of 5{,}000 actions falls to 36\% (over 500: 20\%) (\cref{fig:prevention}c): the frozen cut is unaffected, as \cref{prop:burst} predicts, and the moving cut loses most of the burst.
+The scale of the scores does not transfer between agents (on Claude a cut at probability 0.5 catches 3\%), but the ranking does. In an exploratory replay, a cut at the top 5\% of the agent's own unlabelled traffic, frozen after 500 actions, catches 95.4\% online on Claude and 98.4\% on GPT. Under bursts of attacks in which half the actions are violations it stays at 94\%, while a cut that keeps moving over a window of 5{,}000 actions falls to 36\% (over 500: 20\%) (\cref{fig:transfer}a, \cref{fig:prevention}c): the frozen cut is unaffected, as \cref{prop:burst} predicts, and the moving cut loses most of the burst.
 
 \begin{table}[t]
 \centering\small
@@ -236,7 +236,7 @@ Claude, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 4
 
 \subsection{Labels of a new policy transfer from open agents}
 \label{sec:coverage}
-A monitor learns the policies in its training data, so a new policy needs labels (\cref{app:limits}). These labels need not come from the monitored agent. Prompt injection on AgentDojo is a new policy for our monitor. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]), and the share of injected calls caught doubles, from 28\% to 58\% at the label-free cut (36\% to 92\% at the benign-call cut of \cref{fig:transfer}a). In an exploratory check on the confirmation split, whose user tasks the training never saw, the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]).
+A monitor learns the policies in its training data, so a new policy needs labels (\cref{app:limits}). These labels need not come from the monitored agent. Prompt injection on AgentDojo is a new policy for our monitor. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]), and the share of injected calls caught doubles, from 28\% to 58\% at the label-free cut (36\% to 92\% at the benign-call cut of \cref{fig:transfer}b). In an exploratory check on the confirmation split, whose user tasks the training never saw, the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]).
 
 
 \ROBUSTSECTION
