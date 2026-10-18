@@ -1040,3 +1040,36 @@ Dated log of every experiment, decision and correction. Newest last.
   - Parity: solver tolerance 1e-6 in both trainers. Same vocabulary, weights within 0.005, scores within 0.007,
     0 of 1,515 decisions differ when the cuts match.
   - Task shift, now reproducible from public data (scripts/114): stored cut 0/115, live cut 29/115, AUROC 0.90–0.98.
+- **Canonical mode in the tool (2026-10-18, while T26 runs; the default waits for T26's preregistered result).**
+  - `train_text --canonical`, `train_reader --canonical` and the browser trainer's "Canonical actions" box. The model
+    file records `canonical`. Guard, the server (both endpoints, with history or a prebuilt context) and the browser then
+    read actions the same way.
+  - Test: rewording the free text leaves the score unchanged, in Guard and in the server. A negative control with the
+    flag off fails (−4.008 vs −4.456), so the test detects the defect.
+  - Parity (scripts/121): Python and the browser give identical canonical text on 38,105 steps and T25 rewrites.
+    Found and fixed: the browser's JSON.parse turned 50.0 into 50 and moved integer-like keys first. A small parser now
+    keeps Python's number text (repr rules, checked on 14 edge values) and key order.
+  - Exploratory cost on the public examples (text monitor, task-held-out CV):
+    - GPT: AUROC 0.946 → 0.933, caught at 5% 60.2% → 65.1% (browser 65.2%);
+    - Claude: 0.9998 both, caught 42.1% both.
+  - Browser end-to-end test (Chromium): canonical training runs with no errors, and the downloaded file records
+    `canonical: true`.
+  - Fixed a misleading trainer message: it said that the monitor "does not separate" calls of the same tool whenever
+    pooled − within-tool AUROC > 0.1, even at a within-tool AUROC of 0.845. It now says that only below 0.65.
+- **T26 (canonical-action monitor) FAILS C1, C2 and C3 (2026-10-18).**
+  - Clean catch at 5%: Claude 94.1% → 51.5%, GPT 98.5% → 59.1% (C2 −0.410 [−0.493, −0.311]).
+  - AgentDojo: C3 −0.029 [−0.080, +0.010].
+  - After the attack: 50.8% [42.5%, 59.0%] (C1; the shipped reader was at 29.1% in T25).
+  - The invariance held as proved: on send_message the canonical score cannot move (29.3% before and after). Commands
+    went from 96.2% to 84.6%.
+  - Cause: 81 of the 82 send_message targets come from one family (tp_campaign_test), where the body carries the
+    leaked draft. The premise Y = g(κ(A), V, W) is false there: free text is payload as well as self-report.
+  - Per the preregistered reading, canonical mode stays an option with its measured cost, not the default.
+- **T27 designed (adversarial training).**
+  - Rewrite the free text of BOTH violations and safe actions in Gemma training data with the attacker, label by
+    replay, and refit.
+  - Approval-style text then appears in both classes, so it carries no label information, and the body still counts
+    as payload.
+  - The test attack uses a new seed and is told about the defense.
+  - Dry run of the target stage (scratch folder, deleted): 600 actions; replay reproduced every label. Bug found and
+    fixed before the lock: Gemma's .aware scenarios need their own benchmark's specs.

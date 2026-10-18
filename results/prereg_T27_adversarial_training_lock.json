@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-18T01:13:54-07:00",
+ "sha256": {
+  "docs/prereg_T27_adversarial_training.md": "54854f59443b0da8cb5b99156321c178a3b9b0589767c897b90cdb0c58de55e1",
+  "scripts/122_t27_adversarial_training.py": "574cb824314c35c3c2494e7cdea165b975135116924316a2c97472b6bd76c088"
+ }
+}
