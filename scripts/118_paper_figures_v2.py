@@ -95,24 +95,31 @@ def fig_replication():
     ax.bar(x + 0.2, [d["TXT"] for d in rd], 0.38, color=LIGHT, edgecolor=MUTE, lw=0.4, label="TF-IDF")
     for i, d in enumerate(rd):
         ax.text(i - 0.2, d["READER"] + 0.015, f"{d['READER']:.2f}", ha="center", fontsize=5.6, color=INK)
-    ax.set(xticks=x, ylim=(0, 0.8), ylabel="$R^2$ (unseen scenarios)")
+    ax.set(xticks=x, ylim=(0, 0.92), ylabel="$R^2$, 128 components")
+    ax.set_yticks([0, 0.2, 0.4, 0.6])
     ax.set_xticklabels(names, fontsize=5.6, rotation=30, ha="right", rotation_mode="anchor")
     ax.set_title("(b) Four agents")
-    ax.legend(loc="upper right", ncol=2, handlelength=1.0, columnspacing=0.6)
-    ax = axs[2]; grid(ax, "x")
-    files = [("Gemma", "t15_gemma_replication"), ("gpt-oss", "t17_gptoss20b_replication"), ("Qwen", "t17_qwen38_replication"), ("Muse", "t17_museglimmer_replication")]
-    for i, (n, f) in enumerate(files):
-        z = np.load(U / f"{f}.npz")
-        v = [within_auroc(z["y"], z[c], z["template"]) for c in ("probe_true", "probe_READER", "probe_TXT")]
-        yy = 3 - i
-        ax.plot([min(v), max(v)], [yy, yy], color=GRID, lw=3.2, solid_capstyle="round", zorder=1)
-        ax.scatter(v[0], yy, s=16, color=INK, marker="D", zorder=5, label="true state" if i == 0 else None)
-        ax.scatter(v[1], yy, s=20, color=BLUE, zorder=4, edgecolor="white", lw=0.5, label="reader replica" if i == 0 else None)
-        ax.scatter(v[2], yy, s=16, facecolor="white", edgecolor=MUTE, lw=0.8, zorder=3, label="TF-IDF replica" if i == 0 else None)
-    ax.set(yticks=[3, 2, 1, 0], xlim=(0.885, 1.0), ylim=(-0.6, 4.6), xlabel="AUROC, probe trained on true states")
-    ax.set_yticklabels([n for n, _ in files], fontsize=6)
-    ax.set_title("(c) Readout on replica")
-    ax.legend(loc="upper left", fontsize=5.4, handletextpad=0.1, borderaxespad=0.0, ncol=1)
+    ax.legend(loc="upper center", ncol=2, handlelength=1.0, columnspacing=0.8, bbox_to_anchor=(0.5, 1.0), borderaxespad=0.1)
+    ax = axs[2]; grid(ax, "y")
+    # (c) every recorded layer of every agent: R^2 over the FULL layer (not only the top components), reader minus text
+    t15 = json.loads((R / "t1/t15_latent_replication.json").read_text())
+    per = [("Gemma", t15["r2_fresh_per_layer_full_space"])] + [(n, t17["agents"][a]["r2_fresh_per_layer_full_space"])
+                                                              for n, a in (("gpt-oss", "gptoss20b"), ("Qwen", "qwen38"), ("Muse", "museglimmer"))]
+    shades = ["#bcd5f3", "#8db8ec", "#5c99e2", BLUE, "#1b4f91"]
+    n_pos = 0
+    for i, (name, d) in enumerate(per):
+        Ls = sorted(d["READER"], key=int)
+        for k, L in enumerate(Ls):
+            gain = d["READER"][L] - d["TXT"][L]
+            n_pos += gain > 0
+            ax.bar(i + (k - 2) * 0.16, gain, 0.15, color=shades[k], lw=0)
+    ax.axhline(0, color=MUTE, lw=0.6)
+    ax.set(xticks=range(4), xlim=(-0.6, 3.6), ylim=(0, 0.13), ylabel="$R^2$ gain over TF-IDF, full layer")
+    ax.set_yticks([0, 0.03, 0.06, 0.09])
+    ax.set_xticklabels([n for n, _ in per], fontsize=5.6, rotation=30, ha="right", rotation_mode="anchor")
+    ax.text(0.97, 0.96, f"{n_pos} of {sum(len(d['READER']) for _, d in per)} layers > 0\nbars: shallow to deep", transform=ax.transAxes,
+            ha="right", va="top", fontsize=5.3, color=INK)
+    ax.set_title("(c) Every layer")
     ax = axs[3]; grid(ax, "both")
     vr = g["Y_reader"].astype(np.float64).var(0) / g["Y_true"].astype(np.float64).var(0)
     ax.plot([0, 1], [0, 1], color=MUTE, lw=0.7, ls=":")

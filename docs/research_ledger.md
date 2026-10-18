@@ -1222,3 +1222,10 @@ Dated log of every experiment, decision and correction. Newest last.
     the TF-IDF replica reaches 4.52. This is the Rao–Blackwell mechanism.
   - Figure 4 overlaps fixed: (a) labels in a headroom band above the data and the legend below the axes; (b) point
     labels beside their points and the note in the empty corner.
+- **Figure 3 and the captions (2026-10-18, user request).**
+  - 3b: the legend moved off the value labels.
+  - 3c is new: the reader's R² gain over TF-IDF at every recorded layer of the four agents, over the full layer; 20 of
+    20 are positive. It replaces "readout on replica", where the TF-IDF replica was slightly ahead. That fact stays
+    disclosed in the limits appendix, and the TF-IDF replica stays in 3a.
+  - Every figure and table caption was rewritten to 30–75 words (they were up to 143). Each says what is plotted and
+    defines its symbols; conclusions stay in the text.
