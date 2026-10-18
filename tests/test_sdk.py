@@ -34,6 +34,7 @@ def test_gate_fails_closed_then_freezes():
 
 
 def test_gate_rolling_option_moves():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     g = QuantileGate(0.05, rolling=True, window=500, warmup=500)
     g.fit(np.random.default_rng(1).random(500))
     t = g.threshold
@@ -51,6 +52,7 @@ def test_browser_model_loads_and_scores():
 
 
 def test_text_monitor_fit_and_score():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     pytest.importorskip("sklearn")
     rng = np.random.default_rng(0)
     steps, y = [], []
@@ -112,6 +114,7 @@ def test_guard_openai_and_anthropic_formats():
 
 
 def test_guard_with_reader_and_gate():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.guard import Guard
     from graybox.monitor import QuantileGate
 
@@ -141,6 +144,7 @@ def test_train_reader_data_side(tmp_path):
 
 
 def test_guard_hold_for_review():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.guard import Guard
     from graybox.monitor import QuantileGate
 
@@ -318,6 +322,7 @@ def test_reviewer_fails_closed_and_sees_the_score():
 
 
 def test_text_monitor_trained_in_python_saves_and_guards(tmp_path):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.guard import Guard
     from graybox.monitor import TextMonitor
     rng = np.random.default_rng(0)
@@ -420,6 +425,7 @@ def test_server_text_gate_strict_bodies_and_chat(monkeypatch, tmp_path):
 
 
 def test_gate_with_a_chat_text_monitor_and_units(tmp_path):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.guard import Guard
     from graybox.monitor import QuantileGate, TextMonitor
     d = json.loads(MODEL.read_text()); d["chat"] = True
@@ -442,6 +448,7 @@ def test_public_render_accepts_dict_histories():
 
 
 def test_train_text_reports_within_tool_auroc_and_groups(tmp_path, capsys):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     # the violation is decided by the tool alone: pooled AUROC is high, within-tool AUROC is chance -> a warning
     from graybox import train_text
     rng = np.random.default_rng(0)
@@ -463,6 +470,7 @@ def test_train_text_reports_within_tool_auroc_and_groups(tmp_path, capsys):
 
 
 def test_caught_at_budget_sends_exactly_the_budget_with_ties():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.stats import caught_at_budget
     y = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0] * 10)
     assert caught_at_budget(y, np.where(y == 1, 9.0, 0.0), 0.2) == 1.0         # 20 reviewed = the 20 positives
@@ -474,6 +482,7 @@ def test_caught_at_budget_sends_exactly_the_budget_with_ties():
 
 
 def test_guard_hold_tools_rule_escalates_every_call_of_a_tool():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.guard import Guard
     from graybox.monitor import QuantileGate
 
@@ -517,6 +526,7 @@ def test_anthropic_sdk_blocks_inside_dict_messages_keep_the_history():
 
 
 def test_train_text_cli_guards_against_common_mistakes(tmp_path, capsys):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox import train_text
     rows = [{"context": f"task {i % 6} order {i}", "action": f"refund {{\"id\": {i}}}" if i % 3 == 0 else f"lookup {{\"id\": {i}}}",
              "label": int(i % 3 == 0), "task": f"t{i % 6}"} for i in range(60)]
@@ -546,6 +556,7 @@ def test_train_text_cli_guards_against_common_mistakes(tmp_path, capsys):
 
 
 def test_text_monitor_privacy_filter_keeps_secrets_out_of_the_file():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox.monitor import TextMonitor
     rng = np.random.default_rng(1)
     steps = [{"context": f"user asks to send the report token tok_live_d8tdcrgi0c{i % 3} to felix lund", "action": "send_email {\"to\": \"x\"}" if i % 2 else "read_file {\"p\": \"y\"}"} for i in range(80)]
@@ -594,6 +605,7 @@ def test_server_api_key_strict_inputs_and_persistent_gates(monkeypatch, tmp_path
 
 
 def test_reviewer_timeout_blocks_and_async_checks_match():
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     import asyncio
     import time as _t
     from graybox.guard import Guard
@@ -629,6 +641,7 @@ def test_openai_responses_api_items_score_like_chat_completions():
 
 
 def test_v041_fixes_hold_tools_string_responses_string_group_by_conversation_field(tmp_path, capsys):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox import train_text
     from graybox.guard import Guard, responses_to_chat
     from graybox.monitor import QuantileGate, TextMonitor, mask_pii
@@ -687,6 +700,7 @@ def test_audit_log_and_callback_record_every_decision_and_cannot_change_it(tmp_p
 
 
 def test_canonical_mode_removes_self_reported_text_in_training_and_scoring(tmp_path, capsys):
+    pytest.importorskip("sklearn"); pytest.importorskip("scipy")
     from graybox import train_text
     from graybox.guard import Guard, canonical_step
     from graybox.monitor import TextMonitor, canonical_args

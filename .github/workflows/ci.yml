@@ -11,6 +11,14 @@ jobs:
         with: {python-version: "${{ matrix.python }}"}
       - run: pip install ".[server,text]" pytest httpx anthropic openai      # the real SDK types are tested (content blocks)
       - run: pytest -q tests
+  integrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install ".[server,text,claude-agent,openai-agents,langgraph]" pytest      # the real framework SDKs, offline
+      - run: pytest -q tests/test_integrations.py
   reproduce:
     runs-on: ubuntu-latest
     steps:

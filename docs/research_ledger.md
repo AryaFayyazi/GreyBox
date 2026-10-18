@@ -1122,3 +1122,21 @@ Dated log of every experiment, decision and correction. Newest last.
     Three preregistered defenses failed (κ, canonical training, adversarial training). Open problem; next candidate
     defenses (not run): hide the score from the agent (no query access), an ensemble with a rule-based check on the
     decisive field, and certified bounds on the score's sensitivity to free text.
+- **v0.5.0 released (2026-10-18).**
+  - CI green on 9b2e642; tag v0.5.0.
+  - Built from `git archive` in a clean venv; `twine check` passed; the PyPI sha256 values equal the local build
+    (wheel b0dccf7d…, sdist 2af07b26…).
+  - A fresh install from PyPI with `[text,server]` passes 39 tests (1 MCP test skipped) and reproduces the canonical
+    CV AUROC of 0.9328.
+  - GitHub release created; site deployed to gh-pages and checked live.
+  - Found in testing: on a bare install the training tests errored instead of skipping. They now skip without
+    scikit-learn and scipy (bare install: 16 pass, 24 skip).
+- **Considered and not run: a private-monitor (no-query transfer) test.** The public shipped probe lets an attacker run
+  our exact monitor offline, so hiding the score is not enough when the shipped probe is deployed. Two facts make a
+  private monitor unlikely to pass a robustness bar with clean accuracy:
+  - a monitor on a different reader is much weaker on clean traffic (Qwen3-14B with the T19 recipe: Claude AUROC
+    0.834, 37% caught at 5%);
+  - rewrites transfer strongly between monitors on the same reader (T27: rewrites optimised against the hardened probe
+    left the shipped probe at 57.5%).
+  We did not spend a preregistration on it. Deployment advice: train a private probe on your own labels, and keep
+  scores and decision reasons from the agent.

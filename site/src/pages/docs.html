@@ -177,6 +177,27 @@ python -m graybox.train_reader logs.jsonl --chat --out probe.joblib    # train o
 The browser trainer has the same option, and it gives identical context to Python (268/268 steps of 40 real τ²-bench conversations,
 182 of them with later user turns).</p>
 
+<h2 id="frameworks">Agent frameworks</h2>
+<p><code>graybox.integrations</code> places the Guard before every tool call of three frameworks. A blocked call does not run; the agent
+gets the neutral block message, never the score. Each adapter is tested offline against the real SDK.</p>
+<pre># Claude Agent SDK: pip install "greybox-monitor[text,claude-agent]"
+from claude_agent_sdk import ClaudeAgentOptions, HookMatcher
+from graybox.integrations import claude_agent_hook
+options = ClaudeAgentOptions(hooks={"PreToolUse": [HookMatcher(hooks=[claude_agent_hook(guard, instructions=SYSTEM)])]})
+# on_escalate="ask" sends an escalated call to the user's permission prompt instead of denying it
+
+# OpenAI Agents SDK: pip install "greybox-monitor[text,openai-agents]"
+from graybox.integrations import openai_agents_guardrails
+check, record = openai_agents_guardrails(guard)
+@function_tool(tool_input_guardrails=[check], tool_output_guardrails=[record])   # attach both to every tool
+def send_message(to: str, body: str) -> str: ...
+
+# LangGraph: pip install "greybox-monitor[text,langgraph]"
+from graybox.integrations import langgraph_tool_wrapper
+node = ToolNode(tools, wrap_tool_call=langgraph_tool_wrapper(guard))   # awrap_tool_call=langgraph_tool_wrapper(guard, async_=True)</pre>
+<p>The OpenAI Agents SDK gives a tool guardrail only the run's original input, not the calls made earlier in the run. The
+<code>record</code> guardrail keeps them, so the monitor sees the whole run; without it, a test shows that a violation after an
+earlier read runs unchecked.</p>
 <h2>The text monitor (CPU, real time)</h2>
 <p>Train it in the <a href="train.html">browser trainer</a> and download the model file, then:</p>
 <pre>from graybox.monitor import TextMonitor, Step

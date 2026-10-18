@@ -2,6 +2,17 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.6.0 (unreleased)
+**Added**
+- `graybox.integrations`: the Guard in three agent frameworks, tested offline against the real SDKs:
+  - `claude_agent_hook(guard)`: a PreToolUse hook for the Claude Agent SDK. The history comes from the session
+    transcript; an escalated call is denied, or sent to the user's permission prompt with `on_escalate="ask"`.
+  - `openai_agents_guardrails(guard)`: tool input and output guardrails for the OpenAI Agents SDK. The SDK gives a tool
+    guardrail only the run's original input, so the output guardrail records each call and its result, and the
+    monitor sees the whole run (a test shows that without it the earlier call is missing and a violation runs).
+  - `langgraph_tool_wrapper(guard)`: a `wrap_tool_call` (or async) handler for LangGraph's ToolNode.
+  - Extras: `claude-agent`, `openai-agents`, `langgraph`. CI runs them in a separate job.
+
 ## 0.5.0 (2026-10-18)
 **Added**
 - `graybox.mcp_proxy` (`pip install "greybox-monitor[mcp]"`, MCP SDK 2.x): a monitor in front of any MCP server; each

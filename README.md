@@ -63,6 +63,13 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
        messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
    ```
    SDK objects (OpenAI messages, Anthropic content blocks) and plain dicts give the same scores.
+   In an agent framework, one line places the Guard before every tool call (`graybox.integrations`; install the extra
+   of your framework):
+   ```python
+   ClaudeAgentOptions(hooks={"PreToolUse": [HookMatcher(hooks=[claude_agent_hook(guard, instructions=SYSTEM)])]})
+   check, record = openai_agents_guardrails(guard)   # function_tool(..., tool_input_guardrails=[check], tool_output_guardrails=[record])
+   ToolNode(tools, wrap_tool_call=langgraph_tool_wrapper(guard))
+   ```
 3. On a new kind of task, a cut stored in the file can escalate almost nothing: on held-out task families it caught
    0 of 115 violations (three splits of the public GPT example, `scripts/114_cut_under_shift_public.py`). A live cut on
    the agent's own traffic, `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review
