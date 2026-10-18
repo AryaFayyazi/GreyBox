@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-17T18:46:25-07:00",
+ "sha256": {
+  "docs/prereg_T21_tau2_unseen_tasks.md": "900444a9a8c41876b59a4ac2678582ecb0b21109fa4e979645acc98d079f4a1d",
+  "scripts/103c_t21_tau2_unseen_tasks.py": "57b1e19649b1fecf60055df81025027e8ac0f9dacd9da70611af7f948b3be5ff"
+ }
+}
