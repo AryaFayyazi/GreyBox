@@ -37,17 +37,24 @@ function train({ X, dim, y: yAll, groups: gAll, tools: tAll, budget = 0.05, fold
   if (nPos < 2 || nPos > y.length - 2) throw new Error('need at least 2 unsafe and 2 safe examples');
   const k = Math.min(folds, nGroups);
   if (k < 2) throw new Error('need at least 2 groups (tasks) for cross-validation');
-  const fold = TM.groupFolds(groups, k), oof = new Float64Array(y.length);
-  for (let f = 0; f < k; f++) {
-    P(`fold ${f + 1}/${k}: fitting`, f / (k + 1));
-    const tr = [], te = [];
-    fold.forEach((v, j) => (v === f ? te : tr).push(j));
-    const sc = scaler(X, dim, tr.map(j => L[j]));
-    const lr = TM.fitLR({ rows: rows(X, dim, tr.map(j => L[j]), sc), dim }, tr.map(j => y[j]), C);
-    const s = scoreAll(X, dim, n, { ...sc, w: lr.w, b: lr.b });
-    te.forEach(j => { oof[j] = s[L[j]]; });
+  if (new Set(groups.filter((g, i) => y[i])).size < 2 || new Set(groups.filter((g, i) => !y[i])).size < 2)
+    throw new Error('cross-validation needs violations in at least 2 groups (tasks) and safe actions in at least 2');
+  const REPS = 3, reps = [];                          // the same repeated, stratified group folds as the text trainer
+  for (let rep = 0; rep < REPS; rep++) {
+    const fold = TM.groupFolds(groups, k, rep, y), o = new Float64Array(y.length);
+    for (let f = 0; f < k; f++) {
+      P(`repeat ${rep + 1}/${REPS}, fold ${f + 1}/${k}: fitting`, (rep * k + f) / (REPS * k + 1));
+      const tr = [], te = [];
+      fold.forEach((v, j) => (v === f ? te : tr).push(j));
+      const sc = scaler(X, dim, tr.map(j => L[j]));
+      const lr = TM.fitLR({ rows: rows(X, dim, tr.map(j => L[j]), sc), dim }, tr.map(j => y[j]), C);
+      const s = scoreAll(X, dim, n, { ...sc, w: lr.w, b: lr.b });
+      te.forEach(j => { o[j] = s[L[j]]; });
+    }
+    reps.push(o);
   }
-  P(`final fit on all ${y.length} labelled actions`, k / (k + 1));
+  const oof = reps[0], aucs = reps.map(o => TM.auroc(y, Array.from(o)));
+  P(`final fit on all ${y.length} labelled actions`, (REPS * k) / (REPS * k + 1));
   const sc = scaler(X, dim, L);
   const lr = TM.fitLR({ rows: rows(X, dim, L, sc), dim }, y, C);
   const model = { type: 'embed', format: 'graybox-embed-monitor/1', encoder, web, mean: Array.from(sc.mean), scale: Array.from(sc.scale),
@@ -59,8 +66,14 @@ function train({ X, dim, y: yAll, groups: gAll, tools: tAll, budget = 0.05, fold
   const caught = s.filter((v, i) => y[i] && v >= cut).length, safeEsc = s.filter((v, i) => !y[i] && v >= cut).length, nEsc = caught + safeEsc;
   const perTool = {};
   tools.forEach((t, i) => { const o = perTool[t] || (perTool[t] = { n: 0, unsafe: 0, caught: 0 }); o.n++; if (y[i]) { o.unsafe++; if (s[i] >= cut) o.caught++; } });
-  const report = { n: y.length, unsafe: nPos, groups: nGroups, folds: k, C, cv_auroc_by_C: [[C, TM.auroc(y, s)]], auroc: TM.auroc(y, s),
-                   auroc_ci95: TM.groupBootstrapAUROC(y, s, groups, 500, 0), budget, caught: caught / nPos, safe_escalated: safeEsc / (y.length - nPos),
-                   perTool, base_rate: nPos / y.length, ceiling: Math.min(1, nEsc / nPos), precision: nEsc ? caught / nEsc : NaN, encoder, dim };
+  const meanAuc = aucs.reduce((x, z) => x + z, 0) / aucs.length;
+  const report = { n: y.length, unsafe: nPos, groups: nGroups, folds: k, repeats: REPS, C, cv_auroc_by_C: [[C, meanAuc]], auroc: meanAuc,
+                   auroc_range: [Math.min(...aucs), Math.max(...aucs)],
+                   auroc_ci95: TM.groupBootstrapAUROC(y, s, groups, 500, 0), budget, perTool, base_rate: nPos / y.length,
+                   ceiling: Math.min(1, nEsc / nPos), encoder, dim };
+  const at = reps.map(o => { const z = Array.from(o), c = TM.quantile(z, 1 - budget);       // rates: mean over the 3 repeats
+    const tp = z.filter((v, i) => y[i] && v >= c).length, fp = z.filter((v, i) => !y[i] && v >= c).length;
+    return [tp / nPos, fp / (y.length - nPos), tp + fp ? tp / (tp + fp) : NaN]; });
+  [report.caught, report.safe_escalated, report.precision] = [0, 1, 2].map(j => at.reduce((x, r) => x + r[j], 0) / at.length);
   self.postMessage({ type: 'done', model, report, scores: Array.from(all) });
 }

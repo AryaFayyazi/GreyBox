@@ -23,6 +23,7 @@ that a burst of violations cannot raise it (results/t1/t8b_calibration_explorato
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -52,12 +53,21 @@ def act_text(tool: str, args: dict | None) -> str:
     return "final answer to the user (no tool call)" if tool == "__final__" else f"{tool} {json.dumps(args or {}, ensure_ascii=False)}"
 
 
+_SECRETISH = re.compile(r"\d|@|[a-z0-9_]{20,}", re.I)
+
+
+def _privacy_drop(w: str, df: int, n: int) -> bool:
+    """The browser trainer's privacy rule (site/src/assets/tm-core.js privacyDrop), term by term."""
+    randomish = any(len(t) >= 10 and len(re.findall(r"[aeiouy]", t, re.I)) / len(t) < 0.2 for t in re.split(r"[_\s]+", w))
+    return bool(_SECRETISH.search(w)) or randomish or df < max(5, 0.01 * n)
+
+
 class QuantileGate:
     """Escalate an action when its score is in the top `budget` fraction of this deployment's normal traffic.
 
     Label-free calibration: the cut is the (1 - budget) quantile of the first `warmup` unlabelled scores, then it is
     FROZEN. A rolling cut would rise during a burst of violations (an attack, a compromised agent) and let them through:
-    on Claude's scores, with half the burst unsafe, a rolling cut caught 35% and the frozen cut 95%
+    on Claude's scores, with half the burst unsafe, a rolling cut caught 36% and the frozen cut 94%
     (results/t1/t8b_calibration_exploratory.json). Until `min_seen` scores have been seen it fails closed (escalates
     everything). Warm it up on traffic you trust: `fit(scores)` from past transcripts. `recalibrate()` starts a new
     warm-up when the agent or its tools change. rolling=True restores the rolling window (not recommended)."""
@@ -96,6 +106,18 @@ class QuantileGate:
     @property
     def frozen(self) -> bool:
         return self._frozen is not None
+
+    def to_dict(self) -> dict:
+        """The gate's state (settings, warm-up scores, frozen cut), to persist across restarts."""
+        return {"budget": self.budget, "warmup": self.warmup, "min_seen": self.min_seen, "rolling": self.rolling,
+                "window": self.buf.maxlen, "scores": list(self.buf), "frozen": self._frozen}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "QuantileGate":
+        g = cls(d["budget"], d["warmup"], d["min_seen"], d["rolling"], d.get("window") or 5000)
+        g.buf.extend(float(x) for x in d["scores"])
+        g._frozen = None if d.get("frozen") is None else float(d["frozen"])
+        return g
 
     def __call__(self, score: float) -> bool:
         t = self.threshold
@@ -146,12 +168,17 @@ class TextMonitor:
         r = [cls._rendered(s) for s in steps]
         return [c for c, _ in r], [a for _, a in r]
 
-    def fit(self, steps, labels, groups=None, budget: float = 0.05, grid=(0.1, 1, 10), chat: bool | None = None):
+    def fit(self, steps, labels, groups=None, budget: float = 0.05, grid=(0.1, 1, 10), chat: bool | None = None, privacy: bool = True,
+            repeats: int = 3):
         """Fit on labelled steps (dicts or tuples). With groups, C is chosen from `grid` by grouped 5-fold
-        cross-validation (as in the browser trainer; self.cv_auroc). The fitted monitor works with Guard and the
+        cross-validation, repeated over `repeats` fold assignments (graybox.stats.group_folds; as in the browser trainer;
+        self.cv_auroc is the mean, self.cv_auroc_range the min and max). The fitted monitor works with Guard and the
         server: save it with .save(path). The escalation cut is the (1 - budget) quantile of the final model's scores
         on these actions (no labels used; recorded as cut_source). For a new deployment, also consider a QuantileGate on the agent's own live traffic.
-        chat: the context setting, recorded in the file (default: inferred from conversation_steps(chat=True) steps)."""
+        chat: the context setting, recorded in the file (default: inferred from conversation_steps(chat=True) steps).
+        privacy (default True): the model file keeps no term with a digit or "@", no long code or random-looking token and
+        no term seen in fewer than max(5, 1%) of the actions, as the browser trainer's filter (tm-core.js privacyDrop). The
+        file is a partial copy of the vocabulary of your logs: without the filter it can hold keys, ids and names."""
         import numpy as np
         import scipy.sparse as sp
         from sklearn.feature_extraction.text import TfidfVectorizer
@@ -160,23 +187,40 @@ class TextMonitor:
         y = np.asarray([int(bool(v)) for v in labels])
         mk = lambda: TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=200_000, sublinear_tf=True)  # noqa: E731
 
+        def fit_vec(docs):
+            v = mk().fit(docs)
+            if not privacy:
+                return v
+            df = np.asarray((v.transform(docs) > 0).sum(0)).ravel()
+            keep = sorted(w for w, j in v.vocabulary_.items() if not _privacy_drop(w, df[j], len(docs)))
+            return TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True, vocabulary=keep).fit(docs)
+
         def design(ix_fit, ix_apply):
-            v = [mk(), mk()]
-            v[0].fit([ctx[i] for i in ix_fit]); v[1].fit([act[i] for i in ix_fit])
+            v = [fit_vec([ctx[i] for i in ix_fit]), fit_vec([act[i] for i in ix_fit])]
             X = lambda ix: sp.hstack([v[0].transform([ctx[i] for i in ix]), v[1].transform([act[i] for i in ix])]).tocsr()  # noqa: E731
             return v, X(ix_fit), (X(ix_apply) if len(ix_apply) else None)
         self.cv_auroc = None
         if groups is not None and len(set(groups)) >= 2 and grid:
             from sklearn.metrics import roc_auc_score
-            from sklearn.model_selection import GroupKFold
-            k, oof = min(5, len(set(groups))), {C: np.zeros(len(y)) for C in grid}
-            for tr, te in GroupKFold(k).split(ctx, y, groups):
-                _, Xtr, Xte = design(tr, te)
-                for C in grid:
-                    oof[C][te] = LogisticRegression(C=C, max_iter=4000).fit(Xtr, y[tr]).decision_function(Xte)
-            self.cv_auroc = {C: float(roc_auc_score(y, oof[C])) for C in grid}
+            from .stats import group_folds
+            k, groups = min(5, len(set(groups))), [str(g) for g in groups]
+            if len({g for g, v in zip(groups, y) if v}) < 2 or len({g for g, v in zip(groups, y) if not v}) < 2:
+                raise ValueError("cross-validation needs violations in at least 2 groups (tasks) and safe actions in at least 2")
+            reps = []                                      # repeated grouped CV: 3 fold assignments (as the browser)
+            for rep in range(repeats):
+                folds, oof = group_folds(groups, k, rep, y), {C: np.zeros(len(y)) for C in grid}
+                for f in range(k):
+                    tr, te = np.where(folds != f)[0], np.where(folds == f)[0]
+                    _, Xtr, Xte = design(tr, te)
+                    for C in grid:
+                        oof[C][te] = LogisticRegression(C=C, max_iter=4000).fit(Xtr, y[tr]).decision_function(Xte)
+                reps.append(oof)
+            per = {C: [float(roc_auc_score(y, o[C])) for o in reps] for C in grid}
+            self.cv_auroc = {C: float(np.mean(v)) for C, v in per.items()}         # mean over the fold assignments
+            self.cv_auroc_range = {C: (min(v), max(v)) for C, v in per.items()}
             self.C = max(grid, key=lambda C: self.cv_auroc[C])
-            self.oof = oof[self.C]
+            self.oof_reps = [o[self.C] for o in reps]
+            self.oof = self.oof_reps[0]
         allix = list(range(len(y)))
         self.v, X, _ = design(allix, [])
         self.lr = LogisticRegression(C=self.C, max_iter=4000).fit(X, y)
@@ -188,7 +232,7 @@ class TextMonitor:
         if chat is None:
             chat = all(isinstance(s, dict) and isinstance(s.get("context"), str) and "instructions" in s for s in steps)
         self._json = self.to_dict(threshold_logit=cut, budget=budget)
-        self._json.update(cut_source=src, chat=bool(chat))
+        self._json.update(cut_source=src, chat=bool(chat), privacy=bool(privacy))
         return self
 
     def to_dict(self, threshold_logit: float, budget: float = 0.05) -> dict:
@@ -246,11 +290,10 @@ class TextMonitor:
 class ReaderMonitor:
     def __init__(self, probe, layer: int, reader: str = "Qwen/Qwen3-8B", device: str = "cuda"):
         import torch
-        from huggingface_hub import snapshot_download
         from transformers import AutoModelForCausalLM, AutoTokenizer
-        p = snapshot_download(reader, cache_dir="/data/models", local_files_only=True) if Path("/data/models").exists() else reader
-        self.tok = AutoTokenizer.from_pretrained(p)
-        self.model = AutoModelForCausalLM.from_pretrained(p, dtype=torch.bfloat16, device_map=device).eval()
+        # the standard Hugging Face cache (HF_HOME / HF_HUB_CACHE); downloads the reader once
+        self.tok = AutoTokenizer.from_pretrained(reader)
+        self.model = AutoModelForCausalLM.from_pretrained(reader, dtype=torch.bfloat16, device_map=device).eval()
         self.probe, self.layer, self.torch = probe, layer, torch
 
     @classmethod

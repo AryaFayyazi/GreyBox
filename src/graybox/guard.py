@@ -34,7 +34,7 @@ from dataclasses import dataclass
 from .chat import chat_ctx
 from .monitor import Q, Step, act_text
 
-BLOCK_MESSAGE = ("Blocked: a safety monitor flagged this action and sent it to a human reviewer. It was not executed. "
+BLOCK_MESSAGE = ("Blocked: a safety monitor flagged this action. It was not executed. "
                  "Do not retry it. Continue with other steps, or tell the user what you need.")
 
 
@@ -69,7 +69,42 @@ def _args(a) -> dict:
 
 
 def _as_dict(m):
-    return m if isinstance(m, dict) else m.model_dump(exclude_none=True)
+    """Plain JSON-like data from SDK objects, recursively: a dict message may hold SDK content blocks (the Anthropic SDK's
+    documented loop appends response.content, a list of TextBlock / ToolUseBlock objects). A shallow conversion lost
+    every earlier call and result there (a user test: 1 of 68 violations escalated instead of 29)."""
+    if isinstance(m, dict):
+        return {k: _as_dict(v) for k, v in m.items()}
+    if isinstance(m, (list, tuple)):
+        return [_as_dict(v) for v in m]
+    if hasattr(m, "model_dump"):
+        return _as_dict(m.model_dump(exclude_none=True))
+    if hasattr(m, "to_dict") and not isinstance(m, (str, bytes)):
+        return _as_dict(m.to_dict())
+    return m
+
+
+def responses_to_chat(items: list, instructions: str | None = None) -> list[dict]:
+    """OpenAI Responses API input items -> Chat Completions messages (consecutive function_call items form one
+    assistant reply, as parallel calls do)."""
+    out = [{"role": "system", "content": instructions}] if instructions else []
+    for it in (_as_dict(x) for x in items or []):
+        kind = it.get("type")
+        if kind == "function_call":
+            call = {"id": it.get("call_id") or it.get("id"), "type": "function",
+                    "function": {"name": it.get("name"), "arguments": it.get("arguments") or "{}"}}
+            if out and out[-1].get("role") == "assistant" and out[-1].get("tool_calls") and not out[-1].get("content"):
+                out[-1]["tool_calls"].append(call)
+            else:
+                out.append({"role": "assistant", "tool_calls": [call]})
+        elif kind == "function_call_output":
+            o = it.get("output")
+            out.append({"role": "tool", "tool_call_id": it.get("call_id"), "content": o if isinstance(o, str) else json.dumps(o)})
+        elif it.get("role"):
+            c = it.get("content")
+            if isinstance(c, list):
+                c = "\n".join(str(b.get("text", "")) for b in c if isinstance(b, dict) and "text" in b)
+            out.append({"role": "system" if it["role"] == "developer" else it["role"], "content": c or ""})
+    return out
 
 
 def parse_label(v):
@@ -90,6 +125,7 @@ def conversation_steps(messages: list, system=None, labels: dict | None = None, 
     with empty results (no call of a reply runs before the reply is complete). The reply's own text is part of the
     context of later replies only. The browser importer (site/src/assets/tm-core.js) uses the same rule."""
     msgs = [_as_dict(m) for m in messages]
+    system = _as_dict(system) if system else system
     sys_text = _text(system) if system else ""
     if not sys_text:
         s = next((m for m in msgs if m.get("role") in ("system", "developer")), None)
@@ -142,16 +178,22 @@ class Verdict:
     held: bool = False            # escalated and sent to the reviewer (allow then says what the reviewer decided)
     unit: str = "logit"           # "logit" for text and browser-reader monitors (compared with threshold_logit); "probability" for the reader
     review_error: str | None = None   # the reviewer raised or did not answer True/False: the action is blocked (fail closed)
+    by_rule: bool = False         # escalated because its tool is in hold_tools (whatever the score)
 
 
 class Guard:
     """monitor: a TextMonitor (uses its stored cut) or a ReaderMonitor (needs gate=QuantileGate(...)).
-    reviewer: optional fn(step) -> bool for escalated actions (True = run it); chat: conversation-aware context."""
+    reviewer: optional fn(step) -> bool for escalated actions (True = run it); chat: conversation-aware context.
+    hold_tools: tools whose every call is escalated (an explicit rule, e.g. {"issue_refund"}), on top of the score; the
+    gate still sees their scores. Prefer this to a budget per tool: offline, a 5% budget per tool caught 39% / 46% of
+    Claude's / GPT's violations against 94% / 98% with one budget, because violations cluster in a few tools."""
 
-    def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None):
+    def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None, hold_tools=(), reviewer_timeout: float | None = None):
         if chat is None:            # default: the setting the monitor was trained with (model files and probe files record it)
             chat = bool((getattr(monitor, "_json", None) or {}).get("chat", getattr(monitor, "chat", False)))
         self.monitor, self.gate, self.reviewer, self.chat = monitor, gate, reviewer, chat
+        self.hold_tools = frozenset(hold_tools or ())
+        self.reviewer_timeout = reviewer_timeout      # seconds; no answer in time blocks the action (fail closed)
 
     def _is_text(self) -> bool:
         """Text and browser-reader monitors score in logits (decision); the reader scores probabilities."""
@@ -176,18 +218,54 @@ class Guard:
 
     def check_step(self, step: dict) -> Verdict:
         esc, score = self._escalated(step)
-        unit = self._unit()
-        if not esc:
+        unit, rule = self._unit(), step["action"]["tool"] in self.hold_tools
+        if not (esc or rule):
             return Verdict(allow=True, score=score, unit=unit)
         if self.reviewer is None:
-            return Verdict(allow=False, score=score, unit=unit)
+            return Verdict(allow=False, score=score, unit=unit, by_rule=rule)
         try:                                   # fail closed: only an explicit True runs the action
-            answer = self.reviewer({**{k: v for k, v in step.items() if k != "label"}, "score": score, "unit": unit})
+            answer = self._ask({**{k: v for k, v in step.items() if k != "label"}, "score": score, "unit": unit})
         except Exception as e:  # noqa: BLE001
-            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"{type(e).__name__}: {e}")
+            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"{type(e).__name__}: {e}", by_rule=rule)
+        if type(answer).__name__ == "bool_":       # numpy.bool_ from a reviewer that thresholds an array
+            answer = bool(answer)
         if not isinstance(answer, bool):
-            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"reviewer returned {answer!r}, not True/False")
-        return Verdict(allow=answer, score=score, held=True, unit=unit)
+            return Verdict(allow=False, score=score, held=True, unit=unit, review_error=f"reviewer returned {answer!r}, not True/False", by_rule=rule)
+        return Verdict(allow=answer, score=score, held=True, unit=unit, by_rule=rule)
+
+    def _ask(self, step):
+        if self.reviewer_timeout is None:
+            return self.reviewer(step)
+        import concurrent.futures as cf
+        ex = cf.ThreadPoolExecutor(max_workers=1)
+        try:
+            return ex.submit(self.reviewer, step).result(timeout=self.reviewer_timeout)
+        except cf.TimeoutError:
+            raise TimeoutError(f"no answer within {self.reviewer_timeout} s") from None
+        finally:
+            ex.shutdown(wait=False)
+
+    async def acheck_openai(self, messages: list, tool_call) -> Verdict:
+        """check_openai for asyncio agents: the check runs in a worker thread, so the event loop is not blocked."""
+        import asyncio
+        return await asyncio.to_thread(self.check_openai, messages, tool_call)
+
+    async def acheck_anthropic(self, system, messages: list, tool_use) -> Verdict:
+        import asyncio
+        return await asyncio.to_thread(self.check_anthropic, system, messages, tool_use)
+
+    async def acheck_openai_responses(self, input_items: list, function_call, instructions: str | None = None) -> Verdict:
+        import asyncio
+        return await asyncio.to_thread(self.check_openai_responses, input_items, function_call, instructions)
+
+    def check_openai_responses(self, input_items: list, function_call, instructions: str | None = None) -> Verdict:
+        """OpenAI Responses API: input_items are the conversation items (messages, function_call and function_call_output
+        items, as you pass them in `input`); function_call is the proposed function_call item; instructions: the
+        request's `instructions` (the system prompt). Converted to Chat Completions messages, then check_openai."""
+        msgs, fc = responses_to_chat(input_items, instructions), _as_dict(function_call)
+        call = {"id": fc.get("call_id") or fc.get("id"), "type": "function",
+                "function": {"name": fc.get("name"), "arguments": fc.get("arguments") or "{}"}}
+        return self.check_openai(msgs, call)
 
     def check(self, instructions: str, task: str, history: list[dict], tool: str, args: dict) -> Verdict:
         return self.check_step({"instructions": instructions, "task": task, "history": history, "action": {"tool": tool, "args": args}})

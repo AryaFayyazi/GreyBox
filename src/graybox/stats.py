@@ -6,6 +6,30 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 
+def _fnv1a(text: str) -> int:
+    h = 0x811C9DC5
+    for b in text.encode("utf-8"):
+        h = ((h ^ b) * 0x01000193) & 0xFFFFFFFF
+    return h
+
+
+def group_folds(groups, k: int, rep: int = 0, y=None) -> np.ndarray:
+    """Fold index of each unit: whole groups go to the currently smallest fold; groups with a positive (y) first, so the
+    positives spread over the folds and every training fold has some; then the largest groups first; groups of the
+    same size in an order fixed by a hash of (rep, group). Identical to the browser (tm-core.js groupFolds), so both
+    trainers report the same estimate; `rep` gives another assignment for repeated cross-validation. One assignment can
+    move the estimate a lot (the GPT example, before positives were spread: 0.886 vs 0.950), so the trainers average 3."""
+    from collections import Counter
+    size = Counter(groups)
+    pos = set() if y is None else {g for g, v in zip(groups, y) if v}
+    order = sorted(size, key=lambda g: (g not in pos, -size[g], _fnv1a(f"{rep}:{g}"), g))
+    load, fold = [0] * k, {}
+    for g in order:
+        f = min(range(k), key=lambda i: (load[i], i))
+        fold[g] = f
+        load[f] += size[g]
+    return np.array([fold[g] for g in groups])
+
 def within_auroc(y, s, strata) -> float:
     """Pair-weighted AUROC over strata that contain both classes: sum_k n+_k n-_k AUC_k / sum_k n+_k n-_k."""
     y, s, strata = np.asarray(y), np.asarray(s, float), np.asarray(strata)

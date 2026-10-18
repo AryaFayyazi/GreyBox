@@ -29,17 +29,26 @@ on four closed frontier agents (AUROC 0.77), but at a 5% review budget it caught
 opinion on held actions, not as the only monitor.</p>
 
 <h2>Install</h2>
-<pre>pip install "graybox[server] @ git+https://github.com/AryaFayyazi/GreyBox"     # core + HTTP server (scoring needs only numpy)
-pip install "graybox[text] @ git+https://github.com/AryaFayyazi/GreyBox"       # + train the text monitor in Python
-pip install "graybox[reader] @ git+https://github.com/AryaFayyazi/GreyBox"     # + the reader monitor (GPU)</pre>
+<pre>pip install "greybox-monitor[server]"     # core + HTTP server (scoring needs only numpy); then: import graybox
+pip install "greybox-monitor[text]"       # + train the text monitor in Python
+pip install "greybox-monitor[reader]"     # + the reader monitor (GPU)</pre>
+<p class="muted">The package is <code>greybox-monitor</code> on PyPI; you import <code>graybox</code>. The PyPI projects named
+<code>graybox</code> and <code>greybox</code> are unrelated: do not install them. Pin a version (<code>greybox-monitor==0.4.0</code>);
+the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md">changelog</a>.</p>
 
 <h2>Get a monitor without a browser</h2>
 <p>Train the text monitor on your own labelled logs, in seconds on a CPU. The input is the same as for the browser trainer:
 OpenAI or Anthropic conversations, one per line, with a <code>"labels"</code> field <code>{"call_id": 0 or 1}</code>
 (<a href="data/example_gpt_openai.jsonl">example: 300 GPT conversations</a>, <a href="data/example_claude_anthropic.jsonl">150 Claude conversations</a>).</p>
 <pre>python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json      # add --chat for agents that talk with a user
-# prints the cross-validated AUROC (pooled and within tool) and the share of violations caught at a 5% budget
-python -m graybox.train_text labelled_steps.jsonl --group-by task                     # folds hold out whole tasks: the score on unseen tasks</pre>
+# prints the cross-validated AUROC (pooled and within tool) and the share of violations caught at a 5% budget;
+# the folds hold out whole tasks (conversations with the same first user request)
+python -m graybox.train_text labelled_steps.jsonl --eval-only --group-by family       # report only: hold out whole task families</pre>
+<p>The model file leaves out identifying words by default (digits, "@", long codes, rare words): it is a partial copy of your logs'
+vocabulary. <code>--no-privacy</code> keeps them. The filter also reduces memorization: on our GPT example, with whole task families
+held out, AUROC 0.898 with the filter and 0.806 without it (0.948 and 0.940 with tasks held out). An existing <code>--out</code> file is not overwritten without <code>--force</code>.</p>
+<p>The estimate is the mean of 3 cross-validations with different fold assignments (the report gives the range); tasks with a
+violation are spread over the folds. Python and the browser use the same folds and agree to about 0.001.</p>
 <p>Read the within-tool AUROC. If it is much lower than the pooled AUROC, the monitor mostly knows <i>which tool</i> is called, not
 whether this call breaks the rule; the report then warns. On τ²-bench grouped by task, a monitor scored 0.82 pooled and 0.49 within tool.</p>
 <p>Or in Python: <code>tm = TextMonitor().fit(steps, labels, groups); tm.save("greybox-text-monitor.json")</code>, with steps from
@@ -48,9 +57,9 @@ scores in both (to 10<sup>−13</sup>).</p>
 
 <h2>Put a monitor in your agent's loop</h2>
 <p><code>graybox.guard.Guard</code> checks each proposed tool call before it runs, in each provider's own message format. A blocked call
-does not run; the agent gets a message that a human will review it. In our live test on a closed agent (T16, 500 scenarios with and
-without the gate), the share of episodes with an executed violation fell from 6.6% to 0.2%, with no violation after a block, at 89 ms
-per check.</p>
+does not run; the agent gets a message that it was blocked. In our live test on a closed agent (T16, 500 scenarios with and
+without the gate, the GPU reader), the share of episodes with an executed violation fell from 6.6% to 0.2%, with no violation after a
+block, at 89 ms per check (server round trip). The text monitor takes about 0.3 ms per check.</p>
 <pre>from graybox.guard import Guard
 from graybox.monitor import TextMonitor
 guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))      # or Guard(load_reader(...), gate=QuantileGate(0.05))
@@ -65,10 +74,15 @@ for call in reply.tool_calls or []:
 
 # Anthropic Messages
 messages.append({"role": "assistant", "content": response.content})   # append the reply first: required for parallel calls
+results = []
 for block in response.content:
     if block.type == "tool_use":
         v = guard.check_anthropic(system, messages, block)
-        result = run_tool(block) if v.allow else v.block_message</pre>
+        result = run_tool(block) if v.allow else v.block_message
+        results.append({"type": "tool_result", "tool_use_id": block.id, "content": result})
+messages.append({"role": "user", "content": results})</pre>
+<p>SDK objects (OpenAI messages, Anthropic content blocks such as <code>response.content</code>) and plain dicts give the same
+scores. (Before version 0.4.0, Anthropic content blocks inside a dict message lost the earlier calls: update.)</p>
 <p>The guard builds each step with the same rule as the browser trainer's importer
 (<code>graybox.guard.conversation_steps</code>): system prompt, first user message, earlier calls with their results, the proposed call.
 On our example logs, the importer reproduces the research units byte for byte (979/979 GPT, 373/373 Claude), and the browser and Python
@@ -112,6 +126,16 @@ guard = Guard(monitor, gate=QuantileGate(0.05), reviewer=ask_human)
 v = guard.check_openai(messages, call)
 if v.held: log_review(call, approved=v.allow)
 result = run_tool(call) if v.allow else v.block_message</pre>
+<h3>OpenAI Responses API, asyncio, reviewer timeout</h3>
+<pre>v = guard.check_openai_responses(input_items, function_call, instructions=instructions)   # Responses API items
+v = await guard.acheck_openai(messages, call)        # also acheck_anthropic, acheck_openai_responses (a worker thread)
+guard = Guard(monitor, gate=QuantileGate(0.05), reviewer=ask_human, reviewer_timeout=300)   # no answer in 300 s: blocked</pre>
+
+<h3>Always review some tools</h3>
+<p>To send every call of a risky tool to review, whatever its score, list it: <code>Guard(monitor, gate=QuantileGate(0.05),
+reviewer=ask_human, hold_tools={"issue_refund"})</code>. <code>v.by_rule</code> is then True. The gate still sees these scores,
+so its cut does not change. Do not split the budget by tool: offline, a 5% budget for each tool caught 39% of Claude's violations and
+46% of GPT's, against 94% and 98% with one 5% budget, because violations cluster in a few tools.</p>
 
 <h3>Agents that talk with a user</h3>
 <p>By default a step keeps the system prompt, the <i>first</i> user message and the earlier tool calls. In customer-service agents,
@@ -146,7 +170,7 @@ monitor or the GPU reader there.</p>
   <li>Speed on a CPU, measured in Chromium: about 7 s per action with 8 threads, 28 s with one. The trainer page enables several
     threads with a small service worker (<code>coi-sw.js</code>, which only adds isolation headers to that page). With WebGPU it runs
     on the GPU; we did not measure that speed.</li>
-  <li>In Python: <code>EmbedMonitor.load_json("greybox-reader-monitor.json")</code> (<code>pip install "graybox[browser-reader]"</code>)
+  <li>In Python: <code>from graybox.embed_monitor import EmbedMonitor; EmbedMonitor.load_json("greybox-reader-monitor.json")</code> (<code>pip install "greybox-monitor[browser-reader]"</code>)
     scores the same features on a CPU (median 0.54 s per action with 16 threads).</li>
 </ul>
 
@@ -184,8 +208,13 @@ Then one command computes the reader's features and trains the probe:</p>
 seconds on one GPU: AUROC 0.994, 98.5% of violations caught at 5% review (the browser's word-count monitor: 0.989 and 94%).</p>
 
 <h2>HTTP API (self-hosted)</h2>
-<pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --port 8000   # CPU only
-GB_MONITOR_PROBE=reader_probe.joblib      uvicorn graybox.monitor_server:app --port 8000   # + GPU reader</pre>
+<pre>GB_TEXT_MONITOR=greybox-text-monitor.json uvicorn graybox.monitor_server:app --host 127.0.0.1 --port 8000   # CPU only
+GB_MONITOR_PROBE=reader_probe.joblib      uvicorn graybox.monitor_server:app --host 127.0.0.1 --port 8000   # + GPU reader</pre>
+<p><b>Security.</b> Requests carry whole transcripts, which can hold credentials. Bind to localhost, or set
+<code>GB_API_KEY</code> (a long random string): every endpoint but <code>/v1/health</code> then needs
+<code>Authorization: Bearer &lt;key&gt;</code>. Use TLS (a reverse proxy) beyond one machine. <b>Restarts.</b> Gates live in memory;
+set <code>GB_GATE_STATE=/path/gates.json</code> to keep them (warm-up scores and frozen cuts) across restarts. Without it, a restarted
+server sends every action of a stream to review until it has seen 100 again.</p>
 <p><code>POST /v1/monitor/text</code> scores with the browser-trained text monitor and its stored cut. <code>POST /v1/monitor/action</code>
 uses the reader with a frozen gate per <code>stream</code>. Both take the same body:</p>
 <pre>POST /v1/monitor/action
@@ -197,10 +226,12 @@ uses the reader with a frozen gate per <code>stream</code>. Both take the same b
 → {"p_unsafe": 0.000213, "escalate": false, "threshold": 0.00264, "calibrated": true, ...}
 
 POST /v1/monitor/text     (same body; "args" may also be a JSON string, as in OpenAI's function.arguments)
-→ {"score": -3.74, "unit": "logit", "escalate": false, "threshold": -2.03, "budget": 0.05, "ms": 0.2, "note": "..."}
+→ {"score": -3.74, "unit": "logit", "escalate": false, "threshold": -2.03, "budget": 0.05, "ms": 0.2, "warning": null, "note": "..."}
+   ("budget" on /text needs "gate": true; an empty tool name is refused with 422)
 
 GET /v1/health
-→ {"text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false}</pre>
+→ {"version": "0.4.0", "text_monitor": true, "text_monitor_error": null, "reader_monitor": false, "reader_loaded": false,
+   "auth_required": false, "gate_state_file": null, "gates": 0}</pre>
 <p>For agents that talk with a user, send <code>"context"</code> (from <code>graybox.chat.chat_ctx</code>) in place of
 instructions, task and history, with a monitor trained on such contexts. Each <code>stream</code> calibrates its own frozen cut from its own traffic. Transcripts stay on your machine. A Dockerfile is in
 <code>deploy/</code> of the repository.</p>
@@ -214,7 +245,7 @@ your policy. <code>group</code> keeps a task's steps in one cross-validation fol
 
 <h2>How to evaluate a monitor honestly</h2>
 <ul>
-  <li>Hold out whole tasks, not steps (the trainer does this). Steps of one task share text and inflate accuracy.</li>
+  <li>Hold out whole tasks, not steps or conversations (the trainer groups by task). Steps of one task share text and inflate accuracy: on our GPT example, 0.989 when conversations are held out, 0.948 when tasks are, 0.898 when task families (24 templates) are.</li>
   <li>Report the catch rate at the review budget you can afford, not only AUROC.</li>
   <li>Test on a policy or task family you did not train on before trusting it there.</li>
   <li>Never take the threshold from another agent: calibrate on this agent's traffic and freeze it.</li>

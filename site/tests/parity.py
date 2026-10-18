@@ -3,6 +3,7 @@
 1. render: SDK ctx_text/act_text vs TM.render on 300 structured Claude agent steps (T8b episodes) + synthetic edge cases
 2. model: TextMonitor (scikit-learn, C=10) vs TM.fit on the same 1,200 Gemma dev units; scored on 600 held-out units:
    vocabulary sizes, Spearman correlation of decision values, AUROC of each
+3. privacy filter: TextMonitor.fit(privacy=True) vs TM.fit with TM.privacyDrop on the same units: identical vocabularies
 python site/tests/parity.py   (needs the playwright venv for the browser; run with the cape venv)
 """
 import importlib, json, subprocess, sys, tempfile
@@ -69,7 +70,10 @@ fetch('fx.json').then(r=>r.json()).then(fx=>{
   for (let k = 0; k < 3; k++) rt.forEach(r => TM.decision(m, TM.features(m, r)));
   const scoreMs = (performance.now() - t1) / (3 * rt.length);
   m.format = 'graybox-text-monitor/1'; m.threshold_logit = 0;
-  window.OUT = {rend, dec, nvc: m.vc.idf.length, nva: m.va.idf.length, ms: performance.now()-t0, model: m, scoreMs};
+  const mp = TM.fit(fx.train.map(TM.render), fx.train.map(r=>r.label), 10, {drop: TM.privacyDrop});
+  const decp = fx.test.map(r=>TM.decision(mp, TM.features(mp, TM.render(r))));
+  window.OUT = {rend, dec, nvc: m.vc.idf.length, nva: m.va.idf.length, ms: performance.now()-t0, model: m, scoreMs,
+                privacy: {vc: Object.keys(mp.vc.vocab), va: Object.keys(mp.va.vocab), dec: decp}};
 });</script>""")
 drv = tmp / "drive.py"
 drv.write_text(f"""
@@ -99,6 +103,13 @@ res = {"render_identical": f"{sum(same)}/{len(same)}", "render_mismatch_idx": ba
        "spearman_decision": round(float(spearmanr(py_dec, js_dec)[0]), 5), "max_abs_decision_diff": round(float(np.max(np.abs(py_dec - js_dec))), 4),
        "auroc_py": round(float(roc_auc_score(yte, py_dec)), 4), "auroc_js": round(float(roc_auc_score(yte, js_dec)), 4), "js_fit_ms": round(out["ms"]), "js_score_ms_per_step": round(out["scoreMs"], 3),
        "roundtrip_browser_model_scored_in_python_max_abs_diff": float(np.max(np.abs(py_from_js - js_dec)))}
+tmp_priv = TextMonitor(C=10).fit([{"context": r["context"], "action": r["action"]} for r in rows_tr], [r["label"] for r in rows_tr], None, privacy=True)
+pv = (set(tmp_priv.v[0].vocabulary_), set(tmp_priv.v[1].vocabulary_))
+jv = (set(out["privacy"]["vc"]), set(out["privacy"]["va"]))
+pdec = np.array([tmp_priv.decision(None, None, None, None, rendered=(r["context"], r["action"])) for r in rows_te])
+res["privacy_filter"] = {"vocab_py": [len(pv[0]), len(pv[1])], "vocab_js": [len(jv[0]), len(jv[1])], "vocab_identical": pv == jv,
+                         "spearman_decision": round(float(spearmanr(pdec, np.array(out["privacy"]["dec"]))[0]), 5),
+                         "auroc_py": round(float(roc_auc_score(yte, pdec)), 4), "auroc_js": round(float(roc_auc_score(yte, out["privacy"]["dec"])), 4)}
 if bad:
     i = bad[0]
     a, b = out["rend"][i]["ctx"], expect[i]["ctx"]

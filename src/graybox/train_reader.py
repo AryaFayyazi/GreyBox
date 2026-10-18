@@ -6,7 +6,7 @@ Input: the labelled actions downloaded from the browser trainer (steps JSONL), o
     python -m graybox.train_reader labelled.jsonl --out my_reader_probe.joblib
 
 The probe is the shipped pipeline (standardize -> PCA -> logistic, C = 0.05) on the reader's layer 32 (Qwen3-8B).
-It reports an AUROC from 5-fold cross-validation grouped by conversation (or task), and the catch rate when 5% of
+It reports an AUROC from 5-fold cross-validation grouped by task (the first user message; a steps file's own group), and the catch rate when 5% of
 actions go to review. Needs a GPU, torch, transformers and scikit-learn.
 """
 from __future__ import annotations
@@ -22,16 +22,40 @@ from .monitor import Q, act_text, ctx_text, Step
 def load_steps(path: str, chat: bool = False) -> list[dict]:
     """Labelled steps from a steps JSONL or from conversations with a "labels" field. Unlabelled steps are dropped.
     chat: build conversation-aware contexts (every user turn and agent message; graybox.chat) from conversations."""
-    rows = [json.loads(l) for l in open(path) if l.strip()]
-    steps = []
+    text = open(path, encoding="utf-8").read()
+    if text.lstrip().startswith("["):                 # a .json file holding one array of conversations or steps
+        try:
+            rows = json.loads(text)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"not valid JSON: {e}") from None
+    else:
+        rows = []
+        for n, line in enumerate(text.splitlines(), 1):
+            if line.strip():
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"line {n} is not valid JSON ({e.msg}); expected one conversation or step per line") from None
+    steps, n_ids, n_calls = [], 0, 0
     for i, r in enumerate(rows):
         if "action" in r or "context" in r:
             steps.append({**r, "label": parse_label(r.get("label"))})      # strict: "0" is safe, "yes" is dropped
         else:
-            for s in conversation_steps(r.get("messages", r if isinstance(r, list) else []), system=r.get("system"), labels=r.get("labels"), chat=chat):
-                s["group"] = str(r.get("id", f"conversation-{i + 1}"))
+            n_ids += len(r.get("labels") or {}) if isinstance(r, dict) else 0
+            conv = conversation_steps(r.get("messages", []) if isinstance(r, dict) else r, system=r.get("system") if isinstance(r, dict) else None,
+                                      labels=r.get("labels") if isinstance(r, dict) else None, chat=chat)
+            n_calls += len(conv)
+            for s in conv:
+                cid = str(r.get("id", f"conversation-{i + 1}")) if isinstance(r, dict) else f"conversation-{i + 1}"
+                # cross-validation groups: the task (first user message), so conversations of one task share a fold
+                # (grouping by conversation was optimistic: 0.987 vs 0.939 on the GPT example, a user test); the browser does the same
+                s["conversation"], s["group"] = cid, ("task: " + s["task"]) if s.get("task") else cid
                 steps.append(s)
-    return [s for s in steps if s.get("label") in (0, 1, True, False)]
+    out = [s for s in steps if s.get("label") in (0, 1, True, False)]
+    if not out and n_ids:
+        raise ValueError(f"the 'labels' fields name {n_ids} call ids, but none of the {n_calls} tool calls has a matching id "
+                         "(labels are {call_id: 0 or 1}, with the ids of tool_calls / tool_use blocks)")
+    return out
 
 
 def prompt_of(s: dict) -> str:
@@ -53,14 +77,22 @@ def main(argv=None):
     a = ap.parse_args(argv)
     import joblib
     import numpy as np
-    from sklearn.decomposition import PCA
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.metrics import roc_auc_score
-    from sklearn.model_selection import GroupKFold
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import StandardScaler
+    try:
+        import torch  # noqa: F401
+        import transformers  # noqa: F401
+        from sklearn.decomposition import PCA
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import roc_auc_score
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
+    except ModuleNotFoundError as e:
+        raise SystemExit(f"the reader needs the [reader] extra ({e.name} is missing): pip install \"greybox-monitor[reader]\" (and a GPU)")
     from .reader_load import make_reader
-    steps = load_steps(a.data, chat=a.chat)
+    from .stats import caught_at_budget, group_folds
+    try:
+        steps = load_steps(a.data, chat=a.chat)
+    except (ValueError, OSError) as e:
+        raise SystemExit(f"{a.data}: {e}")
     y = np.array([int(bool(s["label"])) for s in steps])
     if y.sum() < 2 or (1 - y).sum() < 2:
         raise SystemExit("need at least 2 violations and 2 safe actions")
@@ -68,13 +100,20 @@ def main(argv=None):
     mon = make_reader(probe=None, layer=a.layer, reader=a.reader)      # the standard Hugging Face cache
     X = np.vstack([mon.features(prompt_of(s)) for s in steps])
     mk = lambda n: make_pipeline(StandardScaler(), PCA(min(256, n - 1), random_state=0), LogisticRegression(C=0.05, max_iter=4000))  # noqa: E731
-    k = min(5, len(set(groups)))
-    oof = np.zeros(len(y))
-    for tr, te in GroupKFold(k).split(X, y, groups):
-        oof[te] = mk(len(tr)).fit(X[tr], y[tr]).decision_function(X[te])
-    cut = np.quantile(oof, 0.95)
-    report = {"actions": int(len(y)), "violations": int(y.sum()), "groups": int(len(set(groups))), "folds": k,
-              "cv_auroc": round(float(roc_auc_score(y, oof)), 4), "caught_at_5pct": round(float((oof[y == 1] >= cut).mean()), 4)}
+    k, gl = min(5, len(set(groups))), [str(g) for g in groups]
+    if len({g for g, v in zip(gl, y) if v}) < 2 or len({g for g, v in zip(gl, y) if not v}) < 2:
+        raise SystemExit("cross-validation needs violations in at least 2 groups (tasks) and safe actions in at least 2")
+    aucs, caught = [], []
+    for rep in range(3):                          # repeated grouped CV, the same folds as graybox.train_text and the browser
+        folds, oof = group_folds(gl, k, rep, y), np.zeros(len(y))
+        for f in range(k):
+            tr, te = np.where(folds != f)[0], np.where(folds == f)[0]
+            oof[te] = mk(len(tr)).fit(X[tr], y[tr]).decision_function(X[te])
+        aucs.append(float(roc_auc_score(y, oof)))
+        caught.append(caught_at_budget(y, oof, 0.05))
+    report = {"actions": int(len(y)), "violations": int(y.sum()), "groups": int(len(set(groups))), "folds": k, "repeats": 3,
+              "cv_auroc": round(float(np.mean(aucs)), 4), "cv_auroc_range": [round(min(aucs), 4), round(max(aucs), 4)],
+              "caught_at_5pct": round(float(np.mean(caught)), 4), "most_possible_at_5pct": round(min(1.0, 0.05 * len(y) / y.sum()), 4)}
     probe = mk(len(y)).fit(X, y)
     joblib.dump({"probe": probe, "layer": a.layer, "reader": a.reader, "chat": a.chat, "trained_on": f"{a.data}: {report}"}, a.out)
     print(json.dumps(report, indent=1))

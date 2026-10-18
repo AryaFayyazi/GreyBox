@@ -1,18 +1,29 @@
 name: ci
 on: [push, pull_request]
 jobs:
-  sdk:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: {python: ["3.10", "3.11", "3.12", "3.13"]}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "${{ matrix.python }}"}
+      - run: pip install ".[server,text]" pytest httpx anthropic openai      # the real SDK types are tested (content blocks)
+      - run: pytest -q tests
+  reproduce:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
-      - run: pip install ".[server,text]" pytest httpx pandas
-      - run: pytest -q tests
+      - run: pip install ".[server,text]" pandas
       - name: recompute the headline results from the public per-unit release
         run: python scripts/109_recompute_public.py
       - name: catch rates at an exact budget reproduce the committed corrections
         run: python scripts/111_catch_exact_budget.py && git diff --exit-code results/t1/catch_exact_budget.json
+      - name: offline baseline gates reproduce
+        run: python scripts/112_offline_gates.py && git diff --exit-code results/t1/offline_gates.json
   docker:
     runs-on: ubuntu-latest
     steps:

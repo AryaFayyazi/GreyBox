@@ -9,7 +9,7 @@ Endpoints
   GET  /v1/runs/{id}               full run (frame metadata + per-step events)
   GET  /v1/runs/{id}/stream        per-step SSE replay (Last-Event-ID resumable)
   GET  /                           3D viewer
-Run:  uvicorn graybox.server:app --port 8765   (from /home/arya/graybox/src)
+Run:  uvicorn graybox.server:app --port 8765   (research viewer; needs the [research] dependencies: torch, transformers)
 """
 from __future__ import annotations
 

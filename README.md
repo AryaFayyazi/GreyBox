@@ -4,7 +4,7 @@
 
 **Replicating agents' hidden states from their transcripts, to predict and prevent the violations of closed agents.**
 
-![Seeing inside closed agents](results/figures/teaser.png)
+![Seeing inside closed agents](https://raw.githubusercontent.com/AryaFayyazi/GreyBox/main/results/figures/teaser.png)
 
 An agent's internal state is a function of the tokens that it read. So an open model that reads the same tokens can
 hold a replica of part of it. From the transcript alone, the replica reconstructs 66% of the variance of the 128 main
@@ -26,7 +26,7 @@ closed models.
 ## Quick start
 
 ```
-pip install "graybox[server,text] @ git+https://github.com/AryaFayyazi/GreyBox"   # [reader] adds the GPU reader
+pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds the GPU reader. (PyPI "graybox" is another project.)
 ```
 
 | Monitor | Hardware and speed | Use it when |
@@ -35,21 +35,28 @@ pip install "graybox[server,text] @ git+https://github.com/AryaFayyazi/GreyBox" 
 | Reader monitor (Qwen3-8B reads the transcript; a linear probe) | 1 GPU, 41 ms for each action | your tasks change; it is more robust to new tasks |
 
 1. Train a monitor on your own labelled logs (OpenAI or Anthropic conversations with a `"labels"` field
-   `{call_id: 0/1}`), in seconds on a CPU, or in the [browser trainer](https://aryafayyazi.github.io/GreyBox/train.html):
+   `{call_id: 0/1}`), in seconds on a CPU, or in the [browser trainer](https://aryafayyazi.github.io/GreyBox/train.html).
+   Example data to try: [300 GPT conversations](https://aryafayyazi.github.io/GreyBox/data/example_gpt_openai.jsonl),
+   [150 Claude conversations](https://aryafayyazi.github.io/GreyBox/data/example_claude_anthropic.jsonl).
    ```
    python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json   # --chat for agents that talk with a user
    ```
-   It reports the cross-validated AUROC, pooled and within tool. Add `--group-by task` to estimate the score on tasks it has not seen.
+   It reports the AUROC with whole tasks held out, pooled and within tool, and the catch rate at the review budget. The
+   model file leaves out identifying words (digits, codes, rare words) unless you pass `--no-privacy`.
+   `--eval-only --group-by <field>` reports the score with other groups held out (for example task families).
 2. Put it in your agent's loop:
    ```python
    from graybox.guard import Guard
    from graybox.monitor import QuantileGate, TextMonitor
 
    guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))
-   for call in reply.tool_calls or []:            # OpenAI; check_anthropic for tool_use blocks
-       v = guard.check_openai(messages, call)     # pass the reply in messages when it holds several calls
+   messages.append(reply)                         # the assistant reply that holds the calls (needed for parallel calls)
+   for call in reply.tool_calls or []:            # OpenAI; check_anthropic(system, messages, block) for tool_use blocks
+       v = guard.check_openai(messages, call)
        result = run_tool(call) if v.allow else v.block_message
+       messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
    ```
+   SDK objects (OpenAI messages, Anthropic content blocks) and plain dicts give the same scores.
 3. On a new kind of task, a cut stored in the file can escalate almost nothing: on held-out task families it caught
    0 of 110 violations (three splits, `results/tool/cut_under_shift.json`). A live cut on the agent's own traffic,
    `Guard(monitor, gate=QuantileGate(0.05))` (or the server's `"gate": true`), keeps the review load at 5%, but it
@@ -173,7 +180,7 @@ What you can reproduce from this repository alone:
 - the SDK and its tests, the browser–Python parity tests, and the lock hashes of the repository files;
 - the headline confirmatory numbers, recomputed from the per-unit release in `results/units/` (labels, strata,
   clusters and each monitor's score per action; the true and replicated states on 128 components; the live
-  episodes): `python scripts/109_recompute_public.py` recomputes 45 numbers (AUROCs, catch rates, R², the T16c
+  episodes): `python scripts/109_recompute_public.py` recomputes 67 numbers (AUROCs, catch rates, R², the T16c
   intervals) and checks them against `results/t1/` (CI runs it). `scripts/108_release_units.py` built the release
   and checked each array against the published value.
 

@@ -1,0 +1,23 @@
+{
+ "actions": 1515,
+ "violations": 67,
+ "groups": {
+  "conversation": 300,
+  "task": 194,
+  "family": 24
+ },
+ "cv_auroc": {
+  "conversation": {
+   "privacy": 0.9892,
+   "no_privacy": 0.9886
+  },
+  "task": {
+   "privacy": 0.9478,
+   "no_privacy": 0.9403
+  },
+  "family": {
+   "privacy": 0.8984,
+   "no_privacy": 0.8064
+  }
+ }
+}

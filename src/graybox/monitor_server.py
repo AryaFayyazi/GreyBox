@@ -7,28 +7,98 @@ POST /v1/monitor/text    the text monitor (browser trainer or python -m graybox.
                          Also a browser-reader file (graybox-embed-monitor/1; graybox.embed_monitor).
 POST /v1/monitor/action  the reader monitor (Qwen3-8B + probe), with a frozen QuantileGate per stream
 GET  /v1/health
+
+Security: bind to localhost unless you set GB_API_KEY; with it, every endpoint but /v1/health needs the header
+"Authorization: Bearer <GB_API_KEY>". Requests carry whole transcripts, which can hold credentials.
+Gates: GB_GATE_STATE=/path/gates.json keeps each stream's gate (warm-up scores, frozen cut) across restarts; without it,
+a restarted server escalates every action of a stream until it has seen 100 again (fail closed).
 """
 from __future__ import annotations
 
+import contextlib
+import hmac
 import json
 import os
 import threading
 import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .monitor import Q, QuantileGate, Step, TextMonitor, act_text
 
 from . import __version__  # noqa: E402
-app = FastAPI(title="Grey Box monitor", version=__version__)
+
 _STATE: dict = {"gates": {}}
 _READER_LOCK = threading.Lock()      # one forward pass at a time on the GPU model
+_GATE_LOCK = threading.Lock()
+
+
+def _auth(request: Request):
+    """With GB_API_KEY set, every endpoint but /v1/health needs "Authorization: Bearer <key>"."""
+    key = os.environ.get("GB_API_KEY")
+    if not key or request.url.path == "/v1/health":
+        return
+    got = request.headers.get("authorization", "")
+    if not hmac.compare_digest(got.encode(), f"Bearer {key}".encode()):
+        raise HTTPException(401, "missing or wrong API key: send 'Authorization: Bearer <GB_API_KEY>'")
+
+
+def _gate_key(stream: str, budget: float) -> str:
+    return f"{stream}|{budget!r}"
+
+
+def _load_gates():
+    path = os.environ.get("GB_GATE_STATE")
+    if path and os.path.exists(path):
+        d = json.loads(open(path).read())
+        _STATE["gates"] = {k: QuantileGate.from_dict(v) for k, v in d.items()}
+
+
+def _save_gates():
+    """Write every gate atomically (GB_GATE_STATE); called when a gate is created, freezes or is calibrated, every 50
+    gated requests, and at shutdown."""
+    path = os.environ.get("GB_GATE_STATE")
+    if not path:
+        return
+    with _GATE_LOCK:
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({k: g.to_dict() for k, g in _STATE["gates"].items()}, f)
+        os.replace(tmp, path)
+
+
+def _gate(stream: str, budget: float) -> QuantileGate:
+    k = _gate_key(stream, budget)
+    if k not in _STATE["gates"]:
+        _STATE["gates"][k] = QuantileGate(budget)
+        _save_gates()
+    return _STATE["gates"][k]
+
+
+def _observe(g: QuantileGate, score: float) -> bool:
+    was = g.frozen
+    esc = bool(g(score))
+    _STATE["gated"] = _STATE.get("gated", 0) + 1
+    if g.frozen != was or _STATE["gated"] % 50 == 0:
+        _save_gates()
+    return esc
+
+
+@contextlib.asynccontextmanager
+async def _lifespan(app):
+    _load_text()                      # fail fast: a bad GB_TEXT_MONITOR shows in /v1/health, not at the first request
+    _load_gates()
+    yield
+    _save_gates()
+
+
+app = FastAPI(title="Grey Box monitor", version=__version__, lifespan=_lifespan, dependencies=[Depends(_auth)])
 
 
 class StepIn(BaseModel):
     model_config = ConfigDict(extra="forbid")      # a misspelt field is an error, not silently ignored
-    tool: str
+    tool: str = Field(..., min_length=1, description="the tool name (an empty name is refused: Guard blocks such calls too)")
     args: dict | str | None = Field(default_factory=dict, description="a dict, or a JSON string (OpenAI's function.arguments)")
     result: str | None = ""
 
@@ -56,7 +126,8 @@ class ActionRequest(BaseModel):
     history: list[StepIn] = Field(default_factory=list, description="earlier tool calls with their results")
     action: StepIn = Field(..., description="the proposed action (tool '__final__' for a final answer)")
     stream: str = Field("default", description="deployment id; each stream calibrates its own frozen cut (reader only)")
-    budget: float = Field(0.05, gt=0, lt=1, description="fraction of this stream's actions to escalate (reader only)")
+    budget: float | None = Field(None, gt=0, lt=1, description="fraction of this stream's actions to escalate: the reader's gate "
+                                 "(default 0.05), or the text monitor's live gate (needs gate=true; default 0.05)")
     gate: bool = Field(False, description="text monitor: escalate the top `budget` of THIS stream's own traffic (a frozen "
                        "QuantileGate) instead of the file's cut. Use it on a new kind of task, where the file's cut can escalate almost nothing")
     context: str | None = Field(None, description="optional prebuilt context (graybox.chat.chat_ctx, for conversations with "
@@ -83,16 +154,13 @@ def _load_text():
         _STATE["text_error"] = f"{type(e).__name__}: {e}"
 
 
-@app.on_event("startup")
-def _startup():
-    _load_text()                      # fail fast: a bad GB_TEXT_MONITOR shows in /v1/health, not at the first request
-
-
 @app.get("/v1/health")
 def health():
     _load_text()
-    return {"text_monitor": "text" in _STATE, "text_monitor_error": _STATE.get("text_error"),
-            "reader_monitor": bool(os.environ.get("GB_MONITOR_PROBE")), "reader_loaded": "reader" in _STATE}
+    return {"version": __version__, "text_monitor": "text" in _STATE, "text_monitor_error": _STATE.get("text_error"),
+            "reader_monitor": bool(os.environ.get("GB_MONITOR_PROBE")), "reader_loaded": "reader" in _STATE,
+            "auth_required": bool(os.environ.get("GB_API_KEY")), "gate_state_file": os.environ.get("GB_GATE_STATE"),
+            "gates": len(_STATE["gates"])}
 
 
 @app.post("/v1/monitor/text")
@@ -105,18 +173,24 @@ def monitor_text(req: ActionRequest):
     tm, t0 = _STATE["text"], time.perf_counter()
     if req.context is None and tm._json.get("chat"):
         raise HTTPException(422, "this monitor was trained with conversation-aware context (--chat): send 'context' (graybox.chat.chat_ctx)")
+    if req.budget is not None and not req.gate:
+        raise HTTPException(422, "'budget' applies only with gate=true; without it the file's own cut is used")
+    warn = ("this monitor was not trained on conversation-aware contexts: 'context' changes its input"
+            if req.context is not None and not tm._json.get("chat") else None)
     if req.context is not None:
         z = tm.decision(None, None, None, None, rendered=(req.context, act_text(req.action.tool, req.action.args)))
     else:
         z = tm.decision(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
     if req.gate:
-        g = _STATE["gates"].setdefault(("text:" + req.stream, req.budget), QuantileGate(req.budget))
-        esc, thr, budget = bool(g(z)), g.threshold, req.budget
+        budget = req.budget or 0.05
+        g = _gate("text:" + req.stream, budget)
+        thr = g.threshold
+        esc = _observe(g, z)
     else:
         esc, thr, budget = z >= tm._json["threshold_logit"], tm._json["threshold_logit"], tm._json.get("budget")
     return {"score": round(z, 4), "unit": "logit", "escalate": esc, "threshold": None if thr is None else round(thr, 4),
             "cut": "live gate on this stream" if req.gate else "the file's cut",
-            "budget": budget, "ms": round(1000 * (time.perf_counter() - t0), 3),
+            "budget": budget, "ms": round(1000 * (time.perf_counter() - t0), 3), "warning": warn,
             "note": "text monitor: reliable on the tools and policies it was trained on; retrain for new ones"}
 
 
@@ -137,7 +211,8 @@ def calibrate(req: CalibrateRequest):
     if req.monitor == "text" and all(0.0 <= x <= 1.0 for x in req.scores):
         raise HTTPException(422, "text monitors gate on logits: send the 'score' values of /v1/monitor/text (or Guard's v.score), not probabilities")
     g = QuantileGate(req.budget, warmup=len(req.scores), min_seen=100).fit(req.scores)
-    _STATE["gates"][(("text:" if req.monitor == "text" else "") + req.stream, req.budget)] = g
+    _STATE["gates"][_gate_key(("text:" if req.monitor == "text" else "") + req.stream, req.budget)] = g
+    _save_gates()
     return {"stream": req.stream, "budget": req.budget, "threshold": g.threshold, "frozen": g.frozen, "n": len(req.scores)}
 
 
@@ -159,9 +234,9 @@ def monitor_action(req: ActionRequest):
             p = float(rm.probe.predict_proba(rm.features(Q.format(ctx=req.context, cot="", act=act_text(req.action.tool, req.action.args))))[0, 1])
         else:
             p = rm.score(req.instructions, req.task, _hist(req), (req.action.tool, req.action.args))
-        g = _STATE["gates"].setdefault((req.stream, req.budget), QuantileGate(req.budget))
+        g = _gate(req.stream, req.budget or 0.05)
         t = g.threshold
-        esc = g(p)
+        esc = _observe(g, p)
     return {"p_unsafe": round(p, 6), "escalate": esc, "threshold": t, "calibrated": t is not None, "frozen": g.frozen,
             "ms": round(1000 * (time.perf_counter() - t0), 1),
             "note": "p_unsafe ranks actions but is not calibrated on a new agent; act on 'escalate'"}

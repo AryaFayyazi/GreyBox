@@ -89,7 +89,7 @@
     <label for="mtype">Monitor</label>
     <select id="mtype" style="width:auto">
       <option value="text" selected>Word counts (TF-IDF): instant; for tasks like the ones you labelled</option>
-      <option value="embed">Browser reader: a small neural reader; transfers to new kinds of tasks</option>
+      <option value="embed">Browser reader: a small neural reader; somewhat better than word counts on a new kind of task, slow</option>
     </select>
     <button id="pretrainedBtn" class="secondary" hidden>Score with the pre-trained reader (no labels needed)</button>
   </div>
@@ -100,9 +100,9 @@
     <span>% of actions to a human</span>
     <button id="trainBtn" disabled>Train on the labelled actions</button>
   </div>
-  <label class="row" style="gap:8px;font-size:13px;margin:10px 0 0"><input type="checkbox" id="privacyFilter" style="width:auto">
-    Train without identifying words (digits, "@", long codes, random strings, rare words): recommended if you will share the model file.
-    The numbers you see are then for that model.</label>
+  <label class="row" style="gap:8px;font-size:13px;margin:10px 0 0"><input type="checkbox" id="privacyFilter" checked style="width:auto">
+    Leave identifying words out of the model (digits, "@", long codes, random strings, rare words). On by default: the model file is a
+    partial copy of your logs' vocabulary. Turn it off only if the file stays private. The numbers you see are for the model you download.</label>
   <progress id="prog" value="0" max="1" hidden style="margin-top:12px"></progress>
   <p id="progMsg" class="muted" style="margin:6px 0 0"></p>
 </div>
@@ -114,8 +114,9 @@
   <p class="muted" style="font-size:13px;margin:8px 0 0"><b>AUROC</b> is the chance that a random violation gets a higher score than a
     random safe action: 0.5 is guessing, 1.0 is perfect.</p>
   <p class="muted" id="details" style="margin-top:10px"></p>
-  <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole conversations or tasks. Thus it estimates
-    the performance on new tasks <i>of the same type</i>. It does not cover a new policy, new tools or a different benchmark. In
+  <div class="note limit"><b>How far to trust these numbers.</b> Cross-validation holds out whole tasks (conversations that start with the
+    same user request share a fold). It estimates the performance on new tasks <i>like the labelled ones</i>; a new kind of task can
+    score much lower (on our GPT example: 0.95 when tasks are held out, 0.90 when whole task families are). It does not cover a new policy, new tools or a different benchmark. In
     our tests, a policy that was absent from the training data was missed, until 20 to 40 labelled actions of it were added.
     <br><b>The review cut in the file</b> is set on your labelled actions. On a new kind of task the scores shift, and a stored cut
     can send almost nothing to review: on task families held out from training, it caught 0 of 110 violations. A cut set on the
@@ -142,7 +143,7 @@
         traffic (see the docs).</p>
       <p><button id="exportBtn">Download model (.json)</button></p>
       <p id="exportNote" class="muted" style="font-size:13px"></p>
-<pre id="useCode">pip install "graybox @ git+https://github.com/AryaFayyazi/GreyBox"
+<pre id="useCode">pip install greybox-monitor
 
 from graybox.guard import Guard
 from graybox.monitor import TextMonitor

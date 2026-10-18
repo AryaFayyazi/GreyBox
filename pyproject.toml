@@ -1,23 +1,44 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-license = {text = "MIT"}
-name = "graybox"
-version = "0.3.2"
+name = "greybox-monitor"            # import name: graybox ("graybox" and "greybox" on PyPI are other projects)
+version = "0.4.0"
 description = "Monitor tool-calling agents (open or closed) from their transcripts: score each proposed action before it runs"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Arya Fayyazi", email = "108017682+AryaFayyazi@users.noreply.github.com"}]
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.24"]
+dependencies = ["numpy>=1.24,<3"]
+keywords = ["ai safety", "agents", "monitoring", "tool use", "guardrails", "llm"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://aryafayyazi.github.io/GreyBox/"
+Documentation = "https://aryafayyazi.github.io/GreyBox/docs.html"
+Source = "https://github.com/AryaFayyazi/GreyBox"
+Changelog = "https://github.com/AryaFayyazi/GreyBox/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-text = ["scikit-learn>=1.3", "scipy"]                             # train the text monitor in Python (graybox.train_text)
-reader = ["torch>=2.2", "transformers>=4.51", "joblib", "scikit-learn>=1.3", "huggingface_hub"]   # reader monitor (GPU)
-browser-reader = ["torch>=2.2", "transformers>=4.51"]               # score with a browser-reader model file in Python (CPU)
-server = ["fastapi", "uvicorn", "httpx", "pydantic>=2"]
+text = ["scikit-learn>=1.3,<2", "scipy>=1.10,<2"]                                            # train the text monitor (graybox.train_text)
+reader = ["torch>=2.2,<3", "transformers>=4.51,<6", "joblib>=1.3", "scikit-learn>=1.3,<2", "huggingface_hub>=0.23"]   # reader monitor (GPU)
+browser-reader = ["torch>=2.2,<3", "transformers>=4.51,<6"]                                 # score a browser-reader model file in Python (CPU)
+server = ["fastapi>=0.110,<1", "uvicorn>=0.23,<1", "httpx>=0.25,<1", "pydantic>=2,<3"]
 anthropic = ["anthropic>=0.40"]
-all = ["graybox[text,reader,server]"]
+all = ["greybox-monitor[text,reader,server]"]
 research = ["pandas", "scikit-learn", "omegaconf", "torch", "transformers", "vllm"]
 
 [project.scripts]

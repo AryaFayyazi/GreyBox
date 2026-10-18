@@ -481,3 +481,12 @@ released catch rate from results/units (results/t1/catch_exact_budget.json).
   - T22 judge 52.6% → 34.5%; T23 judge 65.2% → 11.7% (28% escalated).
 - No preregistered endpoint used a catch rate, so no pass or fail changes.
 - Erratum: the T23 preregistration's Why section says T22's violations came from 8 tasks; they came from 7 (results/t1/t20_tau2_two_closed.json). The design does not depend on it.
+
+## Exploratory: offline baseline gates (2026-10-17; scripts/112, from results/units only)
+The live tests ran no baseline gate. Offline, on the T8b (Claude) and T11 (GPT) 1,000-episode runs, where no gate was
+active and every unsafe episode has one violating action, each monitor holds exactly 5% of actions:
+- unsafe episodes stopped (Claude / GPT): reader 94.1% / 98.5%; TF-IDF 63.8% / 49.0%; 70B judge 0.0% / 37.9%; tool
+  identity 42.4% / 13.6%. The reader minus each is positive with 95% intervals above 0: Claude +0.30 [0.18, 0.43] vs
+  TF-IDF; GPT +0.49 [0.36, 0.62] vs TF-IDF.
+- safe episodes interrupted: reader 9.0% / 9.3%; TF-IDF 10.2% / 14.2%; judge 16.1% / 14.8%; tool 7.8% / 8.8%.
+(results/t1/offline_gates.json)

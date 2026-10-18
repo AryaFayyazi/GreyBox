@@ -990,3 +990,36 @@ Dated log of every experiment, decision and correction. Newest last.
 - Export (scripts/105) passed its deployment check: float32 CPU features give T13b 0.6026 and T7 0.6854, against
   T19's 0.6049 and 0.6884. The reader shipped as "new kinds of tasks only" (T19's fixed rule). The run had loaded the
   old "610 MB" value; the JSON was patched to 1.2 GB, and the script now writes it.
+- **Offline baseline gates (exploratory, scripts/112 from public units; CI-checked).** Holding 5% of actions would have
+  stopped 94%/98% of unsafe episodes (Claude/GPT) with the reader, against 64%/49% with TF-IDF, 0%/38% with the 70B
+  judge and 42%/14% with tool identity. It would interrupt 9% of safe episodes (TF-IDF and judge 10–16%, tool 8–9%).
+  This answers part of the "no baseline gate in the loop" limitation, offline only.
+- **Per-tool budgets rejected by measurement.** A 5% budget inside each tool caught 39% / 46% of violations, against
+  94% / 98% with one budget, because violations cluster in a few tools. Instead, Guard(hold_tools={...}) escalates
+  every call of the listed tools on top of the single budget; the gate still sees their scores (v.by_rule). Tested.
+- **Importer: mixed files.** The browser read a file's kind from line 1 only and named its format from the first
+  conversation. It now parses per line, as Python's load_steps does: labelled steps, OpenAI and Anthropic
+  conversations may share a file, and the page names the mix. It also warns about conversations without tool calls.
+  Browser and Python give identical text and labels on a mixed file; import parity holds on all examples.
+- **Fresh-install new-user test (independent agent), then v0.4.0.**
+  - Critical fix: Anthropic SDK content blocks inside dict messages (the SDK's own loop) lost the history. On the
+    Claude example, 1 of 68 violations escalated instead of 29. The conversion is now recursive, with a regression
+    test using real anthropic.types; I confirmed the test fails on 0.3.2.
+  - Cross-validation:
+    - It now groups by task, not conversation. The browser and Python had disagreed (0.899 vs 0.950), because
+      folds differed by tie-breaking, and one assignment swung the estimate 0.886–0.950.
+    - New graybox.stats.group_folds puts groups with a violation first, then size, with a hash tie order.
+      Folds are identical in Python and JS (verified on 1,518 units, 3 repeats).
+    - The estimate is the mean of 3 fold assignments, with its range. Python 0.948 [0.947, 0.949], browser 0.947.
+  - Privacy filter on by default in both trainers. The vocabularies are identical in Python and the browser
+    (3,019 + 393 terms). It also reduces memorization: with task families held out, 0.898 vs 0.806
+    (scripts/113).
+  - Per-tool budgets were measured and rejected (39% / 46% vs 94% / 98%); Guard(hold_tools) instead.
+  - Server: GB_API_KEY, GB_GATE_STATE persistence, strict inputs, non-root Docker image.
+  - Guard: reviewer_timeout, asyncio checks, the OpenAI Responses API.
+  - CLI: no silent overwrite, --eval-only, strict --group-by, clear errors.
+  - Packaging: PyPI name greybox-monitor (graybox and greybox are other projects); SPDX license; CHANGELOG;
+    SECURITY.md; CI on Python 3.10–3.13.
+  - The wheel installed fresh on 3.11 and 3.13: 35 tests, CLI and server (with auth) pass.
+  - GPU train_reader smoke test: 0.972 [0.970, 0.973] on the GPT example.
+  - The browser-reader training path ran in Chromium (16 actions, 104 s, no errors).

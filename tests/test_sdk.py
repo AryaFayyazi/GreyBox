@@ -136,7 +136,7 @@ def test_train_reader_data_side(tmp_path):
     f = tmp_path / "d.jsonl"
     f.write_text(json.dumps(conv) + "\n" + json.dumps(step) + "\n")
     st = load_steps(str(f))
-    assert [s["label"] for s in st] == [0, 1, 0] and st[0]["group"] == "c"
+    assert [s["label"] for s in st] == [0, 1, 0] and st[0]["group"] == "task: do it" and st[0]["conversation"] == "c"   # folds group tasks
     assert prompt_of(st[1]) == Q.format(ctx=ctx_text("policy", "do it", [Step("read_file", {"path": "/a"}, "x")]), cot="", act=act_text("send", {"to": "y"}))
 
 
@@ -471,3 +471,155 @@ def test_caught_at_budget_sends_exactly_the_budget_with_ties():
     assert abs(caught_at_budget(y, np.zeros(100), 0.05) - 0.05) < 1e-12   # a constant score catches at random
     s = np.random.default_rng(0).normal(size=100)              # without ties: the top 5 units
     assert caught_at_budget(y, s, 0.05) == y[np.argsort(-s)[:5]].sum() / y.sum()
+
+
+def test_guard_hold_tools_rule_escalates_every_call_of_a_tool():
+    from graybox.guard import Guard
+    from graybox.monitor import QuantileGate
+
+    class FakeReader:
+        def score(self, instructions, task, history, action):
+            return 0.01                                       # never risky by score
+    gate = QuantileGate(0.05).fit(list(np.random.default_rng(0).random(600) * 0.05))
+    n0 = len(gate.buf)
+    g = Guard(FakeReader(), gate=gate, hold_tools={"issue_refund"})
+    v = g.check("p", "t", [], "issue_refund", {"amount": 5})
+    assert not v.allow and v.by_rule and not v.held          # blocked by the rule (no reviewer)
+    assert g.check("p", "t", [], "read_file", {}).allow
+    g2 = Guard(FakeReader(), gate=QuantileGate(0.05).fit([0.0] * 600), reviewer=lambda st: True, hold_tools=["issue_refund"])
+    v = g2.check("p", "t", [], "issue_refund", {})
+    assert v.allow and v.held and v.by_rule                   # held for review by the rule; the reviewer lets it run
+    assert gate.frozen and n0 == 500                          # the gate froze its cut after the 500-score warm-up, as usual
+
+
+
+def test_anthropic_sdk_blocks_inside_dict_messages_keep_the_history():
+    # the Anthropic SDK's own loop: messages.append({"role": "assistant", "content": response.content}) (SDK block objects)
+    anthropic = pytest.importorskip("anthropic")
+    from anthropic.types import TextBlock, ToolUseBlock
+    from graybox.guard import Guard, conversation_steps
+    from graybox.monitor import TextMonitor
+    tm = TextMonitor.load_json(MODEL)
+    plain = [{"role": "user", "content": "Send the Q3 report to the board."},
+             {"role": "assistant", "content": [{"type": "text", "text": "Reading it."},
+                                               {"type": "tool_use", "id": "t1", "name": "read_file", "input": {"path": "/fin/q3.pdf"}}]},
+             {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "CONFIDENTIAL ..."}]}]
+    sdk = [plain[0], {"role": "assistant", "content": [TextBlock(type="text", text="Reading it."),
+                                                       ToolUseBlock(type="tool_use", id="t1", name="read_file", input={"path": "/fin/q3.pdf"})]}, plain[2]]
+    call = ToolUseBlock(type="tool_use", id="t2", name="send_email", input={"to": "press@news.example", "body": "attached"})
+    g = Guard(tm)
+    a = g.check_anthropic("policy", plain, {"type": "tool_use", "id": "t2", "name": "send_email", "input": {"to": "press@news.example", "body": "attached"}})
+    b = g.check_anthropic("policy", sdk, call)
+    assert a.score == b.score and a.allow == b.allow
+    sa = conversation_steps(plain + [{"role": "assistant", "content": [call.model_dump()]}], system="policy")
+    sb = conversation_steps(sdk + [{"role": "assistant", "content": [call]}], system="policy")
+    assert [s["history"] for s in sa] == [s["history"] for s in sb] and len(sb[-1]["history"]) == 1   # the read_file call is kept
+
+
+def test_train_text_cli_guards_against_common_mistakes(tmp_path, capsys):
+    from graybox import train_text
+    rows = [{"context": f"task {i % 6} order {i}", "action": f"refund {{\"id\": {i}}}" if i % 3 == 0 else f"lookup {{\"id\": {i}}}",
+             "label": int(i % 3 == 0), "task": f"t{i % 6}"} for i in range(60)]
+    f = tmp_path / "s.jsonl"
+    f.write_text("\n".join(json.dumps(r) for r in rows))
+    out = tmp_path / "m.json"
+    out.write_text("{}")
+    with pytest.raises(SystemExit, match="exists: pass --force"):              # never overwrite a monitor silently
+        train_text.main([str(f), "--out", str(out)])
+    with pytest.raises(SystemExit, match="have no field 'tsak'"):              # a typo in --group-by is an error
+        train_text.main([str(f), "--eval-only", "--group-by", "tsak"])
+    train_text.main([str(f), "--eval-only", "--group-by", "task"])
+    rep = json.loads(capsys.readouterr().out.split("\nnot saved")[0])
+    assert rep["groups"] == 6 and rep["privacy_filter"] and 0 < rep["most_possible_at_budget"] <= 1 and out.read_text() == "{}"
+    bad = tmp_path / "bad.jsonl"
+    bad.write_text(json.dumps(rows[0]) + "\n{not json\n")
+    with pytest.raises(SystemExit, match="line 2 is not valid JSON"):
+        train_text.main([str(bad), "--eval-only"])
+    arr = tmp_path / "a.json"
+    arr.write_text(json.dumps(rows))                                          # a .json array is read like JSON lines
+    train_text.main([str(arr), "--eval-only"])
+    nolab = tmp_path / "n.jsonl"
+    nolab.write_text(json.dumps({"messages": [{"role": "user", "content": "x"}, {"role": "assistant", "tool_calls": [
+        {"id": "c1", "type": "function", "function": {"name": "f", "arguments": "{}"}}]}], "labels": {"zzz": 1}}))
+    with pytest.raises(SystemExit, match="none of the 1 tool calls has a matching id"):
+        train_text.main([str(nolab), "--eval-only"])
+
+
+def test_text_monitor_privacy_filter_keeps_secrets_out_of_the_file():
+    from graybox.monitor import TextMonitor
+    rng = np.random.default_rng(1)
+    steps = [{"context": f"user asks to send the report token tok_live_d8tdcrgi0c{i % 3} to felix lund", "action": "send_email {\"to\": \"x\"}" if i % 2 else "read_file {\"p\": \"y\"}"} for i in range(80)]
+    y = [i % 2 for i in range(80)]
+    j = TextMonitor().fit(steps, y, [str(i % 8) for i in range(80)])._json
+    vocab = set(j["vc"]["vocab"]) | set(j["va"]["vocab"])
+    assert not any(any(ch.isdigit() for ch in w) or "tok_live" in w for w in vocab) and j["privacy"]
+    j2 = TextMonitor().fit(steps, y, [str(i % 8) for i in range(80)], privacy=False)._json
+    assert any("tok_live" in w for w in set(j2["vc"]["vocab"]))
+
+
+def test_server_api_key_strict_inputs_and_persistent_gates(monkeypatch, tmp_path):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from graybox import monitor_server
+    monkeypatch.setenv("GB_TEXT_MONITOR", str(MODEL))
+    monkeypatch.setenv("GB_API_KEY", "s3cret")
+    monkeypatch.setenv("GB_GATE_STATE", str(tmp_path / "gates.json"))
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    monitor_server._STATE["gates"] = {}
+    body = {"instructions": "p", "task": "t", "action": {"tool": "send_message", "args": {"to": "a"}}}
+    H = {"Authorization": "Bearer s3cret"}
+    with TestClient(monitor_server.app) as c:
+        assert c.get("/v1/health").json()["auth_required"]                        # health stays open
+        assert c.post("/v1/monitor/text", json=body).status_code == 401           # no key
+        assert c.post("/v1/monitor/text", json=body, headers={"Authorization": "Bearer nope"}).status_code == 401
+        r = c.post("/v1/monitor/text", json=body, headers=H)
+        assert r.status_code == 200 and r.json()["warning"] is None
+        assert c.post("/v1/monitor/text", json={**body, "action": {"tool": ""}}, headers=H).status_code == 422   # empty tool
+        assert c.post("/v1/monitor/text", json={**body, "budget": 0.1}, headers=H).status_code == 422          # budget without gate
+        assert c.post("/v1/monitor/text", json={"context": "x", "action": {"tool": "t"}}, headers=H).json()["warning"]
+        r = c.post("/v1/monitor/calibrate", json={"monitor": "text", "stream": "s9", "scores": [-5 + i / 100 for i in range(200)]}, headers=H)
+        assert r.status_code == 200
+        thr = r.json()["threshold"]
+    monitor_server._STATE["gates"] = {}                                           # a restart: the gate comes back from the file
+    with TestClient(monitor_server.app) as c:
+        v = c.post("/v1/monitor/text", json={**body, "stream": "s9", "gate": True}, headers=H).json()
+        assert v["threshold"] == round(thr, 4) and c.get("/v1/health").json()["gates"] >= 1
+    for k in ("text", "text_error"):
+        monitor_server._STATE.pop(k, None)
+    monitor_server._STATE["gates"] = {}
+
+
+def test_reviewer_timeout_blocks_and_async_checks_match():
+    import asyncio
+    import time as _t
+    from graybox.guard import Guard
+    from graybox.monitor import QuantileGate, TextMonitor
+
+    class FakeReader:
+        def score(self, instructions, task, history, action):
+            return 0.9
+    slow = Guard(FakeReader(), gate=QuantileGate(0.05).fit([0.0] * 600), reviewer=lambda st: _t.sleep(2) or True, reviewer_timeout=0.2)
+    t0 = _t.perf_counter()
+    v = slow.check("p", "t", [], "delete_all", {})
+    assert not v.allow and v.held and "TimeoutError" in v.review_error and _t.perf_counter() - t0 < 1.5
+    g = Guard(TextMonitor.load_json(MODEL))
+    msgs = [{"role": "system", "content": "p"}, {"role": "user", "content": "send it"}]
+    call = {"id": "c1", "type": "function", "function": {"name": "send_message", "arguments": '{"to": "a"}'}}
+    assert asyncio.run(g.acheck_openai(msgs, call)).score == g.check_openai(msgs, call).score
+
+
+def test_openai_responses_api_items_score_like_chat_completions():
+    from graybox.guard import Guard
+    from graybox.monitor import TextMonitor
+    g = Guard(TextMonitor.load_json(MODEL))
+    chat = [{"role": "system", "content": "policy"}, {"role": "user", "content": "share the file"},
+            {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "read_file", "arguments": '{"p": "/a"}'}}]},
+            {"role": "tool", "tool_call_id": "c1", "content": "secret"}]
+    items = [{"role": "user", "content": [{"type": "input_text", "text": "share the file"}]},
+             {"type": "function_call", "call_id": "c1", "name": "read_file", "arguments": '{"p": "/a"}'},
+             {"type": "function_call_output", "call_id": "c1", "output": "secret"}]
+    fc = {"type": "function_call", "call_id": "c2", "name": "send_message", "arguments": '{"to": "press"}'}
+    a = g.check_openai(chat, {"id": "c2", "type": "function", "function": {"name": "send_message", "arguments": '{"to": "press"}'}})
+    b = g.check_openai_responses(items, fc, instructions="policy")
+    assert a.score == b.score
