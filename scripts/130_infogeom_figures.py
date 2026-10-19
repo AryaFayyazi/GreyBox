@@ -37,7 +37,7 @@ def main():
     draft = "draft=1" in sys.argv
     g1 = json.loads((R / "t1" / ("g1_open_geometry_DRYRUN_dev.json" if draft else "g1_open_geometry.json")).read_text())
     g3 = json.loads((R / "t1" / ("g3_exact_recovery_PILOT_seed100.json" if draft else "g3_exact_recovery.json")).read_text())
-    fig, axs = plt.subplots(1, 4, figsize=(7.0, 1.75), gridspec_kw={"width_ratios": [1.25, 1, 1, 1.05], "wspace": 0.42})
+    fig, axs = plt.subplots(1, 4, figsize=(7.0, 1.8), gridspec_kw={"width_ratios": [1.2, 1, 1, 1.15], "wspace": 0.62})
 
     # (a) per model
     ax = axs[0]
@@ -52,26 +52,30 @@ def main():
                label="answers, 8 samples")
     ax.set_yticks(y, [NAMES[m] for m in ms])
     ax.set_xlim(0, 0.9)
+    ax.set_xticks([0, 0.25, 0.5, 0.75], ["0", ".25", ".50", ".75"])
     ax.set_xlabel("Spearman with own hidden geometry")
     ax.set_ylim(-0.6, len(ms) + 1.9)
     ax.legend(loc="upper left", frameon=False, fontsize=5.2, handletextpad=0.1, borderaxespad=0.1, ncol=1, labelspacing=0.25)
     style(ax)
     ax.set_title("(a) open models", loc="left", fontsize=7)
 
-    # (b) convergence
+    # (b) convergence: each model thin, the mean bold; the weakest model labelled
     ax = axs[1]
-    for m in ms:
-        c = g1["models"][m]["convergence"]
-        q = sorted(int(k) for k in c)
-        ax.plot(q, [c[str(k)] for k in q], color=BLUE, lw=0.8, alpha=0.55, marker="o", ms=1.8)
+    q = sorted(int(k) for k in g1["models"][ms[0]]["convergence"])
+    curves = np.array([[g1["models"][m]["convergence"][str(k)] for k in q] for m in ms])
+    for m, cvec in zip(ms, curves):
+        ax.plot(q, cvec, color=BLUE, lw=0.6, alpha=0.35)
+    ax.plot(q, curves.mean(0), color=BLUE, lw=1.6, marker="o", ms=2.6, label="mean of 8 models")
+    ax.text(88 * 0.97, curves[0][-1] - 0.035, NAMES[ms[0]], color=MUTE, fontsize=5.0, ha="right", va="top")
     tx = np.mean([g1["models"][m]["rho_text"] for m in ms])
     ax.axhline(tx, color=MUTE, lw=0.7, ls="--")
-    ax.text(86, tx - 0.03, "text (mean)", color=MUTE, fontsize=5.2, ha="right", va="top")
+    ax.text(86, tx - 0.03, "input text (mean)", color=MUTE, fontsize=5.2, ha="right", va="top")
     ax.set_xscale("log", base=2)
     ax.set_xticks([4, 8, 16, 32, 88], ["4", "8", "16", "32", "88"])
     ax.set_ylim(0, 0.9)
     ax.set_xlabel("questions in the battery")
     ax.set_ylabel("Spearman")
+    ax.legend(loc="upper left", frameon=False, fontsize=5.2, handlelength=1.4)
     style(ax)
     ax.set_title("(b) battery size", loc="left", fontsize=7)
 
@@ -91,13 +95,13 @@ def main():
     for b, lab in ((g3["baseline_raw_centered_logprob_pearson"], "raw log-probs"), (g3["baseline_whitened_no_constraint_pearson"], "whitened")):
         ax.axhline(1 - b, color=MUTE, lw=0.6, ls="--")
 
-    ax.text(1.2, 0.25, "without the sphere\nconstraint (2 baselines)", color=MUTE, fontsize=5.0, va="top")
+    ax.text(1.15, 1.6, "2 baselines,\nno sphere", color=MUTE, fontsize=4.8, va="bottom", linespacing=0.95)
     ax.set_yscale("log")
-    ax.set_ylim(3e-9, 8)
+    ax.set_ylim(3e-9, 60)
     ax.set_xlim(0.2, 2.05)
     ax.set_xlabel(r"contexts $N\,/\,\frac{d(d+1)}{2}$")
     ax.set_ylabel("1 − Pearson (cosines)")
-    ax.text(0.27, 1.2e-8, "underdetermined", color=MUTE, fontsize=5.2)
+    ax.text(0.6, 1e-5, "under-\ndetermined", color=MUTE, fontsize=5.2, ha="center")
     style(ax)
     ax.set_title("(c) exact recovery", loc="left", fontsize=7)
 
@@ -106,17 +110,18 @@ def main():
     g6 = json.loads((R / "t1" / "g6_shared_geometry.json").read_text())
     Mo = list(g6["rho_answers_A_vs_hidden_B"])
     Mat = np.array([[g6["rho_answers_A_vs_hidden_B"][a][b] for b in Mo] for a in Mo])
-    im = ax.imshow(Mat, cmap="Blues", vmin=0, vmax=0.8)
+    im = ax.imshow(Mat, cmap="Blues", vmin=0, vmax=0.8, aspect="auto")
     for i in range(len(Mo)):
         ax.add_patch(plt.Rectangle((i - 0.5, i - 0.5), 1, 1, fill=False, ec=ORANGE, lw=1.0))
-    short = {"gemma3_4b": "Gem", "gptoss20b": "gpt", "llama31_8b": "Lla", "mistral7b": "Mis", "olmo3_7b": "OLM",
-             "phi4mini": "Phi", "qwen25_7b": "Q2.5", "qwen3_8b": "Q3"}
-    ax.set_xticks(range(len(Mo)), [short[m] for m in Mo], fontsize=4.8, rotation=90)
+    short = {"gemma3_4b": "Gemma", "gptoss20b": "gpt-oss", "llama31_8b": "Llama", "mistral7b": "Mistral", "olmo3_7b": "OLMo",
+             "phi4mini": "Phi", "qwen25_7b": "Qwen2.5", "qwen3_8b": "Qwen3"}
+    ax.set_xticks(range(len(Mo)), [short[m] for m in Mo], fontsize=4.8, rotation=60, ha="right", rotation_mode="anchor")
     ax.set_yticks(range(len(Mo)), [short[m] for m in Mo], fontsize=4.8)
     ax.set_xlabel("hidden geometry of model B", fontsize=5.6); ax.set_ylabel("answers of model A", fontsize=5.6)
+    ax.yaxis.set_label_coords(-0.36, 0.5)
     cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03); cb.ax.tick_params(labelsize=4.8)
-    ax.text(0.5, -0.47, "own-model excess %+.3f" % g6["S1_point"], transform=ax.transAxes, ha="center", fontsize=5.4, color=MUTE)
-    ax.set_title("(d) shared, not own", loc="left", fontsize=7)
+    ax.text(0.5, -0.44, "outlined: own model; excess %+.3f" % g6["S1_point"], transform=ax.transAxes, ha="center", fontsize=5.2, color=MUTE)
+    ax.set_title("(d) shared, not the model's own", loc="left", fontsize=7)
     v2.save(fig, "fig_infogeom" + ("_draft" if draft else ""))
     print("saved", OUT / ("fig_infogeom" + ("_draft" if draft else "") + ".pdf"))
 

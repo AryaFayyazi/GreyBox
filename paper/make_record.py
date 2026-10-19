@@ -39,6 +39,7 @@ NAMES = {  # descriptive names for the paper (the released record keeps its ids)
     "T21": "tau2-bench, unseen tasks", "T22": "tau2-bench, reasoning judge", "T23": "Reasoning judge, frontier agents",
     "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor",
     "T27": "Training against the attack", "T28": "Cut set again after a prompt change"}
+GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", "G6": "Shared geometry (G6)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -87,6 +88,11 @@ def main():
             continue
         cells = [c.strip() for c in line.strip().strip("|").split(" | ")]
         if len(cells) < 4:
+            continue
+        gm = re.match(r"(G\d?)\s+", cells[0])                  # the geometry tests: named before endpoint ids are rewritten
+        if gm and gm.group(1) in GNAMES:
+            rows.append(("\x00" + GNAMES[gm.group(1)] + "\x01" + names(endpoints(anon(cells[0][gm.end():]), None)),
+                         names(endpoints(anon(cells[-1]), None))))
             continue
         lid = (re.match(r"(T\d+[a-z]?|L\d[a-z]?)\b", cells[0]) or [None])[0]
         rows.append((names(endpoints(anon(cells[0]), lid), lead=True), names(endpoints(anon(cells[-1]), lid))))

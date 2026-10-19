@@ -59,27 +59,36 @@ NAME = {"minilm": "MiniLM", "mpnet": "mpnet", "qemb06": "Qwen3-Emb-0.6B", "q06":
 
 
 def small_readers():
+    """T19 in the paper's common style (scripts/118's palette and fonts). One marker per agent in both panels."""
     from matplotlib.lines import Line2D
+    v2 = importlib.import_module("118_paper_figures_v2")
+    plt_, BLUE, ORANGE, MUTE, INK = v2.plt, v2.BLUE, v2.ORANGE, v2.MUTE, v2.INK
     r = json.loads((RES / "t19_small_readers.json").read_text())
     A = r["auroc"]
-    fig, axs = plt.subplots(1, 2, figsize=(7.0, 3.5))
-    panels = ((axs[0], (("T13b", "GPT"), ("T7", "open agents")), "(a) A new kind of task (AgentDojo)"),
-              (axs[1], (("T8b", "Claude"), ("T11", "GPT")), "(b) Closed agents, the training benchmark (CAPE-Bench)"))
-    for ax, sets, title in panels:
-        for (s, lab), mk, alpha in zip(sets, ("o", "s"), (1.0, 0.5)):
-            for fam, col in (("browser", F.C[1]), ("decoder", F.C[0])):
+    MK = {"GPT": "o", "Claude": "D", "open agents": "s"}
+    fig, axs = plt_.subplots(1, 2, figsize=(v2.FULL, 2.05), gridspec_kw={"wspace": 0.28})
+    panels = ((axs[0], (("T13b", "GPT"), ("T7", "open agents")), "(a) A new benchmark (AgentDojo)", (0.3, 0.9)),
+              (axs[1], (("T8b", "Claude"), ("T11", "GPT")), "(b) Closed agents on the training benchmark", (0.70, 1.01)))
+    for ax, sets, title, ylim in panels:
+        v2.grid(ax, "both")
+        for (s, lab), alpha in zip(sets, (1.0, 0.55)):
+            for fam, col in (("browser", ORANGE), ("decoder", BLUE)):
                 ks = sorted((k for k in SIZE if k in A and (k in ("minilm", "mpnet", "qemb06")) == (fam == "browser")), key=lambda k: SIZE[k])
-                ax.plot([SIZE[k] for k in ks], [A[k][s] for k in ks], marker=mk, color=col, lw=1.2, ms=4, alpha=alpha)
+                ax.plot([SIZE[k] for k in ks], [A[k][s] for k in ks], marker=MK[lab], color=col, lw=1.1, ms=3.4, alpha=alpha, mec="white", mew=0.4)
+        if "q8" in A:
+            ax.annotate("shipped 8B", (SIZE["q8"], A["q8"][sets[0][0]]), xytext=(-4, 7), textcoords="offset points", fontsize=5.2,
+                        color=INK, ha="right", arrowprops=dict(arrowstyle="-", color=MUTE, lw=0.5))
         tx = sorted(((A["TXT"][s], lab) for s, lab in sets), reverse=True)
         for n, (v, lab) in enumerate(tx):
-            ax.axhline(v, color=F.MUTE, ls="--" if n == 0 else ":", lw=0.9)
-            ax.text(0.017, v + (0.004 if n == 0 else -0.004), f"TF-IDF, {lab}", fontsize=6.5, color=F.MUTE, ha="left", va="bottom" if n == 0 else "top")
-        ax.set_xscale("log"); ax.set_xlim(0.015, 22); ax.set_xlabel("Reader parameters (billions)"); ax.set_ylabel("AUROC")
-        ax.set_title(title, loc="left", fontsize=8.5, color=F.INK); ax.grid(color=F.GRID, lw=0.6); ax.set_axisbelow(True)
-        h = [Line2D([], [], color=F.C[1], lw=1.2, label="browser readers"), Line2D([], [], color=F.C[0], lw=1.2, label="decoder readers (Qwen3)"),
-             Line2D([], [], color=F.MUTE, marker="o", lw=0, label=sets[0][1]), Line2D([], [], color=F.MUTE, marker="s", lw=0, alpha=0.5, label=sets[1][1])]
-        ax.legend(handles=h, fontsize=6.5, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2, handlelength=1.4, columnspacing=0.9)
-    fig.tight_layout(); F.save(fig, "small_readers")
+            ax.axhline(v, color=MUTE, ls="--" if n == 0 else ":", lw=0.8)
+            ax.text(0.017, v + (0.004 if n == 0 else -0.004), f"TF-IDF, {lab}", fontsize=5.4, color=MUTE, ha="left", va="bottom" if n == 0 else "top")
+        ax.set_xscale("log"); ax.set_xlim(0.015, 22); ax.set_ylim(*ylim)
+        ax.set_xlabel("reader parameters (billions)"); ax.set_ylabel("AUROC")
+        ax.set_title(title)
+    h = [Line2D([], [], color=ORANGE, lw=1.1, label="browser encoders"), Line2D([], [], color=BLUE, lw=1.1, label="decoder readers (Qwen3)")] + \
+        [Line2D([], [], color=MUTE, marker=MK[k], lw=0, ms=3.4, label=k) for k in ("GPT", "Claude", "open agents")]
+    fig.legend(handles=h, fontsize=5.6, loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=5, handlelength=1.4, columnspacing=1.2)
+    v2.save(fig, "small_readers")
 
 
 if __name__ == "__main__":

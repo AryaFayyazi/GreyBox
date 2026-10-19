@@ -138,42 +138,58 @@ def wilson(k, n, z=1.96):
 
 
 def fig_prevention():
+    """All four preregistered live tests (T16, T16b, T16c, T28): violation and goal rates with 95% Wilson intervals; and
+    the label-free cut under attack bursts (T8b replay)."""
+    from matplotlib.patches import Patch
     a = json.loads((R / "t1/t16_live_gate.json").read_text())
     b = json.loads((R / "t1/t16b_claude_live_gate.json").read_text())
     c = json.loads((R / "t1/t16c_review_gate.json").read_text())
-    nA, nB, nC = a.get("scenarios_complete", 500), b.get("scenarios_complete", 450), c.get("scenarios", 450)
-    arms = [("no\ngate", a["unsafe_episode_rate"]["ungated"], a["goal_rate"]["ungated"], nA, LIGHT),
-            ("block", a["unsafe_episode_rate"]["gated"], a["goal_rate"]["gated"], nA, BLUE),
-            ("no\ngate", b["unsafe_episode_rate"]["ungated"], b["goal_rate"]["ungated"], nB, LIGHT),
-            ("block", b["unsafe_episode_rate"]["gated"], b["goal_rate"]["gated"], nB, BLUE),
-            ("hold", c["unsafe_episode_rate"]["review"], c["goal_rate"]["review"], nC, AQUA)]
-    fig, axs = plt.subplots(1, 3, figsize=(FULL, 1.8), gridspec_kw={"width_ratios": [1.0, 1.0, 1.15], "wspace": 0.42})
-    xs = [0, 1.0, 2.5, 3.5, 4.5]
-    for j, (ax, idx, lab, top) in enumerate(((axs[0], 1, "episodes with a violation", 0.1), (axs[1], 2, "episodes reaching the goal", 0.6))):
+    d = json.loads((R / "t1/t28_recalibrated_gate.json").read_text())
+    nA, nB, nC, nD = a.get("scenarios_complete", 500), b.get("scenarios_complete", 450), c.get("scenarios", 450), d["scenarios_complete"]
+    arms = [(a["unsafe_episode_rate"]["ungated"], a["goal_rate"]["ungated"], nA, LIGHT),
+            (a["unsafe_episode_rate"]["gated"], a["goal_rate"]["gated"], nA, BLUE),
+            (b["unsafe_episode_rate"]["ungated"], b["goal_rate"]["ungated"], nB, LIGHT),
+            (b["unsafe_episode_rate"]["gated"], b["goal_rate"]["gated"], nB, BLUE),
+            (c["unsafe_episode_rate"]["review"], c["goal_rate"]["review"], nC, AQUA),
+            (d["ungated"]["unsafe_rate"], d["ungated"]["goal_rate"], nD, LIGHT),
+            (d["gated"]["unsafe_rate"], d["gated"]["goal_rate"], nD, BLUE)]
+    xs = [0, 0.9, 2.2, 3.1, 4.0, 5.3, 6.2]
+    groups = ((0.45, "GPT-6-luna"), (3.1, "Claude"), (5.75, "Claude, told it\nis monitored"))
+    fig, axs = plt.subplots(1, 3, figsize=(FULL, 1.95), gridspec_kw={"width_ratios": [1.25, 1.25, 1.0], "wspace": 0.36})
+    for j, (ax, idx, lab, top) in enumerate(((axs[0], 0, "episodes with an executed violation", 0.105),
+                                             (axs[1], 1, "episodes that reached the goal", 0.62))):
         grid(ax)
         for x, r in zip(xs, arms):
-            p, lo, hi = wilson(round(r[idx] * r[3]), r[3])
-            ax.bar(x, p, 0.8, color=r[4], edgecolor=MUTE if r[4] == LIGHT else r[4], lw=0.4)
-            ax.errorbar(x, p, yerr=[[p - lo], [hi - p]], color=INK, lw=0.6, capsize=1.6, capthick=0.6)
-            ax.text(x, hi + top * 0.025, f"{100 * p:.1f}", ha="center", fontsize=5.3, color=INK)
-        ax.set(xticks=xs, ylim=(0, top * 1.08), ylabel=lab)
-        ax.set_xticklabels([r[0] for r in arms], fontsize=5.6)
+            p, lo, hi = wilson(round(r[idx] * r[2]), r[2])
+            ax.bar(x, p, 0.78, color=r[3], edgecolor=MUTE if r[3] == LIGHT else r[3], lw=0.4, zorder=2)
+            ax.errorbar(x, p, yerr=[[p - lo], [hi - p]], color=INK, lw=0.6, capsize=1.5, capthick=0.6, zorder=3)
+            ax.text(x, hi + top * 0.035, f"{100 * p:.1f}", ha="center", va="bottom", fontsize=5.2, color=INK)
+        ax.set(xticks=[], xlim=(-0.6, 6.8), ylim=(0, top * 1.12))
+        ax.set_ylabel(lab)
         ax.yaxis.set_major_formatter(PCT)
-        for x0, name in ((0.5, "GPT-6-luna"), (3.5, "Claude Haiku 5.5")):
-            ax.text(x0, -0.3, name, transform=ax.get_xaxis_transform(), ha="center", fontsize=6.2, color=INK)
-        ax.set_title("(a) Violations (%)" if j == 0 else "(b) Goals reached (%)")
+        for x0, name in groups:
+            ax.text(x0, -0.035, name, transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=5.6, color=INK)
+        for xb in (1.55, 4.65):
+            ax.axvline(xb, color=GRID, lw=0.6, zorder=1)
+        ax.set_title("(a) Violations" if j == 0 else "(b) Goals reached")
+    leg = [Patch(fc=LIGHT, ec=MUTE, lw=0.4, label="no gate"), Patch(fc=BLUE, label="block (cut re-set when told)"),
+           Patch(fc=AQUA, label="hold for review")]
+    fig.legend(handles=leg, loc="upper center", bbox_to_anchor=(0.36, -0.06), ncol=3, fontsize=5.6, handlelength=1.2, columnspacing=1.2)
     g = json.loads((R / "t1/t8b_calibration_exploratory.json").read_text())["gate_eval_76c"]["burst"]
     rho = sorted(float(k.split("_")[1]) for k in g)
     ax = axs[2]; grid(ax, "both")
     rr = np.linspace(0.02, 0.52, 100)
-    ax.plot(rr, np.minimum(1, 0.05 / rr), color=MUTE, ls=":", lw=0.9, label=r"$\beta/\rho$ bound (bursts)")
-    for key, col, mk, lab in (("rolling500", YELLOW, "^", "rolling cut, 500"), ("rolling5000", ORANGE, "s", "rolling cut, 5,000"), ("frozen_default", BLUE, "o", "frozen cut (ours)")):
-        ax.plot(rho, [g[f"rate_{r:g}"][key]["caught"] for r in rho], color=col, lw=1.3 if mk == "o" else 1.0, marker=mk, ms=3.2, mec="white", mew=0.4, label=lab)
-    ax.set(xlim=(0, 0.52), ylim=(0, 1.03), xlabel=r"share of violations in a burst, $\rho$", ylabel="caught (5% budget)")
-    ax.yaxis.set_major_formatter(PCT)
-    ax.set_title("(c) Cut under attack bursts")
+    ax.plot(rr, np.minimum(1, 0.05 / rr), color=MUTE, ls=":", lw=0.9, label=r"$\beta/\rho$ bound, moving cut")
+    for key, col, mk, lab in (("rolling500", YELLOW, "^", "moving cut, last 500"), ("rolling5000", ORANGE, "s", "moving cut, last 5,000"),
+                              ("frozen_default", BLUE, "o", "frozen cut (ours)")):
+        ax.plot(rho, [g[f"rate_{r:g}"][key]["caught"] for r in rho], color=col, lw=1.3 if mk == "o" else 1.0, marker=mk, ms=3.2, mec="white",
+                mew=0.4, label=lab)
+    ax.set(xlim=(0, 0.52), ylim=(0, 1.05), xlabel=r"share of violations in a burst, $\rho$", ylabel="violations caught at a 5% budget")
+    ax.yaxis.set_major_formatter(PCT); ax.xaxis.set_major_formatter(PCT)
+    ax.set_title("(c) Bursts of attacks")
     h, l = ax.get_legend_handles_labels()
-    ax.legend(h[::-1], l[::-1], loc="upper center", bbox_to_anchor=(0.45, -0.3), ncol=2, fontsize=5.4, handlelength=1.5, columnspacing=0.8)
+    fig.legend(h[::-1], l[::-1], loc="upper center", bbox_to_anchor=(0.84, -0.06), ncol=2, fontsize=5.2, handlelength=1.5, columnspacing=0.8)
+    ax.set_xlabel(r"share of violations in a burst, $\rho$", labelpad=1)
     save(fig, "prevention")
 
 

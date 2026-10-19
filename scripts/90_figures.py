@@ -67,27 +67,32 @@ def fig_claude():
     e = json.loads((R / "l3/l3e_tool.json").read_text())["primary_qwen3guard_judge"]["A2"]
     best = max((e["qg_p"], e["lg_p"]), key=lambda x: x["baseline_auroc"])
     rows.append(("prospective, fresh conversations (2 calls)", e["qg_p"]["greybox_auroc"], None, e["qg_p"]["baseline_auroc"], e["lg_p"]["baseline_auroc"], [best["diff"], best["ci95"]]))
-    fig, ax = plt.subplots(figsize=(5.8, 0.5 * len(rows) + 1.5))
-    ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
+    import importlib.util as _iu                                # the paper's common style (scripts/118)
+    _sp = _iu.spec_from_file_location("v2", Path(__file__).resolve().parent / "118_paper_figures_v2.py")
+    v2 = _iu.module_from_spec(_sp); _sp.loader.exec_module(v2)
+    fig, ax = v2.plt.subplots(figsize=(4.8, 0.36 * len(rows) + 0.9))
+    v2.grid(ax, "x")
     for i, (name, g, m3, qg, lg, d) in enumerate(rows[::-1]):
         lo = min(v for v in (g, m3, qg, lg) if v is not None)
-        ax.plot([lo, max(g, qg, lg)], [i, i], color=GRID, lw=3, zorder=1)
+        ax.plot([lo, max(g, qg, lg)], [i, i], color=v2.GRID, lw=2.4, zorder=1, solid_capstyle="round")
         if m3 is not None:
-            ax.plot(m3, i, "o", mfc="white", mec=MUTE, ms=7, mew=1.4, zorder=3)
-        ax.plot(qg, i, "s", color=C[1], ms=7, mec="white", mew=1.2, zorder=3)
-        ax.plot(lg, i, "D", color=C[3] if len(C) > 3 else INK, ms=6.5, mec="white", mew=1.2, zorder=3)
-        ax.plot(g, i, "o", color=C[0], ms=8, mec="white", mew=1.5, zorder=4)
-        ax.text(0.905, i, f"{d[0]:+.2f} [{d[1][0]:+.2f}, {d[1][1]:+.2f}]", va="center", fontsize=8, color=INK)
-    ax.set_ylim(-0.6, len(rows) - 0.1)
-    ax.text(0.905, len(rows) - 0.45, "vs stronger graded\nmoderator [95% CI]", fontsize=7, color=MUTE, va="center")
-    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=8.5, color=INK)
-    ax.set_xlim(0.6, 1.0); ax.set_xlabel("AUROC: which harmful requests Claude Haiku 5.5 refuses")
+            ax.plot(m3, i, "o", mfc="white", mec=v2.MUTE, ms=5, mew=1.0, zorder=3)
+        ax.plot(qg, i, "s", color=v2.ORANGE, ms=4.6, mec="white", mew=0.6, zorder=3)
+        ax.plot(lg, i, "D", color=v2.YELLOW, ms=4.4, mec="white", mew=0.6, zorder=3)
+        ax.plot(g, i, "o", color=v2.BLUE, ms=5.6, mec="white", mew=0.8, zorder=4)
+        ax.text(1.005, i, f"{d[0]:+.2f} [{d[1][0]:+.2f}, {d[1][1]:+.2f}]", va="center", fontsize=5.8, color=v2.INK, transform=ax.get_yaxis_transform())
+    ax.set_ylim(-0.6, len(rows) - 0.4)
+    ax.text(1.005, len(rows) - 0.55, "grey box − stronger\ngraded moderator", fontsize=5.4, color=v2.MUTE, va="bottom", transform=ax.get_yaxis_transform())
+    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=6, color=v2.INK)
+    ax.set_xlim(0.62, 0.92); ax.set_xlabel("AUROC: which harmful requests Claude Haiku 5.5 refuses")
     from matplotlib.lines import Line2D
-    h = [Line2D([], [], marker="o", ls="", color=C[0], label="grey box"), Line2D([], [], marker="s", ls="", color=C[1], label="Qwen3Guard, graded"),
-         Line2D([], [], marker="D", ls="", color=C[3] if len(C) > 3 else INK, label="Llama Guard, graded"),
-         Line2D([], [], marker="o", ls="", mfc="white", mec=MUTE, label="3-level verdict")]
-    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.45, -0.24), ncol=4, fontsize=7, frameon=False, handletextpad=0.2, columnspacing=0.9)
-    ax.set_title("Refusal forecast vs moderation: beats the 3-level verdict, ties graded moderators", loc="left", fontsize=9, color=INK)
+    h = [Line2D([], [], marker="o", ls="", color=v2.BLUE, label="grey box"), Line2D([], [], marker="s", ls="", color=v2.ORANGE, label="Qwen3Guard, graded"),
+         Line2D([], [], marker="D", ls="", color=v2.YELLOW, label="Llama Guard, graded"),
+         Line2D([], [], marker="o", ls="", mfc="white", mec=v2.MUTE, label="3-level verdict")]
+    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.4, -0.2), ncol=4, fontsize=5.6, frameon=False, handletextpad=0.2, columnspacing=0.9)
+    ax.set_title("Refusal forecast vs moderation")
+    v2.save(fig, "claude_vs_moderation")
+    return
     save(fig, "claude_vs_moderation")
 
 

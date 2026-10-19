@@ -1409,3 +1409,12 @@ Dated log of every experiment, decision and correction. Newest last.
 - Exploratory, Claude reference range: on the same 192 contexts, open models' 24-question answers (8 simulated samples)
   agree with their own hidden geometry at 0.47–0.61 and with other open models' at 0.41–0.76 (median 0.58). Claude's
   answers vs open hidden: 0.45–0.51, inside the range at its lower end.
+- **Exploratory, negative (2026-10-19): carrying open-model probes over to a held-out model does not beat asking
+  open models.** Dev contexts (1,500 train / 800 test); each open model in turn is the "closed" target; zero labels from
+  it. Mean over questions of the correlation with the target's answer angles:
+  - ridge probe on the reader's (Qwen3-8B) hidden state, trained on the other models' consensus answers: 0.49–0.68;
+  - the other open models' consensus answers themselves (black-box): 0.50–0.71, better for 7 of 7;
+  - the reader's own answers: 0.44–0.59;
+  - a text probe: 0.39–0.57.
+  - Consistent with G6: what transfers is the shared part, which open models' outputs already carry. A paid
+    closed-model test of this idea is not justified; none was requested.
