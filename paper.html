@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paper · Grey Box</title><meta name="description" content="Labels, not access: what a black box reveals about its hidden state, and how to monitor closed agents.">
+<title>Paper · Grey Box</title><meta name="description" content="A closed model&#x27;s answers reveal a latent geometry it shares with open models, and open models can monitor closed agents.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
@@ -8,29 +8,29 @@
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="train.html">Train a monitor</a><a href="monitor.html">Agent replay</a><a href="chat.html">Chat grey box</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html" aria-current=page>Paper</a></nav></div></header>
 <main><div class="wrap">
 <!--title: Paper-->
-<!--desc: Labels, not access: what a black box reveals about its hidden state, and how to monitor closed agents.-->
+<!--desc: A closed model's answers reveal a latent geometry it shares with open models, and open models can monitor closed agents.-->
 <h1>Grey Box</h1>
-<p class="lede">Replicating agents' hidden states from their transcripts, to predict and prevent the violations of closed agents.</p>
+<p class="lede">A closed model's answers reveal a latent geometry that it shares with open models, and open models can monitor closed agents.</p>
 <p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
-<figure><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="Seeing inside closed agents" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span>Seeing inside closed agents. Panels (a–d)
-share the main axes of one open agent's hidden state. (a) Its true state. (b) Its replica from the transcript. (c, d) Replicas of two closed
-agents through the same reader; red dots are policy violations. (e) The share of episodes in which a violation ran, without and with the
-monitor in the agent's loop (T16).</figcaption></figure>
+<figure><a class="zoom" href="figures/teaser_geometry.png" title="Open the full-size figure"><img src="figures/teaser_geometry.png" alt="A model's latent geometry, read from its answers" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_geometry.png">Tap to open the full-size figure.</a> </span>(a) The hidden
+geometry of an open model (Llama-3.1 8B) over 1,440 held-out contexts. (b) The same contexts placed only by the model's yes/no answers, with no
+weights and no training. (c, d) Every pair of contexts: hidden distance against answer distance (ρ = 0.74) and against the distance of the
+model's own replies (ρ = 0.32). (e) Claude Haiku 5.5, from 8 sampled answers per question.</figcaption></figure>
 
 <h2>Summary</h2>
-<p>Safety tools that read a model's hidden state need its weights, and the agents with the most capability are closed. We ask whether an
-outside observer can read the hidden state of a closed agent, replicate it, and use the replica to predict and prevent violations.</p>
+<p>The hidden coordinates of a closed model cannot be read from its outputs: a rotation of the hidden space changes no output. We ask which
+geometry of its states its outputs do reveal, and what that means for monitoring closed agents.</p>
 <ul>
-  <li><b>What can be read.</b> The raw coordinates of a hidden state are not identifiable from outputs: a rotation of the hidden space
-    changes no output. The behavioural state is identifiable. A battery of side-branch questions recovers it on models with known internals
-    (Othello-GPT: R² 0.967), but as a safety signal it only ties a text moderator.</li>
-  <li><b>What can be replicated.</b> An agent's internal state is a function of the tokens that it read. An open model that reads the same
-    tokens replicates 66% of the variance of the 128 main components of an agent's hidden state (T15; 46–54% for three more agents, T17), and readouts trained on the true state work on the replica, as they do on a text replica.</li>
-  <li><b>What it is good for.</b> For a policy check on a proposed action, the transcript and the action are Bayes-sufficient. A probe on
-    the reader's latent state (which holds the replica), trained only on an open agent, catches most violations of two closed agents (T8b,
-    T11), and blocks them in the loop (T16).
-    Its limit is policy coverage; labels of a new policy, collected on open agents, transfer to closed ones (T10, T12, T14).</li>
+  <li><b>What can be read.</b> Ask yes/no questions in side branches. In the angles 2&nbsp;arcsin&nbsp;√P(yes), the Fisher–Rao distance between
+    two contexts' answers is exactly Euclidean, and a cross-fit of two sample halves estimates it without bias from sampled text alone.</li>
+  <li><b>What it shows.</b> On eight open models, this geometry tracks the hidden geometry (Spearman 0.41–0.74), far better than the input
+    text (0.22–0.30) or the model's own replies (0.22–0.44). But it is the geometry that models <em>share</em>: on 1,000 fresh contexts, a
+    model's answers match other models' hidden geometries as well as its own, and another open model's hidden state is the better stand-in
+    (G1–G6, all preregistered). Claude reveals the same shared geometry. A model's own final geometry needs full log-probabilities.</li>
+  <li><b>What it is good for.</b> It is a measured reason why an open model can stand in for a closed one. For a policy check on a proposed
+    action, the transcript and the action are Bayes-sufficient. A monitor that reads them through an open model, trained only on open agents,
+    catches most violations of two closed agents (T8b, T11) and blocks them in the loop (T16). Its limit is policy coverage.</li>
 </ul>
 
 <h2>How the evidence was produced</h2>
