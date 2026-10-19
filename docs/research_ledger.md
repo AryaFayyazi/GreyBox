@@ -1457,3 +1457,38 @@ Dated log of every experiment, decision and correction. Newest last.
   - Ladder: top-20 − answers +0.120; log-probability − top-20 +0.106.
   - What crosses an API boundary depends on the channel: text-level answers reveal only the shared geometry, and each
     returned token probability leaks some of the model's own.
+- **Exploratory washout control (scripts/143, dev 600): my "it is the question's content" hypothesis (P3) is
+  REFUTED.** Top-20 channel, own-model excess against the last layer:
+  - content position +0.075;
+  - preamble only, no question −0.001;
+  - near content-free question ("Is this message written in English?") +0.035;
+  - content question −0.017;
+  - self question −0.037.
+  - The instruction that constrains the reply to a one-word answer already erases the model's identity in the
+    readout. A likely reading: a constrained output format leaves little room for model-specific structure in the
+    next-token law. Whether internal states converge is tested by scripts/144 (running).
+- **Exploratory alignment test (scripts/144, dev 600): the synchronisation hypothesis (P1) is REFUTED.** Mean
+  cross-model Spearman of hidden geometries:
+  - context alone 0.76 / 0.73 / 0.66 (depth 50% / 75% / last);
+  - + preamble 0.59 / 0.73 / 0.65;
+  - + content question 0.54 / 0.56 / 0.53 (75%: −0.171 [−0.190, −0.157]);
+  - + self question 0.60 / 0.68 / 0.67.
+  - Questions do not make models' internal geometries converge; they diverge or stay. The washout of model-specific
+    signal after a question (scripts/141, 143) is a readout property: a constrained one-word answer format leaves the
+    next-token law little room for model-specific structure.
+  - Conclusion: no mechanistic claim goes into the paper; G6 and G7 stand as measured, without a mechanism.
+- **Exploratory link between the geometry and the monitor (scripts/145; 1,500 held-out steps per agent; fit-free).**
+  Spearman of the reader's raw layer-32 geometry vs each agent's own decision-state geometry (top-128 PCs):
+  - Gemma-4 0.35 (text 0.24; +0.12 [0.09, 0.14]);
+  - gpt-oss 0.21 (text 0.21; +0.00 [−0.02, +0.03]);
+  - Qwen3.8 0.17 (text 0.10; +0.07);
+  - Muse 0.18 (text 0.08; +0.10).
+  - The reader shares more of the agent's own geometry than text does for 3 of 4 agents, but the agreement is low:
+    the fitted ridge replica (R² 0.46–0.66) carries much more. A modest link; reported as such.
+- **Exploratory scale check (scripts/142; G6's 1,000 fresh contexts; 11 models; fixed relative depths).** Own-model
+  excess of the answers:
+  - all models: +0.006 [0.004, 0.009] at 75% depth; +0.003 [0.001, 0.007] at the last layer;
+  - Qwen3 series: 8B +0.013, 14B +0.014, 32B +0.022 [0.017, 0.028] (75%); Gemma-4 26B −0.009 [−0.019, +0.001].
+  - Answers track the model's own hidden geometry more as Qwen3 grows (0.63 → 0.64 → 0.70).
+  - Reading: the answers stay essentially shared up to 32B, with a small own-model excess emerging at the largest
+    Qwen3 (just above G6's ±0.02 band). Reported as a limit on generality, not a claim.

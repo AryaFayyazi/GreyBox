@@ -1,4 +1,9 @@
-# Questions as a common drive: why answers reveal only the shared geometry (hypothesis, under test)
+# Questions as a common drive: why answers reveal only the shared geometry (hypothesis — REFUTED 2026-10-19)
+
+**Status: refuted by its own tests (docs/research_ledger.md).** P3 failed: the instruction preamble alone, with no
+question, erases the model-specific signal in the readout. P1 failed: cross-model agreement of hidden geometries FALLS
+after a question (0.73 → 0.56 at 75% depth), it does not rise. The washout is a property of the constrained readout, not
+an internal synchronisation. Kept for the record.
 
 ## Observations so far
 - Answers reveal no model-specific geometry. G6: own-model excess +0.002 on 1,000 fresh contexts. G7: +0.001 against

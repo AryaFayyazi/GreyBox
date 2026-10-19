@@ -1,0 +1,42 @@
+{
+ "Gemma-4": {
+  "n": 1500,
+  "rho_reader_vs_agent": 0.3549,
+  "rho_text_vs_agent": 0.2363,
+  "reader_minus_text": [
+   0.1181,
+   0.0925,
+   0.1426
+  ]
+ },
+ "gpt-oss-20b": {
+  "n": 1500,
+  "rho_reader_vs_agent": 0.2098,
+  "rho_text_vs_agent": 0.2077,
+  "reader_minus_text": [
+   0.0027,
+   -0.0205,
+   0.0275
+  ]
+ },
+ "Qwen3.8-27B": {
+  "n": 1500,
+  "rho_reader_vs_agent": 0.1675,
+  "rho_text_vs_agent": 0.0972,
+  "reader_minus_text": [
+   0.0712,
+   0.0441,
+   0.0929
+  ]
+ },
+ "Muse-Glimmer-30B": {
+  "n": 1500,
+  "rho_reader_vs_agent": 0.1789,
+  "rho_text_vs_agent": 0.0826,
+  "reader_minus_text": [
+   0.0966,
+   0.0717,
+   0.1233
+  ]
+ }
+}
