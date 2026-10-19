@@ -1,0 +1,261 @@
+{
+ "models": {
+  "gemma3_4b": {
+   "pooled_same_kind": {
+    "answers": 0.3703,
+    "text": 0.6211
+   },
+   "benign": {
+    "answers": 0.1714,
+    "text": 0.2406
+   },
+   "boolq": {
+    "answers": 0.5163,
+    "text": 0.0853
+   },
+   "gsm8k": {
+    "answers": 0.2233,
+    "text": 0.2154
+   },
+   "harmful": {
+    "answers": 0.6466,
+    "text": 0.4128
+   },
+   "sst2": {
+    "answers": 0.3993,
+    "text": 0.1621
+   },
+   "wiki": {
+    "answers": 0.2245,
+    "text": 0.1215
+   }
+  },
+  "gptoss20b": {
+   "pooled_same_kind": {
+    "answers": 0.4961,
+    "text": 0.5715
+   },
+   "benign": {
+    "answers": 0.421,
+    "text": 0.308
+   },
+   "boolq": {
+    "answers": 0.0828,
+    "text": 0.1261
+   },
+   "gsm8k": {
+    "answers": 0.1881,
+    "text": 0.2171
+   },
+   "harmful": {
+    "answers": 0.0887,
+    "text": 0.2917
+   },
+   "sst2": {
+    "answers": 0.2359,
+    "text": 0.1766
+   },
+   "wiki": {
+    "answers": 0.2006,
+    "text": 0.0856
+   }
+  },
+  "llama31_8b": {
+   "pooled_same_kind": {
+    "answers": 0.6018,
+    "text": 0.6236
+   },
+   "benign": {
+    "answers": 0.3916,
+    "text": 0.2024
+   },
+   "boolq": {
+    "answers": 0.5129,
+    "text": 0.1348
+   },
+   "gsm8k": {
+    "answers": 0.2219,
+    "text": 0.2233
+   },
+   "harmful": {
+    "answers": 0.685,
+    "text": 0.3117
+   },
+   "sst2": {
+    "answers": 0.4337,
+    "text": 0.1189
+   },
+   "wiki": {
+    "answers": 0.2957,
+    "text": 0.1161
+   }
+  },
+  "mistral7b": {
+   "pooled_same_kind": {
+    "answers": 0.2293,
+    "text": 0.1246
+   },
+   "benign": {
+    "answers": 0.2777,
+    "text": 0.3129
+   },
+   "boolq": {
+    "answers": 0.1881,
+    "text": 0.2236
+   },
+   "gsm8k": {
+    "answers": 0.3135,
+    "text": 0.4298
+   },
+   "harmful": {
+    "answers": 0.3605,
+    "text": 0.4451
+   },
+   "sst2": {
+    "answers": 0.228,
+    "text": 0.1931
+   },
+   "wiki": {
+    "answers": 0.2588,
+    "text": 0.1444
+   }
+  },
+  "olmo3_7b": {
+   "pooled_same_kind": {
+    "answers": 0.3943,
+    "text": 0.6514
+   },
+   "benign": {
+    "answers": 0.2807,
+    "text": 0.1385
+   },
+   "boolq": {
+    "answers": 0.5098,
+    "text": 0.1238
+   },
+   "gsm8k": {
+    "answers": 0.1332,
+    "text": 0.0554
+   },
+   "harmful": {
+    "answers": 0.5244,
+    "text": 0.4545
+   },
+   "sst2": {
+    "answers": 0.2768,
+    "text": 0.1151
+   },
+   "wiki": {
+    "answers": 0.2263,
+    "text": 0.1722
+   }
+  },
+  "phi4mini": {
+   "pooled_same_kind": {
+    "answers": 0.4489,
+    "text": 0.6743
+   },
+   "benign": {
+    "answers": 0.1128,
+    "text": 0.2176
+   },
+   "boolq": {
+    "answers": 0.3337,
+    "text": 0.1591
+   },
+   "gsm8k": {
+    "answers": 0.145,
+    "text": 0.1911
+   },
+   "harmful": {
+    "answers": 0.4121,
+    "text": 0.4168
+   },
+   "sst2": {
+    "answers": 0.3854,
+    "text": 0.1086
+   },
+   "wiki": {
+    "answers": 0.2488,
+    "text": 0.1249
+   }
+  },
+  "qwen25_7b": {
+   "pooled_same_kind": {
+    "answers": 0.5743,
+    "text": 0.6828
+   },
+   "benign": {
+    "answers": 0.3143,
+    "text": 0.1545
+   },
+   "boolq": {
+    "answers": 0.5865,
+    "text": 0.1313
+   },
+   "gsm8k": {
+    "answers": 0.006,
+    "text": 0.1451
+   },
+   "harmful": {
+    "answers": 0.5848,
+    "text": 0.3755
+   },
+   "sst2": {
+    "answers": 0.508,
+    "text": 0.0972
+   },
+   "wiki": {
+    "answers": 0.2608,
+    "text": 0.1506
+   }
+  },
+  "qwen3_8b": {
+   "pooled_same_kind": {
+    "answers": 0.6682,
+    "text": 0.6715
+   },
+   "benign": {
+    "answers": 0.424,
+    "text": 0.2709
+   },
+   "boolq": {
+    "answers": 0.6592,
+    "text": 0.0735
+   },
+   "gsm8k": {
+    "answers": 0.1802,
+    "text": 0.1834
+   },
+   "harmful": {
+    "answers": 0.3886,
+    "text": 0.4741
+   },
+   "sst2": {
+    "answers": 0.4316,
+    "text": 0.1035
+   },
+   "wiki": {
+    "answers": 0.2343,
+    "text": 0.2195
+   }
+  }
+ },
+ "cells": 48,
+ "answers_beat_text_cells": 33,
+ "answers_beat_replies_cells": null,
+ "median_within_kind": {
+  "answers": 0.288,
+  "text": 0.174
+ },
+ "pooled_same_kind_range": {
+  "answers": [
+   0.2293,
+   0.6682
+  ],
+  "text": [
+   0.1246,
+   0.6828
+  ]
+ }
+}

@@ -1320,3 +1320,68 @@ Dated log of every experiment, decision and correction. Newest last.
   - Layers chosen on dev: Gemma 34, gpt-oss 12, Llama 24, Mistral 8 (the first stored layer, as on dev), OLMo 29,
     Phi 29, Qwen2.5 25, Qwen3 27.
   - **All preregistered G endpoints pass (G1 F1–F3, G2 C1–C2, G3 E1–E3).**
+- **G4 dropped after its dev dry run (not preregistered; results/t1/g4_shift_DRYRUN_dev.json).** Detecting a
+  hidden system-prompt change (helpful, monitor, DAN, pirate) at equal calls per context: 8 one-sample answers had
+  less power than 8 sampled replies for every model and condition (DAN at N = 20: 0.00–0.24 vs 0.17–0.87).
+  Exact log-probabilities detect every change (≥ 0.94 at N = 20), as any deterministic output would (not new). The
+  displacement link favours answers for 3 models and replies for 5. Two fixes made during the dry run:
+  - The pirate prompt drops Mistral's yes/no mass to 0.05 ("Aye"). Sampled answers are now drawn as yes / no / other
+    from the raw probabilities; "other" counts as no information.
+  - gpt-oss's template inserts the current date, so its L2 states (Oct 15) differ from new runs (hidden cos ≥ 0.955).
+  - Reading: for WHETHER a state moved, replies are the more sensitive output. The paper reports this as a negative
+    development result.
+- **G5 designed from the same dev data: which output geometry matches the hidden geometry across contexts?** On dev:
+  - answers exact 0.38–0.75 vs replies 0.23–0.46. The replies' geometry is close to the input text's (0.23–0.30).
+  - 1 reply ≈ 8 replies (replies saturate).
+  - At equal calls (8 questions vs 8 replies) answers LOSE; at equal output tokens (88 one-token answers vs one
+    128-token reply) they win for 7 of 8.
+  - **Locked 2026-10-18T14:42:32-07:00, published first (0163682, 21:42:32Z).** Confirm data: job 4020 (1,440
+    contexts, one fresh pass).
+- Tool: `graybox-geometry` CLI (logprob tier exact; sample tier cross-fit), tested offline end to end.
+- **Paper reframed (2026-10-18, user choice: the geometry leads).** New title, abstract and introduction; Theory =
+  gauge → Theorem 1 (observable geometry, with the cross-fit as part d) → Theorem 2 (exact recovery) → the agent
+  theory in short (the full statements are in a new appendix). Results I: the geometry (Table: answers / 8 samples /
+  replies / text). Results II: monitoring closed agents (Table 1, live table, prevention figure). Backups:
+  paper/main_v2_reader_leads.tex, method_v2_reader_leads.tex. Numbers come from paper/make_geometry_numbers.py.
+  - Teaser (user request: the geometry itself, like the previous teaser), scripts/134. (a) Llama-3.1 8B's hidden
+    geometry; (b) the same 1,440 contexts from answers only, rotated in 10-D onto (a) for display; (c, d) rank–rank
+    density of every pair (answers ρ 0.74, text 0.26); (e) Claude. The 4-panel figure moved to Results as Figure 3.
+  - A refusal-coloured design was rejected: the battery contains "Will you refuse this request?" (circular), and
+    most models refuse 88–99% of harmful requests.
+- **Exploratory (scripts/135): the agreement within one kind of context is much weaker.** Per kind (240
+  contexts), median ρ: answers 0.29, text 0.17. Answers are ahead in 33 of 48 model × kind cells. Pooled over
+  same-kind pairs, text is ahead for OLMo, Phi and Qwen2.5, but that statistic mixes kinds' distance scales. Much of
+  the pooled 0.41–0.74 is the separation of kinds. Stated in the results, the limits and the conclusion.
+- **Exploratory, negative: D-optimal battery selection (dev only).** Greedy max log det of the angles' covariance,
+  chosen on 1,000 dev contexts from answers only, scored on 800 other dev contexts. 24 D-optimal questions gave
+  ρ 0.42–0.60; 24 random 0.38–0.69 (random better for 6 of 8); top-variance 0.39–0.76; Claude's 24 0.30–0.51; all 88
+  best for 7 of 8. Within one kind, D-optimal 24 is also below all 88 (median 0.15–0.30 vs 0.22–0.44). Maximising the
+  volume favours idiosyncratic questions. Not pursued: the number of questions matters more than the selection.
+- **Independent review of the reframed paper (agent persona; 3/10, reject) and my verification (2026-10-18).**
+  - VERIFIED, the central problem: the answer geometry is not model-specific. Answers of model A vs hidden geometry
+    of model B (confirm, 8×8): A's own hidden geometry is the best match in 1 of 8 rows (Llama's hidden geometry is the
+    best column for every model). Another open model's hidden geometry matches A's hidden geometry at 0.52–0.86, above
+    A's own answers (0.41–0.74) in 8 of 8.
+  - Two-way decomposition: the own-model diagonal excess is −0.002 on average. In every battery category (topic,
+    affect, intent, harm, epistemic, policy/self, social) the excess is −0.03 to +0.02, and the own model is best in at
+    most 2 of 8 rows. The answers read the geometry that models SHARE, not a model-specific state.
+  - Other valid points:
+    - Čencov stated imprecisely: the intrinsic (product submanifold) vs ambient distance.
+    - Th. 1(d)'s estimand is μ_n, which needs equal n; clipping breaks exactness.
+    - The sampled answers in G1 were simulated from P.
+    - Th. 2 is essentially Carlini et al. 2024 App. H (ellipsoid fit, then Cholesky).
+    - Uncited close prior work: Schiekiera et al. 2602.00628 (RSA behaviour vs hidden geometry in 8 models),
+      Picozzi 2609.11063 (Fisher–Rao output geometry pulled back), SliceGPT (computational invariance).
+    - The gauge proposition (pre-norm) does not cover Gemma-3 and OLMo-3.
+    - G5 claims were written before the data existed.
+    - "Three models" should be 7 of 8.
+    - The T16c goal endpoint failed.
+  - Errors fixed at once: "three" → 7 of 8; T16c sentence. The framing is put to the user.
+- **G5 (confirmatory, 1,440 confirm contexts, one fresh pass): H1, H2, H3 pass.**
+  - H1: exact answers − 8 replies +0.16 to +0.48, 8/8.
+  - H2: 88 one-sample answers − 1 reply 7/8 (gpt-oss −0.048 [−0.075, −0.023]).
+  - H3: 8 replies − 1 reply ≤ 0.031, 8/8.
+  - ρ(replies, hidden) 0.22–0.34, close to text (0.22–0.30).
+  - **User decision (2026-10-18): the shared-geometry story.** The answers read the geometry that models share (the
+    review's control). That shared geometry is the measured reason an open model can stand in for a closed one. The
+    claim gets its own preregistered test (G6) on fresh contexts.
