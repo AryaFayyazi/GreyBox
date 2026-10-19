@@ -1,0 +1,154 @@
+{
+ "set": "dev",
+ "n": 600,
+ "channels": {
+  "chosen_layer": {
+   "answers": {
+    "excess": [
+     0.0062,
+     0.0033,
+     0.0088
+    ],
+    "own_mean": 0.6379,
+    "others_mean": 0.6307,
+    "own_best": 1
+   },
+   "top1": {
+    "excess": [
+     0.0069,
+     0.0006,
+     0.0136
+    ],
+    "own_mean": 0.3758,
+    "others_mean": 0.3678,
+    "own_best": 2
+   },
+   "top5": {
+    "excess": [
+     0.0221,
+     0.0173,
+     0.0279
+    ],
+    "own_mean": 0.5149,
+    "others_mean": 0.4897,
+    "own_best": 1
+   },
+   "top20": {
+    "excess": [
+     0.0374,
+     0.032,
+     0.0444
+    ],
+    "own_mean": 0.5488,
+    "others_mean": 0.5061,
+    "own_best": 2
+   },
+   "full": {
+    "excess": [
+     0.0342,
+     0.0283,
+     0.0411
+    ],
+    "own_mean": 0.5247,
+    "others_mean": 0.4856,
+    "own_best": 2
+   },
+   "ladder": {
+    "top1_minus_answers": [
+     0.0012,
+     -0.0068,
+     0.0084
+    ],
+    "top5_minus_top1": [
+     0.0148,
+     0.0095,
+     0.0203
+    ],
+    "top20_minus_top5": [
+     0.0156,
+     0.0131,
+     0.0178
+    ],
+    "full_minus_top20": [
+     -0.0032,
+     -0.0041,
+     -0.0023
+    ]
+   }
+  },
+  "last_layer": {
+   "answers": {
+    "excess": [
+     -0.0105,
+     -0.0138,
+     -0.0068
+    ],
+    "own_mean": 0.5167,
+    "others_mean": 0.5287,
+    "own_best": 0
+   },
+   "top1": {
+    "excess": [
+     0.0427,
+     0.0363,
+     0.0486
+    ],
+    "own_mean": 0.3746,
+    "others_mean": 0.3258,
+    "own_best": 2
+   },
+   "top5": {
+    "excess": [
+     0.0585,
+     0.0518,
+     0.065
+    ],
+    "own_mean": 0.5201,
+    "others_mean": 0.4532,
+    "own_best": 3
+   },
+   "top20": {
+    "excess": [
+     0.075,
+     0.0686,
+     0.0824
+    ],
+    "own_mean": 0.566,
+    "others_mean": 0.4803,
+    "own_best": 2
+   },
+   "full": {
+    "excess": [
+     0.0701,
+     0.0633,
+     0.0777
+    ],
+    "own_mean": 0.5428,
+    "others_mean": 0.4626,
+    "own_best": 2
+   },
+   "ladder": {
+    "top1_minus_answers": [
+     0.0531,
+     0.0454,
+     0.0605
+    ],
+    "top5_minus_top1": [
+     0.0158,
+     0.0095,
+     0.0224
+    ],
+    "top20_minus_top5": [
+     0.0166,
+     0.0138,
+     0.0191
+    ],
+    "full_minus_top20": [
+     -0.0048,
+     -0.006,
+     -0.0036
+    ]
+   }
+  }
+ }
+}
