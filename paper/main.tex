@@ -22,6 +22,7 @@
 \setlist{nosep,leftmargin=1.1em}
 \newcommand{\PENDING}[1]{\colorbox{gray!15}{\scriptsize\textsf{PENDING: #1}}}
 \theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
 \crefname{algorithm}{Algorithm}{Algorithms}
@@ -41,6 +42,7 @@
 \newcommand{\cmark}{\textcolor{gbaqua}{\ding{51}}}
 \newcommand{\best}[1]{\textbf{\textcolor{gbblue}{#1}}}
 \input{numbers}
+\input{geometry_numbers}
 \input{robustness}
 \usepackage{icml2027}
 
@@ -51,13 +53,13 @@
 % first-page figure, built in a box before the title block
 \newsavebox{\teaserbox}
 \sbox{\teaserbox}{\begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth]{figures/teaser.pdf}\par\vspace{-2mm}
-\captionof{figure}{\textbf{Seeing inside closed agents.} Panels (a--d) share the two main axes of Gemma-4's decision state; blue: density of safe actions, red: violations. (a) True states, 12{,}128 fresh steps. (b) Their replicas, computed from the transcript. (c, d) Closed agents' actions through the same reader; nothing was fit on them. (e) Episodes with an executed violation in the agents' tool loops, without and with the gate.}
+\includegraphics[width=\textwidth]{figures/teaser_geometry.pdf}\par\vspace{-2mm}
+\captionof{figure}{\textbf{A model's latent geometry, read from its answers.} (a) The hidden geometry of an open model (classical scaling of its hidden states on 1{,}440 held-out contexts). (b) The same contexts placed only by the model's yes/no answers, in the exact Fisher--Rao coordinates of \cref{thm:geometry}; no weights are used and nothing is trained (rotated onto (a) for display). (c, d) Every pair of contexts: rank of the hidden distance against the rank of the distance from the answers, or from the model's own sampled replies; Spearman $\rho$ is the correlation of each picture (over eight models: answers \GOneAns, replies \GFiveRep, input text \GOneText). (e) The same map for a closed model, Claude Haiku~5.5, from eight sampled answers per question.}
 \label{fig:teaser}
 \end{minipage}}
 
 \twocolumn[
-\icmltitle{Grey Box: Replicating Agents' Hidden States from Their Transcripts,\\to Predict and Prevent the Violations of Closed Agents}
+\icmltitle{Grey Box: A Closed Model's Answers Reveal a Latent Geometry\\It Shares with Open Models, and Open Models Can Monitor It}
 
 \icmlsetsymbol{equal}{*}
 \begin{icmlauthorlist}
@@ -65,7 +67,7 @@
 \end{icmlauthorlist}
 \icmlaffiliation{anon}{Anonymous Institution}
 \icmlcorrespondingauthor{Anonymous}{anon@anon}
-\icmlkeywords{AI safety, agent monitoring, interpretability, black-box models, identifiability, preregistration}
+\icmlkeywords{AI safety, information geometry, interpretability, black-box models, identifiability, agent monitoring, preregistration}
 \vskip 0.15in
 \usebox{\teaserbox}
 \vskip 0.1in
@@ -74,43 +76,76 @@
 
 % =====================================================================================
 \begin{abstract}
-Hidden-state probes can stop an agent's unsafe actions, but closed agents do not share their weights, and hidden coordinates cannot be recovered from outputs (a gauge symmetry).
-We show that an open model that reads the same transcript can instead \emph{replicate} the state: across four open agent architectures it reconstructs 46--66\% of the variance of the main hidden-state components, more than text features do, and white-box probes score at least as well on the replica as on the true state, with the lower convex losses that a Rao--Blackwell argument predicts.
-Because the transcript and the proposed action are Bayes-sufficient for the policy labels they decide, a probe on the reader, trained only on an open agent, catches 94\% and 98\% of two closed agents' violations at a 5\% label-free review budget on the benchmark it was trained on, 89\% at the same budget when the agent is told it is monitored, and cuts episodes with an executed violation from about 7\% to 0.2\% in the agents' live tool loops.
-All confirmatory tests were preregistered and hash-locked, and we release an SDK, a server and a browser tool to train and audit such monitors.
+The hidden coordinates of a closed model cannot be read from its outputs: a gauge symmetry of the network leaves every output unchanged. What can be read is a geometry. Asking yes/no questions in side branches of the conversation gives answer laws whose Fisher--Rao distances are exactly Euclidean in arcsine coordinates, and a cross-fit estimator is unbiased from sampled text alone. We measure this observable geometry on eight open models and test it against their hidden states, with every test preregistered and its lock published before the data. It tracks the hidden geometry (Spearman \GOneAns) far better than the input text (\GOneText) or the model's own replies (\GFiveRep). But it is not the model's own: on 1{,}000 fresh contexts, a model's answers match other models' hidden geometries as well as its own (own-model excess $+0.002$), on new kinds of context too, and another open model's hidden state is the better stand-in. What a closed model's answers reveal is a latent geometry it shares with open models; Claude Haiku~5.5 reveals the same. This is a measured reason why an open model can monitor a closed agent: reading transcripts through an open model, a monitor trained only on open agents catches 94\% and 98\% of two closed agents' violations at a 5\% label-free review budget, and cuts the episodes with an executed violation from about 7\% to 0.2\% live. The model-specific final geometry is recoverable exactly only with full log-probabilities. We release the tool.
 \end{abstract}
 
 % =====================================================================================
 \section{Introduction}
 \label{sec:intro}
-Interpretability reads what a model knows and what it will do from its hidden state \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}.
-For agents that act through tools, a probe on the hidden state forecasts an unauthorised action before it runs, and a gate can stop it \citep{fayyazi2026cape}.
-These tools need the weights. The most capable agents are closed: their providers return sampled text, at most some log probabilities, and a summary of the reasoning.
+Interpretability reads what a model knows and what it will do from its hidden state \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}, and for agents a probe can stop an unsafe action before it runs \citep{fayyazi2026cape}. These tools need the weights. The most capable models are closed: their providers return sampled text and, at most, some log-probabilities.
 
-\textbf{The grey box.} We ask what an outside observer can recover of a closed agent's hidden state, and whether it is enough to predict and prevent the agent's violations. Two facts answer it (\cref{sec:method}). First, hidden coordinates are not identifiable from outputs: any reparametrisation of the hidden space that the next layers undo leaves every output unchanged, a gauge symmetry (\cref{prop:gauge}). Second, the hidden state is a deterministic function of the tokens that the agent read. An open model that reads the same tokens can therefore hold a \emph{replica} of it: the conditional expectation of the agent's state given the reader's state (\cref{prop:replica}). For a policy check of a proposed action, nothing is lost by reading the transcript instead of the weights (\cref{cor:action}).
+\textbf{What can an outside observer know about a closed model's state?} Not its coordinates: any reparametrisation of the hidden space that the next layers undo leaves every output unchanged, a gauge symmetry (\cref{prop:gauge}). Distances between states survive this symmetry, so we ask which geometry the outputs reveal. Ask the model yes/no questions about a context, each in its own side branch. In the angles $\vartheta=2\arcsin\sqrt{P(\textsc{yes})}$, the Fisher--Rao distance between two contexts' answer laws is plain Euclidean distance (\cref{thm:geometry}): a change of variables, not a learned embedding, and estimable without bias from sampled text on any chat API.
+
+\textbf{What we find.} This observable geometry tracks a model's hidden geometry far better than the input text or the model's own replies. But a control that an independent review asked for shows that it is not the model's own: a model's answers match \emph{other} models' hidden geometries exactly as well as its own, on fresh contexts and new kinds of context, and an open model's hidden state is a better stand-in than the model's own answers. What outputs reveal is the latent geometry that models share \citep{picozzi2026information,huh2024platonic}. A closed model, Claude, reveals the same. This turns a common assumption into a measurement: an open model that reads the same tokens is a principled stand-in for a closed one. We use it to monitor closed agents, and we show that the model-specific part of the geometry needs full log-probabilities (\cref{thm:exact}).
 
 \textbf{Contributions.}
 \begin{enumerate}
-\item \emph{Theory} (\cref{sec:method}): gauge non-identifiability; two gauge-invariant objects, the behavioural state (read in Fisher--Rao coordinates by a battery designed from black-box answers) and the token-determined state; the replica as a conditional mean that Rao--Blackwellises white-box probes; Bayes sufficiency of the proposed action, with a ceiling on any monitor's robustness to rewording; and label-free decision rules with exact coverage and bounds under shift and attack bursts (\cref{alg:monitor,alg:battery}).
-\item \emph{Replication} (\cref{sec:replica}): one reader replicates the decision state of four agent architectures on unseen scenarios, and white-box probes score at least as well on the replica as on the true state, in all four.
-\item \emph{Prediction and prevention on closed agents} (\cref{sec:closed,sec:prevent}): a probe trained only on an open agent catches 94\% and 98\% of two closed agents' violations and blocks them live; it keeps catching them when the agent knows it is monitored, and a cut set again on the new traffic restores the 5\% review budget live (\cref{sec:robust}); labels of a new policy collected on open agents transfer to a closed agent (\cref{sec:coverage}).
-\item \emph{A released tool} (\cref{sec:tool}): an SDK, a server and a browser trainer, with Python and browser implementations that give near-identical models.
+\item \emph{Theory} (\cref{sec:method}): the observable geometry of a model's state in exact flat coordinates, its invariance, its link to the hidden state, and an exactly unbiased estimator from sampled answers; the exact final geometry from full log-probabilities, after \citet{carlini2024stealing}.
+\item \emph{Measurement} (\cref{sec:geom-results}): on eight open models, the answer geometry tracks hidden geometry better than the input text and the model's replies; it is shared across models, with no own-model excess, on fresh and new kinds of context; Claude reveals the same geometry. We report where the answers lose.
+\item \emph{Application to closed agents} (\cref{sec:results}): with the transcript and the action sufficient for policy checks (\cref{cor:action}), a monitor that reads them through an open model predicts and prevents two closed agents' violations live, also when the agent knows it is monitored.
+\item \emph{A released tool} (\cref{sec:tool}): one command measures a model's observable geometry; an SDK, a server and a browser trainer monitor agents.
 \end{enumerate}
-Every confirmatory test was preregistered: its document and analysis code were hash-locked (SHA-256) before the data existed, and for the later tests the lock was also published first. All tests, including those that failed or could not be done, and the limits of each claim, are in \cref{app:limits,app:record}.
+Every confirmatory test was preregistered: its document and analysis code were hash-locked (SHA-256) before the data existed, and for the later tests, all geometry tests included, the lock was published first. Tests that failed, a dropped design, a correction of our own theorem, and the limits of each claim are in \cref{app:limits,app:record}.
 
 % =====================================================================================
 \input{method}
 
 % =====================================================================================
-\section{Experimental setup}
-\label{sec:setup}
-\textbf{Agents and data.} CAPE-Bench \citep{fayyazi2026cape} gives matched tool-use tasks in which one fact decides whether an action is authorised; an environment checker labels each action. Open agents: Gemma-4 (26B), gpt-oss-20b, Qwen3.8-27B and Muse-Glimmer-30B. Closed agents, through their public tool-use APIs with reasoning off: Claude Haiku~5.5 and GPT-6-luna. External benchmark: AgentDojo prompt injections \citep{debenedetti2024agentdojo}.
-\textbf{Reader and monitor.} The reader is Qwen3-8B; it reads the agent's instructions, the user's task, the earlier tool calls with their results and the proposed action, and $\psi_t$ is its residual stream at layer 32 at the last token. The monitor is a logistic probe on $\psi_t$ (standardisation, 256 principal components, $C=0.05$), trained only on 17{,}623 Gemma-4 CAPE-Bench steps and never fit on a test agent unless stated.
-\textbf{Baselines.} The agent's own internals (where open), TF-IDF with the reader's input and labels, a zero-shot 70B judge (Llama-3.3-70B, the same input) and tool identity (the action's tool alone).
+\section{What a model's answers reveal: results}
+\label{sec:geom-results}
+\textbf{Data.} 4{,}800 contexts of six kinds (harmful and benign requests, reviews, yes/no questions, maths problems, encyclopedia text), split into 3{,}360 development and 1{,}440 confirmation contexts, and 1{,}000 fresh contexts for the last test, 400 of them of four kinds never used before (news, programming tasks, jailbreak behaviours, prompt injections). A battery of 88 questions about the message (topic, intent, tone, demands, harm, and the model's own stance). Eight open chat models from six families. Ground truth: each model's residual stream at the last prompt token, at the layer chosen on development contexts only. All results are on held-out contexts, as preregistered.
+
+\begin{table}[t]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{2.4pt}
+\caption{\textbf{Which observable carries the state?} Spearman correlation of each geometry with the model's own hidden geometry, over all pairs of 1{,}440 held-out contexts; no parameter is fit. Answers: Fisher--Rao distances over 88 questions, exact (log-probabilities) or from 8 answers sampled from the model's own probabilities. Replies: mean embedding of 8 sampled replies. Text: embedding of the input. Last column: answers $-$ text, 95\% interval.}
+\label{tab:geometry}
+\begin{tabular}{@{}l>{\columncolor{gbrow}}cc cc l@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Answers}} & & & \\
+\cmidrule(lr){2-3}
+\textbf{Model} & exact & 8 samples & \textbf{Replies} & \textbf{Text} & \textbf{answers $-$ text}\\
+\midrule
+\GTABLE
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/infogeom.pdf}
+\caption{\textbf{The observable geometry, preregistered results.} (a) Agreement of each open model's answer geometry with its own hidden geometry, exact and from 8 sampled answers, against the geometry of the input text (1{,}440 held-out contexts). (b) Agreement against the number of questions. (c) Exact recovery of the final hidden geometry from log-probabilities (Qwen3-0.6B, 2{,}000 held-out contexts) against the number of contexts; the threshold is $d(d+1)/2$. (d) Agreement of model A's answer geometry with model B's hidden geometry on 1{,}000 fresh contexts; the own-model diagonal (outlined) is not special.}
+\label{fig:geometry}
+\end{figure*}
+
+\textbf{The answers track the hidden geometry; the input text and the replies do not.} On every model the answer geometry matches the hidden geometry better than the geometry of the input text (\cref{tab:geometry}; gains \GOneGain, every lower bound at least \GOneGainLow; preregistered, 8 of 8). The model's own replies, the other output that an API gives, do little better than the text (\GFiveRep; preregistered: \GFiveOut): one reply and the mean of eight differ by at most \GFiveSat, while from 8 to 88 questions the answers' agreement rises by \GOneMore\ (\cref{fig:geometry}b). Answers sampled from the model's own probabilities, 8 per question, keep \GOneKeep\ of the exact agreement. Two qualifications. Much of the agreement is the separation of kinds of context: within one kind it is weaker (median \WKAns\ for answers, \WKText\ for text; answers ahead in \WKCells\ model--kind cells; exploratory). And on the fresh contexts of the last test agreement is lower (answers \GSixAns, text \GSixText, replies \GSixRep); there Gemma's replies beat its answers.
+
+\textbf{The geometry is shared, not the model's own.} An independent review asked whether a model's answers match \emph{its own} hidden geometry better than another model's. They do not. On 1{,}000 fresh contexts, the agreement of model A's answers with model B's hidden geometry has no own-model excess beyond row and column effects: \GSixExcess, inside the preregistered equivalence band of $\pm0.02$ (\cref{fig:geometry}d); the same held on the earlier contexts and in every category of question, including the questions about the model's own stance (exploratory). The hidden geometries of different models agree with each other (\GSixHH), and an open model's hidden state (Qwen3-8B) matches another model's hidden geometry better than that model's own answers do, for \GSixSTwo\ models (\GSixSTwoRange; preregistered). So what a model's outputs reveal of its state is the geometry that models share, as \citet{picozzi2026information} found for next-token distributions and in line with converging representations \citep{huh2024platonic}; the model-specific remainder of the hidden geometry is invisible in its answers. \citet{schiekiera2026associations} report behavioural signal beyond cross-model consensus for word-similarity judgements; with our battery we find none.
+
+\textbf{It holds on new kinds of context.} On the 400 contexts of the four new kinds, the answers beat the text for \GSixSThree\ models (\GSixAnsNew\ vs \GSixTextNew; preregistered; for Gemma and gpt-oss the interval includes 0).
+
+\textbf{A closed model.} Claude Haiku~5.5 answered 24 questions, 8 times each, on 192 held-out contexts. Two independent halves of the samples give the same geometry: Spearman \GTwoSplit, above the bound of 0.7 fixed in advance from open models, and \GTwoText\ beyond the text geometry (preregistered). With the cross-fit estimator the geometry is close to Euclidean (negative eigenvalue mass \CFClaudeNegCF, against \CFClaudeNeg\ with the variance-subtraction rule). Most cells are unanimous, so this stability partly reflects how deterministic Claude is. Its agreement with the open models' hidden geometries is \GTwoOpen. With the same 24 questions and 8 samples, open models' answers agree with other open models' hidden geometries at 0.41--0.76 (median 0.58; exploratory), so the closed model reveals the shared geometry, at the lower end of the open models' range.
+
+\textbf{The model-specific part needs log-probabilities.} The final hidden geometry of a model is its own, and \cref{thm:exact} recovers it exactly from full log-probabilities. On Qwen3-0.6B ($d=1{,}024$), from 1.15 million self-generated contexts, the recovered cosines of 2{,}000 held-out contexts correlate with the true ones at \GThreeBelow\ below $d(d+1)/2$ contexts, at \GThreeOneOne\ at $1.1\times$, and at $2\times$ the median error is $\GThreeErr$ (maximum $\GThreeMax$) (\cref{fig:geometry}c; preregistered). Closed APIs do not return full log-probabilities.
+
+\textbf{Where answers lose.} For detecting \emph{that} a model's state moved (a hidden system prompt), sampled replies had more power than sampled answers at equal calls in every model and condition on development data, so we did not run that test (\cref{app:limits}).
 
 % =====================================================================================
-\section{Results}
+\section{Application: monitoring closed agents}
 \label{sec:results}
+Because the observable geometry is shared, an open model that reads the same tokens holds a measured stand-in for a closed model's state (\cref{sec:geom-results}, S2). We use this to monitor closed agents: the monitor reads the transcript and the proposed action through an open model, which \cref{cor:action} says is enough for policy checks.
+\textbf{Agents and monitors.} CAPE-Bench \citep{fayyazi2026cape} gives matched tool-use tasks in which one fact decides whether an action is authorised; an environment checker labels each action. Open agents: Gemma-4 (26B), gpt-oss-20b, Qwen3.8-27B and Muse-Glimmer-30B. Closed agents, through their public APIs with reasoning off: Claude Haiku~5.5 and GPT-6-luna. The reader is Qwen3-8B (layer 32), with a logistic probe trained only on 17{,}623 Gemma-4 steps; baselines are the agent's own internals (where open), TF-IDF with the same labels, a zero-shot 70B judge and the action's tool alone.
 
 \begin{table*}[t]
 \centering\small
@@ -143,66 +178,18 @@ Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & \sot
 \end{tabular}
 \end{table*}
 
-\subsection{Reading the behavioural state}
-\label{sec:psi}
-On models with known internals, the interrogation state recovers the state. A battery of 21 questions, chosen from black-box answers only, separates all 21 reachable states (and a dead state) of a program compiled into a transformer; after a random rotation of the residual stream, a readout that uses the known layout falls from $r=0.9995$ to $-0.46$ while every answer is unchanged, as \cref{prop:gauge} requires. On Othello-GPT, 61 questions recover the board-carrying hidden state at $R^2$ 0.967 on 1{,}000 fresh games (input-only 0.873). On eight open chat models the answers recover the hidden state better than a text embedding ($+0.120$ $R^2$, 8 of 8 models), and readouts trained only on open models transfer to Claude (harmful request 0.993, refusal 0.997 AUROC).
+\textbf{The transcript is enough.} \Cref{cor:action} says that the agent's internals cannot beat a monitor of the transcript and the action. A probe on Gemma-4's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning; the reader probe, trained on the same labels, scores 0.994 ($+0.015$ [0.007, 0.026] over the internals) and is non-inferior on unseen task families (\cref{tab:main}). Given the action, adding the agent's hidden reasoning changes the AUROC by $-0.0014$ [$-0.0046$, $+0.0014$] (exploratory). The reader's state also replicates the agent's: on four architectures it reconstructs 46--66\% of the variance of the main components of the decision state on unseen scenarios, more than text features, and a probe trained on true states scores at least as well on the replica (\cref{app:agents,app:rb}). What the reader adds over word counts is robustness to shift: TF-IDF with the same labels ties it on the training benchmark but is at chance on AgentDojo (0.503 vs 0.781).
 
-\subsection{Replicating the hidden state}
-\label{sec:replica}
-On Gemma-4, where the true state is known, we fit the map from the reader's state to the agent's decision-point state (five layers, top 128 principal components, 80.5\% of the variance) on development steps. On 12{,}128 fresh steps the replica reconstructs 66.4\% of the variance from the transcript alone, against 58.6\% for TF-IDF features ($+0.079$ [0.075, 0.083]), and it is better on every one of the 128 principal components. A probe trained on the agent's \emph{true} states scores 0.984 on true fresh states and 0.987 on the replica ($+0.003$ [$-0.002$, $+0.007$]).
-The same reader replicates three more architectures, a mixture of experts (gpt-oss-20b), hybrid linear attention (Qwen3.8-27B) and a dense model (Muse-Glimmer-30B), on scenarios that the map never saw: $R^2$ 0.494, 0.542 and 0.462, each above text features ($+0.102$, $+0.101$, $+0.061$, all intervals above 0), the reader is better at all 20 recorded layers of the four agents (\cref{fig:replication}b,c), and the true-state probe works on every replica (\cref{tab:rb}). Before reading an agent's state we checked that we reproduce its context: teacher-forced, its own model predicts 91--100\% of the next 16 tokens of its actual tool call.
-The theory predicts the shape of the replica. Across the 128 components, the ratio of the replica's variance to the state's variance closely tracks the component's $R^2$ (\cref{fig:replication}d; correlation 0.99, slope 0.89 on fresh steps), the identity of \cref{prop:replica}(b).
+\textbf{Two closed agents.} Nothing was fit on the closed agents. At a cut set at the top 5\% of the agent's own unlabelled traffic, the monitor catches 94.1\% of Claude Haiku~5.5's 68 violations (zero-shot judge: 0\%; TF-IDF: 63.8\%) and 98.5\% of GPT-6-luna's (judge 37.9\%; TF-IDF 49.0\%). The scale of the scores does not transfer between agents (on Claude a cut at probability 0.5 catches 3\%), but the ranking does, so the cut must come from the monitored agent's traffic. Frozen after 500 actions, it keeps catching 94\% under bursts in which half the actions are violations, while a cut that moves over a window of 5{,}000 actions falls to 36\%, as \cref{prop:burst} predicts (\cref{fig:transfer}a).
 
-\textbf{The replica improves the white-box probe.} In all four agents the probe trained on true states scores \emph{higher} on the replica than on the true states, by pairwise and log losses and by AUROC (\cref{fig:replication}a and \cref{tab:rb} in \cref{app:rb}; exploratory analysis of the preregistered data). \Cref{prop:rb} predicts the lower convex losses when $Y\indep\phi\mid\psi$, and the data are consistent with that premise: the part of the probe score that the replica misses (23--33\% of its variance) adds at most 0.0006 AUROC to the replica score, and the pairwise logistic risk falls by 19--61\%. A TF-IDF replica gains as much on the three new agents (\cref{app:limits}): the gain comes from shrinkage toward a conditional mean, not from the reader alone.
-
+\textbf{Live prevention.} We ran the monitor as a server in each closed agent's tool loop, on the same scenarios with and without the gate. In all four preregistered live tests the gate removed nearly all executed violations (\cref{tab:live,fig:prevention}), and no agent executed a violation after a block. Holding an escalated action for a reviewer kept the safety gain; its preregistered bound on the goal cost was not shown ($-0.020$ [$-0.051$, $+0.007$]; \cref{app:limits}). The round trip was \LATENCY.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/replication.pdf}
-\caption{\textbf{Replicating the hidden state.} (a) Score of a probe trained on Gemma-4's true states, on the true state and on two replicas (12{,}128 fresh steps; left half safe, right half violations; bars: medians). (b) Variance-weighted $R^2$ of the top 128 components, unseen scenarios. (c) $R^2$ gain of the reader replica over the TF-IDF replica at each recorded layer, over the full layer. (d) Per component: replica variance over state variance, against $R^2$.}
-\label{fig:replication}
+\includegraphics[width=\textwidth]{figures/prevention.pdf}
+\caption{\textbf{Live prevention and bursts.} (a) Episodes with an executed violation and (b) episodes that reached the goal, without a gate, with blocking, and with hold for review (Claude); 95\% Wilson intervals. (c) Violations caught at a 5\% budget against the share $\rho$ of violations in a burst, for a frozen and two rolling cuts; dotted: the $\beta/\rho$ bound (\cref{prop:burst}).}
+\label{fig:prevention}
 \end{figure*}
-
-\subsection{The transcript is enough}
-\label{sec:sufficient}
-\Cref{cor:action} says that the agent's internals cannot beat a monitor that reads the transcript and the action. A probe on the agent's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning: the white-box advantage over turn-start monitors is \emph{when} it reads. A reader probe trained on the same labels scores 0.994, above the agent's internals ($+0.015$ [0.007, 0.026]), and it is non-inferior on unseen task families (0.969 vs 0.976). In an exploratory check, adding the agent's hidden reasoning to the reader's input, given the action, changes the AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]: given the action, the hidden reasoning adds no measurable information, as \cref{prop:replica}(a) allows.
-On two more architectures (exploratory), the reader trained only on Gemma-4 is the best monitor and beats a probe on each agent's own internals trained on its own labels: 0.972 vs 0.955 on Qwen3.8 ($+0.021$ [$-0.037$, $+0.073$]) and 0.968 vs 0.929 on Muse-Glimmer ($+0.040$ [0.017, 0.068]). What the reader adds over word counts is robustness to shift (\cref{tab:main}): TF-IDF with the same labels equals the reader on the training benchmark, but it is lower on unseen task families (0.950 vs 0.969) and at chance on AgentDojo (0.503), where the reader keeps 0.781 against a zero-shot judge's 0.537.
-
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/transfer.pdf}
-\caption{\textbf{Robustness and transfer.} (a) Claude's reader scores in order (violations in orange): 1{,}000 normal actions, then a burst in which half are violations; lines: three cuts (legend: share of the burst's violations caught). (b) The closed GPT-6-luna's injected calls caught at the benign 5\% cut, against labelled AgentDojo calls of open agents (numbers: AUROC). (c) Claude's scores when told, or not told, that it is monitored; dashed: the cut frozen on its earlier traffic.}
-\label{fig:transfer}
-\end{figure*}
-
-\subsection{Two closed agents}
-\label{sec:closed}
-Nothing was fit on the closed agents (\cref{tab:closed}). On Claude Haiku~5.5 the monitor catches 94.1\% of 68 violations when 5\% of the actions go to review, with a cut set without labels; the zero-shot judge catches none. One family that is absent from training makes up 62\% and 59\% of the two agents' violations; without it, the monitor catches 92.3\% and 96.3\% (exploratory). On GPT-6-luna all three preregistered endpoints pass: pooled AUROC 0.996 vs the judge's 0.778 ($+0.217$ [0.174, 0.265]), beyond tool identity ($+0.141$ [0.111, 0.171]), and within tool ($+0.039$ [0.015, 0.066]).
-The scale of the scores does not transfer between agents (on Claude a cut at probability 0.5 catches 3\%), but the ranking does. In an exploratory replay, a cut at the top 5\% of the agent's own unlabelled traffic, frozen after 500 actions, catches 95.4\% online on Claude and 98.4\% on GPT. Under bursts of attacks in which half the actions are violations it stays at 94\%, while a cut that keeps moving over a window of 5{,}000 actions falls to 36\% (over 500: 20\%) (\cref{fig:transfer}a, \cref{fig:prevention}c): the frozen cut is unaffected, as \cref{prop:burst} predicts, and the moving cut loses most of the burst.
-
-\begin{table}[t]
-\centering\small
-\renewcommand{\arraystretch}{1.15}\setlength{\tabcolsep}{4.5pt}
-\caption{\textbf{Closed agents at a 5\% review budget.} Pooled AUROC, and the share of violations caught when the top 5\% of actions go to review (a label-free cut). All monitors are trained on Gemma-4 only.}
-\label{tab:closed}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & \multicolumn{2}{c}{\textbf{Claude Haiku 5.5}} & \multicolumn{2}{c}{\textbf{GPT-6-luna}}\\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-\textbf{Monitor} & AUROC & caught & AUROC & caught\\
-\midrule
-Zero-shot 70B judge & 0.570 & 0.0\% & 0.778 & 37.9\%\\
-Tool identity & 0.857 & 42.4\% & 0.856 & 13.6\%\\
-TF-IDF (same labels) & \underline{0.975} & \underline{63.8\%} & \underline{0.964} & \underline{49.0\%}\\
-\rowcolor{gbrow}\textbf{Grey-box reader} & \textbf{0.989} & \textbf{94.1\%} & \textbf{0.996} & \textbf{98.5\%}\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Live prevention}
-\label{sec:prevent}
-We ran the monitor as a server in the tool loop of each closed agent, on the same scenarios with and without the gate; the cut came from the agent's earlier unlabelled traffic, and a blocked action does not run. In all four preregistered live tests the gate removed nearly all executed violations (\cref{tab:live}), and neither agent executed a violation after a block (\cref{fig:prevention}a). Holding an escalated action for a reviewer kept the safety gain; in an exploratory comparison of runs that did not take place at the same time it reached more goals than blocking (\cref{fig:prevention}b), with the environment's oracle as an upper bound on a human reviewer, and the preregistered bound on its goal cost was not shown (\cref{app:limits}). The round trip was \LATENCY.
 
 \begin{table}[t]
 \centering\footnotesize
@@ -225,41 +212,28 @@ Claude, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 4
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}An oracle reviewer; same scenarios as the row above, run separately. \textsuperscript{b}Block, with the cut set again on the told agent's unlabelled traffic: it escalated 4.7\% [3.5, 6.1] of actions (budget 5\%; the old cut 16.6\%).}
 \end{table}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/prevention.pdf}
-\caption{\textbf{Live prevention and bursts.} (a) Episodes with an executed violation and (b) episodes that reached the goal, without a gate, with blocking, and with hold for review (Claude); 95\% Wilson intervals. (c) Violations caught at a 5\% budget against the share $\rho$ of violations in a burst, for a frozen and two rolling cuts; dotted: the $\beta/\rho$ bound (\cref{prop:burst}).}
-\label{fig:prevention}
-\end{figure*}
+\textbf{An agent that knows it is monitored, and an attacker who queries the score.} Told in its system prompt that a safety monitor reviews every tool call, Claude violated as often as before, and the monitor caught 97.1\% of its violations at the frozen cut (83.6\% when not told; $+0.136$ [0.050, 0.225]; preregistered). The notice moved all scores up, so the frozen cut escalated 15.2\% of actions instead of 5\%, within the Kolmogorov bound of \cref{prop:shift} ($K=0.24$); a cut set again on the told agent's unlabelled traffic escalated 4.7\% live and still removed every executed violation (\cref{tab:live}). An attacker who can query the score and rewrites only the free text of a violating call lowered the share caught from 96\% to 29\%; two preregistered defenses failed (51\% and 60\%), close to the ceiling of \cref{prop:ceiling} (\cref{app:limits}). The score must stay hidden from the agent.
 
-\subsection{Labels of a new policy transfer from open agents}
-\label{sec:coverage}
-A monitor learns the policies in its training data, so a new policy needs labels (\cref{app:limits}). These labels need not come from the monitored agent. Prompt injection on AgentDojo is a new policy for our monitor. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]), and the share of injected calls caught doubles, from 28\% to 58\% at the label-free cut (36\% to 92\% at the benign-call cut of \cref{fig:transfer}b). In an exploratory check on the confirmation split, whose user tasks the training never saw, the result holds (0.929 vs 0.786, $+0.143$ [0.075, 0.227]).
-
-
-\ROBUSTSECTION
+\textbf{Labels of a new policy transfer from open agents.} Prompt injection on AgentDojo is a policy absent from our training data. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]; \cref{tab:main}). The limit of a monitor is the coverage of its policies, not the agent.
 
 % =====================================================================================
 \section{The tool}
 \label{sec:tool}
-We release an SDK, a monitoring server and a website (links in the camera-ready version). A user imports the agent's logs (OpenAI or Anthropic format), labels actions, and trains a monitor in the browser; the logs never leave the machine. The trainer reports the AUROC with whole tasks held out, the share caught at the user's budget and a label-free cut; a review queue ranks unlabelled actions by risk (on 300 GPT-6-luna conversations, its first 25 were all violations; base rate 4.7\%). A guard places the monitor in a tool loop, an MCP proxy or one of three agent frameworks. Python and the browser give the same vocabulary and near-identical scores. The text monitor takes 0.2~ms per action and the reader 41~ms on one GPU (\cref{app:tool}).
-
+We release a Python package and a website (links in the camera-ready version). One command, \texttt{graybox-geometry}, measures a chat model's observable geometry over the user's contexts: it reads $P(\textsc{yes})$ exactly where the API returns log-probabilities, and otherwise samples two independent halves and uses the cross-fit of \cref{thm:geometry}(d); it reports the number of calls and a cost estimate before it runs, and its tests check each theorem on cases with a known answer. For agents, a user imports logs (OpenAI or Anthropic format), labels actions and trains a monitor in the browser, where the logs never leave the machine; a guard places the monitor in a tool loop, an MCP proxy or one of three agent frameworks, and sets the cut again on new unlabelled traffic after a change of prompt (\cref{app:tool}).
 
 % =====================================================================================
 \section{Related work}
 \label{sec:related}
-\textbf{Probes on internals} read truth, refusal and deception \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}; CAPE probes an agent before each action \citep{fayyazi2026cape}. We move the probe outside the agent.
-\textbf{Chain-of-thought monitors} catch reward hacking that action-only monitors miss \citep{baker2025monitoring,korbak2025cot,chen2025reasoning}; \cref{cor:action} delimits when the reasoning adds nothing: for labels that the action and the visible facts decide.
-\textbf{AI control} audits a fixed budget of actions with a trusted monitor \citep{greenblatt2024control}; \cref{prop:frozen,prop:burst} give the budget a label-free, exact and burst-robust form.
-\textbf{Identifiability.} Latents made identifiable by supervised training are recovered linearly by complete encoders \citep{zhou2026identifiabilities}; \cref{prop:gauge} is the output-side counterpart.
-\textbf{Black-box access} recovers parts of a model from logits \citep{carlini2024stealing,finlayson2024logits}, detects lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, forecasts behaviour from traces \citep{levy2026forecasting}, and probes closed transcripts with open readers \citep{conti2026hermeneutics}. We add the theory, a direct test of replication against the true state, two closed agents, live prevention and preregistration.
+\textbf{Information geometry and shared representations.} The Fisher metric and its uniqueness are classical \citep{cencov1982statistical,campbell1986extended,amari2016information}, as are the arcsine transform \citep{anscombe1948transformation} and classical scaling \citep{torgerson1952mds}; representational similarity analysis compares distance matrices without a fit \citep{kriegeskorte2008rsa}. Representations of different models converge \citep{huh2024platonic}. \citet{picozzi2026information} show that the Fisher--Rao geometry of next-token distributions is set by behaviour up to symmetries and shared across architectures; \citet{schiekiera2026associations} compare behavioural and hidden-state geometry in eight models. We measure the geometry through yes/no answers on sampled text, so it applies to closed models; we test it against hidden states with a cross-model control; and we use its sharing to justify monitoring closed agents through an open model.
+\textbf{Black-box access.} Logits span a $d$-dimensional image \citep{finlayson2024logits}, and a production model's output projection is recovered up to an orthogonal map \citep{carlini2024stealing}; \cref{thm:exact} uses the same structure for the gauge-invariant hidden geometry. Replies serve to test whether an API serves a given model \citep{gao2025model}; in our data they are the more sensitive output for a change and the less faithful one for the state. Answers to questions serve as interpretable embeddings \citep{benara2024crafting}, detect lies with follow-up questions \citep{pacchiardi2024liar,cooney2026didyoulie,sam2025quere}, and forecast behaviour \citep{levy2026forecasting}; open readers probe closed transcripts \citep{conti2026hermeneutics}.
+\textbf{Probes, monitors and control.} Probes on internals read truth, refusal and deception \citep{burns2023ccs,marks2023geometry,zou2023repe,arditi2024refusal,goldowskydill2025probes}, and CAPE probes an agent before each action \citep{fayyazi2026cape}. Chain-of-thought monitors catch reward hacking that action-only monitors miss \citep{baker2025monitoring,korbak2025cot,chen2025reasoning}; \cref{cor:action} delimits when the reasoning adds nothing. AI control audits a fixed budget of actions \citep{greenblatt2024control}; \cref{prop:frozen,prop:burst} give the budget a label-free, exact and burst-robust form. Latents made identifiable by training are recovered by complete encoders \citep{zhou2026identifiabilities}; \cref{prop:gauge} is the output-side counterpart.
 
 % =====================================================================================
 \section{Conclusion}
-A closed agent's hidden state cannot be read in its own coordinates, but an open model that reads the same tokens replicates 46--66\% of its main components, as a conditional mean on which white-box probes score at least as well. Because the transcript and the action are sufficient for policy checks, a probe trained on an open agent predicts and prevents two closed agents' violations on its training benchmark, also when the agent knows it is monitored, and a cut re-set on unlabelled traffic keeps the 5\% budget after a shift. An attacker who queries the score still evades it; both preregistered defenses failed, and \cref{prop:ceiling} bounds any defense (limits: \cref{app:limits}).
+A closed model's hidden coordinates are not observable. Its answers reveal a geometry, exact in arcsine coordinates and estimable without bias from sampled text. That geometry tracks hidden geometry far better than the input text or the model's own replies, but it is the geometry that models share, not the model's own: a model's answers match other models' hidden states as well as its own, and an open model's state is the better stand-in. This makes monitoring closed agents through an open model a measured choice, and in our tests such a monitor predicts and prevents closed agents' violations live. The limits: agreement is \GOneAns\ on our first contexts and lower on fresh ones (\GSixAns), and much weaker within one kind of context; replies detect a change of state sooner; the model-specific geometry needs full log-probabilities, which closed APIs do not return; and an attacker who queries a monitor's score still evades it (\cref{app:limits}).
 
 \section*{Impact Statement}
-On the benchmark it was trained on, this work monitors closed AI agents before they act, from their transcripts alone; on a new benchmark it needs labels of the new policy. The intended effect is fewer harmful actions by deployed agents: in our tests, blocking the flagged actions cut the episodes with an executed violation from about 7\% to 0.2\% on two closed agents. We see four risks. (1) A monitor can give false confidence: it catches violations of the policies that it was trained on and can miss a new policy until that policy has labels (\cref{app:limits}); we state this in the paper and in the tool. (2) Blocking has a cost for users: goal completion fell by 1.8 points on GPT and 5.8 points on Claude. (3) An agent or attacker that can query the monitor's score can reword a violating call until it passes (\cref{sec:robust}); the score should stay hidden from the agent. (4) Methods that read a model's state from outside could help an attacker to probe a closed model; ours use only the transcripts that the operator already has and do not extract weights or private data. The code is released under the MIT license, and the browser tool does not upload the user's logs.
+This work reads the geometry of a closed model's state from its answers and monitors closed AI agents before they act. The intended effect is safer deployment: in our tests, blocking flagged actions cut the episodes with an executed violation from about 7\% to 0.2\% on two closed agents. We see four risks. (1) A monitor can give false confidence: it catches violations of the policies that it was trained on and can miss a new policy until that policy has labels (\cref{app:limits}). (2) Blocking has a cost: goal completion fell by 1.8 points on GPT and 5.8 points on Claude. (3) An agent or attacker that can query the monitor's score can reword a violating call until it passes; the score should stay hidden from the agent. (4) Reading a model's state from outside could help an attacker to study a closed model. The geometry uses only ordinary answers; exact recovery needs full log-probabilities, which closed APIs do not return, and it recovers distances between states, not weights or private data. The code is released under the MIT license, and the browser tool does not upload the user's logs.
 
 \FloatBarrier
 \bibliography{refs}
@@ -274,11 +248,51 @@ On the benchmark it was trained on, this work monitors closed AI agents before t
 
 \section{Proofs}
 \label{app:proofs}
+\input{appendix_geometry_proofs}
 \input{appendix_proofs}
+
+\section{Theory for monitoring agents}
+\input{appendix_agents}
 
 \section{Experimental details}
 \label{app:details}
 \input{appendix_details}
+
+\section{Agent results: more figures and the closed-agent table}
+\label{app:agentfigs}
+\label{sec:replica}\label{sec:closed}\label{sec:prevent}\label{sec:robust}\label{sec:coverage}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/replication.pdf}
+\caption{\textbf{Replicating the hidden state.} (a) Score of a probe trained on Gemma-4's true states, on the true state and on two replicas (12{,}128 fresh steps; left half safe, right half violations; bars: medians). (b) Variance-weighted $R^2$ of the top 128 components, unseen scenarios. (c) $R^2$ gain of the reader replica over the TF-IDF replica at each recorded layer, over the full layer. (d) Per component: replica variance over state variance, against $R^2$.}
+\label{fig:replication}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/transfer.pdf}
+\caption{\textbf{Robustness and transfer.} (a) Claude's reader scores in order (violations in orange): 1{,}000 normal actions, then a burst in which half are violations; lines: three cuts (legend: share of the burst's violations caught). (b) The closed GPT-6-luna's injected calls caught at the benign 5\% cut, against labelled AgentDojo calls of open agents (numbers: AUROC). (c) Claude's scores when told, or not told, that it is monitored; dashed: the cut frozen on its earlier traffic.}
+\label{fig:transfer}
+\end{figure}
+
+\begin{table}[h]
+\centering\small
+\renewcommand{\arraystretch}{1.15}\setlength{\tabcolsep}{4.5pt}
+\caption{\textbf{Closed agents at a 5\% review budget.} Pooled AUROC, and the share of violations caught when the top 5\% of actions go to review (a label-free cut). All monitors are trained on Gemma-4 only.}
+\label{tab:closed}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Claude Haiku 5.5}} & \multicolumn{2}{c}{\textbf{GPT-6-luna}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Monitor} & AUROC & caught & AUROC & caught\\
+\midrule
+Zero-shot 70B judge & 0.570 & 0.0\% & 0.778 & 37.9\%\\
+Tool identity & 0.857 & 42.4\% & 0.856 & 13.6\%\\
+TF-IDF (same labels) & \underline{0.975} & \underline{63.8\%} & \underline{0.964} & \underline{49.0\%}\\
+\rowcolor{gbrow}\textbf{Grey-box reader} & \textbf{0.989} & \textbf{94.1\%} & \textbf{0.996} & \textbf{98.5\%}\\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
 
 \section{The released tool}
 \label{app:tool}

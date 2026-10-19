@@ -14,3 +14,5 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.blg
 paper/*.out
+paper/*.png
+paper/fig_preview*

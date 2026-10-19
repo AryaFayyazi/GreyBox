@@ -37,7 +37,6 @@ def main():
     draft = "draft=1" in sys.argv
     g1 = json.loads((R / "t1" / ("g1_open_geometry_DRYRUN_dev.json" if draft else "g1_open_geometry.json")).read_text())
     g3 = json.loads((R / "t1" / ("g3_exact_recovery_PILOT_seed100.json" if draft else "g3_exact_recovery.json")).read_text())
-    mds = np.load("/data/models/graybox_ws/outputs/infogeom/claude_mds_crossfit.npz", allow_pickle=True)   # Theorem 5′ (exploratory)
     fig, axs = plt.subplots(1, 4, figsize=(7.0, 1.75), gridspec_kw={"width_ratios": [1.25, 1, 1, 1.05], "wspace": 0.42})
 
     # (a) per model
@@ -102,19 +101,22 @@ def main():
     style(ax)
     ax.set_title("(c) exact recovery", loc="left", fontsize=7)
 
-    # (d) Claude MDS
+    # (d) G6: answers of model A vs hidden geometry of model B (fresh contexts); the own-model diagonal outlined
     ax = axs[3]
-    X, src = mds["X"], mds["source"]
-    for s_, (lab, col) in SRC.items():
-        k = src == s_
-        if k.any():
-            ax.scatter(X[k, 0], X[k, 1], s=5, color=col, alpha=0.85, lw=0, label=lab)
-    ax.set_xticks([]); ax.set_yticks([])
-    ax.set_xlabel("MDS 1"); ax.set_ylabel("MDS 2")
-    ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False, fontsize=5.2, handletextpad=0.1, markerscale=1.4)
-    for s in ("top", "right"):
-        ax.spines[s].set_visible(False)
-    ax.set_title("(d) Claude, from answers", loc="left", fontsize=7)
+    g6 = json.loads((R / "t1" / "g6_shared_geometry.json").read_text())
+    Mo = list(g6["rho_answers_A_vs_hidden_B"])
+    Mat = np.array([[g6["rho_answers_A_vs_hidden_B"][a][b] for b in Mo] for a in Mo])
+    im = ax.imshow(Mat, cmap="Blues", vmin=0, vmax=0.8)
+    for i in range(len(Mo)):
+        ax.add_patch(plt.Rectangle((i - 0.5, i - 0.5), 1, 1, fill=False, ec=ORANGE, lw=1.0))
+    short = {"gemma3_4b": "Gem", "gptoss20b": "gpt", "llama31_8b": "Lla", "mistral7b": "Mis", "olmo3_7b": "OLM",
+             "phi4mini": "Phi", "qwen25_7b": "Q2.5", "qwen3_8b": "Q3"}
+    ax.set_xticks(range(len(Mo)), [short[m] for m in Mo], fontsize=4.8, rotation=90)
+    ax.set_yticks(range(len(Mo)), [short[m] for m in Mo], fontsize=4.8)
+    ax.set_xlabel("hidden geometry of model B", fontsize=5.6); ax.set_ylabel("answers of model A", fontsize=5.6)
+    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03); cb.ax.tick_params(labelsize=4.8)
+    ax.text(0.5, -0.47, "own-model excess %+.3f" % g6["S1_point"], transform=ax.transAxes, ha="center", fontsize=5.4, color=MUTE)
+    ax.set_title("(d) shared, not own", loc="left", fontsize=7)
     v2.save(fig, "fig_infogeom" + ("_draft" if draft else ""))
     print("saved", OUT / ("fig_infogeom" + ("_draft" if draft else "") + ".pdf"))
 

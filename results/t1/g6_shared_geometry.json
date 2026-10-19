@@ -1,0 +1,669 @@
+{
+ "tag": "confirm",
+ "n_contexts": 1000,
+ "n_new_kind": 400,
+ "layers": {
+  "gemma3_4b": 34,
+  "gptoss20b": 12,
+  "llama31_8b": 24,
+  "mistral7b": 8,
+  "olmo3_7b": 29,
+  "phi4mini": 29,
+  "qwen25_7b": 25,
+  "qwen3_8b": 27
+ },
+ "rho_answers_A_vs_hidden_B": {
+  "gemma3_4b": {
+   "gemma3_4b": 0.3379,
+   "gptoss20b": 0.2587,
+   "llama31_8b": 0.5947,
+   "mistral7b": 0.4968,
+   "olmo3_7b": 0.4345,
+   "phi4mini": 0.3686,
+   "qwen25_7b": 0.5535,
+   "qwen3_8b": 0.5412
+  },
+  "gptoss20b": {
+   "gemma3_4b": 0.4444,
+   "gptoss20b": 0.2237,
+   "llama31_8b": 0.5974,
+   "mistral7b": 0.5032,
+   "olmo3_7b": 0.4752,
+   "phi4mini": 0.4342,
+   "qwen25_7b": 0.5254,
+   "qwen3_8b": 0.6046
+  },
+  "llama31_8b": {
+   "gemma3_4b": 0.4511,
+   "gptoss20b": 0.2752,
+   "llama31_8b": 0.6441,
+   "mistral7b": 0.4978,
+   "olmo3_7b": 0.548,
+   "phi4mini": 0.5043,
+   "qwen25_7b": 0.5918,
+   "qwen3_8b": 0.6216
+  },
+  "mistral7b": {
+   "gemma3_4b": 0.4467,
+   "gptoss20b": 0.2562,
+   "llama31_8b": 0.6471,
+   "mistral7b": 0.5341,
+   "olmo3_7b": 0.5057,
+   "phi4mini": 0.466,
+   "qwen25_7b": 0.587,
+   "qwen3_8b": 0.6332
+  },
+  "olmo3_7b": {
+   "gemma3_4b": 0.4038,
+   "gptoss20b": 0.2705,
+   "llama31_8b": 0.596,
+   "mistral7b": 0.4818,
+   "olmo3_7b": 0.4845,
+   "phi4mini": 0.4507,
+   "qwen25_7b": 0.5558,
+   "qwen3_8b": 0.5863
+  },
+  "phi4mini": {
+   "gemma3_4b": 0.375,
+   "gptoss20b": 0.2418,
+   "llama31_8b": 0.602,
+   "mistral7b": 0.487,
+   "olmo3_7b": 0.4644,
+   "phi4mini": 0.4285,
+   "qwen25_7b": 0.5351,
+   "qwen3_8b": 0.552
+  },
+  "qwen25_7b": {
+   "gemma3_4b": 0.4653,
+   "gptoss20b": 0.2193,
+   "llama31_8b": 0.6909,
+   "mistral7b": 0.5116,
+   "olmo3_7b": 0.4869,
+   "phi4mini": 0.4765,
+   "qwen25_7b": 0.638,
+   "qwen3_8b": 0.6154
+  },
+  "qwen3_8b": {
+   "gemma3_4b": 0.4294,
+   "gptoss20b": 0.2641,
+   "llama31_8b": 0.6212,
+   "mistral7b": 0.4628,
+   "olmo3_7b": 0.513,
+   "phi4mini": 0.4668,
+   "qwen25_7b": 0.5897,
+   "qwen3_8b": 0.6254
+  }
+ },
+ "S1_diagonal_excess": [
+  0.0022,
+  -0.0012,
+  0.0055
+ ],
+ "S1_point": 0.0021,
+ "S1_pass": true,
+ "S2_reader_hidden_minus_own_answers": {
+  "gemma3_4b": [
+   0.3586,
+   0.3301,
+   0.3875
+  ],
+  "gptoss20b": [
+   0.0689,
+   0.0386,
+   0.0972
+  ],
+  "llama31_8b": [
+   0.0897,
+   0.0662,
+   0.1144
+  ],
+  "mistral7b": [
+   -0.0489,
+   -0.0715,
+   -0.027
+  ],
+  "olmo3_7b": [
+   0.267,
+   0.2413,
+   0.2924
+  ],
+  "phi4mini": [
+   0.2541,
+   0.2255,
+   0.2828
+  ],
+  "qwen25_7b": [
+   0.1202,
+   0.0964,
+   0.1465
+  ]
+ },
+ "S2_pass": true,
+ "S3_new_kinds_answers_minus_text": {
+  "gemma3_4b": [
+   -0.0078,
+   -0.0521,
+   0.0326
+  ],
+  "gptoss20b": [
+   -0.0298,
+   -0.081,
+   0.0298
+  ],
+  "llama31_8b": [
+   0.3524,
+   0.2964,
+   0.405
+  ],
+  "mistral7b": [
+   0.1833,
+   0.1328,
+   0.2335
+  ],
+  "olmo3_7b": [
+   0.2083,
+   0.1563,
+   0.2645
+  ],
+  "phi4mini": [
+   0.1182,
+   0.0704,
+   0.1604
+  ],
+  "qwen25_7b": [
+   0.3428,
+   0.2898,
+   0.3934
+  ],
+  "qwen3_8b": [
+   0.3755,
+   0.3304,
+   0.4195
+  ]
+ },
+ "S3_pass": true,
+ "reported": {
+  "gemma3_4b": {
+   "answers": 0.3379,
+   "text": 0.1973,
+   "reader_hidden": 0.6967,
+   "answers_new_kinds": 0.2833,
+   "text_new_kinds": 0.292,
+   "replies": 0.4271,
+   "per_kind": {
+    "benign": {
+     "answers": 0.2107,
+     "text": 0.2283
+    },
+    "boolq": {
+     "answers": 0.5305,
+     "text": 0.029
+    },
+    "code": {
+     "answers": 0.3034,
+     "text": 0.3728
+    },
+    "gsm8k": {
+     "answers": 0.2518,
+     "text": 0.2967
+    },
+    "harmful": {
+     "answers": 0.5725,
+     "text": 0.4994
+    },
+    "injection": {
+     "answers": 0.1593,
+     "text": 0.3949
+    },
+    "jailbreak_bench": {
+     "answers": 0.6402,
+     "text": 0.2342
+    },
+    "news": {
+     "answers": 0.4787,
+     "text": 0.2035
+    },
+    "sst2": {
+     "answers": 0.4599,
+     "text": 0.1362
+    },
+    "wiki": {
+     "answers": 0.2274,
+     "text": 0.3176
+    }
+   }
+  },
+  "gptoss20b": {
+   "answers": 0.2237,
+   "text": 0.2331,
+   "reader_hidden": 0.2925,
+   "answers_new_kinds": 0.3007,
+   "text_new_kinds": 0.3305,
+   "replies": 0.1649,
+   "per_kind": {
+    "benign": {
+     "answers": 0.3478,
+     "text": 0.335
+    },
+    "boolq": {
+     "answers": 0.0793,
+     "text": 0.0983
+    },
+    "code": {
+     "answers": 0.1866,
+     "text": 0.1819
+    },
+    "gsm8k": {
+     "answers": 0.2785,
+     "text": 0.127
+    },
+    "harmful": {
+     "answers": 0.1365,
+     "text": 0.2395
+    },
+    "injection": {
+     "answers": 0.3154,
+     "text": 0.1832
+    },
+    "jailbreak_bench": {
+     "answers": 0.1306,
+     "text": 0.2235
+    },
+    "news": {
+     "answers": 0.0848,
+     "text": 0.0311
+    },
+    "sst2": {
+     "answers": 0.2149,
+     "text": 0.1229
+    },
+    "wiki": {
+     "answers": 0.2031,
+     "text": 0.1092
+    }
+   }
+  },
+  "llama31_8b": {
+   "answers": 0.6441,
+   "text": 0.1527,
+   "reader_hidden": 0.7338,
+   "answers_new_kinds": 0.5902,
+   "text_new_kinds": 0.237,
+   "replies": 0.2633,
+   "per_kind": {
+    "benign": {
+     "answers": 0.4645,
+     "text": 0.2314
+    },
+    "boolq": {
+     "answers": 0.473,
+     "text": 0.0823
+    },
+    "code": {
+     "answers": 0.3879,
+     "text": 0.3523
+    },
+    "gsm8k": {
+     "answers": 0.22,
+     "text": 0.3244
+    },
+    "harmful": {
+     "answers": 0.5985,
+     "text": 0.3697
+    },
+    "injection": {
+     "answers": 0.2433,
+     "text": 0.436
+    },
+    "jailbreak_bench": {
+     "answers": 0.8118,
+     "text": 0.1236
+    },
+    "news": {
+     "answers": 0.3216,
+     "text": 0.1648
+    },
+    "sst2": {
+     "answers": 0.3811,
+     "text": 0.0535
+    },
+    "wiki": {
+     "answers": 0.4066,
+     "text": 0.3053
+    }
+   }
+  },
+  "mistral7b": {
+   "answers": 0.5341,
+   "text": 0.1653,
+   "reader_hidden": 0.4849,
+   "answers_new_kinds": 0.4613,
+   "text_new_kinds": 0.2782,
+   "replies": 0.1756,
+   "per_kind": {
+    "benign": {
+     "answers": 0.3613,
+     "text": 0.3475
+    },
+    "boolq": {
+     "answers": 0.3234,
+     "text": 0.1803
+    },
+    "code": {
+     "answers": 0.3038,
+     "text": 0.4215
+    },
+    "gsm8k": {
+     "answers": 0.3032,
+     "text": 0.3931
+    },
+    "harmful": {
+     "answers": 0.4146,
+     "text": 0.5112
+    },
+    "injection": {
+     "answers": 0.2622,
+     "text": 0.2227
+    },
+    "jailbreak_bench": {
+     "answers": 0.2151,
+     "text": 0.3813
+    },
+    "news": {
+     "answers": 0.2352,
+     "text": 0.1269
+    },
+    "sst2": {
+     "answers": 0.1949,
+     "text": 0.1259
+    },
+    "wiki": {
+     "answers": 0.2952,
+     "text": 0.1867
+    }
+   }
+  },
+  "olmo3_7b": {
+   "answers": 0.4845,
+   "text": 0.2198,
+   "reader_hidden": 0.751,
+   "answers_new_kinds": 0.4546,
+   "text_new_kinds": 0.2452,
+   "replies": 0.3492,
+   "per_kind": {
+    "benign": {
+     "answers": 0.467,
+     "text": 0.1885
+    },
+    "boolq": {
+     "answers": 0.4828,
+     "text": 0.0996
+    },
+    "code": {
+     "answers": 0.1685,
+     "text": 0.1625
+    },
+    "gsm8k": {
+     "answers": 0.1843,
+     "text": 0.1852
+    },
+    "harmful": {
+     "answers": 0.5307,
+     "text": 0.5276
+    },
+    "injection": {
+     "answers": 0.2519,
+     "text": 0.4522
+    },
+    "jailbreak_bench": {
+     "answers": 0.7025,
+     "text": 0.2539
+    },
+    "news": {
+     "answers": 0.1394,
+     "text": 0.093
+    },
+    "sst2": {
+     "answers": 0.2686,
+     "text": 0.0082
+    },
+    "wiki": {
+     "answers": 0.1995,
+     "text": 0.2874
+    }
+   }
+  },
+  "phi4mini": {
+   "answers": 0.4285,
+   "text": 0.1956,
+   "reader_hidden": 0.6826,
+   "answers_new_kinds": 0.4024,
+   "text_new_kinds": 0.285,
+   "replies": 0.2682,
+   "per_kind": {
+    "benign": {
+     "answers": 0.3229,
+     "text": 0.1931
+    },
+    "boolq": {
+     "answers": 0.3725,
+     "text": 0.0907
+    },
+    "code": {
+     "answers": 0.3635,
+     "text": 0.4376
+    },
+    "gsm8k": {
+     "answers": 0.1342,
+     "text": 0.2524
+    },
+    "harmful": {
+     "answers": 0.4358,
+     "text": 0.4798
+    },
+    "injection": {
+     "answers": 0.2474,
+     "text": 0.3181
+    },
+    "jailbreak_bench": {
+     "answers": 0.735,
+     "text": 0.2952
+    },
+    "news": {
+     "answers": 0.378,
+     "text": 0.2949
+    },
+    "sst2": {
+     "answers": 0.3553,
+     "text": 0.0125
+    },
+    "wiki": {
+     "answers": 0.2473,
+     "text": 0.2786
+    }
+   }
+  },
+  "qwen25_7b": {
+   "answers": 0.638,
+   "text": 0.1819,
+   "reader_hidden": 0.7584,
+   "answers_new_kinds": 0.5509,
+   "text_new_kinds": 0.209,
+   "replies": 0.2273,
+   "per_kind": {
+    "benign": {
+     "answers": 0.4226,
+     "text": 0.195
+    },
+    "boolq": {
+     "answers": 0.5941,
+     "text": 0.0738
+    },
+    "code": {
+     "answers": 0.3732,
+     "text": 0.2013
+    },
+    "gsm8k": {
+     "answers": 0.084,
+     "text": 0.2247
+    },
+    "harmful": {
+     "answers": 0.6233,
+     "text": 0.4393
+    },
+    "injection": {
+     "answers": 0.2733,
+     "text": 0.3516
+    },
+    "jailbreak_bench": {
+     "answers": 0.6864,
+     "text": 0.231
+    },
+    "news": {
+     "answers": 0.4009,
+     "text": 0.2613
+    },
+    "sst2": {
+     "answers": 0.4503,
+     "text": 0.0755
+    },
+    "wiki": {
+     "answers": 0.2425,
+     "text": 0.3411
+    }
+   }
+  },
+  "qwen3_8b": {
+   "answers": 0.6254,
+   "text": 0.2071,
+   "reader_hidden": null,
+   "answers_new_kinds": 0.6004,
+   "text_new_kinds": 0.2259,
+   "replies": 0.2773,
+   "per_kind": {
+    "benign": {
+     "answers": 0.4429,
+     "text": 0.3022
+    },
+    "boolq": {
+     "answers": 0.6601,
+     "text": 0.0253
+    },
+    "code": {
+     "answers": 0.251,
+     "text": 0.1758
+    },
+    "gsm8k": {
+     "answers": 0.1666,
+     "text": 0.2073
+    },
+    "harmful": {
+     "answers": 0.272,
+     "text": 0.507
+    },
+    "injection": {
+     "answers": 0.3759,
+     "text": 0.3248
+    },
+    "jailbreak_bench": {
+     "answers": 0.7341,
+     "text": 0.1881
+    },
+    "news": {
+     "answers": 0.4725,
+     "text": 0.2216
+    },
+    "sst2": {
+     "answers": 0.3617,
+     "text": 0.0828
+    },
+    "wiki": {
+     "answers": 0.2522,
+     "text": 0.2663
+    }
+   }
+  }
+ },
+ "reported_hidden_vs_hidden": {
+  "gemma3_4b": {
+   "gemma3_4b": 1.0,
+   "gptoss20b": 0.1848,
+   "llama31_8b": 0.7154,
+   "mistral7b": 0.4909,
+   "olmo3_7b": 0.5576,
+   "phi4mini": 0.7554,
+   "qwen25_7b": 0.6487,
+   "qwen3_8b": 0.6967
+  },
+  "gptoss20b": {
+   "gemma3_4b": 0.1848,
+   "gptoss20b": 1.0,
+   "llama31_8b": 0.2768,
+   "mistral7b": 0.3222,
+   "olmo3_7b": 0.3996,
+   "phi4mini": 0.296,
+   "qwen25_7b": 0.2835,
+   "qwen3_8b": 0.2925
+  },
+  "llama31_8b": {
+   "gemma3_4b": 0.7154,
+   "gptoss20b": 0.2768,
+   "llama31_8b": 1.0,
+   "mistral7b": 0.6072,
+   "olmo3_7b": 0.6574,
+   "phi4mini": 0.695,
+   "qwen25_7b": 0.7987,
+   "qwen3_8b": 0.7338
+  },
+  "mistral7b": {
+   "gemma3_4b": 0.4909,
+   "gptoss20b": 0.3222,
+   "llama31_8b": 0.6072,
+   "mistral7b": 1.0,
+   "olmo3_7b": 0.4454,
+   "phi4mini": 0.4587,
+   "qwen25_7b": 0.5155,
+   "qwen3_8b": 0.4849
+  },
+  "olmo3_7b": {
+   "gemma3_4b": 0.5576,
+   "gptoss20b": 0.3996,
+   "llama31_8b": 0.6574,
+   "mistral7b": 0.4454,
+   "olmo3_7b": 1.0,
+   "phi4mini": 0.7393,
+   "qwen25_7b": 0.7609,
+   "qwen3_8b": 0.751
+  },
+  "phi4mini": {
+   "gemma3_4b": 0.7554,
+   "gptoss20b": 0.296,
+   "llama31_8b": 0.695,
+   "mistral7b": 0.4587,
+   "olmo3_7b": 0.7393,
+   "phi4mini": 1.0,
+   "qwen25_7b": 0.7737,
+   "qwen3_8b": 0.6826
+  },
+  "qwen25_7b": {
+   "gemma3_4b": 0.6487,
+   "gptoss20b": 0.2835,
+   "llama31_8b": 0.7987,
+   "mistral7b": 0.5155,
+   "olmo3_7b": 0.7609,
+   "phi4mini": 0.7737,
+   "qwen25_7b": 1.0,
+   "qwen3_8b": 0.7584
+  },
+  "qwen3_8b": {
+   "gemma3_4b": 0.6967,
+   "gptoss20b": 0.2925,
+   "llama31_8b": 0.7338,
+   "mistral7b": 0.4849,
+   "olmo3_7b": 0.751,
+   "phi4mini": 0.6826,
+   "qwen25_7b": 0.7584,
+   "qwen3_8b": 1.0
+  }
+ }
+}

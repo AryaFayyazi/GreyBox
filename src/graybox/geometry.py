@@ -200,3 +200,97 @@ def cosines(G) -> np.ndarray:
     G = np.asarray(G, float)
     s = np.sqrt(np.clip(np.diag(G), 1e-300, None))
     return G / s[:, None] / s[None, :]
+
+
+# ---------------------------------------------------------------- command line: measure a model's observable geometry
+CLOSED_24 = ("T02", "T03", "T04", "T05", "T06", "T09", "T10", "T11", "T12", "A01", "A08", "I01", "I02", "I05", "E02",
+             "E03", "P01", "P03", "P04", "P06", "S01", "U01", "U09", "U11")   # the 24 questions of the Claude tests (L3, G2)
+
+
+def _load_contexts(path):
+    import json
+    from pathlib import Path
+    out = []
+    for line in Path(path).read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("{"):
+            d = json.loads(line)
+            out.append((str(d.get("id", len(out))), d.get("text") or d.get("messages")))
+        else:
+            out.append((str(len(out)), line))
+    return out
+
+
+def main(argv=None):
+    """graybox-geometry: the observable latent geometry of a chat model over your contexts, from its answers alone."""
+    import argparse
+    import asyncio
+    import json
+    from pathlib import Path
+    from .adapters import Anthropic, OpenAICompatible, estimate_cost
+    from .battery_v2 import BATTERY_V2
+    ap = argparse.ArgumentParser(description=main.__doc__)
+    ap.add_argument("contexts", help="contexts: one per line, or JSON lines with 'text' (or 'messages') and optional 'id'")
+    ap.add_argument("--provider", choices=["openai", "anthropic"], required=True,
+                    help="openai = any OpenAI-compatible API (with --base-url); anthropic = the Messages API")
+    ap.add_argument("--model", required=True)
+    ap.add_argument("--base-url", default="https://api.openai.com/v1")
+    ap.add_argument("--key-env", help="environment variable holding the API key (default: OPENAI_API_KEY / ANTHROPIC_API_KEY)")
+    ap.add_argument("--no-logprobs", action="store_true", help="OpenAI-compatible API without top_logprobs: sample instead")
+    ap.add_argument("--samples", type=int, default=8, help="sampled answers per question, split into two halves (sample tier)")
+    ap.add_argument("--questions", choices=["24", "88"], default="24", help="the 24 questions of the closed-model tests, or all 88")
+    ap.add_argument("--out", required=True, help="output JSON: distances, 2-D coordinates, eigenvalues, usage")
+    ap.add_argument("--yes", action="store_true", help="skip the cost confirmation")
+    a = ap.parse_args(argv)
+    if a.samples < 2 or a.samples % 2:
+        raise SystemExit("--samples must be even (two independent halves)")
+    ctx = _load_contexts(a.contexts)
+    if len(ctx) < 3:
+        raise SystemExit("need at least 3 contexts")
+    battery = [b for b in BATTERY_V2 if a.questions == "88" or b[0] in CLOSED_24]
+    logprob = a.provider == "openai" and not a.no_logprobs
+    tier = "logprob" if logprob else "sample"
+    calls = len(ctx) * len(battery) * (1 if logprob else a.samples)
+    toks = int(np.mean([len(str(t)) for _, t in ctx]) / 4)            # estimate_cost adds the question
+    est = estimate_cost(len(ctx), len(battery), toks, tier, a.samples)
+    print(f"{len(ctx)} contexts x {len(battery)} questions, tier {tier}: {calls:,} calls; {est}")
+    if not a.yes and input("proceed? [y/N] ").strip().lower() != "y":
+        return
+    texts = [t for _, t in ctx]
+    if a.provider == "openai":
+        mk = lambda n: OpenAICompatible(a.model, a.base_url, a.key_env or "OPENAI_API_KEY", logprobs=logprob, n_samples=n)  # noqa: E731
+    else:
+        mk = lambda n: Anthropic(a.model, a.key_env or "ANTHROPIC_API_KEY", n_samples=n)  # noqa: E731
+    m = len(battery)
+
+    def run(n):
+        ad = mk(n)
+        r = asyncio.run(ad.battery(texts, battery))
+        q = np.array([x[0] for x in r], float).reshape(len(texts), m)
+        k = np.array([x[1] for x in r], float).reshape(len(texts), m)
+        return q, k, ad.usage
+    if logprob:
+        P, _, usage = run(1)
+        bad = np.isnan(P)
+        P = np.where(bad, 0.5, P)                      # no yes/no token in the top 20: no information (1/2)
+        D = observable_distances(fisher_angles(P))
+        usage_d = vars(usage)
+    else:
+        (qA, nA, uA), (qB, nB, uB) = run(a.samples // 2), run(a.samples // 2)
+        kA, kB = np.nan_to_num(qA) * nA, np.nan_to_num(qB) * nB
+        D = crossfit_distances(np.rint(kA), nA, np.rint(kB), nB)
+        bad = (nA == 0) | (nB == 0)
+        usage_d = {k_: vars(uA)[k_] + vars(uB)[k_] for k_ in vars(uA)}
+    X, ev = mds(D, 2)
+    neg = float(-ev[ev < 0].sum() / np.abs(ev).sum())
+    out = {"model": a.model, "tier": tier, "questions": [i for i, _ in battery], "ids": [i for i, _ in ctx],
+           "distances": D.round(5).tolist(), "coordinates_2d": X.round(5).tolist(), "eigenvalues": ev.round(5).tolist(),
+           "non_euclidean_share": round(neg, 4), "cells_without_answer": int(bad.sum()), "usage": usage_d}
+    Path(a.out).write_text(json.dumps(out))
+    print(f"saved {a.out}: non-Euclidean share {neg:.3f} (0 = exactly Euclidean); cells without a yes/no answer: {int(bad.sum())}")
+
+
+def cli():
+    main()

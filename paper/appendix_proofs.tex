@@ -29,10 +29,7 @@ A normalisation \emph{after} a block, $\mathrm{diag}(\gamma)N(\cdot)$ added to t
 the block of equal gains. From exact full-vocabulary log probabilities the final hidden state is identified only up to such a
 $G$ \citep{carlini2024stealing}. $\square$
 
-\textbf{\Cref{prop:fisher} (Fisher--Rao coordinates).} The Fisher information of a Bernoulli$(p)$ observation is $1/\big(p(1-p)\big)$.
-With $\vartheta=2\arcsin\sqrt p$, $\mathrm{d}\vartheta/\mathrm{d}p=1/\sqrt{p(1-p)}$, so $\mathrm{d}\vartheta^2=\mathrm{d}p^2/\big(p(1-p)\big)$: the
-map is an isometry onto an interval of the Euclidean line, and independent coordinates give the product metric on $[0,\pi]^m$.
-For $\hat p$ the mean of $n$ answers, the delta method gives $\Var(\hat\vartheta)\approx(\mathrm{d}\vartheta/\mathrm{d}p)^2\,p(1-p)/n=1/n$; the first-order expansion needs $np(1-p)\gg1$ (near $p\in\{0,1\}$ the variance is smaller). $\square$
+\textbf{Fisher--Rao coordinates} are proved with \cref{thm:geometry} above.
 
 \textbf{\Cref{prop:battery} (battery design).} Each chosen question splits at least one class, so the number of classes grows
 by at least one per question and starts at one; the loop stops when no question in the pool splits a class. At that point two

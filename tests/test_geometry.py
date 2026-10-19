@@ -104,3 +104,37 @@ def test_mu_n_increasing_and_converges():
     p = np.linspace(0.001, 0.999, 200)
     assert np.all(np.diff(mu_n(p, 8)) > 0)
     assert np.abs(mu_n(p[20:-20], 400) - fisher_angles(p[20:-20])).max() < 0.01
+
+
+def test_cli_offline(tmp_path, monkeypatch):
+    """graybox-geometry end to end, with the provider replaced by a fake model whose P(yes) is known."""
+    import json
+    import graybox.adapters as ad
+    from graybox.geometry import main
+    rng = np.random.default_rng(7)
+    ctx = [f"context {i}" for i in range(12)]
+    truth = {c: rng.random() for c in ctx}
+
+    async def fake_battery(self, contexts, battery):
+        out = []
+        for c in contexts:
+            for j, _ in enumerate(battery):
+                p = (truth[c] + 0.1 * j) % 1
+                if self.logprobs:
+                    out.append((p, float("inf"), "logprob"))
+                else:
+                    k = rng.binomial(self.n_samples, p)
+                    out.append((k / self.n_samples, self.n_samples, "sample"))
+        return out
+    monkeypatch.setattr(ad.OpenAICompatible, "battery", fake_battery)
+    f = tmp_path / "c.txt"
+    f.write_text("\n".join(ctx))
+    for extra in ([], ["--no-logprobs", "--samples", "8"]):
+        out = tmp_path / "g.json"
+        main([str(f), "--provider", "openai", "--model", "fake", "--out", str(out), "--yes", *extra])
+        d = json.loads(out.read_text())
+        D = np.array(d["distances"])
+        assert D.shape == (12, 12) and np.allclose(D, D.T) and len(d["coordinates_2d"]) == 12
+        if not extra:                                   # logprob tier: exact distances
+            P = np.array([[(truth[c] + 0.1 * j) % 1 for j in range(24)] for c in ctx])
+            assert np.allclose(D, observable_distances(fisher_angles(P)), atol=1e-4)

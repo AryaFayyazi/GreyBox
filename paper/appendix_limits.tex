@@ -3,6 +3,19 @@ only results that met their preregistered criterion; the complete record, with e
 is in \cref{app:record}.
 
 \subsection{Scope of the claims}
+\textbf{The observable geometry.}
+\begin{itemize}
+\item \textbf{The answers do not reveal a model-specific geometry.} A model's answers match other models' hidden geometries as well as its own (own-model excess $+0.002$ on fresh contexts; preregistered), in every category of question we tried (exploratory). Whatever part of a model's hidden geometry is its own is invisible in its answers to our battery; only full log-probabilities recover the model's own final geometry. A different battery, or behaviour of another kind \citep{schiekiera2026associations}, might reveal more.
+\item \textbf{Agreement, not identity.} The answer geometry agrees with the hidden geometry at Spearman \GOneAns, not 1. \Cref{thm:geometry}(c) relates them through the pulled-back Fisher metric, so equality is not expected; the hidden geometry also holds directions that no question reads (surface form). The ground truth is one layer, at the last prompt token.
+\item \textbf{Within one kind of context the agreement is weaker.} Over each of the six kinds separately (240 contexts), the median $\rho$ with the hidden geometry is \WKAns\ for answers and \WKText\ for text, and the answers are ahead in \WKCells\ model--kind cells; for some models the text is ahead on benign requests or maths problems. Pooled over all same-kind pairs, the text is ahead for 7 of 8 models (Mistral is the exception), although that statistic mixes the distance scales of different kinds (exploratory; \texttt{results/t1/within\_kind\_exploratory.json}).
+\item \textbf{The battery matters.} Agreement rises with the number of questions and saturates near 88 (\cref{fig:geometry}b); eight questions are not enough. Our battery asks about the message; another battery measures another part of the state.
+\item \textbf{For a closed model we show stability, not truth.} Claude's geometry is the same in two halves of its samples and differs from the text geometry; its relation to Claude's hidden states cannot be tested.
+\item \textbf{Replies are the more sensitive output for a change of state} (below), and on the fresh contexts of G6 one model's replies (Gemma) tracked its hidden geometry better than its answers (0.43 vs 0.34). Agreement on those fresh contexts was lower than on the first ones for every model (answers \GSixAns).
+\item \textbf{Exact recovery needs full log-probabilities} and $d(d+1)/2$ contexts ($5\times10^5$ for $d=1{,}024$; $8\times10^6$ for $d=4{,}096$). Closed APIs return at most 20 log-probabilities. It recovers the final normalised state only, and \citet{carlini2024stealing,finlayson2024logits} use the same structure.
+\item \textbf{One reply embedder} (MiniLM, as for the text); a stronger embedder could raise the reply geometry.
+\item \textbf{A correction of our theory (after the lock).} The locked Theorem 5 stated the error of the variance-subtraction rule wrongly; Correction 1 and the exact cross-fit replace it (\cref{app:proofs}). The preregistered endpoints used the locked rule and are reported as registered.
+\end{itemize}
+\textbf{Monitoring agents.}
 \begin{itemize}
 \item \textbf{Replication is tested only where the true state is known} (four open agents). For closed agents we test
   prediction and prevention with a probe on the reader's state; the replica itself, mapped into Gemma-4's coordinates,
@@ -32,6 +45,7 @@ is in \cref{app:record}.
 \toprule
 \textbf{Test} & \textbf{Outcome}\\
 \midrule\endhead
+Answers vs replies for a hidden prompt change (G4, dropped on development data) & Eight sampled replies detected a hidden system prompt (helpful, monitoring notice, jailbreak persona, pirate style) with more power than eight sampled yes/no answers in every model and condition (DAN at 20 contexts: 0.00--0.24 vs 0.17--0.87). Exact log-probabilities detect every change, as any deterministic output does. Not run as a confirmatory test.\\
 Interrogation state alone vs a white-box probe & The agent's answers alone do not match a probe on its internals at the start of the turn (failed).\\
 Resampling scored by a deployable judge & A 70B judge in place of the environment checker: 0.782, below the probe (0.846); the label function is the bottleneck (failed).\\
 Claude, actions after a reveal & 0 violations in the preregistered units: Claude violates at or without the reveal (not tested; the all-actions test replaced it).\\

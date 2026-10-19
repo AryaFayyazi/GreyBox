@@ -1,5 +1,8 @@
-"""Grey Box: monitor an AI agent's proposed tool calls from its transcript, before they run.
+"""Grey Box: read a model's latent geometry from its answers, and monitor an AI agent's proposed tool calls from its
+transcript, before they run.
 
+The observable geometry (numpy only; no trained model):
+    from graybox.geometry import interrogate, crossfit_distances, mds     # or the command `graybox-geometry`
 Main entry points (numpy only to score; training needs the [text] extra):
     from graybox import Guard, TextMonitor, QuantileGate, conversation_steps
     guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))
@@ -14,4 +17,4 @@ from .guard import Guard, Verdict, conversation_steps  # noqa: F401
 from .monitor import QuantileGate, TextMonitor  # noqa: F401
 from .sdk import AgentGuard, Reader, Reading  # noqa: F401  (research interface, kept for compatibility)
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"

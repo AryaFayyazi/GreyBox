@@ -165,6 +165,37 @@ white-box probe (T1, F3), and resampling scored by an LLM judge loses to the pro
 - The sufficiency corollary (Corollary 1 in the paper; Corollary 3 in `docs/theory.md`) applies to action-level labels. It does not apply to labels about later behaviour or about beliefs.
 - Chat readouts recover the behaviour of a model, not its hidden beliefs.
 
+## What a closed model's answers reveal: a shared latent geometry
+
+Hidden coordinates cannot be read from outputs: an orthogonal change of the hidden space gives the same model (the
+gauge symmetry). A **geometry** can be read, with no trained model.
+- Ask yes/no questions after each context, each in its own call. In the angles ϑ = 2 arcsin √P(yes), the Fisher–Rao
+  distance between two contexts' answer laws is Euclidean.
+- From sampled answers on any chat API, the cross-fit of two sample halves estimates it without bias.
+
+Preregistered results (each lock was published before its data; `docs/PREREGISTRATION_RECORD.md`):
+- 8 open models: the answer geometry tracks the hidden geometry (Spearman 0.41–0.74), far better than the input text
+  (0.22–0.30) or the model's own replies (0.22–0.44). More replies do not help; more questions do.
+- **It is the geometry that models share, not the model's own.** On 1,000 fresh contexts, a model's answers match other
+  models' hidden geometries as well as its own (own-model excess +0.002). Another open model's hidden state is the
+  better stand-in for 6 of 7 models. This holds on new kinds of context (news, code, jailbreaks, prompt injections).
+  Picozzi (2026) found the same sharing for next-token distributions.
+- Claude Haiku 5.5, from 8 sampled answers to 24 questions, reveals the same shared geometry. Two independent halves
+  of the samples agree at 0.95.
+- The model's *own* final geometry needs full log-probabilities. Then it is exact: cosine error 7e-6 on Qwen3-0.6B
+  above d(d+1)/2 contexts (the construction of Carlini et al. 2024).
+- Why it matters: it is a measured reason why an open model can stand in for a closed one, which the monitors above use.
+- Limits: agreement is lower on fresh contexts (0.22–0.64) and much weaker within one kind of context. Replies detect
+  a *change* of state sooner than answers.
+
+```python
+from graybox.geometry import interrogate, crossfit_distances, mds
+(kA, nA), (kB, nB) = [interrogate(ask, contexts, questions, samples=4) for _ in range(2)]   # ask(context, question) -> text
+D = crossfit_distances(kA, nA, kB, nB)     # observable distances between contexts
+X, eigenvalues = mds(D, 2)                  # coordinates, up to a rigid motion
+```
+Theory and proofs: `docs/theory_infogeom.md` (with Correction 1, after the lock).
+
 ## Chat: forecast a refusal before the reply
 
 A *grey box* is the model's **interrogation state** Ψ(x): the probabilities of the answer "Yes" to a fixed list of

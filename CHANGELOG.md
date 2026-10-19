@@ -2,7 +2,7 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
-## Unreleased
+## 0.8.0 (2026-10-18)
 **Added**
 - `graybox.geometry`: the observable latent geometry of any model, from its outputs alone. Nothing is trained.
   - `interrogate`, `fisher_angles`, `fisher_angles_from_counts`, `observable_distances`: Fisher-Rao distances
@@ -12,6 +12,9 @@ The package is `greybox-monitor` on PyPI; you import `graybox`.
   - `logprob_basis`, `recover_gram`: with full log-probabilities, the exact Gram matrix of the final normalized hidden
     states, by one linear solve (the RMSNorm sphere). It needs d(d+1)/2 contexts and warns with fewer.
   - Numpy only. Tests check each theorem on cases with a known answer (tests/test_geometry.py).
+  - `graybox-geometry contexts.txt --provider openai|anthropic --model M --out g.json`: one command gives a chat
+    model's observable distances and 2-D coordinates over your contexts. It reads P(yes) exactly with logprobs, or
+    uses two sampled halves and the cross-fit. It prints the number of calls and a cost estimate before it runs.
 
 ## 0.7.0 (2026-10-18)
 **Added**

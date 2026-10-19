@@ -1385,3 +1385,27 @@ Dated log of every experiment, decision and correction. Newest last.
   - **User decision (2026-10-18): the shared-geometry story.** The answers read the geometry that models share (the
     review's control). That shared geometry is the measured reason an open model can stand in for a closed one. The
     claim gets its own preregistered test (G6) on fresh contexts.
+- **Prior art that changes the novelty (2026-10-18, found during the review follow-up).**
+  - Picozzi, arXiv 2609.11063 (Sept 2026): the Fisher–Rao geometry of next-token distributions is set by behaviour up
+    to symmetries and is shared across architectures, more than activation geometry. This is the core of our
+    shared-geometry story. It was listed in docs/prior_art_2026-10-15.md, but I did not connect it.
+  - Schiekiera et al., 2602.00628: behavioural vs hidden-state geometry in 8 models, with a cross-model consensus
+    baseline. They report a signal beyond consensus; our S1 control finds none (different behaviour: word
+    similarity judgments vs our yes/no battery).
+  - Carlini et al. 2024, App. H: Theorem 2's mechanism.
+  - Our novelty now: closed-model access through yes/no answers with a sampled-text estimator; the measured null on
+    model-specific geometry; answers vs replies; the consequence for monitoring closed agents. Rigorous, but not
+    groundbreaking on its own. Positioning: confirm and extend Picozzi to closed models; the monitoring results are the
+    application.
+- **G6 (confirmatory; 1,000 fresh contexts, 400 of four new kinds; lock 85ed1bb published first): S1, S2, S3 pass.**
+  - S1: own-model diagonal excess +0.002 [−0.001, +0.006], inside ±0.02. The answers read the shared geometry.
+  - S2: Qwen3-8B hidden − own answers > 0 for 6 of 7; Mistral −0.049 [−0.072, −0.027].
+  - S3: answers − text on new kinds > 0 for 6 of 8 (exactly the bar); Gemma and gpt-oss intervals include 0.
+  - Reported:
+    - On fresh contexts agreement is lower: answers 0.22–0.64 (L2 confirm 0.41–0.74), text 0.15–0.23, replies
+      0.16–0.43.
+    - gpt-oss answers ≈ text (0.22 vs 0.23); Gemma's replies beat its answers (0.43 vs 0.34), unlike on L2.
+    - Hidden-vs-hidden 0.18–0.80. The own hidden geometry is the best column for 2 of 8; Llama's is best for 6.
+- Exploratory, Claude reference range: on the same 192 contexts, open models' 24-question answers (8 simulated samples)
+  agree with their own hidden geometry at 0.47–0.61 and with other open models' at 0.41–0.76 (median 0.58). Claude's
+  answers vs open hidden: 0.45–0.51, inside the range at its lower end.
