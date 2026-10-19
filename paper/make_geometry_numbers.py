@@ -70,8 +70,7 @@ else:
     mac("CFClaudeNeg", r"\PENDING{}"); mac("CFClaudeNegCF", r"\PENDING{}")
 if g3:
     b = g3["by_N"]
-    below = [abs(v["pearson_cos"]) if abs(v["pearson_cos"]) < 5e-3 else v["pearson_cos"] for k, v in b.items() if float(k[:-1]) < 1]
-    mac("GThreeBelow", "%.2f--%.2f" % (min(below), max(below)))
+    mac("GThreeBelow", "%.2f and %.2f (at $0.25\\times$ and $0.5\\times$)" % (b["0.25x"]["pearson_cos"], b["0.5x"]["pearson_cos"]))
     mac("GThreeOneOne", "%.4f" % b["1.1x"]["pearson_cos"])
     mac("GThreeErr", r"%.0f\times10^{-6}" % (1e6 * b["2.0x"]["median_abs_err_cos"]))
     mac("GThreeMax", r"%.1f\times10^{-4}" % (1e4 * b["2.0x"]["max_abs_err_cos"]))
@@ -90,6 +89,7 @@ if g5:
     mac("GFiveHTwo", "%d of 8" % sum(m["H2_1sample88_minus_reply1"][1] > 0 for m in M))
     mac("GFiveHThree", "%d of 8" % sum(m["H3_replies8_minus_reply1"][2] < 0.05 for m in M))
     mac("GFiveSat", "%.3f" % max(m["H3_replies8_minus_reply1"][2] for m in M))
+    mac("GFiveSatPoint", "%.3f" % max(m["H3_replies8_minus_reply1"][0] for m in M))
     mac("GFiveOut", "H1 %s, H2 %s, H3 %s" % tuple("passes" if g5[k] else "fails" for k in ("H1_pass", "H2_pass", "H3_pass")))
 else:
     for n in ("GFiveRep", "GFiveAns", "GFiveOne", "GFiveHOne", "GFiveHTwo", "GFiveHThree", "GFiveSat", "GFiveOut"):
@@ -134,14 +134,46 @@ if g7:
         mac("GSevL" + nm, f(LL[c]["excess"]))
         mac("GSevC" + nm, f(CL[c]["excess"]))
         mac("GSevBest" + nm, "%d of 8" % LL[c]["own_best"])
+        mac("GSevCBest" + nm, "%d of 8" % CL[c]["own_best"])
     mac("GSevOwnLogprob", "%.2f" % LL["logprob"]["own_mean"])
     mac("GSevOthersLogprob", "%.2f" % LL["logprob"]["others_mean"])
     mac("GSevOut", ", ".join("K%d %s" % (i, "passes" if g7["K%d_pass" % i] else "fails") for i in range(1, 6)))
 else:
     for c in ("Ans", "TopOne", "TopFive", "TopTwenty", "Full", "Logprob"):
-        for pre in ("GSevL", "GSevC", "GSevBest"):
+        for pre in ("GSevL", "GSevC", "GSevBest", "GSevCBest"):
             mac(pre + c, r"\PENDING{G7}")
     for n in ("GSevOwnLogprob", "GSevOthersLogprob", "GSevOut"):
         mac(n, r"\PENDING{G7}")
+rf, ag = J("review_followups_exploratory.json"), J("agent_shared_geometry_exploratory.json")
+se, sc = J("strong_embedders_exploratory.json"), J("scale_exploratory.json")
+if se:
+    mac("StrongConfirm", "%d of 8" % sum(v["answers_minus_strongest"][1] > 0 for v in se["confirm"].values()))
+    mac("StrongFresh", "%d of 8" % sum(v["answers_minus_strongest"][1] > 0 for v in se["fresh"].values()))
+else:
+    mac("StrongConfirm", r"\PENDING{}"); mac("StrongFresh", r"\PENDING{}")
+if sc and "llama33_70b" in sc["depth75"]["excess_per_model"]:
+    a, b = sc["depth75"]["excess_all"], sc["depth75"]["excess_per_model"]
+    mac("ScaleAll", "%+.3f" % a[0] + r" {\scriptsize[%+.3f, %+.3f]}" % (a[1], a[2]))
+    mac("ScaleLlama", "%+.3f" % b["llama33_70b"])
+    mac("ScaleQwen", "%+.3f, %+.3f, %+.3f at 8B, 14B, 32B" % (b["qwen3_8b"], b["qwen3_14b"], b["qwen3_32b"]))
+else:
+    for n in ("ScaleAll", "ScaleLlama", "ScaleQwen"):
+        mac(n, r"\PENDING{}")
+if rf:
+    pm = rf["g6"]["all"]["per_model"]
+    lo, hi = min(pm, key=lambda k: pm[k][0]), max(pm, key=lambda k: pm[k][0])
+    mac("GSixPerModel", "per-model excess from %+.3f (%s) to %+.3f (%s)" % (pm[lo][0], NAMES[lo], pm[hi][0], NAMES[hi]))
+    e = rf["g6"]["new_kinds"]["pooled"]
+    mac("GSixNewExcess", "%+.3f" % e[0] + r" {\scriptsize[%+.3f, %+.3f]}" % (e[1], e[2]))
+    o = rf["claude_reference"]["other"]
+    mac("ClaudeRefOther", "%.2f--%.2f (median %.2f)" % (o[0], o[2], o[1]))
+else:
+    for n in ("GSixPerModel", "GSixNewExcess", "ClaudeRefOther"):
+        mac(n, r"\PENDING{}")
+if ag:
+    v = [x["rho_reader_vs_agent"] for x in ag.values()]
+    mac("AgentLink", "%.2f--%.2f" % (min(v), max(v)))
+else:
+    mac("AgentLink", r"\PENDING{}")
 (Path(__file__).parent / "geometry_numbers.tex").write_text("\n".join(out) + "\n")
 print("wrote", len(out), "macros")

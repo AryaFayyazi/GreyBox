@@ -19,7 +19,7 @@ gpt-oss 20B & \textbf{0.41} & 0.40 & 0.25 & 0.25 & +0.16 {\scriptsize[0.14, 0.19
 \newcommand{\GTwoOpen}{0.45--0.51}
 \newcommand{\CFClaudeNeg}{15\%}
 \newcommand{\CFClaudeNegCF}{2\%}
-\newcommand{\GThreeBelow}{0.00--0.36}
+\newcommand{\GThreeBelow}{0.30 and 0.36 (at $0.25\times$ and $0.5\times$)}
 \newcommand{\GThreeOneOne}{0.9915}
 \newcommand{\GThreeErr}{7\times10^{-6}}
 \newcommand{\GThreeMax}{1.5\times10^{-4}}
@@ -33,6 +33,7 @@ gpt-oss 20B & \textbf{0.41} & 0.40 & 0.25 & 0.25 & +0.16 {\scriptsize[0.14, 0.19
 \newcommand{\GFiveHTwo}{7 of 8}
 \newcommand{\GFiveHThree}{8 of 8}
 \newcommand{\GFiveSat}{0.031}
+\newcommand{\GFiveSatPoint}{0.023}
 \newcommand{\GFiveOut}{H1 passes, H2 passes, H3 passes}
 \newcommand{\WKCells}{33 of 48}
 \newcommand{\WKAns}{0.29}
@@ -55,21 +56,36 @@ gpt-oss 20B & \textbf{0.41} & 0.40 & 0.25 & 0.25 & +0.16 {\scriptsize[0.14, 0.19
 \newcommand{\GSevLAns}{-0.006 {\scriptsize[-0.009, -0.003]}}
 \newcommand{\GSevCAns}{+0.001 {\scriptsize[-0.003, +0.003]}}
 \newcommand{\GSevBestAns}{1 of 8}
+\newcommand{\GSevCBestAns}{1 of 8}
 \newcommand{\GSevLTopOne}{+0.056 {\scriptsize[+0.050, +0.061]}}
 \newcommand{\GSevCTopOne}{+0.037 {\scriptsize[+0.032, +0.043]}}
 \newcommand{\GSevBestTopOne}{2 of 8}
+\newcommand{\GSevCBestTopOne}{2 of 8}
 \newcommand{\GSevLTopFive}{+0.085 {\scriptsize[+0.080, +0.090]}}
 \newcommand{\GSevCTopFive}{+0.052 {\scriptsize[+0.046, +0.059]}}
 \newcommand{\GSevBestTopFive}{3 of 8}
+\newcommand{\GSevCBestTopFive}{2 of 8}
 \newcommand{\GSevLTopTwenty}{+0.115 {\scriptsize[+0.109, +0.120]}}
 \newcommand{\GSevCTopTwenty}{+0.076 {\scriptsize[+0.070, +0.083]}}
 \newcommand{\GSevBestTopTwenty}{3 of 8}
+\newcommand{\GSevCBestTopTwenty}{4 of 8}
 \newcommand{\GSevLFull}{+0.112 {\scriptsize[+0.106, +0.117]}}
 \newcommand{\GSevCFull}{+0.075 {\scriptsize[+0.069, +0.081]}}
 \newcommand{\GSevBestFull}{4 of 8}
+\newcommand{\GSevCBestFull}{4 of 8}
 \newcommand{\GSevLLogprob}{+0.221 {\scriptsize[+0.211, +0.230]}}
 \newcommand{\GSevCLogprob}{+0.103 {\scriptsize[+0.096, +0.109]}}
 \newcommand{\GSevBestLogprob}{7 of 8}
+\newcommand{\GSevCBestLogprob}{4 of 8}
 \newcommand{\GSevOwnLogprob}{0.83}
 \newcommand{\GSevOthersLogprob}{0.58}
 \newcommand{\GSevOut}{K1 passes, K2 passes, K3 passes, K4 passes, K5 passes}
+\newcommand{\StrongConfirm}{7 of 8}
+\newcommand{\StrongFresh}{6 of 8}
+\newcommand{\ScaleAll}{+0.006 {\scriptsize[+0.004, +0.009]}}
+\newcommand{\ScaleLlama}{-0.000}
+\newcommand{\ScaleQwen}{+0.013, +0.009, +0.019 at 8B, 14B, 32B}
+\newcommand{\GSixPerModel}{per-model excess from -0.042 (Gemma-3 4B) to +0.040 (Qwen2.5 7B)}
+\newcommand{\GSixNewExcess}{+0.005 {\scriptsize[-0.001, +0.010]}}
+\newcommand{\ClaudeRefOther}{0.41--0.76 (median 0.58)}
+\newcommand{\AgentLink}{0.17--0.35}

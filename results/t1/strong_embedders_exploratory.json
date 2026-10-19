@@ -1,0 +1,230 @@
+{
+ "confirm": {
+  "gemma3_4b": {
+   "answers": 0.5641,
+   "input_minilm": 0.2828,
+   "input_qemb06": 0.1292,
+   "input_mpnet": 0.3312,
+   "replies_qemb06": 0.3447,
+   "replies_mpnet": 0.4864,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.0774,
+    0.0551,
+    0.0995
+   ]
+  },
+  "gptoss20b": {
+   "answers": 0.4098,
+   "input_minilm": 0.2458,
+   "input_qemb06": 0.3976,
+   "input_mpnet": 0.2432,
+   "replies_qemb06": 0.0939,
+   "replies_mpnet": 0.2473,
+   "strongest_text_baseline": "input_qemb06",
+   "answers_minus_strongest": [
+    0.0125,
+    -0.0195,
+    0.0408
+   ]
+  },
+  "llama31_8b": {
+   "answers": 0.7366,
+   "input_minilm": 0.2556,
+   "input_qemb06": 0.0265,
+   "input_mpnet": 0.3337,
+   "replies_qemb06": -0.016,
+   "replies_mpnet": 0.3989,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.3374,
+    0.3188,
+    0.3568
+   ]
+  },
+  "mistral7b": {
+   "answers": 0.7036,
+   "input_minilm": 0.2179,
+   "input_qemb06": -0.0388,
+   "input_mpnet": 0.3018,
+   "replies_qemb06": 0.2532,
+   "replies_mpnet": 0.2591,
+   "strongest_text_baseline": "input_mpnet",
+   "answers_minus_strongest": [
+    0.4013,
+    0.3786,
+    0.4193
+   ]
+  },
+  "olmo3_7b": {
+   "answers": 0.5691,
+   "input_minilm": 0.2902,
+   "input_qemb06": 0.1737,
+   "input_mpnet": 0.3116,
+   "replies_qemb06": 0.2647,
+   "replies_mpnet": 0.3456,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.2227,
+    0.2016,
+    0.2427
+   ]
+  },
+  "phi4mini": {
+   "answers": 0.581,
+   "input_minilm": 0.2777,
+   "input_qemb06": 0.1431,
+   "input_mpnet": 0.3027,
+   "replies_qemb06": 0.0765,
+   "replies_mpnet": 0.2842,
+   "strongest_text_baseline": "input_mpnet",
+   "answers_minus_strongest": [
+    0.2783,
+    0.2558,
+    0.3016
+   ]
+  },
+  "qwen25_7b": {
+   "answers": 0.7439,
+   "input_minilm": 0.285,
+   "input_qemb06": 0.0496,
+   "input_mpnet": 0.3729,
+   "replies_qemb06": 0.1622,
+   "replies_mpnet": 0.3776,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.3673,
+    0.3472,
+    0.3866
+   ]
+  },
+  "qwen3_8b": {
+   "answers": 0.6648,
+   "input_minilm": 0.3007,
+   "input_qemb06": 0.0763,
+   "input_mpnet": 0.3688,
+   "replies_qemb06": 0.2797,
+   "replies_mpnet": 0.3606,
+   "strongest_text_baseline": "input_mpnet",
+   "answers_minus_strongest": [
+    0.2962,
+    0.2745,
+    0.319
+   ]
+  }
+ },
+ "fresh": {
+  "gemma3_4b": {
+   "answers": 0.3379,
+   "input_minilm": 0.1973,
+   "input_qemb06": 0.1711,
+   "input_mpnet": 0.21,
+   "replies_qemb06": 0.421,
+   "replies_mpnet": 0.4366,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    -0.0994,
+    -0.1329,
+    -0.0678
+   ]
+  },
+  "gptoss20b": {
+   "answers": 0.2237,
+   "input_minilm": 0.2331,
+   "input_qemb06": 0.3715,
+   "input_mpnet": 0.224,
+   "replies_qemb06": 0.0615,
+   "replies_mpnet": 0.1345,
+   "strongest_text_baseline": "input_qemb06",
+   "answers_minus_strongest": [
+    -0.1481,
+    -0.1838,
+    -0.1122
+   ]
+  },
+  "llama31_8b": {
+   "answers": 0.6441,
+   "input_minilm": 0.1527,
+   "input_qemb06": 0.0023,
+   "input_mpnet": 0.2022,
+   "replies_qemb06": -0.0173,
+   "replies_mpnet": 0.3351,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.308,
+    0.2835,
+    0.3339
+   ]
+  },
+  "mistral7b": {
+   "answers": 0.5341,
+   "input_minilm": 0.1653,
+   "input_qemb06": -0.0472,
+   "input_mpnet": 0.2137,
+   "replies_qemb06": 0.1999,
+   "replies_mpnet": 0.2164,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.3168,
+    0.2895,
+    0.3456
+   ]
+  },
+  "olmo3_7b": {
+   "answers": 0.4845,
+   "input_minilm": 0.2198,
+   "input_qemb06": 0.1723,
+   "input_mpnet": 0.2219,
+   "replies_qemb06": 0.1096,
+   "replies_mpnet": 0.3411,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.1437,
+    0.1214,
+    0.1706
+   ]
+  },
+  "phi4mini": {
+   "answers": 0.4285,
+   "input_minilm": 0.1956,
+   "input_qemb06": 0.1953,
+   "input_mpnet": 0.195,
+   "replies_qemb06": 0.1314,
+   "replies_mpnet": 0.2674,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.1597,
+    0.1285,
+    0.19
+   ]
+  },
+  "qwen25_7b": {
+   "answers": 0.638,
+   "input_minilm": 0.1819,
+   "input_qemb06": 0.0461,
+   "input_mpnet": 0.224,
+   "replies_qemb06": 0.1136,
+   "replies_mpnet": 0.28,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.3572,
+    0.3272,
+    0.3827
+   ]
+  },
+  "qwen3_8b": {
+   "answers": 0.6254,
+   "input_minilm": 0.2071,
+   "input_qemb06": 0.0958,
+   "input_mpnet": 0.2367,
+   "replies_qemb06": 0.1968,
+   "replies_mpnet": 0.3266,
+   "strongest_text_baseline": "replies_mpnet",
+   "answers_minus_strongest": [
+    0.2989,
+    0.2774,
+    0.3216
+   ]
+  }
+ }
+}

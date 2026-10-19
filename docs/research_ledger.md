@@ -1492,3 +1492,29 @@ Dated log of every experiment, decision and correction. Newest last.
   - Answers track the model's own hidden geometry more as Qwen3 grows (0.63 → 0.64 → 0.70).
   - Reading: the answers stay essentially shared up to 32B, with a small own-model excess emerging at the largest
     Qwen3 (just above G6's ±0.02 band). Reported as a limit on generality, not a claim.
+- **Scale check extended to Llama-3.3-70B (fp8 answers; bf16 hidden with CPU offload).** Point estimates, own-model
+  excess (75% / last): Llama-3.3 70B −0.000 / −0.004 (Llama-3.1 8B −0.019 / +0.003); Qwen3 8B/14B/32B
+  +0.013/+0.009/+0.019 and +0.001/+0.010/+0.015; all 12 models +0.006 / +0.003.
+  - The Qwen3 rise does not replicate in Llama: no scaling law. The answers stay shared from 4B to 70B.
+  - The slurm job was cancelled after the hidden states, to free the GPU; the bootstrap runs on the CPU
+    (logs/scale12_analyze.log).
+- **Second independent review (4/10) and fixes (2026-10-19).** About 45 numbers audited and matching. Fixed:
+  - the title (scoped referent);
+  - "unbiased" (now for a known monotone transform);
+  - G7 framing (last-layer qualifier; full ≈ top-20; "simulated with exact probabilities"; tension with Picozzi);
+  - "on average" sharing, with per-model heterogeneity −0.042 (Gemma-3) to +0.040 (Qwen2.5) on G6;
+  - new-kinds excess +0.005 [−0.001, +0.010] now measured (scripts/146);
+  - the Claude reference range saved (0.41–0.76, median 0.58);
+  - the G3 0.75×/0.9× points called failed solves;
+  - "differ by at most" uses the point value (0.023; bound 0.031);
+  - the stale figure reference and "saturates" (4 of 8 models still rise from 64 to 88);
+  - rounding between record and macros;
+  - contributions reordered (measurement first);
+  - the modest agent-geometry link stated in the main text;
+  - the scale numbers from the saved 12-model bootstrap: pooled +0.006 [0.004, 0.009] at 75% depth, small but
+    above 0.
+- **Strong text baselines (scripts/147, exploratory).** Against the strongest embedding of the input or of the
+  replies (mpnet; Qwen3-Embedding), the answers stay ahead for 7 of 8 models on the G1 confirm contexts (gpt-oss tie)
+  and 6 of 8 on G6's fresh contexts. On fresh contexts, Gemma-3 (−0.10) and gpt-oss (−0.15) lose to a strong
+  embedding. Qwen3-Embedding was used without its instruction prefix and underperforms; mpnet is the effective strong
+  baseline.
