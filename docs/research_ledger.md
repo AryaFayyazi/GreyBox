@@ -1518,3 +1518,13 @@ Dated log of every experiment, decision and correction. Newest last.
   and 6 of 8 on G6's fresh contexts. On fresh contexts, Gemma-3 (−0.10) and gpt-oss (−0.15) lose to a strong
   embedding. Qwen3-Embedding was used without its instruction prefix and underperforms; mpnet is the effective strong
   baseline.
+- **Bridge test, development data (scripts/148; 8 readers × 3 open agents; dev scenarios): NEGATIVE, not
+  preregistered.** Does label-free reader–agent geometric agreement predict monitor transfer (AUROC of a Gemma-trained
+  probe)?
+  - Across 24 pairs, Spearman +0.03.
+  - Within agents, mean +0.39 (gpt-oss 0.19, Qwen3.8 0.24, Muse 0.74; permutation p 0.037), driven by
+    LLM readers vs sentence encoders.
+  - Within the five Qwen3 decoder readers the relation vanishes or reverses (Qwen3.8: highest agreement 0.6B/1.7B,
+    lowest transfer).
+  - The geometry does not select readers beyond "an LLM, not a sentence encoder". No held-out test was run (that would
+    confirm a known confound). The paper keeps: monitor validity rests on Corollary 1; the geometry link is modest.
