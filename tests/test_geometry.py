@@ -109,6 +109,7 @@ def test_mu_n_increasing_and_converges():
 def test_cli_offline(tmp_path, monkeypatch):
     """graybox-geometry end to end, with the provider replaced by a fake model whose P(yes) is known."""
     import json
+    pytest.importorskip("httpx")                      # the [geometry] extra
     import graybox.adapters as ad
     from graybox.geometry import main
     rng = np.random.default_rng(7)

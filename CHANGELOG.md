@@ -2,6 +2,12 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.8.1 (2026-10-19)
+**Fixed**
+- `graybox-geometry` crashed on a clean install: the API client (`httpx`) is not a core dependency. Install it with
+  `pip install 'greybox-monitor[geometry]'`; without it, the command now says so. A test from a fresh install of 0.8.0
+  found this.
+
 ## 0.8.0 (2026-10-18)
 **Added**
 - `graybox.geometry`: the observable latent geometry of any model, from its outputs alone. Nothing is trained.

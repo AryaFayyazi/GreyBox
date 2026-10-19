@@ -188,6 +188,7 @@ Preregistered results (each lock was published before its data; `docs/PREREGISTR
 - Limits: agreement is lower on fresh contexts (0.22–0.64) and much weaker within one kind of context. Replies detect
   a *change* of state sooner than answers.
 
+`pip install "greybox-monitor[geometry]"`, then `graybox-geometry contexts.txt --provider openai --model MODEL --out g.json`, or:
 ```python
 from graybox.geometry import interrogate, crossfit_distances, mds
 (kA, nA), (kB, nB) = [interrogate(ask, contexts, questions, samples=4) for _ in range(2)]   # ask(context, question) -> text

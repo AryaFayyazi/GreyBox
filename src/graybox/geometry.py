@@ -229,7 +229,10 @@ def main(argv=None):
     import asyncio
     import json
     from pathlib import Path
-    from .adapters import Anthropic, OpenAICompatible, estimate_cost
+    try:
+        from .adapters import Anthropic, OpenAICompatible, estimate_cost
+    except ImportError as e:                           # httpx is not a core dependency
+        raise SystemExit(f"graybox-geometry needs the API client: pip install 'greybox-monitor[geometry]' ({e})")
     from .battery_v2 import BATTERY_V2
     ap = argparse.ArgumentParser(description=main.__doc__)
     ap.add_argument("contexts", help="contexts: one per line, or JSON lines with 'text' (or 'messages') and optional 'id'")

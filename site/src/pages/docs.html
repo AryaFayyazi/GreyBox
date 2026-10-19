@@ -41,7 +41,7 @@ the changes are in the <a href="https://github.com/AryaFayyazi/GreyBox/blob/main
 states can. Ask yes/no questions about each context, each in its own call. In the angles 2&nbsp;arcsin&nbsp;√P(yes), the
 Fisher–Rao distance between two contexts' answers is plain Euclidean distance. By Čencov's theorem it is the only output
 geometry of this kind. No model is trained.</p>
-<pre><code>pip install greybox-monitor
+<pre><code>pip install "greybox-monitor[geometry]"
 graybox-geometry contexts.txt --provider openai --model MODEL --out geometry.json            # with logprobs: exact
 graybox-geometry contexts.txt --provider anthropic --model MODEL --samples 8 --out geometry.json   # sampled: cross-fit</code></pre>
 <p>The command prints the number of calls and a cost estimate, and it asks before it runs. The output holds the

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greybox-monitor"            # import name: graybox ("graybox" and "greybox" on PyPI are other projects)
-version = "0.8.0"
+version = "0.8.1"
 description = "Read a closed model's latent geometry from its answers (no training), and monitor tool-calling agents before each action runs"
 readme = "README.md"
 license = "MIT"
@@ -38,6 +38,7 @@ reader = ["torch>=2.2,<3", "transformers>=4.51,<6", "joblib>=1.3", "scikit-learn
 browser-reader = ["torch>=2.2,<3", "transformers>=4.51,<6"]                                 # score a browser-reader model file in Python (CPU)
 server = ["fastapi>=0.110,<1", "uvicorn>=0.23,<1", "httpx>=0.25,<1", "pydantic>=2,<3"]
 anthropic = ["anthropic>=0.40"]
+geometry = ["httpx>=0.25,<1", "anthropic>=0.40"]                                         # graybox-geometry on OpenAI-compatible or Anthropic APIs
 mcp = ["mcp>=2,<3", "anyio>=4"]                                                           # graybox.mcp_proxy
 claude-agent = ["claude-agent-sdk>=0.2,<1"]                                              # graybox.integrations.claude_agent_hook
 openai-agents = ["openai-agents>=0.24,<1"]                                                # graybox.integrations.openai_agents_guardrails
