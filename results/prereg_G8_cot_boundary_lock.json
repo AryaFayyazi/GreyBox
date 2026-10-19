@@ -1,0 +1,15 @@
+{
+ "locked_at": "2026-10-19T13:32:58-07:00",
+ "sha256": {
+  "docs/prereg_G8_cot_boundary.md": "27ab607f491dd1943127870b14d9b2282254b0cb9b1cea5373716dd60af87c4b",
+  "scripts/149_cot_boundary.py": "2d082e5f44bd9f5426b15d9d14a79105b679345fbf0f647af92f9545932da2f2",
+  "scripts/96_t17_replication_agents.py": "c395bb33f3206cd068be781eace3955af74e635cd2c906cbdc8a9db067155b41",
+  "scripts/69_t4_reader_action.py": "5bb47bb30cf5d2155f62ac96d3e4fa8a67b961335a07da881cf178fe84314258",
+  "results/t1/cot_boundary_DRYRUN_dev.json": "5a0edb94c2d92e8c9074c8cfd4935cf6a98973fd05cf483882d519ed35071814",
+  "results/t1/cot_boundary_DRYRUN_agents_dev.json": "2ed0becd4b3e34b94c4a54b861c93e019befb7cd7ea81014b9e8d3efa18fdf64",
+  "/data/models/graybox_ws/outputs/cot_boundary/future_gptoss20b.npy": "44b500ac58e83062403d919cf9f5ab0512714ca0d63eed50168d258a13309af6",
+  "/data/models/graybox_ws/outputs/cot_boundary/future_qwen38.npy": "91f32c0339eb18d278d4fa333b44773b912dbb07aa87667fb9ec6bd8822b5640",
+  "/data/models/graybox_ws/outputs/cot_boundary/future_museglimmer.npy": "f43bc8041b459025c18306e2064b55028a362605efbe7f823878514691db19ac",
+  "/data/models/graybox_ws/outputs/cot_boundary/future_gemma4_clean.npy": "15f35559e213b3484bc26c7917b54e0717da3d9f22de62e88d2a4253755caa54"
+ }
+}

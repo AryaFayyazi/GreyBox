@@ -1,0 +1,68 @@
+{
+ "gptoss20b": {
+  "action": {
+   "n": 2795,
+   "positives": 418,
+   "within_act": 0.9603,
+   "within_cot": 0.9205,
+   "within_cot_minus_act": -0.0397,
+   "transfer_act": 0.9175,
+   "transfer_cot": 0.8503,
+   "transfer_cot_minus_act": -0.0673
+  },
+  "future": {
+   "n": 2377,
+   "positives": 42,
+   "within_act": 0.6503,
+   "within_cot": 0.6695,
+   "within_cot_minus_act": 0.0192,
+   "transfer_act": 0.6439,
+   "transfer_cot": 0.5645,
+   "transfer_cot_minus_act": -0.0794
+  }
+ },
+ "qwen38": {
+  "action": {
+   "n": 2286,
+   "positives": 91,
+   "within_act": 0.9248,
+   "within_cot": 0.9359,
+   "within_cot_minus_act": 0.0111,
+   "transfer_act": 0.9584,
+   "transfer_cot": 0.8912,
+   "transfer_cot_minus_act": -0.0672
+  },
+  "future": {
+   "n": 2195,
+   "positives": 29,
+   "within_act": 0.6133,
+   "within_cot": 0.6231,
+   "within_cot_minus_act": 0.0098,
+   "transfer_act": 0.5937,
+   "transfer_cot": 0.7135,
+   "transfer_cot_minus_act": 0.1198
+  }
+ },
+ "museglimmer": {
+  "action": {
+   "n": 2527,
+   "positives": 349,
+   "within_act": 0.9814,
+   "within_cot": 0.9513,
+   "within_cot_minus_act": -0.0301,
+   "transfer_act": 0.9682,
+   "transfer_cot": 0.9352,
+   "transfer_cot_minus_act": -0.033
+  },
+  "future": {
+   "n": 2178,
+   "positives": 90,
+   "within_act": 0.5363,
+   "within_cot": 0.5318,
+   "within_cot_minus_act": -0.0045,
+   "transfer_act": 0.5358,
+   "transfer_cot": 0.5942,
+   "transfer_cot_minus_act": 0.0584
+  }
+ }
+}

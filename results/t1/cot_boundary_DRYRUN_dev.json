@@ -1,0 +1,16 @@
+{
+ "action": {
+  "n": 5493,
+  "positives": 993,
+  "auroc_act": 0.992,
+  "auroc_cot": 0.9858,
+  "cot_minus_act": -0.0062
+ },
+ "future": {
+  "n": 4500,
+  "positives": 247,
+  "auroc_act": 0.7377,
+  "auroc_cot": 0.731,
+  "cot_minus_act": -0.0067
+ }
+}
