@@ -59,25 +59,23 @@ def main():
     style(ax)
     ax.set_title("(a) open models", loc="left", fontsize=7)
 
-    # (b) convergence: each model thin, the mean bold; the weakest model labelled
+    # (b) G7: own-model excess per output channel, 95% intervals, against the last layer (and the chosen layer)
     ax = axs[1]
-    q = sorted(int(k) for k in g1["models"][ms[0]]["convergence"])
-    curves = np.array([[g1["models"][m]["convergence"][str(k)] for k in q] for m in ms])
-    for m, cvec in zip(ms, curves):
-        ax.plot(q, cvec, color=BLUE, lw=0.6, alpha=0.35)
-    ax.plot(q, curves.mean(0), color=BLUE, lw=1.6, marker="o", ms=2.6, label="mean of 8 models")
-    ax.text(88 * 0.97, curves[0][-1] - 0.035, NAMES[ms[0]], color=MUTE, fontsize=5.0, ha="right", va="top")
-    tx = np.mean([g1["models"][m]["rho_text"] for m in ms])
-    ax.axhline(tx, color=MUTE, lw=0.7, ls="--")
-    ax.text(86, tx - 0.03, "input text (mean)", color=MUTE, fontsize=5.2, ha="right", va="top")
-    ax.set_xscale("log", base=2)
-    ax.set_xticks([4, 8, 16, 32, 88], ["4", "8", "16", "32", "88"])
-    ax.set_ylim(0, 0.9)
-    ax.set_xlabel("questions in the battery")
-    ax.set_ylabel("Spearman")
-    ax.legend(loc="upper left", frameon=False, fontsize=5.2, handlelength=1.4)
+    g7f = R / "t1" / "g7_channels.json"
+    g7 = json.loads((g7f if g7f.exists() else R / "t1" / "g7_channels_DRYRUN_dev.json").read_text())["channels"]
+    order = ["answers", "top1", "top5", "top20", "full", "logprob"]
+    labs = ["yes/no", "top-1", "top-5", "top-20", "full", "log-p"]
+    xx = np.arange(len(order))
+    for off, layer, face in ((-0.13, "chosen_layer", "white"), (0.13, "last_layer", BLUE)):
+        e = np.array([g7[layer][c]["excess"] for c in order])
+        ax.errorbar(xx + off, e[:, 0], yerr=[e[:, 0] - e[:, 1], e[:, 2] - e[:, 0]], fmt="o", ms=2.8, mfc=face, mec=BLUE, ecolor=INK,
+                    elinewidth=0.5, capsize=1.2, label="last layer" if face != "white" else "chosen layer", zorder=3)
+    ax.axhline(0, color=MUTE, lw=0.6)
+    ax.set_xticks(xx, labs, fontsize=5.0, rotation=35, ha="right", rotation_mode="anchor")
+    ax.set_ylabel("own-model excess")
+    ax.legend(loc="upper left", frameon=False, fontsize=5.0, handlelength=1.0)
     style(ax)
-    ax.set_title("(b) battery size", loc="left", fontsize=7)
+    ax.set_title("(b) API channels", loc="left", fontsize=7)
 
     # (c) exact recovery
     ax = axs[2]

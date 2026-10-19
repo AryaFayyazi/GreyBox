@@ -1418,3 +1418,42 @@ Dated log of every experiment, decision and correction. Newest last.
   - a text probe: 0.39–0.57.
   - Consistent with G6: what transfers is the shared part, which open models' outputs already carry. A paid
     closed-model test of this idea is not justified; none was requested.
+- **G7 designed and locked (2026-10-18T21:03:57-07:00; published first, 722d5fe 04:03:58Z): what each API channel
+  reveals of a model's own state.** Theory docs/theory_channels.md: Čencov monotonicity orders top-k against the full
+  law, but answers are a different branch, so their position is empirical.
+  - First dev dry run (600 L2 dev contexts), own-model excess vs the last layer: answers −0.011; top-1 +0.043; top-5
+    +0.059; top-20 +0.075; full Fisher–Rao +0.070, not above top-20. The Fisher–Rao geometry of the next-token law is
+    dominated by the top tokens.
+  - Added the centred log-probability channel, which is what Theorem 6 uses. Second dry run: +0.207 [0.198, 0.216]; the
+    own model is the best match 8 of 8 (answers 0 of 8).
+  - gpt-oss fixed: its plain-prompt next token is a format token, so the channel and hidden states are read after the
+    prefill.
+  - Endpoints K1–K5; confirm data job 4062 on 1,000 fresh contexts (seed 77, 0 overlap with L2/G6).
+- **Forecasting closed agents' violations before they act: considered, not pursued (2026-10-19, user request).**
+  Existing data bound any forecast made before the action exists.
+  - T3 (3,496 Gemma-4 fresh steps): 8 resampled actions labelled by the ORACLE 0.857; text at turn start 0.861;
+    white-box internals at turn start 0.846.
+  - T2 (12,128 steps): 16 oracle-scored resamples 0.904.
+  - Whether the agent violates is partly random until it samples, so turn-start forecasts sit near 0.85–0.90 however
+    they are built. A perfect scorer of 8 rollouts ties the plain-text forecast.
+  - A zero-shot transfer of a transcript forecast to closed agents would land at the known ~0.86. Action-time
+    detection (≈0.99, tested live) stays the stronger tool. The queued feature job (4063) was cancelled to keep the
+    single GPU for G7; scripts/140 is kept, unused.
+- **Exploratory mechanism (scripts/141, dev, 600 contexts): a question washes out the model-specific state.**
+  - The same top-20 next-token channel, against the last layer: at the end of the context +0.075 [0.069, 0.081]; at
+    the answer position after a yes/no question +0.011 [0.007, 0.014].
+  - Yes/no over the same 8 questions: +0.014 [0.011, 0.018].
+  - So the yes/no projection is not what discards the model's identity; the appended question and its computation are.
+  - Follow-up control (scripts/143): preamble only / near content-free question / content question / self question,
+    to separate "any extra text" from "a question". Scale check (scripts/142): Qwen3 14B, 32B, Gemma-4 26B on G6
+    contexts. Two GPUs allowed by the user until 06:00 2026-10-19.
+- **G7 (confirmatory, 1,000 fresh contexts; lock 722d5fe published first): K1–K5 pass.** Own-model excess against
+  the last layer:
+  - answers −0.006 [−0.009, −0.003] (own best 1/8);
+  - top-1 +0.056; top-5 +0.085; top-20 +0.115 [0.109, 0.121];
+  - full Fisher–Rao +0.112;
+  - log-probability +0.221 [0.212, 0.230] (own best 7/8; agreement 0.83 vs 0.58).
+  - Against the chosen layer: answers +0.001 [−0.003, +0.003] (K1); log-probability +0.103.
+  - Ladder: top-20 − answers +0.120; log-probability − top-20 +0.106.
+  - What crosses an API boundary depends on the channel: text-level answers reveal only the shared geometry, and each
+    returned token probability leaks some of the model's own.

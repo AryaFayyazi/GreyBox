@@ -1,0 +1,199 @@
+{
+ "set": "g7",
+ "n": 1000,
+ "channels": {
+  "chosen_layer": {
+   "answers": {
+    "excess": [
+     0.0007,
+     -0.0025,
+     0.0034
+    ],
+    "own_mean": 0.4948,
+    "others_mean": 0.494,
+    "own_best": 1
+   },
+   "top1": {
+    "excess": [
+     0.0373,
+     0.0315,
+     0.0434
+    ],
+    "own_mean": 0.3541,
+    "others_mean": 0.3115,
+    "own_best": 2
+   },
+   "top5": {
+    "excess": [
+     0.0521,
+     0.0459,
+     0.0586
+    ],
+    "own_mean": 0.4907,
+    "others_mean": 0.4311,
+    "own_best": 2
+   },
+   "top20": {
+    "excess": [
+     0.0764,
+     0.07,
+     0.083
+    ],
+    "own_mean": 0.5473,
+    "others_mean": 0.46,
+    "own_best": 4
+   },
+   "full": {
+    "excess": [
+     0.0752,
+     0.0687,
+     0.0814
+    ],
+    "own_mean": 0.5333,
+    "others_mean": 0.4474,
+    "own_best": 4
+   },
+   "logprob": {
+    "excess": [
+     0.1027,
+     0.0957,
+     0.1087
+    ],
+    "own_mean": 0.6436,
+    "others_mean": 0.5263,
+    "own_best": 4
+   },
+   "ladder": {
+    "top1_minus_answers": [
+     0.0366,
+     0.0304,
+     0.0435
+    ],
+    "top5_minus_top1": [
+     0.0147,
+     0.0095,
+     0.0198
+    ],
+    "top20_minus_top5": [
+     0.0243,
+     0.022,
+     0.0262
+    ],
+    "full_minus_top20": [
+     -0.0012,
+     -0.0022,
+     -0.0003
+    ],
+    "logprob_minus_full": [
+     0.0274,
+     0.0217,
+     0.0326
+    ]
+   }
+  },
+  "last_layer": {
+   "answers": {
+    "excess": [
+     -0.0059,
+     -0.0086,
+     -0.003
+    ],
+    "own_mean": 0.3591,
+    "others_mean": 0.3658,
+    "own_best": 1
+   },
+   "top1": {
+    "excess": [
+     0.0555,
+     0.0501,
+     0.0614
+    ],
+    "own_mean": 0.3027,
+    "others_mean": 0.2393,
+    "own_best": 2
+   },
+   "top5": {
+    "excess": [
+     0.0852,
+     0.08,
+     0.0905
+    ],
+    "own_mean": 0.4856,
+    "others_mean": 0.3882,
+    "own_best": 3
+   },
+   "top20": {
+    "excess": [
+     0.1146,
+     0.109,
+     0.1205
+    ],
+    "own_mean": 0.5852,
+    "others_mean": 0.4542,
+    "own_best": 3
+   },
+   "full": {
+    "excess": [
+     0.1118,
+     0.1063,
+     0.1175
+    ],
+    "own_mean": 0.5677,
+    "others_mean": 0.4399,
+    "own_best": 4
+   },
+   "logprob": {
+    "excess": [
+     0.2209,
+     0.2115,
+     0.2302
+    ],
+    "own_mean": 0.8349,
+    "others_mean": 0.5824,
+    "own_best": 7
+   },
+   "ladder": {
+    "top1_minus_answers": [
+     0.0615,
+     0.0551,
+     0.0679
+    ],
+    "top5_minus_top1": [
+     0.0296,
+     0.0241,
+     0.0346
+    ],
+    "top20_minus_top5": [
+     0.0294,
+     0.027,
+     0.0318
+    ],
+    "full_minus_top20": [
+     -0.0028,
+     -0.004,
+     -0.0015
+    ],
+    "logprob_minus_full": [
+     0.109,
+     0.1018,
+     0.1174
+    ]
+   }
+  }
+ },
+ "K1_pass": true,
+ "K2_pass": true,
+ "K3_top20_minus_answers": [
+  0.1204,
+  0.1135,
+  0.1274
+ ],
+ "K3_pass": true,
+ "K4_logprob_minus_top20": [
+  0.1062,
+  0.0991,
+  0.1141
+ ],
+ "K4_pass": true,
+ "K5_pass": true
+}

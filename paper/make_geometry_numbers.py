@@ -31,6 +31,7 @@ def ci(x, fmt="%.3f", sign=True):
 
 wk = J("within_kind_exploratory.json")
 g6 = J("g6_shared_geometry.json")
+g7 = J("g7_channels.json")
 g1, g2, g3, g5, cf = J("g1_open_geometry.json"), J("g2_claude_geometry.json"), J("g3_exact_recovery.json"), J("g5_answers_vs_replies.json"), J("crossfit_exploratory.json")
 if g1:
     M = g1["models"]
@@ -126,5 +127,21 @@ else:
     for n in ("GSixExcess", "GSixSOne", "GSixSTwo", "GSixSTwoRange", "GSixSThree", "GSixAns", "GSixText", "GSixRep", "GSixAnsNew",
               "GSixTextNew", "GSixHH", "GSixReader", "GSixOwnBest", "GSixOut"):
         mac(n, r"\PENDING{G6}")
+if g7:
+    LL, CL = g7["channels"]["last_layer"], g7["channels"]["chosen_layer"]
+    f = lambda e: "%+.3f" % e[0] + r" {\scriptsize[%+.3f, %+.3f]}" % (e[1], e[2])  # noqa: E731
+    for c, nm in (("answers", "Ans"), ("top1", "TopOne"), ("top5", "TopFive"), ("top20", "TopTwenty"), ("full", "Full"), ("logprob", "Logprob")):
+        mac("GSevL" + nm, f(LL[c]["excess"]))
+        mac("GSevC" + nm, f(CL[c]["excess"]))
+        mac("GSevBest" + nm, "%d of 8" % LL[c]["own_best"])
+    mac("GSevOwnLogprob", "%.2f" % LL["logprob"]["own_mean"])
+    mac("GSevOthersLogprob", "%.2f" % LL["logprob"]["others_mean"])
+    mac("GSevOut", ", ".join("K%d %s" % (i, "passes" if g7["K%d_pass" % i] else "fails") for i in range(1, 6)))
+else:
+    for c in ("Ans", "TopOne", "TopFive", "TopTwenty", "Full", "Logprob"):
+        for pre in ("GSevL", "GSevC", "GSevBest"):
+            mac(pre + c, r"\PENDING{G7}")
+    for n in ("GSevOwnLogprob", "GSevOthersLogprob", "GSevOut"):
+        mac(n, r"\PENDING{G7}")
 (Path(__file__).parent / "geometry_numbers.tex").write_text("\n".join(out) + "\n")
 print("wrote", len(out), "macros")
