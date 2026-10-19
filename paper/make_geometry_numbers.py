@@ -175,5 +175,20 @@ if ag:
     mac("AgentLink", "%.2f--%.2f" % (min(v), max(v)))
 else:
     mac("AgentLink", r"\PENDING{}")
+g8 = J("g8_cot_boundary.json")
+m0 = len(out)
+if g8:
+    P, A = g8["pooled_cot_minus_act"], g8["agents"]
+    mac("GEightInagent", ci(P["action_inagent"]))
+    mac("GEightTransfer", ci(P["action_transfer"]))
+    mac("GEightFuture", ci(P["future_inagent"]))
+    mac("GEightQwen", ci([A["qwen38"]["action"]["inagent"]["cot_minus_act"]] + A["qwen38"]["action"]["inagent"]["ci"]))
+    mac("GEightTransferEach", ", ".join(("%+.4f" if abs(A[a]["action"]["transfer"]["cot_minus_act"]) < 0.001 else "%+.3f") % A[a]["action"]["transfer"]["cot_minus_act"] for a in ("gptoss20b", "qwen38", "museglimmer")))
+    lv = [A[a]["future"]["inagent"][v] for a in A for v in ("act", "cot")]
+    mac("GEightFutureLevel", "%.2f--%.2f" % (min(lv), max(lv)))
+else:
+    for n in ("GEightInagent", "GEightTransfer", "GEightFuture", "GEightQwen", "GEightTransferEach", "GEightFutureLevel"):
+        mac(n, r"\PENDING{}")
+out[m0:] = [o.split("}{", 1)[0] + "}{" + o.split("}{", 1)[1].replace("-", "$-$").replace("$-$$-$", "--") for o in out[m0:]]
 (Path(__file__).parent / "geometry_numbers.tex").write_text("\n".join(out) + "\n")
 print("wrote", len(out), "macros")

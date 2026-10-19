@@ -1,0 +1,170 @@
+{
+ "agents": {
+  "gptoss20b": {
+   "action": {
+    "n": 2434,
+    "positives": 311,
+    "inagent": {
+     "act": 0.9712,
+     "cot": 0.9373,
+     "cot_minus_act": -0.0339,
+     "ci": [
+      -0.0554,
+      -0.0156
+     ]
+    },
+    "transfer": {
+     "act": 0.9231,
+     "cot": 0.8679,
+     "cot_minus_act": -0.0552,
+     "ci": [
+      -0.0843,
+      -0.0251
+     ]
+    }
+   },
+   "future": {
+    "n": 2123,
+    "positives": 45,
+    "inagent": {
+     "act": 0.6971,
+     "cot": 0.6683,
+     "cot_minus_act": -0.0288,
+     "ci": [
+      -0.1195,
+      0.0693
+     ]
+    },
+    "transfer": {
+     "act": 0.6985,
+     "cot": 0.5952,
+     "cot_minus_act": -0.1033,
+     "ci": [
+      -0.227,
+      0.0368
+     ]
+    }
+   }
+  },
+  "qwen38": {
+   "action": {
+    "n": 2378,
+    "positives": 73,
+    "inagent": {
+     "act": 0.9621,
+     "cot": 0.9898,
+     "cot_minus_act": 0.0277,
+     "ci": [
+      0.0016,
+      0.0776
+     ]
+    },
+    "transfer": {
+     "act": 0.9723,
+     "cot": 0.9719,
+     "cot_minus_act": -0.0004,
+     "ci": [
+      -0.0243,
+      0.029
+     ]
+    }
+   },
+   "future": {
+    "n": 2305,
+    "positives": 22,
+    "inagent": {
+     "act": 0.5913,
+     "cot": 0.6607,
+     "cot_minus_act": 0.0694,
+     "ci": [
+      -0.0478,
+      0.1929
+     ]
+    },
+    "transfer": {
+     "act": 0.57,
+     "cot": 0.6316,
+     "cot_minus_act": 0.0616,
+     "ci": [
+      -0.022,
+      0.162
+     ]
+    }
+   }
+  },
+  "museglimmer": {
+   "action": {
+    "n": 2657,
+    "positives": 335,
+    "inagent": {
+     "act": 0.9773,
+     "cot": 0.9682,
+     "cot_minus_act": -0.0091,
+     "ci": [
+      -0.0221,
+      -0.0002
+     ]
+    },
+    "transfer": {
+     "act": 0.9682,
+     "cot": 0.9262,
+     "cot_minus_act": -0.042,
+     "ci": [
+      -0.0611,
+      -0.0244
+     ]
+    }
+   },
+   "future": {
+    "n": 2322,
+    "positives": 108,
+    "inagent": {
+     "act": 0.5896,
+     "cot": 0.6226,
+     "cot_minus_act": 0.0329,
+     "ci": [
+      -0.0504,
+      0.1098
+     ]
+    },
+    "transfer": {
+     "act": 0.5946,
+     "cot": 0.6322,
+     "cot_minus_act": 0.0377,
+     "ci": [
+      -0.0138,
+      0.092
+     ]
+    }
+   }
+  }
+ },
+ "pooled_cot_minus_act": {
+  "action_inagent": [
+   -0.0051,
+   -0.0185,
+   0.013
+  ],
+  "action_transfer": [
+   -0.0325,
+   -0.0457,
+   -0.0166
+  ],
+  "future_inagent": [
+   0.0245,
+   -0.0329,
+   0.0848
+  ],
+  "future_transfer": [
+   -0.0013,
+   -0.0551,
+   0.0545
+  ]
+ },
+ "endpoints": {
+  "C1_inagent_action_no_gain": false,
+  "C2_transfer_action_reasoning_hurts": true,
+  "C3_transfer_action_every_agent": true,
+  "C4_future_reading": "inconclusive"
+ }
+}

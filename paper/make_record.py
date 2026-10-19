@@ -40,7 +40,8 @@ NAMES = {  # descriptive names for the paper (the released record keeps its ids)
     "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor",
     "T27": "Training against the attack", "T28": "Cut set again after a prompt change"}
 GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", "G6": "Shared geometry (G6)",
-          "G7": "What each API channel reveals (G7)"}
+          "G7": "What each API channel reveals (G7)",
+          "G8": "Reading the reasoning (G8)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 

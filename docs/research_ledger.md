@@ -1528,3 +1528,22 @@ Dated log of every experiment, decision and correction. Newest last.
     lowest transfer).
   - The geometry does not select readers beyond "an LLM, not a sentence encoder". No held-out test was run (that would
     confirm a known confound). The paper keeps: monitor validity rests on Corollary 1; the geometry link is modest.
+- **CoT boundary, development data (scripts/149).** Does reading the agent's reasoning help a trained reader monitor?
+  Corollary 1 says no for labels that the action decides; it allows a gain for later violations.
+  - Gemma-4 clean (grouped CV): action −0.006; later violations −0.007.
+  - T17's three agents, development scenarios, cot − act. Action, in-agent: −0.040, +0.011, −0.030. Action,
+    transfer from Gemma-4: −0.067, −0.067, −0.033. Later violations: near chance (0.53–0.67), differences noise.
+  - Prior art read first: CoT Red-Handed (2505.23575) and Monitoring Monitorability (ICML 2026) find CoT monitors
+    beat action-only monitors on sabotage tasks with zero-shot monitors; a persuasion study (2607.08066) finds the
+    reasoning can mislead monitors.
+- **13:32, G8 locked** (docs/prereg_G8_cot_boundary.md; lock published in commit f7db9e3 before any held-out
+  feature with reasoning existed). C1 no in-agent gain (upper < +0.01); C2 the reasoning hurts transfer (upper < 0);
+  C3 each agent; C4 later violations, two-sided reading. GPU job 4154 extracts the held-out features.
+- **13:42, G8 run (held-out features, job 4154; analysis on CPU): 2 of 4 endpoints pass.**
+  - C1 FAIL: pooled in-agent cot − act −0.005 [−0.018, +0.013]; margin +0.01. Qwen3.8 gains +0.028 [0.002, 0.078]
+    (73 positives); gpt-oss −0.034 [−0.055, −0.016]; Muse −0.009.
+  - C2 pass: a probe trained on Gemma-4 only loses −0.033 [−0.046, −0.017] when it reads the reasoning.
+  - C3 pass, narrowly: −0.055, −0.0004, −0.042.
+  - C4 inconclusive: later violations +0.025 [−0.033, +0.085]; both monitors weak (0.59–0.70).
+  - Reading: the reasoning gives a trained reader no reliable gain on action labels, can help for one agent with
+    its own labels, and makes a monitor trained on another agent worse. Not a headline; reported in §4 and the record.
