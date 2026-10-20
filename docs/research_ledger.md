@@ -1663,3 +1663,21 @@ Dated log of every experiment, decision and correction. Newest last.
 - **Muse-Glimmer self-audit, development (2,527 steps, 349 violations).** Within-template AUROC 0.886 [0.787, 0.949];
   flags 87% of its violations and 21% of safe calls. Open agents: Gemma-4 and Muse-Glimmer recognize most of their own
   violations; Qwen3.8 and gpt-oss fewer than half.
+- **Hold-and-verify verdict (development): the mechanism does not work.** At cuts 1.0 / 0.75 / 0.5 Gemma-4 ran
+  `list-info` in 0 of 9 mailing-list episodes each time; lower cuts only add holds (1.25 → 2.63 per episode) and cost
+  success (38% → 31.5%). Unseen-fact violations need a world-side check (Corollary 1); not tuned further.
+- **Claude live development pilot (gate, checklist, cut 0.67, non-read calls; development-hash scenarios; $0.74).**
+  Restarts 83% → 13% violating, success 9% → 39% (a blocked restart leads Claude to request_permission); mailing-list
+  100% → 81%; 60 random 5.0% → 3.3% (success 35.0% → 28.3%, unpaired).
+- **12:21, G10 and G11 locked; published in commit 09caf58 before any held-out G10 or any G11 episode.**
+  - G10: Claude, 491 held-out core24b scenarios × 2 passes; C1 decidable reduction lower bound ≥ 0.40 (lowered from
+    0.50 before the lock, reason in the prereg: the held-out mix has fewer restarts); C2 unseen-fact reduction upper
+    bound < 0.50 (Corollary 1); C3 success lower bound > −0.05. Ledger cap $34.00. Running (API).
+  - G11: G9's gate@1.0, unchanged, on Qwen3.8 and Muse-Glimmer (v4fresh); predicted reductions = development tau
+    (0.308, 0.742); P1 |obs − pred| ≤ 0.15 each; P2 Muse > Qwen; P3 success. Job 4234 (GPU).
+- **14:20, G10 run: all three endpoints pass.** Claude Haiku 5.5, 982 episodes per arm, held-out scenarios.
+  Decidable 2.77% → 0.85% (0.69 [0.51, 0.88]); unchecked-fact 100% → 92.9% (0.07 [0.00, 0.17]); success 40.4% →
+  40.1% (−0.3 [−2.1, +1.6]); all 6.9% → 4.8% (0.31 [0.19, 0.43]); 0.31 reviews per episode. Cost $7.86 (ledger $30.43;
+  $10.57 of the user's $25 spent in total).
+  Reading: a closed agent polices, through its own API, the violations its transcript decides, at no cost in success;
+  the ones decided by an unchecked fact are not prevented, as Corollary 1 predicts.

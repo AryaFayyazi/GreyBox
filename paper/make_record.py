@@ -42,7 +42,9 @@ NAMES = {  # descriptive names for the paper (the released record keeps its ids)
 GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", "G6": "Shared geometry (G6)",
           "G7": "What each API channel reveals (G7)",
           "G8": "Reading the reasoning (G8)",
-          "G9": "Live self-policing (G9)"}
+          "G9": "Live self-policing (G9)",
+          "G10": "A closed agent polices itself (G10)",
+          "G11": "The prevention law across agents (G11)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
