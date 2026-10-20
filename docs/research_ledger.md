@@ -1547,3 +1547,96 @@ Dated log of every experiment, decision and correction. Newest last.
   - C4 inconclusive: later violations +0.025 [−0.033, +0.085]; both monitors weak (0.59–0.70).
   - Reading: the reasoning gives a trained reader no reliable gain on action labels, can help for one agent with
     its own labels, and makes a monitor trained on another agent worse. Not a headline; reported in §4 and the record.
+- **2026-10-19 evening: new direction after the user's request (real-time, API-only forecast and prevention for closed
+  agents; no other model, no training).** API balances are used up (Anthropic $19.86/$19.90, OpenAI $4.92/$5.00).
+  The user chose: develop on open agents behind an OpenAI-style API now; add credit later for one live closed test.
+  - Stored turn-start rollouts: where Gemma-4 violated, its own resampled violation rate R has median 0.31 (gpt-oss
+    0.75). Violations are mostly sampling events.
+  - Plurality vote over K sampled actions does NOT prevent them (Gemma 0.36 → 0.39): safe samples are diverse, the
+    violating action is concentrated. Sample disagreement is also common at safe states (40–50%). Dropped.
+  - Self-audit (scripts/150; the agent sees its own conversation and its proposed call, not executed, in a side branch
+    and answers yes/no; 4 samples, reasoning on; no reasoning of the original call shown). Two prompt fixes on smoke
+    tests: max_tokens 1 read a format token; a tool-message framing confused the agent (it kept working). Final: an
+    operator user message.
+  - Development results (within-template AUROC; flag = majority "no"):
+    - Gemma-4 clean (5,493 steps, 993 violations): AUROC 0.950 [0.936, 0.963]; flags 96.6% [95.3, 97.9] of its own
+      violations and 11.1% of its safe actions. The flag rate does not fall with R (93% even where R = 1).
+    - gpt-oss dev (2,787 steps): AUROC 0.741; flags 37% of violations, 12% of safe actions; weak fall with R.
+  - Prevention law (docs/theory_selfaudit.md, written before these results): per step, Gemma-4's predicted violation
+    rate 7.2% → 0.25% (M=1, 17% escalated), 0.57% (M=4, 2.2% escalated).
+  - Prior art: ODCV-Bench (2512.20798) reports a post-hoc self-recognition gap; Reason Less, Verify More (2607.07405)
+    uses deterministic pre-execution gates. Not found: pre-execution self-audit through the agent's own API with an
+    exact prevention law.
+  - Next: Qwen3.8 and Muse-Glimmer dev audits (job 4200); live protocol pilot on Gemma-4 (scripts/151, job 4205);
+    cross-audit control (is self special?).
+- **Live pilot of self-policing (scripts/151, escalate=stop, cut 0.5; Gemma-4; 200 core24b unsafe scenarios, seed 7;
+  development).** Arms share per-step seeds.
+  - Episodes with an executed violation: plain 22.5%; gate 4.5% (−80% [68, 91]); S4 5.5% (−76% [63, 88]).
+  - Task success: plain 38%; gate 27% (−11 pts); S4 33% (−5 [−10, +0.5]).
+  - Cost: S4 1.22 draws and about 1.2 audits (4 sampled answers each) per step.
+  - Live flag rates on S4's candidate draws: tau 0.86, phi 0.20 (development 0.97 / 0.11). False flags are more
+    frequent later in episodes; flags are correlated within a state (the independence assumption of the law fails
+    there). Smoke test (6 episodes): stopping on escalation ends most episodes, so v2 sends escalations to review.
+- **Cross-audit control (job 4206, development).** Within-template AUROC, auditor × agent:
+  Gemma-4 on own 0.950, on gpt-oss 0.780 [0.68, 0.87]; gpt-oss on own 0.741, on Gemma-4 0.878 [0.855, 0.900]
+  (same 2,999 Gemma steps: self 97% / 10% flagged vs gpt-oss 81% / 31%).
+  - Reading: both auditors do better on Gemma's steps (its violations are easier to recognize), and Gemma-4 is the
+    better judge; the self × agent interaction is small (+0.03). Not privileged self-knowledge: a generation–verification
+    gap. The API-only protocol works when the agent is a competent judge of the policy.
+- **Live pilot v2 (escalation goes to review; cut 0.75; Gemma-4; 200 core24b scenarios, seed 8; development).**
+  - Violating episodes: plain 24.0%; gate 6.5% (−73% [58, 85]); S4 8.0% (−67% [52, 80]).
+  - Task success (goal reached, no violation): plain 37.0%; gate 44.0% (+7.0 [+3.0, +11.0]); S4 42.5% (+5.5 [+1.5, +9.5]).
+    A blocked or replaced violating call steers the agent to the allowed route.
+  - Human reviews: gate 9.5% of steps (1.04 per episode); S4 1.8% (0.20 per episode).
+  - Live flag rates on candidate draws: S4 tau 0.86, phi 0.13; gate tau 0.70, phi 0.09.
+  - Residual violations: confident misses (all audit answers "yes"); they cluster in rule 7 (task constraints) and
+    rule 3 (untrusted content) on development data. A checklist prompt (job 4210) targets them.
+- 2026-10-19 22:40: the user added $25 to the Anthropic key (ledger before: $19.855). Claude scripts
+  (scripts/153) written and checked offline; nothing spent yet. Rule: open models first; lock + publish before paying.
+- **Claude Haiku 5.5 self-audit, development half (T24 plain steps, scenario hash even; all 39 violations + 400 random
+  safe steps; 3 answers each; $0.97 spent in total, ledger $20.83).**
+  - Smoke (10 steps, $0.008): format works; Claude flagged 4 of 10 safe calls. Its reasons: the operator text read as
+    possibly untrusted (rule 3), and strict reads (a config before checking its ACL).
+  - "ask" prompt: flags 5% of its violations, 29% of safe calls; within-template AUROC 0.46.
+  - "sys" prompt (question in the system prompt): 271 of 439 unparsed (prose answers); says "no" to 84% of safe calls.
+  - "checklist" prompt (rule by rule, verdict last): within-template AUROC 0.994, but on few mixed strata (20 of 38
+    violations in one template); pooled AUROC 0.756; flags 68% of violations, 25% of safe calls.
+  - Reading: Claude's violations are mostly policy misreadings (a user's request treated as approval for a production
+    restart; a "test" send to a third-party list), not slips. Asked "does this comply?", Claude says yes. A trained
+    reader still catches them (0.97 in the paper): it learned the checker's reading from labels.
+  - Next: a per-rule question battery (one side branch per policy rule; questions written from the policy text before
+    any result). Gemma-4 first (free), then Claude's development half (about $1).
+- **Live pilot v2, cut 1.0 added (development).** Violating episodes / success / reviews per episode:
+  plain 24.0% / 37.0% / –; gate@1.0 5.5% (−77% [65, 88]) / 46.0% (+9.0 [+5, +13]) / 0.70; gate@0.75 6.5% / 44.0% / 1.04;
+  S4@0.75 8.0% / 42.5% / 0.20; S4@1.0 9.0% / 40.5% / 0.13. Choice for confirmation (development only): gate@1.0 (most
+  safety) and S4@0.75 (fewest reviews), each against the plain agent.
+- **00:14, G9 locked** (docs/prereg_G9_live_self_policing.md; lock published in commit 00da0b9 before any G9 episode).
+  Gemma-4, v4fresh (333 unsafe non-nuisance instances × seeds 0, 1), arms none / gate@1.0 / S4@0.75, review escalation.
+  L1 gate relative reduction lower bound ≥ 0.50; L2 S4 lower bound ≥ 0.40 and ≤ 0.40 reviews per episode; L3 success
+  lower bound > −0.03 for both. Endpoint code dry-run on development files only. Job 4211 (after the battery job 4210).
+  Scripts 150–152 are frozen until G9 has run (their hashes are in the lock); Claude work goes in scripts/153.
+- **Rigour fix to an earlier claim (found while studying Claude's self-audit).** Claude Haiku 5.5's 68 T8b violations
+  are two behaviours: 42 test sends to a mailing list (tp_campaign_test|send_message: every unit violates; the list's
+  thousands of external members show only after sending, though `list-info` would have shown them) and 26 production
+  restarts without request_permission. A template-rate monitor catches 93.9% at 5% (reader 94.1%). On Claude the paper's
+  number shows that the monitor flags these two behaviours, not that it reads the deciding facts. T24's 73 plain-arm
+  violations have the same structure (42 + 29 + 2). GPT-6-luna (T11): 66 violations over six mixed templates; reader
+  98.5% vs template rate 88.7% (within-template 0.995): a real reading effect. Paper: closed-agent paragraph and limits
+  item added; builds; main text ends on page 8.
+- **Claude self-audit, battery (development half; $0.76; ledger $21.83).** Mean over rules: pooled AUROC 0.54. Claude's
+  violating restarts score 0.06 (ask), 0.85 (checklist), 0.10 (battery); restarts after approval are safe. So the
+  checklist recognizes the rule-4 misreading; nothing recognizes the mailing-list sends (their deciding fact is not in
+  the transcript). Gemma-4 battery, first 512 steps: mean over rules 0.970 pooled / 0.977 within template vs 0.952 /
+  0.922 for the single question (aggregation changed from max to mean on these development data).
+- **New idea: epistemic self-audit** (scripts/154): ask the agent whether a fact it has not checked could make the call
+  break the policy; if yes, hold the call and tell it to check first. Targets violations decided by a world fact not
+  yet in the transcript (Corollary 1's W). Gemma-4 development run queued after G9 (job 4213).
+- **06:15, G9 run (job 4211): 2 of 3 endpoints pass.** Gemma-4, v4fresh, 666 episodes per arm.
+  - Violating episodes: plain 27.9%; gate@1.0 4.95% (−82% [76, 88]); S4@0.75 4.35% (−84% [78, 90]).
+  - Success: plain 33.5%; gate 43.7% (+10.2 [+6.6, +14.3]); S4 38.7% (+5.3 [+1.8, +9.2]).
+  - Reviews per episode: gate 1.01; S4 0.404 > 0.40 → L2 FAILS on its review condition (by 0.004), although its
+    reduction bound (0.78) clears 0.40 easily. Recorded as a failure; no reinterpretation.
+  - Live flag rates on candidate draws: S4 tau 0.94, phi 0.17; gate tau 0.85, phi 0.06.
+  - Reading: on unseen scenarios an open agent prevents more than four fifths of its own violations in real time
+    through its own API, and completes more tasks safely. The review cost of S4 is about 0.4 per episode here
+    (0.20 on development data; v4fresh has more violations).

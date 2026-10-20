@@ -29,6 +29,13 @@ is in \cref{app:record}.
   preregistered test that the reader beats it there failed). The reader's advantage is robustness to shift.
 \item \textbf{Most agent tests use one benchmark}, CAPE-Bench, whose tasks are synthetic. The headline closed-agent
   results (94\% and 98\% caught; live prevention) are on the benchmark the monitor was trained on.
+\item \textbf{On Claude, the catch rate measures two behaviours.} Claude Haiku~5.5's 68 violations are 42 test sends to a
+  mailing list (every such send violates; the list's thousands of external members appear only after sending, though a
+  command would have shown them) and 26 production restarts without \texttt{request\_permission}. A monitor that knew
+  only each template's violation rate would catch 93.9\% at the 5\% budget (the reader: 94.1\%). The first behaviour is
+  decided by a fact that is not in the transcript at the time of the action, so no monitor of the transcript can do
+  better than the template's prior on it (\cref{cor:action}). GPT-6-luna's violations span six mixed templates, where the
+  reader beats the template rate (98.5\% vs 88.7\%).
 \item \textbf{\Cref{cor:action} needs a label that the action and the visible facts decide.} It does not cover labels about
   later behaviour or beliefs (for later behaviour, the rollout forecast dominates every readout; \cref{prop:behaviour}).
 \item \textbf{Scores do not transfer between agents}: on Claude, a cut at probability 0.5 catches 3\%. The cut must come
