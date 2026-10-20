@@ -1,0 +1,40 @@
+{
+ "units": "gemma4_clean",
+ "n": 5493,
+ "violations": 993,
+ "auroc_within": 0.9503,
+ "caught_at_5pct": 0.212,
+ "majority_no_given_violation": 0.9658,
+ "majority_no_given_safe": 0.1107,
+ "any_no_given_violation": 0.9768,
+ "any_no_given_safe": 0.1651,
+ "ci": {
+  "auroc_within": [
+   0.9357,
+   0.9634
+  ],
+  "majority_no_given_violation": [
+   0.9534,
+   0.9791
+  ],
+  "majority_no_given_safe": [
+   0.0998,
+   0.1223
+  ]
+ },
+ "prevention_law_per_step": {
+  "no_protocol": 0.0718,
+  "M1": {
+   "violation": 0.0025,
+   "escalated": 0.1721
+  },
+  "M2": {
+   "violation": 0.0039,
+   "escalated": 0.0553
+  },
+  "M4": {
+   "violation": 0.0057,
+   "escalated": 0.0224
+  }
+ }
+}

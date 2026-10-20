@@ -1,0 +1,25 @@
+{
+ "units": "gptoss20b_dev",
+ "n": 2795,
+ "violations": 418,
+ "auroc_within": 0.7803,
+ "caught_at_5pct": 0.1838,
+ "majority_no_given_violation": 0.7943,
+ "majority_no_given_safe": 0.1468,
+ "any_no_given_violation": 0.878,
+ "any_no_given_safe": 0.2003,
+ "ci": {
+  "auroc_within": [
+   0.6767,
+   0.869
+  ],
+  "majority_no_given_violation": [
+   0.7491,
+   0.847
+  ],
+  "majority_no_given_safe": [
+   0.1275,
+   0.1662
+  ]
+ }
+}

@@ -1,0 +1,122 @@
+{
+ "n_scenarios": 200,
+ "arms": {
+  "S4@0.75": {
+   "episodes": 200,
+   "violation_episodes": 0.08,
+   "success": 0.425,
+   "reviews_per_step": 0.0182,
+   "reviews_per_episode": 0.2,
+   "draws_per_step": 1.159,
+   "blocked_by_review": 9,
+   "viol_minus_none": [
+    -0.16,
+    -0.215,
+    -0.11
+   ],
+   "success_minus_none": [
+    0.055,
+    0.015,
+    0.095
+   ],
+   "relative_violation_reduction": [
+    0.6667,
+    0.5217,
+    0.7959
+   ],
+   "live_tau": 0.8632,
+   "live_phi": 0.1263,
+   "n_audited_draws": 2398
+  },
+  "S4@1.00": {
+   "episodes": 200,
+   "violation_episodes": 0.09,
+   "success": 0.405,
+   "reviews_per_step": 0.0121,
+   "reviews_per_episode": 0.13,
+   "draws_per_step": 1.12,
+   "blocked_by_review": 7,
+   "viol_minus_none": [
+    -0.15,
+    -0.2,
+    -0.1049
+   ],
+   "success_minus_none": [
+    0.035,
+    -0.005,
+    0.075
+   ],
+   "relative_violation_reduction": [
+    0.625,
+    0.4872,
+    0.75
+   ],
+   "live_tau": 0.8085,
+   "live_phi": 0.096,
+   "n_audited_draws": 2271
+  },
+  "gate@0.75": {
+   "episodes": 200,
+   "violation_episodes": 0.065,
+   "success": 0.44,
+   "reviews_per_step": 0.0947,
+   "reviews_per_episode": 1.04,
+   "draws_per_step": 1.0,
+   "blocked_by_review": 31,
+   "viol_minus_none": [
+    -0.175,
+    -0.23,
+    -0.12
+   ],
+   "success_minus_none": [
+    0.07,
+    0.03,
+    0.11
+   ],
+   "relative_violation_reduction": [
+    0.7292,
+    0.5814,
+    0.8491
+   ],
+   "live_tau": 0.7045,
+   "live_phi": 0.0879,
+   "n_audited_draws": 2058
+  },
+  "gate@1.00": {
+   "episodes": 200,
+   "violation_episodes": 0.055,
+   "success": 0.46,
+   "reviews_per_step": 0.0649,
+   "reviews_per_episode": 0.695,
+   "draws_per_step": 1.0,
+   "blocked_by_review": 37,
+   "viol_minus_none": [
+    -0.185,
+    -0.24,
+    -0.135
+   ],
+   "success_minus_none": [
+    0.09,
+    0.05,
+    0.13
+   ],
+   "relative_violation_reduction": [
+    0.7708,
+    0.6458,
+    0.88
+   ],
+   "live_tau": 0.7708,
+   "live_phi": 0.0523,
+   "n_audited_draws": 1998
+  },
+  "none": {
+   "episodes": 200,
+   "violation_episodes": 0.24,
+   "success": 0.37,
+   "reviews_per_step": 0.0,
+   "reviews_per_episode": 0.0,
+   "draws_per_step": 1.0,
+   "blocked_by_review": 0
+  }
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "locked_at": "2026-10-20T00:14:06-07:00",
+ "sha256": {
+  "docs/prereg_G9_live_self_policing.md": "9470875641e651e49fd863a8cef07191ec7e6e2f563762636b7b0c060f638682",
+  "docs/theory_selfaudit.md": "a2883896883742e40ca79f2b17bcc16f1f9a5af4fa49878090a7a58cc54a7592",
+  "scripts/150_self_audit.py": "42dde9cfec4aa4b0bc04935062036ca0ecdd7960c8fcf0b076a7b71734bc3a29",
+  "scripts/151_live_selfaudit.py": "0136a9ee45a56c44a635e4a666d45958147c7d2bbcabd9908c865e0ec1f8b450",
+  "scripts/152_live_selfaudit_analysis.py": "fac2e2ee536aee4f0647200ac721566f3360c5b1a49ba31a34cdaf111b57a52b",
+  "slurm/g9_live.sh": "b4fa5c29b96a5c0fda182fdac4b4e21ff1fc20801bd342f815822c06225214bd",
+  "results/t1/self_audit_DEV_gemma4_clean_sample.json": "a115d247a094df70e733b04628e495634f42ed54bf5087510cc7ec3ed210f691",
+  "results/t1/live_selfaudit_DEV_review.json": "0c8c4bf33f14e54506afaf3a083b65a2043a13143cb41e38f38eb302102fa7cf"
+ }
+}
