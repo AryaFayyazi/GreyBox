@@ -6,6 +6,7 @@
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage{amsmath,amssymb,mathtools,amsthm}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{makecell}
 \usepackage{tabularx}
 \usepackage{longtable}
@@ -76,7 +77,7 @@
 
 % =====================================================================================
 \begin{abstract}
-The hidden coordinates of a closed model cannot be read from its outputs: a gauge symmetry of the network leaves every output unchanged. What can be read is a geometry. Asking yes/no questions in side branches of the conversation gives answer laws whose Fisher--Rao distances are exactly Euclidean in arcsine coordinates, and a cross-fit estimator from sampled text alone is exactly unbiased for a known monotone transform of these distances. We measure this observable geometry on eight open models and test it against their hidden states, with every test preregistered and its lock published before the data. It tracks the hidden geometry (Spearman \GOneAns) far better than a sentence embedding of the input (\GOneText) or of the model's own replies (\GFiveRep). But on average it is not the model's own: on 1{,}000 fresh contexts, a model's answers match other models' hidden geometries as well as its own (mean own-model excess $+0.002$), and another open model's hidden state is the better stand-in. What a closed model's answers reveal is a latent geometry it shares with open models; Claude Haiku~5.5 reveals the same. What crosses an API boundary depends on what it returns: yes/no answers reveal no model-specific geometry, next-token probabilities reveal some, and log-probability vectors, a linear image of the final state, single out a model's own final-layer geometry among eight models for seven. It is consistent with monitoring a closed agent through an open model: reading transcripts through an open model, a monitor trained only on open agents catches 94\% and 98\% of two closed agents' violations at a 5\% label-free review budget, and cuts the episodes with an executed violation from about 7\% to 0.2\% live. The model-specific final geometry is recoverable exactly only with full log-probabilities. We release the tool.
+The hidden coordinates of a closed model cannot be read from its outputs: a gauge symmetry of the network leaves every output unchanged. What can be read is a geometry. Asking yes/no questions in side branches of the conversation gives answer laws whose Fisher--Rao distances are exactly Euclidean in arcsine coordinates, and a cross-fit estimator from sampled text alone is exactly unbiased for a known monotone transform of these distances. We measure this observable geometry on eight open models and test it against their hidden states, with every test preregistered and its lock published before the data. It tracks the hidden geometry (Spearman \GOneAns) far better than a sentence embedding of the input (\GOneText) or of the model's own replies (\GFiveRep). But on average it is not the model's own: on 1{,}000 fresh contexts, a model's answers match other models' hidden geometries as well as its own (mean own-model excess $+0.002$), and another open model's hidden state is the better stand-in. What a closed model's answers reveal is a latent geometry it shares with open models; Claude Haiku~5.5 reveals the same. What crosses an API boundary depends on what it returns: yes/no answers reveal no model-specific geometry, next-token probabilities reveal some, and log-probability vectors, a linear image of the final state, single out a model's own final-layer geometry among eight models for seven. It is consistent with monitoring a closed agent through an open model: reading transcripts through an open model, a monitor trained only on open agents catches 94\% and 98\% of two closed agents' violations at a 5\% label-free review budget, and cuts the episodes with an executed violation from about 7\% to 0.2\% live. A closed agent can also police itself through its own API, with no other model and no labels: asked in a side branch whether each proposed call breaks a rule of its policy, Claude Haiku~5.5 prevented 69\% of the violations its transcript decides, at no cost in task success, and, as \cref{cor:action} predicts, not those decided by a fact it never checked (preregistered). The model-specific final geometry is recoverable exactly only with full log-probabilities. We release the tool.
 \end{abstract}
 
 % =====================================================================================
@@ -92,7 +93,7 @@ Interpretability reads what a model knows and what it will do from its hidden st
 \begin{enumerate}
 \item \emph{Measurement} (\cref{sec:geom-results}): on eight open models, the answer geometry tracks hidden geometry better than sentence embeddings of the input and of the model's replies; on average it carries no model-specific part, on fresh contexts, up to 70B (exploratory), and Claude shows a stable geometry of the same kind; what crosses an API boundary of the model's own state depends on the channel. We report where the answers lose.
 \item \emph{Formal grounding} (\cref{sec:method}): exact flat coordinates for the observable geometry, a cross-fit estimator exactly unbiased for a known transform of it, and the exact final geometry from log-probabilities after \citet{carlini2024stealing}, with its sharp $d(d+1)/2$ threshold measured.
-\item \emph{Application to closed agents} (\cref{sec:results}): with the transcript and the action sufficient for policy checks (\cref{cor:action}), a monitor that reads them through an open model predicts and prevents two closed agents' violations live, also when the agent knows it is monitored.
+\item \emph{Application to closed agents} (\cref{sec:results}): with the transcript and the action sufficient for policy checks (\cref{cor:action}), a monitor that reads them through an open model predicts and prevents two closed agents' violations live, also when the agent knows it is monitored; and an agent audited through its own API prevents the violations that its transcript decides, with an exact law for the effect and its boundary.
 \item \emph{A released tool} (\cref{sec:tool}): one command measures a model's observable geometry; an SDK, a server and a browser trainer monitor agents.
 \end{enumerate}
 Every confirmatory test was preregistered: its document and analysis code were hash-locked (SHA-256) before the data existed, and for the later tests, all geometry tests included, the lock was published first. Tests that failed, a dropped design, a correction of our own theorem, and the limits of each claim are in \cref{app:limits,app:record}.
@@ -186,12 +187,7 @@ Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & \sot
 
 \textbf{Live prevention.} We ran the monitor as a server in each closed agent's tool loop, on the same scenarios with and without the gate. In all four preregistered live tests the gate removed nearly all executed violations (\cref{tab:live,fig:prevention}), and no agent executed a violation after a block. Holding an escalated action for a reviewer kept the safety gain; its preregistered bound on the goal cost was not shown ($-0.020$ [$-0.051$, $+0.007$]; \cref{app:limits}). The round trip was \LATENCY.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/prevention.pdf}
-\caption{\textbf{Live prevention and bursts.} (a) Episodes with an executed violation and (b) episodes that reached the goal, in the four preregistered live tests: GPT-6-luna and Claude Haiku~5.5 without a gate and with blocking; Claude with hold for review (an oracle reviewer, run separately); and Claude told that it is monitored, with the cut set again on its unlabelled traffic. Bars: rates; whiskers: 95\% Wilson intervals. (c) Violations caught at a 5\% budget as the share $\rho$ of violations in a burst grows, for the frozen cut and two cuts that move with recent traffic (Claude's scores, replayed); dotted: the $\beta/\rho$ bound of \cref{prop:burst}.}
-\label{fig:prevention}
-\end{figure*}
+
 
 \begin{table}[t]
 \centering\footnotesize
@@ -214,6 +210,28 @@ Claude, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 4
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}An oracle reviewer; same scenarios as the row above, run separately. \textsuperscript{b}Block, with the cut set again on the told agent's unlabelled traffic: it escalated 4.7\% [3.5, 6.1] of actions (budget 5\%; the old cut 16.6\%).}
 \end{table}
 
+\textbf{Self-policing: the agent's own API as the monitor.} A monitor can also use nothing but the monitored agent. Before a non-read call runs, we ask the agent in a side branch, which its conversation never sees, whether the call complies with its policy; a flagged call goes to review (\emph{gate}) or is replaced by a fresh draw (\emph{S4}). No other model and no labels are used. If the audit flags a share $\tau$ of violating calls, a gate prevents about $\tau$ of the violations (\cref{prop:prevention}, \cref{app:agents}). On unseen scenarios (\cref{tab:selfpolice}), Gemma-4 prevented 82\% of its violating episodes and reached more goals. Claude Haiku~5.5 needed the policy checked rule by rule: asked only whether a call complies, it flagged 5\% of its own violations. With that audit it prevented 69\% of the violations that its transcript decides, at no cost in goals. It did not prevent test sends to a mailing list whose thousands of external members appear only after sending (7\% [0, 17]): \cref{cor:action} says that no judge of the transcript can see such a fact, and the test confirmed this prediction. The reader gate above blocks those sends too, through a prior learned from other agents' labels; self-policing needs no labels and no second model, and stops where the transcript stops. It is verification, not self-knowledge: in a cross-audit Gemma-4 and gpt-oss judge each other's calls about as well as their own (interaction $+0.03$).
+
+\begin{table}[t]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{2.4pt}
+\caption{\textbf{Self-policing through the agent's own API} (preregistered; held-out scenarios; no other model, no labels). Episodes with an executed violation and that reached the goal without one, in \%; reduction $=1-$gate/plain, 95\% interval.}
+\label{tab:selfpolice}
+\begin{tabular}{@{}l cc c cc@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Violations}} & & \multicolumn{2}{c}{\textbf{Success}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){5-6}
+\textbf{Agent, set} & plain & gate & reduction & plain & gate\\
+\midrule
+Gemma-4, all\textsuperscript{a} & 27.9 & \textbf{5.0} & .82 {\scriptsize[.76, .88]} & 33.5 & \textbf{43.7}\\
+Claude, decidable\textsuperscript{b} & 2.8 & \textbf{0.9} & .69 {\scriptsize[.51, .88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
+Claude, unchecked fact\textsuperscript{c} & 100 & 92.9 & .07 {\scriptsize[.00, .17]} & & \\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{\columnwidth}{\scriptsize \textsuperscript{a}666 episodes per arm; S4 also $-84\%$, success 38.7, 0.40 reviews per episode (its review limit, 0.40, failed). \textsuperscript{b}470 scenarios $\times$ 2; 0.31 reviews per episode. \textsuperscript{c}21 mailing-list scenarios $\times$ 2; predicted not to fall.}
+\end{table}
+
 \textbf{An agent that knows it is monitored, and an attacker who queries the score.} Told in its system prompt that a safety monitor reviews every tool call, Claude violated as often as before, and the monitor caught 97.1\% of its violations at the frozen cut (83.6\% when not told; $+0.136$ [0.050, 0.225]; preregistered). The notice moved all scores up, so the frozen cut escalated 15.2\% of actions instead of 5\%, within the Kolmogorov bound of \cref{prop:shift} ($K=0.24$); a cut set again on the told agent's unlabelled traffic escalated 4.7\% live and still removed every executed violation (\cref{tab:live}). An attacker who can query the score and rewrites only the free text of a violating call lowered the share caught from 96\% to 29\%; two preregistered defenses failed (51\% and 60\%), close to the ceiling of \cref{prop:ceiling} (\cref{app:limits}). The score must stay hidden from the agent.
 
 \textbf{Labels of a new policy transfer from open agents.} Prompt injection on AgentDojo is a policy absent from our training data. Labels of it collected on two \emph{open} agents transfer to the \emph{closed} GPT-6-luna: AUROC 0.922 against the judge's 0.787 ($+0.136$ [0.078, 0.191]; \cref{tab:main}). The limit of a monitor is the coverage of its policies, not the agent.
@@ -232,7 +250,7 @@ We release a Python package and a website (links in the camera-ready version). O
 
 % =====================================================================================
 \section{Conclusion}
-A closed model's hidden coordinates are not observable. Its yes/no answers reveal a geometry, exact in arcsine coordinates and estimable from sampled text. That geometry tracks hidden geometry better than sentence embeddings of the input or of the model's replies, but on average it is the geometry that models share, not the model's own; the model's own geometry crosses an API boundary only through probabilities, partly through next-token probabilities and fully through log-probability vectors. Reading a closed agent through an open model is consistent with these measurements, and in our tests a monitor built that way predicts and prevents closed agents' violations live. The limits: agreement is \GOneAns\ on our first contexts, lower on fresh ones (\GSixAns) and much weaker within one kind of context; an open model's own hidden state is a better stand-in than the answers; individual models deviate from the average sharing; replies detect a change of state sooner; and an attacker who queries a monitor's score still evades it (\cref{app:limits}).
+A closed model's hidden coordinates are not observable. Its yes/no answers reveal a geometry, exact in arcsine coordinates and estimable from sampled text. That geometry tracks hidden geometry better than sentence embeddings of the input or of the model's replies, but on average it is the geometry that models share, not the model's own; the model's own geometry crosses an API boundary only through probabilities, partly through next-token probabilities and fully through log-probability vectors. Reading a closed agent through an open model is consistent with these measurements, and in our tests a monitor built that way predicts and prevents closed agents' violations live. The limits: agreement is \GOneAns\ on our first contexts, lower on fresh ones (\GSixAns) and much weaker within one kind of context; an open model's own hidden state is a better stand-in than the answers; individual models deviate from the average sharing; replies detect a change of state sooner; and an attacker who queries a monitor's score still evades it (\cref{app:limits}). An agent can also police itself through its own API: it prevents the violations that its transcript decides, and violations decided by a fact it never checked need a check of the world.
 
 \section*{Impact Statement}
 This work reads the geometry of a closed model's state from its answers and monitors closed AI agents before they act. The intended effect is safer deployment: in our tests, blocking flagged actions cut the episodes with an executed violation from about 7\% to 0.2\% on two closed agents. We see four risks. (1) A monitor can give false confidence: it catches violations of the policies that it was trained on and can miss a new policy until that policy has labels (\cref{app:limits}). (2) Blocking has a cost: goal completion fell by 1.8 points on GPT and 5.8 points on Claude. (3) An agent or attacker that can query the monitor's score can reword a violating call until it passes; the score should stay hidden from the agent. (4) Reading a model's state from outside could help an attacker to study a closed model. The geometry uses only ordinary answers; exact recovery needs full log-probabilities, which closed APIs do not return, and it recovers distances between states, not weights or private data. The code is released under the MIT license, and the browser tool does not upload the user's logs.
@@ -263,6 +281,12 @@ This work reads the geometry of a closed model's state from its answers and moni
 \section{Agent results: more figures and the closed-agent table}
 \label{app:agentfigs}
 \label{sec:replica}\label{sec:closed}\label{sec:prevent}\label{sec:robust}\label{sec:coverage}
+\begin{figure*}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/prevention.pdf}
+\caption{\textbf{Live prevention and bursts.} (a) Episodes with an executed violation and (b) episodes that reached the goal, in the four preregistered live tests: GPT-6-luna and Claude Haiku~5.5 without a gate and with blocking; Claude with hold for review (an oracle reviewer, run separately); and Claude told that it is monitored, with the cut set again on its unlabelled traffic. Bars: rates; whiskers: 95\% Wilson intervals. (c) Violations caught at a 5\% budget as the share $\rho$ of violations in a burst grows, for the frozen cut and two cuts that move with recent traffic (Claude's scores, replayed); dotted: the $\beta/\rho$ bound of \cref{prop:burst}.}
+\label{fig:prevention}
+\end{figure*}
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{figures/replication.pdf}

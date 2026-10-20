@@ -19,6 +19,15 @@ Suppose that for every violating action an attacker can reach a still-violating 
 \end{proposition}
 Under rewording, no monitor's operating point beats the clean ROC curve of the best monitor of the decisive fields.
 
+\textbf{Self-policing: a prevention law.} The agent is asked in a side branch whether its proposed call complies; a flagged call is replaced by a fresh draw, at most $M$ draws, and after $M$ flags goes to review ($M=1$ is the gate).
+\begin{proposition}[prevention law]\label{prop:prevention}
+At a state let $R$ be the agent's probability of proposing a violating call, and let the audit flag a violating call with probability $\tau$ and a safe one with probability $\varphi$, independently across draws. With $f=R\tau+(1-R)\varphi$, a violation runs without review with probability $R(1-\tau)\,(1-f^M)/(1-f)$, and the step goes to review with probability $f^M$.
+\end{proposition}
+\begin{proof}
+Draw $j$ is the first unflagged draw with probability $f^{j-1}(1-f)$; given that it is unflagged, it violates with probability $R(1-\tau)/(1-f)$. Summing over $j\le M$ gives the first claim; all $M$ draws are flagged with probability $f^M$.
+\end{proof}
+Every term is measurable through the agent's API: $R$ by resampling it, $\tau$ and $\varphi$ by auditing it. For a gate whose reviewer blocks flagged violations, the share of violations prevented is $\tau$ when a blocked violation is not retried. Gemma-4's development audit flagged $\tau=0.883$ of its violating calls at the cut used; the live gate prevented 0.82 [0.76, 0.88] of its violating episodes.
+
 \textbf{The frozen cut, in full.} \Cref{prop:frozen} also gives the long-run escalation rate: for i.i.d.\ scores with continuous distribution function $F$, $1-F(\hat c)$ follows $\mathrm{Beta}(n+1-k,k)$ over warm-up draws, and the interpolated empirical $(1-\beta)$-quantile has escalation probability within $\tfrac{2}{n+1}$ of $\beta$. With $n=500$ and $\beta=0.05$ the escalation rate has mean $0.050$ and standard deviation $0.0097$.
 
 \textbf{Battery design.} The battery for the compiled program and Othello-GPT (\cref{app:psi}) was designed from black-box answers alone: from a pool of candidate questions, add the one that splits the most classes of contexts with equal answers, and stop when no candidate splits a class.
