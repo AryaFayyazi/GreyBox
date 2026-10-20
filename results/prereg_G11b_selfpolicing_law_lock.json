@@ -1,0 +1,12 @@
+{
+ "locked_at": "2026-10-20T14:18:27-07:00",
+ "sha256": {
+  "docs/prereg_G11b_selfpolicing_law.md": "d045ee913aab2e3ffabad79921f31f5df5c47b3713469ea274fad30a1e2c587d",
+  "docs/theory_selfaudit.md": "a2883896883742e40ca79f2b17bcc16f1f9a5af4fa49878090a7a58cc54a7592",
+  "scripts/151_live_selfaudit.py": "0136a9ee45a56c44a635e4a666d45958147c7d2bbcabd9908c865e0ec1f8b450",
+  "scripts/152_live_selfaudit_analysis.py": "fac2e2ee536aee4f0647200ac721566f3360c5b1a49ba31a34cdaf111b57a52b",
+  "scripts/158_live_targeted.py": "f2e4097d49c4d6ef7a6e05ccd48d25f051ae8f5f9c950542c317f072d163ce83",
+  "scripts/159_g11b_analysis.py": "f3f0a3a4cd4349f6a2b250dd2abc3a8d61299af38a2f0682a3a8e5c4a7cab0f1",
+  "slurm/g11b_live.sh": "dc383353cda56f9cf2d03442963c083dd9a742a25038971f9fa2f4b7379d6038"
+ }
+}

@@ -1681,3 +1681,8 @@ Dated log of every experiment, decision and correction. Newest last.
   $10.57 of the user's $25 spent in total).
   Reading: a closed agent polices, through its own API, the violations its transcript decides, at no cost in success;
   the ones decided by an unchecked fact are not prevented, as Corollary 1 predicts.
+- **14:20, G11 STOPPED (deviation).** After 300 of Qwen3.8's 1,332 v4fresh episodes, 0 violations in either arm: no
+  base rate, so the predicted reduction was untestable. I had not checked base rates before the lock. Stopped on that
+  ground only (the log showed only 0 and 0). Replaced by G11b: held-out core24b scenarios on templates where each
+  agent's plain development rate is ≥ 5% (from stored rollouts, no audit); predictions recomputed on the same templates
+  from the development audits: Qwen3.8 0.167, Muse-Glimmer 0.722. Lesson: dry-run base rates before any lock.
