@@ -1640,3 +1640,26 @@ Dated log of every experiment, decision and correction. Newest last.
   - Reading: on unseen scenarios an open agent prevents more than four fifths of its own violations in real time
     through its own API, and completes more tasks safely. The review cost of S4 is about 0.4 per episode here
     (0.20 on development data; v4fresh has more violations).
+- **07:20, one-GPU slip #3 (a few seconds).** Re-pointing dependencies after a prerequisite had finished let the
+  Qwen/Muse audit job (4207) start beside the hold-and-verify pilot (4227). I cancelled 4207 within seconds (both were
+  loading weights; the audit checkpoints, so nothing was lost) and requeued it as 4228 after 4227.
+  Prevention: `scontrol hold` a job before changing its dependency, then `scontrol release`.
+- **Epistemic audit, Gemma-4 development (2,000 steps, 374 violations; job 4213).** Share of "yes, an unchecked fact":
+  pooled AUROC 0.827, within template 0.726; at a unanimous cut it fires on 83% of violations and 26% of safe calls.
+  Hold-and-verify smoke (6 episodes, cut 0.75): 5.8 holds per episode, steps 9 → 15. Fixes before the 200-scenario
+  pilot: read-only tools are never held (reading is checking); hold only on a unanimous "yes". Pilot relaunched (4227).
+- **08:45, one-GPU slip #4 (about 5 s).** The Qwen/Muse audit (4228) had already started when I tried to move a new
+  job ahead of it; clearing the new job's dependency let it start too. Cancelled the new job (4229) at once.
+  Rule now: check `squeue -t RUNNING` first; never clear a dependency; only append with slurm/append.sh, which chains
+  after the true tail.
+- **Hold-and-verify pilot (dev2: read-only tools never held, unanimous cut; Gemma-4, 200 core24b scenarios, seed 9).**
+  Violating episodes: plain 20.0%; verify 7.0% (−13.0 pts [−18.5, −8.0]); verify+S4 6.0% (−14.0 [−19.5, −9.0]).
+  Success: 39.0% / 38.0% (−1 [−5, +3]) / 39.5%. Holds 1.2 / 1.1 per episode; reviews 0 / 0.17.
+  Every rule family falls to 0–4% except third parties (40% → 44% / 36%): the mailing-list sends scored 0.5–0.75
+  "yes, an unchecked fact", below the unanimous cut, so they were never held. Next: cuts 0.75 and 0.5 (job queued).
+- **Qwen3.8 self-audit, development (2,286 steps, 91 violations).** Within-template AUROC 0.840 [0.763, 0.907]; flags
+  47% of its own violations and 6% of safe calls. Self-recognition with the plain question so far: Gemma-4 97% / 11%;
+  Qwen3.8 47% / 6%; gpt-oss 37% / 12%; Claude Haiku 5.5 5% / 29% (development half). Muse-Glimmer running.
+- **Muse-Glimmer self-audit, development (2,527 steps, 349 violations).** Within-template AUROC 0.886 [0.787, 0.949];
+  flags 87% of its violations and 21% of safe calls. Open agents: Gemma-4 and Muse-Glimmer recognize most of their own
+  violations; Qwen3.8 and gpt-oss fewer than half.

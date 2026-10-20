@@ -1,0 +1,25 @@
+{
+ "units": "museglimmer_dev",
+ "n": 2527,
+ "violations": 349,
+ "auroc_within": 0.8857,
+ "caught_at_5pct": 0.1999,
+ "majority_no_given_violation": 0.8739,
+ "majority_no_given_safe": 0.2121,
+ "any_no_given_violation": 0.9054,
+ "any_no_given_safe": 0.309,
+ "ci": {
+  "auroc_within": [
+   0.7865,
+   0.9493
+  ],
+  "majority_no_given_violation": [
+   0.8047,
+   0.9317
+  ],
+  "majority_no_given_safe": [
+   0.1924,
+   0.235
+  ]
+ }
+}

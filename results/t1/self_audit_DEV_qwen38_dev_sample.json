@@ -1,0 +1,25 @@
+{
+ "units": "qwen38_dev",
+ "n": 2286,
+ "violations": 91,
+ "auroc_within": 0.8404,
+ "caught_at_5pct": 0.3941,
+ "majority_no_given_violation": 0.4725,
+ "majority_no_given_safe": 0.062,
+ "any_no_given_violation": 0.6374,
+ "any_no_given_safe": 0.1162,
+ "ci": {
+  "auroc_within": [
+   0.7627,
+   0.9074
+  ],
+  "majority_no_given_violation": [
+   0.3594,
+   0.5793
+  ],
+  "majority_no_given_safe": [
+   0.0495,
+   0.0751
+  ]
+ }
+}

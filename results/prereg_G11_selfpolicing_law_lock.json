@@ -1,0 +1,13 @@
+{
+ "locked_at": "2026-10-20T12:21:35-07:00",
+ "sha256": {
+  "docs/prereg_G11_selfpolicing_law.md": "160138863ae9532b3a248c40333c2481653d8740bc3ac30bc05c4aa57d82535d",
+  "docs/theory_selfaudit.md": "a2883896883742e40ca79f2b17bcc16f1f9a5af4fa49878090a7a58cc54a7592",
+  "scripts/151_live_selfaudit.py": "0136a9ee45a56c44a635e4a666d45958147c7d2bbcabd9908c865e0ec1f8b450",
+  "scripts/152_live_selfaudit_analysis.py": "fac2e2ee536aee4f0647200ac721566f3360c5b1a49ba31a34cdaf111b57a52b",
+  "scripts/156_g11_analysis.py": "dbea1b35f1f46e34186d87d9c40349cf648c9d222917b3e3e7c7bd2bd1fddc38",
+  "slurm/g11_live.sh": "d725f3c4a60e4810a1c4a910c1a6c4eb7f7e51b6c39b3e700408faa9ad58ad88",
+  "results/t1/self_audit_DEV_museglimmer_dev_sample.json": "b325488aae2570930e87685e2140f6ee0e4c6b20b2a00de0a9393d68fbf38d14",
+  "results/t1/self_audit_DEV_qwen38_dev_sample.json": "337423a0ffd6c74f313ee5f9f7ffd4aeced67f1e70f6b859e9fcec8287eb9c74"
+ }
+}
