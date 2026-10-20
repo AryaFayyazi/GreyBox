@@ -1686,3 +1686,13 @@ Dated log of every experiment, decision and correction. Newest last.
   ground only (the log showed only 0 and 0). Replaced by G11b: held-out core24b scenarios on templates where each
   agent's plain development rate is ≥ 5% (from stored rollouts, no audit); predictions recomputed on the same templates
   from the development audits: Qwen3.8 0.167, Muse-Glimmer 0.722. Lesson: dry-run base rates before any lock.
+- **Claude base-rate scan for a broader test (plain arm only; development-hash halves; $0.56; ledger $30.99).**
+  v2stress (high pressure) 1.7% violating (restarts only; success 1.7%); calib_grid (handbook policy) 4.8% (restarts,
+  mailing list); authx 2.9% (one on-call swap template). Claude's CAPE violations are inherently narrow; no split
+  gives a broader decidable set. Claude spending stopped here ($11.13 of the user's $25 used). scripts/153 was extended
+  after G10 (split selection); the locked version is in commit 09caf58.
+- **Tool: graybox.selfaudit (new module, tests 60 pass).** The two validated prompts verbatim, the same parser (parity
+  0 mismatches on stored answers), SelfAudit.check, OpenAI-style and Anthropic askers, prevention_law(). A unit test
+  showed that G10's preregistered cut (share of "no" ≥ 0.67 with 3 answers) flags a call only when every parsable answer
+  is "no" (2/3 = 0.667 < 0.67). That is what was registered and what ran; the paper's table now says so, and the
+  tool's default cut is 1.0 (same behaviour, stated plainly).

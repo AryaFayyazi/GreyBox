@@ -197,6 +197,28 @@ X, eigenvalues = mds(D, 2)                  # coordinates, up to a rigid motion
 ```
 Theory and proofs: `docs/theory_infogeom.md` (with Correction 1, after the lock).
 
+## Self-policing: the agent's own API as the monitor (no other model, no labels)
+
+Before a proposed tool call runs, ask the agent itself, in a side branch that its conversation never sees, whether
+the call complies with its policy. Hold a flagged call for review, or replace it with a fresh draw of the agent.
+
+```python
+from graybox.selfaudit import SelfAudit, anthropic_asker
+audit = SelfAudit(anthropic_asker(client, "claude-haiku-5-5", system=POLICY, tools=TOOLS), prompt="checklist", n=3)
+r = audit.check(messages, "execute_mock_command", {"command": "restart-service billing --host prod-1"})
+if r.flagged:
+    hold_for_review()
+```
+
+Preregistered results (locks published before the data; held-out scenarios):
+- Gemma-4 (open, G9): episodes with an executed violation 27.9% → 5.0%; task success 33.5% → 43.7%.
+- Claude Haiku 5.5 (closed, G10): violations that its transcript decides fell by 69% [51, 88], at no cost in task
+  success; violations decided by a fact it never checked (a mailing list's size) did not fall (7% [0, 17]), as the
+  theory predicts. A plain "does it comply?" question did not work on Claude; checking the rules one by one did.
+- It works when the agent judges its policy well. Measured with the plain question on development data, agents flag
+  97% (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Claude) of their own violations. Audit some
+  labelled steps of your own agent first. `prevention_law(R, tau, phi, M)` gives the expected effect.
+
 ## Chat: forecast a refusal before the reply
 
 A *grey box* is the model's **interrogation state** Ψ(x): the probabilities of the answer "Yes" to a fixed list of
