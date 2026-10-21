@@ -169,6 +169,7 @@ model server on your own machine (for example vLLM at http://127.0.0.1:8000/v1, 
     <button id="run">Ask the agent</button>
   </div>
   <div id="out" class="transcript" style="margin-top:12px" aria-live="polite"></div>
+  
   <p style="margin-top:8px"><label><input id="remember" type="checkbox"> Remember my key in this browser</label></p>
   <p class="muted">Your key is used only for calls from this tab to the provider you chose, and is not stored unless you tick the
     box. Anthropic calls use the header for direct browser access. The prompts are the ones used in our preregistered tests,
@@ -176,7 +177,7 @@ model server on your own machine (for example vLLM at http://127.0.0.1:8000/v1, 
     takes about ten seconds per answer; "plain" takes about a second.</p>
 </div>
 
-<h2>3. Predict the effect before you deploy</h2>
+<h2>4. Predict the effect before you deploy</h2>
 <p>For a gate that holds a call when the agent's own audit flags it, the share of violations prevented is about
   Σ<sub>k</sub> w<sub>k</sub> τ<sub>k</sub>: for each kind of violation k, its share w<sub>k</sub> of your agent's violations
   times the share τ<sub>k</sub> of such calls that the audit flags. Measure τ<sub>k</sub> by auditing some of your agent's
@@ -245,7 +246,7 @@ model server on your own machine (for example vLLM at http://127.0.0.1:8000/v1, 
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: msgs, temperature: 1 }),
+        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: msgs, temperature: 1, thinking: { type: "disabled" }, output_config: { effort: "low" } }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error?.message || r.statusText);
@@ -267,6 +268,8 @@ model server on your own machine (for example vLLM at http://127.0.0.1:8000/v1, 
     while (out.length < n) out = out.concat(await askOpenAI(base, key, model, system, turns, q, 1, maxTokens));   // servers that ignore n
     return out.slice(0, n);
   }
+
+  window.GBSelf = { askAnthropic, askOpenAI, parseAnswer, toTurns };
 
   // ---- 1. audit a call -------------------------------------------------------------------------------------------
   try { const k = localStorage.getItem("gbSelfKey"); if (k) { $("key").value = k; $("remember").checked = true; } } catch (e) { /* storage blocked */ }

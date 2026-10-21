@@ -13,10 +13,13 @@
   }
 
   // robust display scaling: each axis divided by its 98th percentile of |value|; points beyond 1.25 are drawn at the edge
-  function robust(P) {
+  function robustScale(P) {
     const q = [0, 1, 2].map((k) => { const a = P.map((p) => Math.abs(p[k])).sort((x, y) => x - y); return a[Math.floor(0.98 * (a.length - 1))] || 1; });
-    const m = Math.max(...q);
-    return P.map((p) => p.map((v, k) => Math.max(-1.25, Math.min(1.25, v / m))));
+    return Math.max(...q);
+  }
+  function robust(P, m) {
+    m = m || robustScale(P);
+    return P.map((p) => p.map((v) => Math.max(-1.25, Math.min(1.25, v / m))));
   }
 
   // one view: points P [[x,y,z]], colours C ["#..."], optional ring mask, labels for the tooltip
@@ -27,7 +30,7 @@
     const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
     const st = shared || { dist: 3.6, az: 0.7, el: 0.35, views: [] };
     let dist = st.dist, az = st.az, el = st.el;
-    const group = new THREE.Group(); scene.add(group);
+    const group = new THREE.Group(); scene.add(group); canvas._gbGroup = group;
     const pos = new Float32Array(P.length * 3), col = new Float32Array(P.length * 3);
     P.forEach((p, i) => { pos.set(p, 3 * i); const c = new THREE.Color(C[i]); col.set([c.r, c.g, c.b], 3 * i); });
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
@@ -67,13 +70,24 @@
     });
     canvas.addEventListener("wheel", (e) => { e.preventDefault(); dist = Math.max(1.6, Math.min(8, dist * (e.deltaY > 0 ? 1.08 : 0.93))); draw(); sync(); }, { passive: false });
     window.addEventListener("resize", draw); draw();
-    const self = { set(d, a, e2) { dist = d; az = a; el = e2; draw(); }, draw };
+    const self = { set(d, a, e2) { dist = d; az = a; el = e2; draw(); }, draw,
+      // a moving marker (e.g. a live estimate) with an uncertainty sphere; position in display units
+      marker(color) {
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 14), new THREE.MeshBasicMaterial({ color }));
+        const halo = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.16, depthWrite: false }));
+        core.visible = halo.visible = false; group.add(halo); group.add(core);
+        return { set(p, r) { core.position.set(...p); halo.position.set(...p); halo.scale.setScalar(Math.max(0.05, r)); core.visible = halo.visible = true; draw(); },
+                 hide() { core.visible = halo.visible = false; draw(); } };
+      } };
     st.views.push(self);
     return self;
   }
 
+  window.GB3D = { view, robust, robustScale, SLOTS, SAFE, VIOL, INK };
   const legend = (el, items) => { el.innerHTML = items.map(([c, t, ring]) => `<span style="margin-right:14px;white-space:nowrap"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;${ring ? `border:2px solid ${INK};` : `background:${c};`}vertical-align:-1px"></span> ${t}</span>`).join(""); };
 
+  window.GB3D.legend = (el, items) => legend(el, items);
+  if (!document.getElementById("cvA")) return;
   fetch("data/selfpolice3d.json").then((r) => r.json()).then((D) => {
     // A. inside the agent
     const A = D.agent, sA = A.stats;

@@ -83,6 +83,16 @@
     <button id="run">Ask the agent</button>
   </div>
   <div id="out" class="transcript" style="margin-top:12px" aria-live="polite"></div>
+  <!--obs--><div class="card" style="margin-top:12px;background:var(--bg)">
+    <h3 style="margin-top:0">Its observable state, live</h3>
+    <p class="muted">A closed API never returns hidden states, and no outside method can recover their coordinates (paper,
+      Proposition 1). What it can read is the agent's <b>observable state</b>: its answers to a fixed set of 8 yes/no questions
+      about this call (does it comply; one question per rule), each asked in its own side conversation. Each answer moves the
+      point; the coordinates are exact (θ = 2·arcsin√P(yes)), and their distances are the Fisher–Rao geometry of the answers.</p>
+    <p><label><input id="obs" type="checkbox"> Also map the observable state (8 more questions × answers: about 8× the calls)</label></p>
+    <div class="cv3" style="touch-action:pan-y"><canvas id="cvO" style="touch-action:pan-y" aria-label="3D map of the observable state of the proposed call among reference calls"></canvas><div id="tipO" class="tip" hidden></div></div>
+    <p id="legO" style="margin-top:6px"></p><p id="obsProg" class="muted"></p><p id="obsRead" class="muted"></p><p id="obsStat" class="muted"></p>
+  </div><!--/obs-->
   <p style="margin-top:8px"><label><input id="remember" type="checkbox"> Remember my key in this browser</label></p>
   <p class="muted">Your key is used only for calls from this tab to the provider you chose, and is not stored unless you tick the
     box. Anthropic calls use the header for direct browser access. The prompts are the ones used in our preregistered tests,
@@ -90,7 +100,35 @@
     takes about ten seconds per answer; "plain" takes about a second.</p>
 </div>
 
-<h2>2. Watch it on real episodes</h2>
+<h2>2. Run an agent and watch it police itself, live</h2>
+<p>Your model (set in section 1) runs as an agent on a benchmark scenario, in an environment inside this page that gives the
+  same tool results and the same ground-truth labels as the benchmark's own checker (checked on 520 recorded calls). Before
+  each proposed tool call runs, the agent is asked about it in side conversations: its verdict decides whether the call is
+  held, and its answers to 8 questions place the step on the map, so you see where it is heading. A flagged call raises a
+  warning <b>before it runs</b>. We do not claim to predict violations further ahead: our tests found that signal weak.</p>
+<div class="card">
+  <div class="row sp-form">
+    <label>Scenario <select id="lsScen"></select></label>
+    <label><input id="lsGate" type="checkbox" checked> Gate on (a flagged call waits for your review)</label>
+    <label>Audit answers <input id="lsN" type="number" min="1" max="5" value="3" style="width:4em"></label>
+    <button id="lsStart">Start the agent</button> <button id="lsStop" class="secondary">Stop</button>
+  </div>
+  <p id="lsScenNote" class="muted"></p>
+  <div id="lsWarn" hidden style="border:2px solid #b3471d;background:#fbeee8;border-radius:8px;padding:12px 14px;margin:10px 0">
+    <p id="lsWarnText" style="margin:0 0 8px"></p><button id="lsBtnA">Block</button> <button id="lsBtnB" class="secondary">Allow</button></div>
+  <div class="grid2 sp-cols" style="margin-top:10px">
+    <div><div class="label">The agent, step by step</div><div id="lsLog" class="transcript" style="max-height:430px;overflow:auto"></div></div>
+    <div><div class="label">Its observable state: the path of its proposed calls</div>
+      <div class="cv3" style="touch-action:pan-y"><canvas id="cvL" style="touch-action:pan-y" aria-label="3D map of the agent's proposed calls among reference calls"></canvas><div id="tipL" class="tip" hidden></div></div>
+      <p id="legL" style="margin-top:6px"></p></div>
+  </div>
+  <p id="lsStatus" style="margin-top:8px"></p>
+  <p class="muted">Each step: one agent call, then (in parallel) the audit's answers and 16 one-word answers for the map, so one step
+    takes about one round trip, a few seconds. With Claude Haiku 5.5 a whole session costs about two cents. The benchmark's
+    checker is shown only to let you judge the audit; a real deployment has no such oracle.</p>
+</div>
+
+<h2>3. Watch it on recorded test episodes</h2>
 <p>Recorded episodes of Claude Haiku 5.5 from the preregistered test (G10): the same scenario without and with self-policing.
   Each row is one proposed tool call: the share of Claude's own answers that said "no", whether the call was held, and what
   the environment's checker says about it. A held call goes to a reviewer; in the test the benchmark's checker played the
@@ -103,7 +141,7 @@
   </div>
 </div>
 
-<h2>3. Predict the effect before you deploy</h2>
+<h2>4. Predict the effect before you deploy</h2>
 <p>For a gate that holds a call when the agent's own audit flags it, the share of violations prevented is about
   Σ<sub>k</sub> w<sub>k</sub> τ<sub>k</sub>: for each kind of violation k, its share w<sub>k</sub> of your agent's violations
   times the share τ<sub>k</sub> of such calls that the audit flags. Measure τ<sub>k</sub> by auditing some of your agent's
@@ -121,6 +159,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="assets/selfpolice.js"></script>
 <script src="assets/selfpolice3d.js"></script>
+<script src="assets/observable.js"></script>
+<script src="assets/mockenv.js"></script>
+<script src="assets/livesession.js"></script>
 
 </div></main>
 <footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked

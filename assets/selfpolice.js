@@ -52,7 +52,7 @@
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: msgs, temperature: 1 }),
+        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: msgs, temperature: 1, thinking: { type: "disabled" }, output_config: { effort: "low" } }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error?.message || r.statusText);
@@ -74,6 +74,8 @@
     while (out.length < n) out = out.concat(await askOpenAI(base, key, model, system, turns, q, 1, maxTokens));   // servers that ignore n
     return out.slice(0, n);
   }
+
+  window.GBSelf = { askAnthropic, askOpenAI, parseAnswer, toTurns };
 
   // ---- 1. audit a call -------------------------------------------------------------------------------------------
   try { const k = localStorage.getItem("gbSelfKey"); if (k) { $("key").value = k; $("remember").checked = true; } } catch (e) { /* storage blocked */ }
