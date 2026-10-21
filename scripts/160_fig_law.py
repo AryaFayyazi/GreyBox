@@ -65,9 +65,53 @@ def points():
     return pts
 
 
+RECOG = [  # (agent, benchmark, prompt, violations flagged, safe flagged), development audits, flag = majority "no"
+    ("Gemma-4", "CAPE", "plain", 0.966, 0.111), ("Muse-Glimmer", "CAPE", "plain", 0.874, 0.212), ("Qwen3.8", "CAPE", "plain", 0.473, 0.062),
+    ("gpt-oss", "CAPE", "plain", 0.370, 0.116), ("Claude", "CAPE", "plain", 0.051, 0.290), ("Claude", "CAPE", "rule by rule", 0.684, 0.245),
+    ("Gemma-4", "AgentDojo", "plain", 1.000, 0.020), ("gpt-oss", "AgentDojo", "plain", 0.963, 0.184)]
+
+
+def recognition(ax):
+    rows = RECOG[::-1]
+    for i, (a, b, pr, v, s) in enumerate(rows):
+        c = ORANGE if a.startswith("Claude") else BLUE
+        ax.plot([s, v], [i, i], color=c, lw=1.0, alpha=0.6)
+        ax.scatter([v], [i], s=22, color=c, zorder=3)
+        ax.scatter([s], [i], s=22, facecolor="white", edgecolor=c, linewidth=1.0, zorder=3)
+        ax.text(-0.03, i, f"{a}" + (f" ({pr})" if a.startswith("Claude") else "") + f", {b}", ha="right", va="center", fontsize=5.6, color=INK)
+    ax.set_yticks([])
+    ax.set_xlim(0, 1.02)
+    ax.set_ylim(-0.7, len(rows) - 0.3)
+    ax.set_xlabel("share of the agent's own calls it flags when asked")
+    ax.grid(axis="x", color=GRID, lw=0.5)
+    ax.set_axisbelow(True)
+    ax.spines["left"].set_visible(False)
+    h1 = ax.scatter([], [], s=22, color=INK, label="its violations")
+    h2 = ax.scatter([], [], s=22, facecolor="white", edgecolor=INK, label="its allowed calls")
+    ax.legend(handles=[h1, h2], loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, handletextpad=0.3, columnspacing=1.2)
+    ax.set_title("a  Does the agent recognize its own violations?", fontsize=6.8, loc="left", fontweight="bold", color=INK, pad=14)
+
+
 def main():
     pts = points()
+    fig2, (axa, axb) = plt.subplots(1, 2, figsize=(6.85, 2.7), gridspec_kw={"width_ratios": [1, 1.05], "wspace": 0.42})
+    recognition(axa)
+    law_panel(axb, pts)
+    axb.set_title("b  Offline audit vs live prevention", fontsize=6.8, loc="left", fontweight="bold", color=INK, pad=14)
+    axb.set_xlabel("own violating calls flagged offline (development)")
+    fig2.subplots_adjust(left=0.215, right=0.985, top=0.86, bottom=0.16)
+    fig2.savefig(ROOT / "paper/figures/selfpolice.pdf")
+    fig2.savefig(ROOT / "results/figures/selfpolice.png", dpi=220)
     fig, ax = plt.subplots(figsize=(3.3, 2.55))
+    law_panel(ax, pts)
+    fig.tight_layout(pad=0.3)
+    (ROOT / "paper/figures").mkdir(parents=True, exist_ok=True)
+    fig.savefig(ROOT / "paper/figures/law.pdf")
+    fig.savefig(ROOT / "results/figures/law.png", dpi=220)
+    print(json.dumps([(p[0], round(float(p[1]), 3), [round(float(v), 3) for v in p[2:5]]) for p in pts], indent=0))
+
+
+def law_panel(ax, pts):
     ax.plot([0, 1], [0, 1], color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
     ax.text(0.30, 0.335, "law: reduction = flag rate", ha="left", fontsize=5.6, color=MUTE, rotation=37, rotation_mode="anchor")
     LAB = {"Gemma-4 (G9)": (0.985, 0.655, "right"), "Claude, transcript decides (G10)": (0.64, 0.775, "right"),
@@ -82,7 +126,7 @@ def main():
             ly = y + 0.02 if ly is None else ly
             ax.text(lx, ly, name, fontsize=5.4, color=INK, ha=ha)
     ax.set_xlim(0, 1.02)
-    ax.set_ylim(-0.05, 1.08)
+    ax.set_ylim(-0.3, 1.08)
     ax.set_xlabel("own violating calls flagged in an offline audit (development)")
     ax.set_ylabel("live reduction in violating episodes")
     ax.grid(color=GRID, lw=0.5)
@@ -90,11 +134,6 @@ def main():
     h1 = ax.scatter([], [], s=26, facecolor=INK, edgecolor=INK, label="preregistered")
     h2 = ax.scatter([], [], s=14, facecolor="white", edgecolor=INK, label="exploratory (Gemma-4 per template; Claude)")
     ax.legend(handles=[h1, h2], loc="upper left", handletextpad=0.3)
-    fig.tight_layout(pad=0.3)
-    (ROOT / "paper/figures").mkdir(parents=True, exist_ok=True)
-    fig.savefig(ROOT / "paper/figures/law.pdf")
-    fig.savefig(ROOT / "results/figures/law.png", dpi=220)
-    print(json.dumps([(p[0], round(float(p[1]), 3), [round(float(v), 3) for v in p[2:5]]) for p in pts], indent=0))
 
 
 if __name__ == "__main__":

@@ -200,24 +200,34 @@ Theory and proofs: `docs/theory_infogeom.md` (with Correction 1, after the lock)
 ## Self-policing: the agent's own API as the monitor (no other model, no labels)
 
 Before a proposed tool call runs, ask the agent itself, in a side branch that its conversation never sees, whether
-the call complies with its policy. Hold a flagged call for review, or replace it with a fresh draw of the agent.
+the call complies with its policy. Hold a flagged call for review. Try it in your browser:
+https://aryafayyazi.github.io/GreyBox/selfpolice.html
 
 ```python
-from graybox.selfaudit import SelfAudit, anthropic_asker
-audit = SelfAudit(anthropic_asker(client, "claude-haiku-5-5", system=POLICY, tools=TOOLS), prompt="checklist", n=3)
-r = audit.check(messages, "execute_mock_command", {"command": "restart-service billing --host prod-1"})
-if r.flagged:
-    hold_for_review()
+from graybox.selfaudit import SelfAudit, openai_asker, flag_rates
+audit = SelfAudit(openai_asker(client, model="my-agent", tools=TOOLS), prompt="checklist", n=3,
+                  reads={"read_file", "search"})          # your agent's read-only tools are not audited
+r = audit.check(messages, "send_email", {"to": "x@partner.com", "body": "..."})
+if r.flagged:                                          # unparsable answers also hold the call (unparsable="hold")
+    hold_for_review(r)
 ```
+
+- `messages` is the conversation **before** the assistant turn that proposes the call, in your provider's own format
+  (for `anthropic_asker`, a "system" message is moved to Anthropic's `system` field). The question is appended.
+- "checklist" asks the agent to check each numbered rule of its policy **and each constraint of the user's task**, so a
+  call that breaks the task (e.g. emails the wrong person) is flagged too. It takes about 10 s per audit; "ask" about 1 s.
+- `cut=1.0` (default): hold when every readable answer says "no". With `n=3`, `cut=0.67` also means "all" (2/3 < 0.67).
+- Measure your agent first: audit some labelled calls and run `flag_rates(results, violates)` for τ (violations
+  flagged) and φ (allowed calls flagged). `prevention_law(R, tau, phi, M)` gives the expected effect.
 
 Preregistered results (locks published before the data; held-out scenarios):
 - Gemma-4 (open, G9): episodes with an executed violation 27.9% → 5.0%; task success 33.5% → 43.7%.
-- Claude Haiku 5.5 (closed, G10): violations that its transcript decides fell by 69% [51, 88], at no cost in task
+- Claude Haiku 5.5 (closed, G10): violations that its conversation reveals fell by 69% [51, 88], at no cost in task
   success; violations decided by a fact it never checked (a mailing list's size) did not fall (7% [0, 17]), as the
-  theory predicts. A plain "does it comply?" question did not work on Claude; checking the rules one by one did.
-- It works when the agent judges its policy well. Measured with the plain question on development data, agents flag
-  97% (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Claude) of their own violations. Audit some
-  labelled steps of your own agent first. `prevention_law(R, tau, phi, M)` gives the expected effect.
+  theory predicts. All its violations: −31%. A plain "does it comply?" question did not work on Claude; checking the
+  rules one by one did.
+- It works when the agent judges its policy well. With the plain question (most answers "no"), agents flag 97%
+  (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Claude) of their own violations.
 
 ## Chat: forecast a refusal before the reply
 

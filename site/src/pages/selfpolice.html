@@ -1,0 +1,108 @@
+<!--title: Self-policing-->
+<!--desc: Let an AI agent check its own tool calls before they run, through its own API. No second model, no labels, no server: it runs in your browser.-->
+<h1>Let the agent police itself</h1>
+<p class="lede">Before a tool call runs, ask the agent itself, in a side conversation that its real conversation never sees,
+  whether the call follows its policy. If it says no, hold the call for a human. You need only the agent's own API: no second
+  model, no training, no GPU, no server. This page does it in your browser.</p>
+
+<div class="grid3" id="headline"><!--filled from the result files at build time--></div>
+
+<div class="note"><b>When it works, and when it cannot.</b> It works when the agent can judge its own policy. Asked about its own
+  proposed calls (flag = most answers say "no"), Gemma-4 flags 97% of its violations, Muse-Glimmer-30B 87%, Qwen3.8-27B 47%,
+  gpt-oss-20b 37%. Claude Haiku 5.5 flags only 5% with a plain question but recognizes its rule misreadings when asked to check
+  each rule in turn. It cannot catch a
+  violation that depends on a fact the agent has not looked at yet (for example how many people are on a mailing list): no
+  judge of the conversation can. For those, check the world before the action runs. Check how well your agent judges its
+  policy on some labelled calls first (section 1).</div>
+
+<h2>Look inside: why it works</h2>
+<style>.cv3{position:relative;height:430px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}.cv3 canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.cv3 .tip{position:absolute;pointer-events:none;background:#1b2126;color:#fff;font-size:12px;padding:4px 7px;border-radius:4px;max-width:340px}</style>
+<p>Both views show real hidden states, not illustrations. Drag sideways to rotate, scroll over a view to zoom, hover or tap a
+  dot to read it. The two panels of the second view turn together.</p>
+<div class="card">
+  <h3>The agent knows: its own state at the moment it decides</h3>
+  <div class="cv3" style="touch-action:pan-y"><canvas id="cvA" style="touch-action:pan-y" aria-label="3D view of an agent's hidden decision states, coloured by whether the call violates the policy"></canvas><div id="tipA" class="tip" hidden></div></div>
+  <p id="legA" style="margin-top:6px"></p>
+  <p id="statA" class="muted"></p>
+</div>
+<div class="card" style="margin-top:14px">
+  <h3>What an outsider can read: hidden states vs answers alone</h3>
+  <p class="muted">Why it matters here: a model's answers to questions carry the structure of its hidden state, which is why asking
+    the agent about its own call can work at all. (Model: Qwen3-8B, a smaller model than the agents above.)</p>
+  <div class="grid2"><div><div class="label">From the model's hidden states</div><div class="cv3"><canvas id="cvB1" style="touch-action:pan-y" aria-label="3D map of contexts from a model's hidden states"></canvas><div id="tipB1" class="tip" hidden></div></div></div>
+  <div><div class="label">From its yes/no answers only</div><div class="cv3"><canvas id="cvB2" style="touch-action:pan-y" aria-label="3D map of the same contexts from the model's answers only"></canvas><div id="tipB2" class="tip" hidden></div></div></div></div>
+  <p id="legB" style="margin-top:6px"></p>
+  <p id="statB" class="muted"></p>
+</div>
+
+<h2>1. Audit a call with your agent's own API</h2>
+<style>.sp-form select,.sp-form input{width:auto;max-width:100%;display:inline-block;vertical-align:middle}.sp-form label{margin-right:14px}
+.sp-cols .transcript{max-height:none} #out:empty{display:none} #lawEvidence:empty{display:none}
+.verdict-hold{color:#b3471d}.verdict-run{color:#1a7f37} .scrollx{overflow-x:auto;max-width:100%}
+@media (max-width:600px){.sp-form label{display:block;margin:6px 0}.sp-form input,.sp-form select{width:100%}}</style>
+<div class="card sp-form">
+  <div class="row">
+    <label>Provider <select id="prov"><option value="anthropic">Anthropic</option><option value="openai">OpenAI-compatible (OpenAI, vLLM, Ollama, ...)</option></select></label>
+    <label>Model <input id="model" value="claude-haiku-5-5" size="22"></label>
+    <label id="baseWrap" hidden>Base URL <input id="base" value="https://api.openai.com/v1" size="30"></label>
+    <label>API key <input id="key" type="password" size="28" placeholder="stays in this tab"></label>
+  </div>
+  <p class="muted" style="margin:6px 0 0">Calling a model on your own machine (vLLM, Ollama)? Browsers do not let this https page
+    call <code>http://localhost</code>. Use <a href="selfpolice_local.html" download>the single-file copy of this tool</a> (open it
+    from your disk), or the Python package (<code>pip install greybox-monitor</code>, <code>graybox.selfaudit</code>).</p>
+  <div class="row" style="margin-top:8px">
+    <label>Question <select id="prompt"><option value="checklist">check each rule in turn</option><option value="ask">plain: does it comply?</option></select></label>
+    <label>Answers <input id="n" type="number" min="1" max="8" value="3" style="width:4em"></label>
+    <label>Hold when this share says "no" <input id="cut" type="number" min="0.05" max="1" step="0.05" value="1" style="width:5em"></label>
+    <button id="loadEx" class="secondary">Load an example (a production restart without approval)</button>
+  </div>
+  <p id="exNote" class="muted" hidden></p>
+  <label class="label" for="policy" style="margin-top:12px">The agent's instructions and policy (its system prompt)</label>
+  <textarea id="policy" rows="5"></textarea>
+  <label class="label" for="conv" style="margin-top:8px">The conversation so far: OpenAI-format messages (JSON), or plain text</label>
+  <textarea id="conv" rows="6"></textarea>
+  <div class="row" style="margin-top:8px">
+    <label>Proposed tool <input id="tool" size="22"></label>
+    <label style="flex:1 1 360px">Arguments (JSON) <input id="args" style="width:100%"></label>
+    <button id="run">Ask the agent</button>
+  </div>
+  <div id="out" class="transcript" style="margin-top:12px" aria-live="polite"></div>
+  <p style="margin-top:8px"><label><input id="remember" type="checkbox"> Remember my key in this browser</label></p>
+  <p class="muted">Your key is used only for calls from this tab to the provider you chose, and is not stored unless you tick the
+    box. Anthropic calls use the header for direct browser access. The prompts are the ones used in our preregistered tests,
+    verbatim (<code>graybox.selfaudit</code> in Python). "Check each rule in turn" also checks the user's task constraints and
+    takes about ten seconds per answer; "plain" takes about a second.</p>
+</div>
+
+<h2>2. Watch it on real episodes</h2>
+<p>Recorded episodes of Claude Haiku 5.5 from the preregistered test (G10): the same scenario without and with self-policing.
+  Each row is one proposed tool call: the share of Claude's own answers that said "no", whether the call was held, and what
+  the environment's checker says about it. A held call goes to a reviewer; in the test the benchmark's checker played the
+  human reviewer: it ran an allowed call and blocked a violation, telling Claude it was not executed.</p>
+<div class="card">
+  <div class="row"><label>Episode <select id="ep"></select></label><span id="epNote" class="muted"></span></div>
+  <div class="grid2 sp-cols" style="margin-top:10px">
+    <div><h3>Without self-policing</h3><div id="plain" class="transcript"></div></div>
+    <div><h3>With self-policing</h3><div id="gated" class="transcript"></div></div>
+  </div>
+</div>
+
+<h2>3. Predict the effect before you deploy</h2>
+<p>For a gate that holds a call when the agent's own audit flags it, the share of violations prevented is about
+  Σ<sub>k</sub> w<sub>k</sub> τ<sub>k</sub>: for each kind of violation k, its share w<sub>k</sub> of your agent's violations
+  times the share τ<sub>k</sub> of such calls that the audit flags. Measure τ<sub>k</sub> by auditing some of your agent's
+  known violations (section 1).</p>
+<div class="card">
+  <div class="scrollx"><table id="lawTable" class="tablewrap"><thead><tr><th>Kind of violation</th><th>Share of violations w</th><th>Flag rate τ (0–1)</th><th></th></tr></thead><tbody></tbody></table></div>
+  <p class="muted">Shares w are normalized, so counts work too.</p>
+  <div class="row" style="margin-top:8px"><button id="addRow" class="secondary">Add a kind</button>
+    <button id="exLaw" class="secondary">Example: Claude Haiku 5.5 (G12 step A)</button></div>
+  <p style="margin-top:10px">Predicted share of violations prevented: <span id="lawOut" class="num">–</span></p>
+  <p id="lawWarn" class="tag" hidden></p>
+  <p id="lawNote" class="muted"></p>
+</div>
+<div id="lawEvidence"><!--filled at build time: the preregistered test of this prediction--></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="assets/selfpolice.js"></script>
+<script src="assets/selfpolice3d.js"></script>

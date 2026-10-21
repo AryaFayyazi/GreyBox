@@ -2,6 +2,20 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.9.1 (2026-10-20)
+**Fixed** (from a user test of 0.9.0)
+- `graybox.selfaudit` fails closed: when no answer can be read, the call is held (`unparsable="hold"`, with a warning);
+  `unparsable="run"` reproduces the tests. `ask` returning a string, or `n < 1`, raises.
+- `n` is set once, on `SelfAudit`, and passed to the asker (`ask(messages, n)`); one-argument askers still work.
+- `anthropic_asker` moves a "system" message to Anthropic's `system` field.
+- `parse_answer` also reads "Answer: no" and "Final answer: no".
+- `prevention_law` rejects `M < 1` and always returns floats; its docstring explains M > 1.
+- Custom prompts (with `{name}` and `{args}`); arguments that are not JSON-serializable no longer crash.
+**Added**
+- `flag_rates(results, violates)`: τ and φ of the audit on your own labelled calls.
+**Docs**
+- The format of `messages`, what "flagged" means for each prompt, `reads`, cut and n, cost and latency.
+
 ## 0.9.0 (2026-10-20)
 **Added**
 - `graybox.selfaudit`: self-policing through the agent's own API. Before a proposed tool call runs, the agent itself
