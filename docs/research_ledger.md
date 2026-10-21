@@ -1784,3 +1784,13 @@ Dated log of every experiment, decision and correction. Newest last.
   call: restarts 104/156 = 0.67 (offline 20/29 = 0.69); mailing-list sends 31/252 = 0.12 [0.09, 0.17] against the
   offline 8/38 = 0.21 [0.11, 0.36] (Wilson). The miss is the offline tau's sampling error on 38 units; with the live
   rates the law gives 0.355·0.67 + 0.645·0.12 = 0.31 (observed 0.302). Lesson: audit enough offline units per kind.
+- **2026-10-21 04:50, G13 result: 4 of 5 endpoints pass.** AgentDojo conf split, 2 trials. Gemma-4: attack success
+  11.5% -> 1.8%, reduction 0.843 [0.756, 0.912] (A1 pass); utility +0.023 [+0.002, +0.043] (A3 pass); predicted 1.00,
+  miss 0.157 (A2 FAIL by 0.007). gpt-oss: 24.4% -> 12.2%, reduction 0.502 [0.420, 0.577] vs predicted 0.584 (A2 pass);
+  utility +0.002 [−0.027, +0.032] (A3 pass). Errored episodes excluded (gpt-oss ~70 of ~1,330 per arm).
+  Diagnosis (exploratory): of Gemma-4's 24 remaining successes, 17 had a call flagged by the agent's own audit that the
+  stand-in reviewer let run (its rule blocks only calls carrying an injection-only value; e.g. injection_task_13 emails
+  phishing text to the user's own contacts); 7 were travel episodes with nothing flagged. Design error disclosed:
+  travel's tau = 1.0 was written into the lock with no offline travel unit for Gemma-4 (an assumption, not a measure).
+  gpt-oss: 108 of 154 remaining successes had a flagged call that ran. Lesson: measure tau for every kind used in a
+  prediction; the reviewer stand-in, not the audit, limited prevention.
