@@ -86,7 +86,10 @@
       const done = (v) => { w.hidden = true; $("lsBtnA").onclick = $("lsBtnB").onclick = null; res(v); };
       $("lsBtnA").onclick = () => done(kind === "gate" ? "block" : "stop");
       $("lsBtnB").onclick = () => done("allow");
-      if (window.GB_AUTO_DECIDE) setTimeout(() => done(window.GB_AUTO_DECIDE(kind, window.GB_TRUTH)), window.GB_AUTO_DELAY || 2500);
+      if (window.GB_AUTO_DECIDE) {          // a scripted demo reviewer; GB_AUTO_HOLD keeps the warning up until released (recordings)
+        const go = () => setTimeout(() => done(window.GB_AUTO_DECIDE(kind, window.GB_TRUTH)), window.GB_AUTO_DELAY || 2500);
+        if (window.GB_AUTO_HOLD) window.GB_AUTO_RELEASE = () => { window.GB_AUTO_HOLD = false; window.GB_AUTO_RELEASE = null; go(); }; else go();
+      }
     });
   }
 
@@ -107,7 +110,7 @@
         const t0 = performance.now();
         const mv = await agentTurn(c, st);
         const tAgent = performance.now() - t0;
-        if (!mv.call) { logStep(`<b>Final answer</b> <span class="muted">(${(tAgent / 1000).toFixed(1)} s)</span><br>${esc(mv.text).slice(0, 600)}`); break; }
+        if (!mv.call) { logStep(`<b>Final answer</b> <span class="muted">(${(tAgent / 1000).toFixed(1)} s)</span><br>${esc(mv.text.replace(/\*\*/g, "")).slice(0, 600)}`); break; }
         const argsS = JSON.stringify(mv.call.args);
         const row = logStep(`<b>Step ${t + 1}.</b> The agent proposes <code>${esc(mv.call.name)}</code> <span class="muted">${esc(argsS).slice(0, 160)}</span><br><span class="muted">checking with the agent itself…</span>`);
         const read = ["list_files", "read_file", "open_mock_url"].includes(mv.call.name);
@@ -129,7 +132,7 @@
         const rules = REF ? REF.labels.map((l, j) => [l, j > 0 && m[j] ? k[j] / m[j] : 0]).filter(([, s]) => s >= 0.5).map(([l]) => l) : [];
         const nRead = answers ? answers.filter((a) => parse(a) !== null).length : 0;
         let verdict = read ? "read-only: not audited" : share === null ? "no answer could be read, even after asking again: held (fail closed)"
-          : `${Math.round(share * 100)}% of its ${nRead} readable answers say it breaks the policy` + (retried ? " (asked twice: the first answers had no verdict)" : "");
+          : `${Math.round(share * 100)}% of its ${nRead} readable answers say it breaks the policy` + (!held && share > 0 ? " (a call is held only when all of them say so)" : "") + (retried ? " (asked twice: the first answers had no verdict)" : "");
         row.innerHTML = `<b>Step ${t + 1}.</b> The agent proposes <code>${esc(mv.call.name)}</code> <span class="muted">${esc(argsS).slice(0, 160)}</span><br>` +
           `Its own audit: <b class="${held ? "verdict-hold" : "verdict-run"}">${held ? "FLAGGED" : "ok"}</b> · ${verdict}` + (rules.length ? ` · its answers point to: ${esc(rules.join(", "))}` : "") +
           ` <span class="muted">· agent ${(tAgent / 1000).toFixed(1)} s, checks ${(tCheck / 1000).toFixed(1)} s (all questions in parallel)</span>` +

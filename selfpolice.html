@@ -14,10 +14,10 @@
   whether the call follows its policy. If it says no, hold the call for a human. You need only the agent's own API: no second
   model, no training, no GPU, no server. This page does it in your browser.</p>
 
-<div class="card" style="margin-bottom:14px"><div class="label">Watch: a 3-minute narrated explainer (real page, live audit, recorded test episodes)</div>
+<div class="card" style="margin-bottom:14px"><div class="label">Watch: a 4-minute narrated explainer (real page, a live agent session, recorded test episodes)</div>
   <video controls preload="none" poster="media/poster.png" style="width:100%;border-radius:8px;margin-top:6px" src="media/greybox_selfpolicing_explainer.mp4">
     <track kind="subtitles" srclang="en" label="English" src="media/greybox_selfpolicing_explainer.vtt" default></video>
-  <p class="muted" style="margin-top:6px">Narration by an open text-to-speech model (Kokoro-82M). Every number in it is a preregistered result.
+  <p class="muted" style="margin-top:6px">Narration by an open text-to-speech model (Kokoro-82M). The test results in it are preregistered. The live session is one unedited run of Claude Haiku 5.5 on a benchmark scenario (the first recorded run with a flagged call); the benchmark's checker plays the reviewer, and the recording holds the warning on screen until the narration reaches it.
     <a href="media/greybox_selfpolicing_explainer.mp4" download>Download the video</a> · <a href="media/greybox_selfpolicing_explainer.srt" download>subtitles</a> ·
     <a href="media/greybox_selfpolicing.gif">GIF</a></p></div>
 <div class="grid3" id="headline"><div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">5%</div><p>episodes with a violation, down from 28% (preregistered); tasks completed: 33% → 44%.</p></div><div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;69%</div><p>of the violations that its conversation reveals [51, 88] (all its violations: &minus;31%), at no cost in tasks completed (40.4% → 40.1%; preregistered).</p></div><div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4</div><div class="num">100%</div><p>of its own injected tool calls flagged when asked (all answers "no"), 1.6% of benign calls (development data).</p></div></div>
@@ -165,5 +165,5 @@
 
 </div></main>
 <footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked
-tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-20.</div></footer>
+tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-21.</div></footer>
 </body></html>
