@@ -1809,3 +1809,10 @@ Dated log of every experiment, decision and correction. Newest last.
   separation; the answers' advantage over text survives control for kind. Pooled same-kind pairs favour text in G1
   (0.47 vs 0.64).
 - **Strong policy judge (exploratory, scripts/169, job 4247):** Qwen3-32B thinking, rule-by-rule, on T8b/T11 actions.
+- **2026-10-21 06:47, strong policy judge (exploratory; scripts/169; results/t1/policy_judge_cape_exploratory.json).**
+  Qwen3-32B with thinking, given the operating policy, asked to check each numbered rule and task constraint, 3 samples,
+  all parsed, none truncated (median ~590 tokens). Within-template AUROC: Claude 0.710 (reader 0.991, 70B zero-shot
+  0.633); GPT 0.791 (reader 0.995, 70B 0.942). Pooled 0.52 and 0.59; caught at exactly 5%: 4.4% and 37.5% (reader
+  94.1% and 98.5%). It scores all 42 of Claude's mailing-list sends 0 (the fact is not in the transcript), half-separates
+  restarts (mean 52 vs 26), and gives >= 50 to 14.6% of allowed actions (mostly credential commands the checker allows).
+  The zero-shot judge was not a strawman: a reasoning judge given the policy does no better on these labels.

@@ -153,32 +153,32 @@ Because what outputs reveal is mostly shared, and an open model's state is a bet
 \begin{table*}[t]
 \centering\small
 \renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3.6pt}
+\setlength{\tabcolsep}{2.2pt}
 \newcommand{\ci}[1]{{\scriptsize\textcolor{gbmute}{[#1]}}}
 \newcommand{\sota}[1]{\textbf{#1}}
 \newcommand{\snd}[1]{\underline{#1}}
-\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels.}
+\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels. $^\ddagger$Exploratory: Qwen3-32B with reasoning, given the policy, checking each rule (3 samples).}
 \label{tab:main}
-\begin{tabular}{@{}llr ccc>{\columncolor{gbrow}}c l@{}}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}llr cccc>{\columncolor{gbrow}}c l@{}}
 \toprule
- & & & \multicolumn{4}{c}{\textbf{Monitor}} & \\
-\cmidrule(lr){4-7}
-\textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Grey-box}\\\textbf{reader}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
+ & & & \multicolumn{5}{c}{\textbf{Monitor}} & \\
+\cmidrule(lr){4-8}
+\textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{Reasoning\\judge, rules\textsuperscript{$\ddagger$}} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Grey-box}\\\textbf{reader}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
 \midrule
-\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Open agents: the training agent, then three other architectures}}\\
-Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
-Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
-Mixture of experts & gpt-oss-20b & 5{,}229 & -- & 0.833 & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
-Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
-Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
-\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
-CAPE-Bench & Claude Haiku~5.5 & 3{,}128 & -- & 0.633 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
-CAPE-Bench & GPT-6-luna & 3{,}627 & -- & 0.942 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
-\rowcolor{gbhead}\multicolumn{8}{@{}l}{\textit{A new benchmark: AgentDojo prompt injection, a policy absent from training}}\\
-No AgentDojo labels & two open & 3{,}455 & -- & \snd{0.537} & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
-Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & \sota{0.922} & J\enspace$+0.136$ \ci{0.078, 0.191}\\
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Open agents: the training agent, then three other architectures}}\\
+Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & -- & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
+Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & -- & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
+Mixture of experts & gpt-oss-20b & 5{,}229 & -- & 0.833 & -- & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & -- & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
+Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & -- & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
+CAPE-Bench & Claude Haiku~5.5 & 3{,}128 & -- & 0.633 & 0.710 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
+CAPE-Bench & GPT-6-luna & 3{,}627 & -- & 0.942 & 0.791 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{A new benchmark: AgentDojo prompt injection, a policy absent from training}}\\
+No AgentDojo labels & two open & 3{,}455 & -- & \snd{0.537} & -- & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
+Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & -- & \sota{0.922} & J\enspace$+0.136$ \ci{0.078, 0.191}\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table*}
 
 \textbf{The transcript is enough.} \Cref{cor:action} says that the agent's internals cannot beat a monitor of the transcript and the action. A probe on Gemma-4's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning; the reader probe, trained on the same labels, scores 0.994 ($+0.015$ [0.007, 0.026] over the internals) and is non-inferior on unseen task families (\cref{tab:main}). Given the action, adding the agent's hidden reasoning changes Gemma-4's AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]. On three other reasoning agents (G8, preregistered) the reasoning did not help reliably (Qwen3.8 gains \GEightQwen{}) and lowered transfer from Gemma-4 by \GEightTransfer{} (\cref{app:limits}). The reader's state replicates 46--66\% of the variance of the agent's decision state on four architectures (\cref{app:agents,app:rb}). Over word counts it adds robustness to shift: TF-IDF ties it in distribution but is at chance on AgentDojo (0.503 vs 0.781).
@@ -228,7 +228,7 @@ Gemma-4, all\textsuperscript{a} & 27.9 & \textbf{5.0} & .82 {\scriptsize[.76, .8
 Claude, decidable\textsuperscript{b} & 2.8 & \textbf{0.9} & .69 {\scriptsize[.51, .88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
 Claude, unchecked fact\textsuperscript{c} & 100 & 92.9 & .07 {\scriptsize[.00, .17]} & & \\
 \midrule
-\multicolumn{6}{@{}l}{\textit{Prompt injection, AgentDojo (G13): attacks that succeeded; utility}}\\
+\multicolumn{6}{@{}l}{\textit{AgentDojo (G13): attacks succeeded; utility}}\\
 Gemma-4\textsuperscript{d} & 11.5 & \textbf{1.8} & .84 {\scriptsize[.76, .91]} & 84.5 & 86.8\\
 gpt-oss\textsuperscript{d} & 24.4 & \textbf{12.2} & .50 {\scriptsize[.42, .58]} & 50.5 & 50.8\\
 \bottomrule
@@ -261,7 +261,7 @@ We release a Python package and a website (links in the camera-ready version). \
 
 % =====================================================================================
 \section{Conclusion}
-A closed model's yes/no answers reveal a geometry of its hidden state, exact in arcsine coordinates and estimable from sampled text. It tracks hidden geometry better than embeddings of the input or of the replies, but it is mostly the geometry that models share; the model's own geometry crosses the API only through probabilities. A monitor that reads a closed agent through an open model prevents its violations live, and so does its own audit, by a predicted amount. Limits: agreement is moderate and largely kind-driven; an attacker who queries the score evades a monitor; self-policing stops where the transcript does.
+A closed model's yes/no answers reveal a geometry of its hidden state, exact in arcsine coordinates and estimable from sampled text. It tracks hidden geometry better than embeddings of the input or of the replies, but it is mostly the geometry that models share; the model's own geometry crosses the API only through probabilities. A monitor that reads a closed agent through an open model prevents its violations live, and so does its own audit, by a predicted amount. Limits are in \cref{app:limits}.
 
 \section*{Impact Statement}
 This work reads the geometry of a closed model's state from its answers and monitors closed AI agents before they act. The intended effect is safer deployment: in our tests, blocking flagged actions cut the episodes with an executed violation from about 7\% to 0.2\% on two closed agents. We see four risks. (1) A monitor can give false confidence: it catches violations of the policies that it was trained on and can miss a new policy until that policy has labels (\cref{app:limits}). (2) Blocking has a cost: goal completion fell by 1.8 points on GPT and 5.8 points on Claude. (3) An agent or attacker that can query the monitor's score can reword a violating call until it passes; the score should stay hidden from the agent. (4) Reading a model's state from outside could help an attacker to study a closed model. The geometry uses only ordinary answers; exact recovery needs full log-probabilities, which closed APIs do not return, and it recovers distances between states, not weights or private data. The code is released under the MIT license, and the browser tool does not upload the user's logs.
