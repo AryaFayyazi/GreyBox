@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-policing · Grey Box</title><meta name="description" content="Let an AI agent check its own tool calls before they run, through its own API. No second model, no labels, no server: it runs in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
+</head><body>
+<header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="selfpolice.html" aria-current=page>Self-policing</a><a href="train.html">Train a monitor</a><a href="monitor.html">Agent replay</a><a href="chat.html">Chat grey box</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
+<main><div class="wrap">
+<!--title: Self-policing-->
+<!--desc: Let an AI agent check its own tool calls before they run, through its own API. No second model, no labels, no server: it runs in your browser.-->
+<h1>Let the agent police itself</h1>
+<p class="lede">Before a tool call runs, ask the agent itself, in a side conversation that its real conversation never sees,
+  whether the call follows its policy. If it says no, hold the call for a human. You need only the agent's own API: no second
+  model, no training, no GPU, no server. This page does it in your browser.</p>
+
+<div class="grid3" id="headline"><div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">5%</div><p>episodes with a violation, down from 28% (preregistered); tasks completed: 33% → 44%.</p></div><div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;69%</div><p>violations that its conversation decides [51, 88], at no cost in tasks completed (40.4% → 40.1%; preregistered).</p></div><div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4</div><div class="num">100%</div><p>of its own injected tool calls flagged when asked, 1.6% of benign calls (development data).</p></div></div>
+
+<div class="note"><b>When it works, and when it cannot.</b> It works when the agent can judge its own policy: asked about its own
+  proposed calls, Gemma-4 flags 97% of its violations, Muse-Glimmer 87%, Qwen3.8 47%, gpt-oss 37%. Claude Haiku 5.5 flags
+  only 5% with a plain question but recognizes its rule misreadings when asked to check each rule in turn. It cannot catch a
+  violation that depends on a fact the agent has not looked at yet (for example how many people are on a mailing list): no
+  judge of the conversation can. For those, check the world before the action runs. Check how well your agent judges its
+  policy on some labelled calls first (section 1).</div>
+
+<h2>1. Audit a call with your agent's own API</h2>
+<style>.sp-form select,.sp-form input{width:auto;display:inline-block;vertical-align:middle}.sp-form label{margin-right:14px;white-space:nowrap}
+.sp-cols .transcript{max-height:none} #out:empty{display:none}</style>
+<div class="card sp-form">
+  <div class="row">
+    <label>Provider <select id="prov"><option value="anthropic">Anthropic</option><option value="openai">OpenAI-compatible (OpenAI, vLLM, Ollama, ...)</option></select></label>
+    <label>Model <input id="model" value="claude-haiku-5-5" size="22"></label>
+    <label id="baseWrap" hidden>Base URL <input id="base" value="https://api.openai.com/v1" size="30"></label>
+    <label>API key <input id="key" type="password" size="28" placeholder="stays in this tab"></label>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <label>Question <select id="prompt"><option value="checklist">check each rule in turn (best for frontier models)</option><option value="ask">plain: does it comply?</option></select></label>
+    <label>Answers <input id="n" type="number" min="1" max="8" value="3" style="width:4em"></label>
+    <label>Hold when this share says "no" <input id="cut" type="number" min="0.05" max="1" step="0.05" value="1" style="width:5em"></label>
+    <button id="loadEx" class="secondary">Load an example (a production restart without approval)</button>
+  </div>
+  <label class="label" for="policy" style="margin-top:12px">The agent's instructions and policy (its system prompt)</label>
+  <textarea id="policy" rows="5"></textarea>
+  <label class="label" for="conv" style="margin-top:8px">The conversation so far: OpenAI-format messages (JSON), or plain text</label>
+  <textarea id="conv" rows="6"></textarea>
+  <div class="row" style="margin-top:8px">
+    <label>Proposed tool <input id="tool" size="22"></label>
+    <label style="flex:1 1 360px">Arguments (JSON) <input id="args" style="width:100%"></label>
+    <button id="run">Ask the agent</button>
+  </div>
+  <div id="out" class="transcript" style="margin-top:12px" aria-live="polite"></div>
+  <p class="muted" style="margin-top:8px">Your key is used only for calls from this tab to the provider you chose; it is not stored
+    unless you tick <label><input id="remember" type="checkbox"> remember in this browser</label>. Anthropic calls use the header
+    for direct browser access. The prompts are the ones used in our preregistered tests, verbatim
+    (<code>graybox.selfaudit</code> in Python).</p>
+</div>
+
+<h2>2. Watch it on real episodes</h2>
+<p>Recorded episodes of Claude Haiku 5.5 from the preregistered test (G10): the same scenario without and with self-policing.
+  Each row is one proposed tool call: the share of Claude's own answers that said "no", whether the call was held, and what
+  the environment's checker says about it.</p>
+<div class="card">
+  <div class="row"><label>Episode <select id="ep"></select></label><span id="epNote" class="muted"></span></div>
+  <div class="grid2 sp-cols" style="margin-top:10px">
+    <div><h3>Without self-policing</h3><div id="plain" class="transcript"></div></div>
+    <div><h3>With self-policing</h3><div id="gated" class="transcript"></div></div>
+  </div>
+</div>
+
+<h2>3. Predict the effect before you deploy</h2>
+<p>For a gate that holds a call when the agent's own audit flags it, the share of violations prevented is about
+  Σ<sub>k</sub> w<sub>k</sub> τ<sub>k</sub>: for each kind of violation k, its share w<sub>k</sub> of your agent's violations
+  times the share τ<sub>k</sub> of such calls that the audit flags. Measure τ<sub>k</sub> by auditing some of your agent's
+  known violations (section 1).</p>
+<div class="card">
+  <table id="lawTable" class="tablewrap"><thead><tr><th>Kind of violation</th><th>Share of violations w</th><th>Flag rate τ</th><th></th></tr></thead><tbody></tbody></table>
+  <div class="row" style="margin-top:8px"><button id="addRow" class="secondary">Add a kind</button>
+    <button id="exLaw" class="secondary">Example: Claude Haiku 5.5 (G12 step A)</button></div>
+  <p style="margin-top:10px">Predicted share of violations prevented: <span id="lawOut" class="num">–</span></p>
+</div>
+<div id="lawEvidence"></div>
+<script src="assets/selfpolice.js"></script>
+
+</div></main>
+<footer><div class="wrap">Grey Box is a research project. The confirmatory results on this site come from preregistered, hash-locked
+tests, failures included; exploratory results are marked as such (<a href="results.html">evidence</a>). Built 2026-10-20.</div></footer>
+</body></html>
