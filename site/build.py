@@ -429,7 +429,7 @@ def main():
     for name, title, desc in (("train.html", "Train a monitor", "Train an agent-action monitor on your own labelled steps, in your browser."),
                               ("docs.html", "Docs", "Install, deploy and evaluate Grey Box monitors."),
                               ("selfpolice.html", "Self-policing", "Let an AI agent check its own tool calls before they run, through its own API."),
-                              ("paper.html", "Paper", "Labels, not access: what a black box reveals about its hidden state, and how to monitor closed agents.")):
+                              ("paper.html", "Paper", "Grey Box: What Crosses the API, and How to Police Closed Agents.")):
         if (SRC / "pages" / name).exists():
             s = (SRC / "pages" / name).read_text()
             m1, m2 = re.search(r"<!--title: (.*?)-->", s), re.search(r"<!--desc: (.*?)-->", s)

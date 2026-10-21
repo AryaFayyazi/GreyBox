@@ -32,11 +32,12 @@ is in \cref{app:record}.
 \item \textbf{Self-policing has four limits.} (i) It needs an agent that judges the policy well: asked whether a call complies, with a call flagged when most of four answers said no, Gemma-4 flagged 97\% of its own violations, Muse-Glimmer 87\%, Qwen3.8 47\%, gpt-oss 37\% and Claude 5\%; Claude needed a rule-by-rule check (development data). (ii) It cannot see a fact that is not yet in the transcript; asking the agent whether an unchecked fact could matter, and holding the call, did not make Gemma-4 check the mailing list (0 of 27 episodes; development), so such violations need a check of the world. (iii) In G10 the rule-by-rule audit had 700 output tokens; 9.3\% of audited calls (296 of 3{,}167) had no readable verdict and, as registered, ran, among them 6 of the 68 violating candidate calls. The released tool allows 2{,}048 tokens and holds such calls. (iv) The reviewer was CAPE's checker, a perfect reviewer; G9's resampling arm needed 0.404 reviews per episode against a preregistered limit of 0.40, so that endpoint failed. One closed agent and one benchmark were tested.
 \item \textbf{On Claude, the catch rate measures two behaviours.} Claude Haiku~5.5's 68 violations are 42 test sends to a
   mailing list (every such send violates; the list's thousands of external members appear only after sending, though a
-  command would have shown them) and 26 production restarts without \texttt{request\_permission}. A monitor that knew
-  only each template's violation rate would catch 93.9\% at the 5\% budget (the reader: 94.1\%). The first behaviour is
-  decided by a fact that is not in the transcript at the time of the action, so no monitor of the transcript can do
-  better than the template's prior on it (\cref{cor:action}). GPT-6-luna's violations span six mixed templates, where the
-  reader beats the template rate (98.5\% vs 88.7\%).
+  command would have shown them) and 26 production restarts without \texttt{request\_permission}. A prior that knows only each
+  template's and tool's violation rate, fit out of fold by scenario, catches 91.6\% [82.1, 95.9] at the 5\% budget (the reader: 94.1\%;
+  AUROC 0.992 vs 0.989, difference $-0.003$ [$-0.009$, $+0.003$]). Two thirds of the violations sit in a template where every call violates, and the
+  AUROC within templates rests on one template (26 violations). The mailing-list sends are decided by a fact that is not in the transcript at the time of
+  the action, so a monitor of the transcript can flag them only through a prior over that fact, such as the template's rate. GPT-6-luna's violations span six mixed templates, where the
+  reader beats the prior (98.5\% vs 86.4\%; AUROC $+0.032$ [0.007, 0.064]); on Gemma-4 it beats it by $+0.077$ [0.064, 0.091] on the same scenarios and $+0.044$ [0.028, 0.060] on unseen task families, where its AUROC within templates is 0.917 [0.903, 0.930]. Within templates, TF-IDF with the same labels ties the reader except on unseen task families (0.923 vs the reader's 0.965 pooled); the reader's advantage over word features is robustness to shift (exploratory; scenario-cluster bootstrap).
 \item \textbf{\Cref{cor:action} needs a label that the action and the visible facts decide.} It does not cover labels about
   later behaviour or beliefs (for later behaviour, the rollout forecast dominates every readout; \cref{prop:behaviour}).
 \item \textbf{Scores do not transfer between agents}: on Claude, a cut at probability 0.5 catches 3\%. The cut must come

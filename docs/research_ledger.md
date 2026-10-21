@@ -1746,3 +1746,12 @@ Dated log of every experiment, decision and correction. Newest last.
   art: crossnobis (Walther 2016), split conformal (Vovk 2005; Angelopoulos & Bates 2023), untrusted monitoring.
   Main text still ends on page 8. Open: G12 framing (after its result), title/structure (user decision), CIs on all
   catch rates, the template-confound analyses.
+
+- **2026-10-21, template confound (exploratory; scripts/166, results/t1/template_confound_exploratory.json).** A
+  template+tool prior fit out of fold by scenario: Claude AUROC 0.992 vs reader 0.989 (diff −0.003 [−0.009, +0.003]);
+  catch at 5% 91.6% [82.1, 95.9] vs 94.1% [85.8, 97.7]. On Claude the reader does NOT beat the template prior: 42 of
+  68 violations are in an all-violating template, and the within-template AUROC rests on one template (26 positives).
+  GPT-6-luna: reader beats the prior (+0.032 [0.007, 0.064]; catch 98.5% vs 86.4%). Gemma-4: +0.077 (same scenarios),
+  +0.044 (unseen families; within-template 0.917). Within templates TF-IDF ties the reader except under task-family
+  shift. The paper's earlier in-sample template rates (93.9%, 88.7%) used test labels; replaced by the cross-fit
+  numbers with Wilson intervals in the main text and limits.
