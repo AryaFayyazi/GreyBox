@@ -2,6 +2,19 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.9.0 (2026-10-20)
+**Added**
+- `graybox.selfaudit`: self-policing through the agent's own API. Before a proposed tool call runs, the agent itself
+  is asked, in a side branch, whether the call complies with its policy; a flagged call is held for review. No other
+  model, no labels. Standard library only.
+  - `SelfAudit(ask, prompt="checklist" | "ask", n=3, cut=1.0).check(messages, tool, args)`: the two prompts used in
+    the preregistered tests, verbatim, and the same answer parser. Read-only tools are not audited.
+  - `openai_asker(client, model, tools)` and `anthropic_asker(client, model, system, tools)`: the agent's own answers.
+  - `prevention_law(R, tau, phi, M)`: the expected share of violations that run and of steps that go to review.
+  - Preregistered results: Gemma-4, violating episodes 27.9% → 5.0% (G9); Claude Haiku 5.5, violations that its
+    transcript decides −69% [51, 88] at no cost in task success, and no effect on violations decided by a fact it never
+    checked, as predicted (G10). It needs an agent that judges its policy well: measure that on labelled steps first.
+
 ## 0.8.1 (2026-10-19)
 **Fixed**
 - `graybox-geometry` crashed on a clean install: the API client (`httpx`) is not a core dependency. Install it with

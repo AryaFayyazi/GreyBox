@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greybox-monitor"            # import name: graybox ("graybox" and "greybox" on PyPI are other projects)
-version = "0.8.1"
+version = "0.9.0"
 description = "Read a closed model's latent geometry from its answers (no training), and monitor tool-calling agents before each action runs"
 readme = "README.md"
 license = "MIT"
