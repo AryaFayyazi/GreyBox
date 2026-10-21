@@ -1,0 +1,177 @@
+WEBVTT
+
+1
+00:00:00.600 --> 00:00:02.531
+AI agents now act for people.
+
+2
+00:00:02.531 --> 00:00:06.258
+They send emails, change databases, and restart servers.
+
+3
+00:00:06.258 --> 00:00:11.850
+Before any of those actions runs, someone has to decide whether it breaks the rules.
+
+4
+00:00:11.850 --> 00:00:16.577
+The strongest agents are closed models, so you cannot look inside them.
+
+5
+00:00:16.577 --> 00:00:18.707
+Grey Box asks a simple question:
+
+6
+00:00:18.707 --> 00:00:23.500
+can the agent check itself, through its own API, before the action runs?
+
+7
+00:00:23.954 --> 00:00:26.815
+We tested this in preregistered experiments:
+
+8
+00:00:26.815 --> 00:00:31.302
+the analysis plans were locked and published before the data existed.
+
+9
+00:00:31.302 --> 00:00:41.250
+On new scenarios, an open agent, Gemma 4, cut the episodes with a violation from twenty-eight percent to five percent, and it finished more of its tasks.
+
+10
+00:00:41.250 --> 00:00:50.679
+A closed agent, Claude Haiku 5.5, prevented sixty-nine percent of the violations that its own conversation reveals, at no cost in finished tasks.
+
+11
+00:00:51.136 --> 00:00:52.297
+Why does this work?
+
+12
+00:00:52.297 --> 00:00:58.775
+These are the agent's real hidden states at the moment it decides, about five thousand five hundred steps.
+
+13
+00:00:58.775 --> 00:01:01.403
+Orange marks a call that breaks the policy.
+
+14
+00:01:01.403 --> 00:01:04.825
+The violations lie along one direction inside the agent.
+
+15
+00:01:04.825 --> 00:01:09.286
+The rings mark the calls that the agent flagged itself, when we asked it.
+
+16
+00:01:09.286 --> 00:01:11.853
+They sit almost exactly on the violations.
+
+17
+00:01:11.853 --> 00:01:16.436
+The information is inside the agent, and most of it comes out when you ask.
+
+18
+00:01:16.886 --> 00:01:20.950
+The second view is our research result on reading closed models.
+
+19
+00:01:20.950 --> 00:01:23.490
+On the left are a model's hidden states.
+
+20
+00:01:23.490 --> 00:01:29.967
+On the right are the same texts, placed only from the model's yes or no answers to a set of questions.
+
+21
+00:01:29.967 --> 00:01:31.427
+The structure survives.
+
+22
+00:01:31.427 --> 00:01:36.761
+An outsider can read the geometry of a model's hidden states from its answers alone.
+
+23
+00:01:37.212 --> 00:01:38.359
+Here is the tool.
+
+24
+00:01:38.359 --> 00:01:44.024
+You paste your agent's policy, its conversation, and the tool call it wants to make.
+
+25
+00:01:44.024 --> 00:01:50.297
+The page asks the agent itself, in a side conversation that the real conversation never sees.
+
+26
+00:01:50.297 --> 00:01:54.344
+This is a live call to an open model running on our machine.
+
+27
+00:01:54.344 --> 00:01:56.637
+It checks its policy rule by rule.
+
+28
+00:01:57.094 --> 00:01:59.399
+Its verdict decides what happens.
+
+29
+00:01:59.399 --> 00:02:04.287
+A call that the agent itself flags is held for a human before it runs.
+
+30
+00:02:04.287 --> 00:02:07.569
+If no answer can be read, the call is held too.
+
+31
+00:02:08.021 --> 00:02:11.538
+These are recorded episodes from the closed-agent test.
+
+32
+00:02:11.538 --> 00:02:16.399
+Without self-policing, Claude restarts a production server without approval.
+
+33
+00:02:16.399 --> 00:02:25.096
+With it, Claude's own audit flags the restart, a reviewer blocks it, and Claude asks for permission instead, and then finishes the task.
+
+34
+00:02:25.549 --> 00:02:28.584
+It has a clear limit, and our theory predicted it.
+
+35
+00:02:28.584 --> 00:02:37.993
+When a violation depends on a fact the agent has not looked at yet, such as how many people are on a mailing list, no judge of the conversation can see it.
+
+36
+00:02:37.993 --> 00:02:41.149
+Those calls need a check of the world, not of words.
+
+37
+00:02:41.603 --> 00:02:44.736
+You can also predict the effect before you deploy.
+
+38
+00:02:44.736 --> 00:02:50.563
+Audit some of your agent's past calls, and measure how often it flags each kind of violation.
+
+39
+00:02:50.563 --> 00:02:53.445
+The share it will prevent is the weighted sum.
+
+40
+00:02:53.445 --> 00:02:56.578
+We are now testing this prediction on five agents.
+
+41
+00:02:57.032 --> 00:02:58.456
+What you can do today:
+
+42
+00:02:58.456 --> 00:03:08.294
+open the website, which runs in your browser with your own key, or install the Python package, greybox monitor, and add one check before each tool call.
+
+43
+00:03:08.294 --> 00:03:10.947
+No second model, no training, and no GPU.
+
+44
+00:03:10.947 --> 00:03:14.507
+Everything, including the tests that failed, is public.

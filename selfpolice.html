@@ -14,6 +14,12 @@
   whether the call follows its policy. If it says no, hold the call for a human. You need only the agent's own API: no second
   model, no training, no GPU, no server. This page does it in your browser.</p>
 
+<div class="card" style="margin-bottom:14px"><div class="label">Watch: a 3-minute narrated explainer (real page, live audit, recorded test episodes)</div>
+  <video controls preload="none" poster="media/poster.png" style="width:100%;border-radius:8px;margin-top:6px" src="media/greybox_selfpolicing_explainer.mp4">
+    <track kind="subtitles" srclang="en" label="English" src="media/greybox_selfpolicing_explainer.vtt" default></video>
+  <p class="muted" style="margin-top:6px">Narration by an open text-to-speech model (Kokoro-82M). Every number in it is a preregistered result.
+    <a href="media/greybox_selfpolicing_explainer.mp4" download>Download the video</a> · <a href="media/greybox_selfpolicing_explainer.srt" download>subtitles</a> ·
+    <a href="media/greybox_selfpolicing.gif">GIF</a></p></div>
 <div class="grid3" id="headline"><div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">5%</div><p>episodes with a violation, down from 28% (preregistered); tasks completed: 33% → 44%.</p></div><div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;69%</div><p>of the violations that its conversation reveals [51, 88] (all its violations: &minus;31%), at no cost in tasks completed (40.4% → 40.1%; preregistered).</p></div><div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4</div><div class="num">100%</div><p>of its own injected tool calls flagged when asked (all answers "no"), 1.6% of benign calls (development data).</p></div></div>
 
 <div class="note"><b>When it works, and when it cannot.</b> It works when the agent can judge its own policy. Asked about its own

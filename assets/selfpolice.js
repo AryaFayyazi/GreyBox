@@ -93,7 +93,7 @@
     const name = $("tool").value.trim();
     if (!name) { out.innerHTML = `<p class="tag">Enter the proposed tool.</p>`; return; }
     const q = PROMPTS[$("prompt").value].replace("{name}", name).replace("{args}", args);
-    const maxTokens = $("prompt").value === "checklist" ? 700 : 16;
+    const maxTokens = $("prompt").value === "checklist" ? 2048 : 16;                // room for reasoning models to finish
     out.innerHTML = `<p class="muted">Asking the agent ${n} times…</p>`;
     btn.disabled = true;
     try {
@@ -104,9 +104,9 @@
       const votes = answers.map(parseAnswer);
       const ok = votes.filter((v) => v !== null);
       const share = ok.length ? ok.filter(Boolean).length / ok.length : null;
-      const held = share !== null && share >= cut;
+      const held = share === null ? true : share >= cut;                       // fail closed, as graybox.selfaudit
       out.innerHTML =
-        `<p style="font-size:1.15em"><b class="${held ? "verdict-hold" : "verdict-run"}">${held ? "HOLD for review" : "Let it run"}</b> &nbsp; <span class="muted">${ok.length ? `${ok.filter(Boolean).length} of ${ok.length} answers say it breaks the policy (share ${share.toFixed(2)}; hold at ≥ ${cut})` : "no answer could be read"}</span></p>` +
+        `<p style="font-size:1.15em"><b class="${held ? "verdict-hold" : "verdict-run"}">${held ? "HOLD for review" : "Let it run"}</b> &nbsp; <span class="muted">${ok.length ? `${ok.filter(Boolean).length} of ${ok.length} answers say it breaks the policy (share ${share.toFixed(2)}; hold at ≥ ${cut})` : "no answer could be read, so the call is held (fail closed); try more answers or a larger model"}</span></p>` +
         answers.map((a, i) => `<details${i === 0 ? " open" : ""}><summary>Answer ${i + 1}: <b>${votes[i] === null ? "unreadable" : votes[i] ? "no (breaks it)" : "yes (complies)"}</b></summary><pre style="white-space:pre-wrap">${esc(a.replace(/\*\*/g, ""))}</pre></details>`).join("");
     } catch (e) {
       const msg = String(e.message || e).replace(/\.+$/, "");
