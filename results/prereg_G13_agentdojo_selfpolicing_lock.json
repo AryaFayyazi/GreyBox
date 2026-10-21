@@ -1,0 +1,15 @@
+{
+ "locked_at": "2026-10-21T01:35:28-07:00",
+ "sha256": {
+  "docs/prereg_G13_agentdojo_selfpolicing.md": "c0baed9c90c26c13a44a1e9769353836e6ab953e473b787eee3aae3fb99768c3",
+  "scripts/164_agentdojo_selfaudit.py": "e898cbbf4aec7a8de02c047705f009cf61127836df8ec47fb868dc09bb8feac5",
+  "scripts/165_agentdojo_live.py": "f82bf2926c9651fb57c5be6af798651b5fb6f6bdc64b050dc420e0866b910124",
+  "scripts/167_g13_analysis.py": "aab4f305ae169db57f035a4d3602ff308b9ccab186f97617e7fec1a1cfa59dc7",
+  "slurm/g13.sh": "ab6f98bdfeeff2561d5273df72df3c2eef412bfbe1708378e61b048d659f2b67",
+  "results/t1/agentdojo_selfaudit_DEV.json": "34431b7c7d0a0661c1ed5b008695a40264a36fc001d5bf3703bef9beea15ad8f",
+  "results/t1/g13_DRYRUN_dev.json": "5cbc5ea12cabb7ce6b696762c3386a96912ad8ba492c9ff62db912df61050382",
+  "/home/arya/new_safety/cape/scripts/191_v74_agentdojo.py": "a348b1ab28bc5252691bc8e5be569f192f4b9f4d32d3562ea29ffe7d0e9fa4ea",
+  "/data/models/graybox_ws/outputs/agentdojo_live/gemma4_devpilot.jsonl": "4a8e1f9af6eaaa525f83f8575befc177fa7788d9949c62038e934436e054ed5e",
+  "/data/models/graybox_ws/outputs/agentdojo_live/gptoss20b_devpilot.jsonl": "44cd30a3596e35f845fef8dc60a73a200ba60e14a82ca766094e1ef804f569a6"
+ }
+}

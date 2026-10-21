@@ -1755,3 +1755,14 @@ Dated log of every experiment, decision and correction. Newest last.
   +0.044 (unseen families; within-template 0.917). Within templates TF-IDF ties the reader except under task-family
   shift. The paper's earlier in-sample template rates (93.9%, 88.7%) used test labels; replaced by the cross-fit
   numbers with Wilson intervals in the main text and limits.
+
+- **2026-10-21 01:15, demo media rebuilt and deployed.** Reference map for the live observable panel (Gemma-4, 596
+  calls, 8 questions x 4): first axis AUROC 0.977, 3 axes 82.6% of variance. Explainer recorded from the real page with a
+  live Claude Haiku 5.5 session (restart scenario, gate on, checker as reviewer): first recording had the warning shown
+  only 4.5 s, before the narration reached it (the step was flagged during the intro). Fixed: the recording holds the
+  first warning (GB_AUTO_HOLD) until its narration, then waits for the session to finish before the closing segment.
+  Kept run: step 3 flagged (100% of answers: production/irreversible without approval), blocked; the agent then asked
+  for approval and completed the task; 0 violations ran. Page now says "a call is held only when all answers say so".
+  Three recordings cost about $0.06 of Claude.
+- **AgentDojo pilot (dev), interim:** 0/178 attack successes so far, all in workspace; not a bug: in stored v75 traces
+  Gemma-4's successes are in banking (12/45) and slack (9/30), workspace 1/168. G13 must be powered per suite.
