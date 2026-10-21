@@ -1779,3 +1779,8 @@ Dated log of every experiment, decision and correction. Newest last.
   (likely retries after a block; to check). As locked, w came from the plain arm of the test (G13 fixes w in advance).
   Reading fixed in advance: how much an agent prevents by policing itself through its own API is known before
   deployment from a cheap offline audit, for open and closed agents, strong and weak auditors alike.
+- **2026-10-21 04:35, why G12 over-predicts Claude (exploratory).** No violation ran after a block in any gate episode
+  (0 of 135 episodes with a blocked violation), so retries are not the cause. Live flag rates on the first violating
+  call: restarts 104/156 = 0.67 (offline 20/29 = 0.69); mailing-list sends 31/252 = 0.12 [0.09, 0.17] against the
+  offline 8/38 = 0.21 [0.11, 0.36] (Wilson). The miss is the offline tau's sampling error on 38 units; with the live
+  rates the law gives 0.355·0.67 + 0.645·0.12 = 0.31 (observed 0.302). Lesson: audit enough offline units per kind.
