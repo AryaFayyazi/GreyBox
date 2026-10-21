@@ -155,7 +155,7 @@
   <p id="lawWarn" class="tag" hidden></p>
   <p id="lawNote" class="muted"></p>
 </div>
-<div id="lawEvidence"></div>
+<div id="lawEvidence"><div class="card"><b>The preregistered test of this prediction (G12): passed.</b> Predicted from each agent's offline flag rates per kind of task, weighted by where it violated without the gate; observed live on new scenarios (relative reduction in episodes with a violation, 95% interval). The registered tolerance was ±0.15 for each agent: <table class="tablewrap"><tr><th>Agent</th><th>Predicted</th><th>Observed</th></tr><tr><td>Gemma-4</td><td>67%</td><td>63% [56, 71]</td></tr><tr><td>gpt-oss</td><td>15%</td><td>17% [5, 28]</td></tr><tr><td>Qwen3.8</td><td>3%</td><td>1% [-13, 13]</td></tr><tr><td>Muse-Glimmer</td><td>25%</td><td>27% [18, 36]</td></tr><tr><td>Claude Haiku 5.5</td><td>38%</td><td>30% [23, 37]</td></tr></table><p class="muted">Mean absolute error 0.035. The law over-predicts Claude: its flag rate on mailing-list sends was 12% live against 21% in the offline audit of 38 calls (within that estimate's error). Audit enough calls of each kind.</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="assets/selfpolice.js"></script>
 <script src="assets/selfpolice3d.js"></script>
