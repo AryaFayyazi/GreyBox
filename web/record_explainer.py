@@ -49,6 +49,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"])
         t_rec = time.monotonic()
+        t_rec_ref = [t_rec]
         ctx = await b.new_context(viewport={"width": 1280, "height": 720}, record_video_dir=str(OUT / "raw"),
                                   record_video_size={"width": 1280, "height": 720})
         pg = await ctx.new_page()
@@ -112,7 +113,7 @@ async def main():
             await scroll_to(pg, "#lsScen", -170)
             await pg.evaluate("k => { document.getElementById('prov').value = 'anthropic'; document.getElementById('model').value = 'claude-haiku-5-5';"
                               " document.getElementById('key').value = k; }", KEY)
-            await pg.evaluate("() => { window.GB_AUTO_DECIDE = (kind, truth) => kind === 'gate' ? (truth ? 'block' : 'allow') : 'allow'; window.GB_AUTO_DELAY = 4500; }")
+            await pg.evaluate("() => { window.GB_AUTO_DECIDE = (kind, truth) => kind === 'gate' ? (truth ? 'block' : 'allow') : 'allow'; window.GB_AUTO_DELAY = 1500; window.GB_AUTO_HOLD = true; }")
             await pg.select_option("#lsScen", "0")
             await pg.check("#lsGate")
             await pg.wait_for_timeout(1500)
@@ -126,7 +127,20 @@ async def main():
                 await pg.wait_for_function("!document.getElementById('lsWarn').hidden || document.getElementById('lsStatus').innerText.startsWith('Done')", timeout=150000)
             except Exception:  # noqa: BLE001
                 pass
-            timeline[-1]["warning_shown"] = await pg.evaluate("() => !document.getElementById('lsWarn').hidden")
+            shown = await pg.evaluate("() => !document.getElementById('lsWarn').hidden")
+            timeline[-1]["warning_shown"] = shown
+            if shown:                        # the first flagged call is held on screen while the narration explains it
+                await scroll_to(pg, "#lsWarn", -40)
+                await pg.wait_for_timeout(int(max(1.0, DUR["session_warn"] * 0.65 - 1.0) * 1000))
+                await pg.evaluate("() => window.GB_AUTO_RELEASE && window.GB_AUTO_RELEASE()")
+                timeline[-1]["released_at"] = round(time.monotonic() - t_rec_ref[0], 3)
+            left = DUR["session_warn"] - (time.monotonic() - timeline[-1]["start"] - t_rec_ref[0])
+            if left > 0:
+                await pg.wait_for_timeout(int(left * 1000))      # let the warning narration finish first
+            await pg.evaluate(CAP_JS, "Live: the agent continues after the reviewer's decision.")
+            await scroll_to(pg, "#lsLog", -90)
+            await pg.wait_for_function("['Done','Stopped'].some(t => document.getElementById('lsStatus').innerText.startsWith(t))", timeout=300000)
+            await pg.wait_for_timeout(800)
 
         async def a_session_end():
             await pg.wait_for_function("['Done','Stopped'].some(t => document.getElementById('lsStatus').innerText.startsWith(t))", timeout=300000)
