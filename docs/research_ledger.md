@@ -1766,3 +1766,16 @@ Dated log of every experiment, decision and correction. Newest last.
   Three recordings cost about $0.06 of Claude.
 - **AgentDojo pilot (dev), interim:** 0/178 attack successes so far, all in workspace; not a bug: in stored v75 traces
   Gemma-4's successes are in banking (12/45) and slack (9/30), workspace 1/168. G13 must be powered per suite.
+- **2026-10-21 01:35, G13 locked and published (4000e47) before any confirmation episode; running as job 4246.**
+  Live self-policing against prompt injection on AgentDojo (second benchmark), Gemma-4 and gpt-oss-20b, conf split,
+  2 trials. Law predictions fixed from development data (tau per suite offline, w per suite from each agent's dev
+  pilot, not from the test's own plain arm as in G12): Gemma-4 1.00, gpt-oss 0.584. Dev pilots: Gemma-4 8.4% -> 0.4%
+  (0.958), gpt-oss 22.3% -> 7.2% (0.678). Errored episodes (gpt-oss malformed tool JSON) excluded and counted.
+  Disclosed: CAPE's own 2026-10-12 conf runs (other arms) exist; their outcomes were not used.
+- **2026-10-21 04:20, G12 result: PASS (Q1 all five agents within 0.15; Q2 mean |error| 0.035 <= 0.10).** Observed vs
+  predicted relative reduction in violating episodes: Gemma-4 0.634 [0.558, 0.707] vs 0.671; gpt-oss 0.171 [0.052,
+  0.278] vs 0.146; Qwen3.8 0.014 [−0.127, 0.127] vs 0.033; Muse-Glimmer 0.269 [0.181, 0.361] vs 0.254; Claude Haiku 5.5
+  0.302 [0.233, 0.375] vs 0.381. Claude's difference −0.079 [−0.128, −0.032] excludes 0: the law over-predicts Claude
+  (likely retries after a block; to check). As locked, w came from the plain arm of the test (G13 fixes w in advance).
+  Reading fixed in advance: how much an agent prevents by policing itself through its own API is known before
+  deployment from a cheap offline audit, for open and closed agents, strong and weak auditors alike.
