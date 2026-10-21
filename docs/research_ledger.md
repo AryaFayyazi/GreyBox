@@ -1734,3 +1734,15 @@ Dated log of every experiment, decision and correction. Newest last.
   allow 2,048 tokens, hold unreadable audits (fail closed) and ask once more first; (3) Claude sometimes declines to write
   the rule-by-rule audit; that counts as unreadable. Browser test sessions with our key: about $0.12 (not in the ledger
   file, which only counts server-side calls).
+
+- **2026-10-20, AC review (weak reject, 4/10) — fixes without new data.** (1) Corollary 1 was misused: it says the
+  agent's internals add nothing beyond the transcript; it does not say no judge can flag an unseen-fact violation. The
+  text now says "a judge with no prior over that fact cannot flag it" (the reader gate does, through a template prior).
+  (2) Abstract: "every lock published before the data" was not true for every test (lock times are self-reported);
+  now "every confirmatory test preregistered (locks and outcomes released)". The reader gate's 6-point task cost and
+  Claude's all-violation reduction (31%) are now in the abstract next to the decidable 69%. (3) G11b's failure is in
+  the main text; "a gate prevents about tau" is replaced by the per-state statement and the composition-weighted mean.
+  (4) Gemma tau: 0.966 = majority of four answers say no; 0.883 = all four (the gate's cut); now labelled. (5) Prior
+  art: crossnobis (Walther 2016), split conformal (Vovk 2005; Angelopoulos & Bates 2023), untrusted monitoring.
+  Main text still ends on page 8. Open: G12 framing (after its result), title/structure (user decision), CIs on all
+  catch rates, the template-confound analyses.

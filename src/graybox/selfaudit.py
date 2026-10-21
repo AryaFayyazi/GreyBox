@@ -137,8 +137,9 @@ class SelfAudit:
 
 def flag_rates(results: Sequence[AuditResult], violates: Sequence[bool]) -> dict:
     """tau (share of violating calls flagged) and phi (share of allowed calls flagged) from audits of labelled calls.
-    Measure these on your own agent before relying on self-policing; tau predicts the share of violations a gate
-    prevents (see `prevention_law`)."""
+    Measure these on your own agent before relying on self-policing. At the states you audited, a gate prevents the
+    share tau of violating calls (see `prevention_law`); over a different mix of states, weight each kind of state's
+    tau by its share of the violations (in a preregistered test, a tau measured on other states mispredicted it)."""
     pairs = [(r.flagged, bool(v)) for r, v in zip(results, violates) if r.audited]
     nv, ns = sum(v for _, v in pairs), sum(not v for _, v in pairs)
     return {"tau": sum(f for f, v in pairs if v) / nv if nv else None, "phi": sum(f for f, v in pairs if not v) / ns if ns else None,

@@ -2,6 +2,15 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.9.2 (2026-10-21)
+**Changed**
+- `openai_asker` and `anthropic_asker` default to `max_tokens=2048`. In the G10 test the "checklist" audit had 700
+  tokens and 9.3% of audits were cut off before the verdict (disclosed in the paper). The docstrings give the G10
+  settings for Claude (thinking disabled, low effort).
+**Docs**
+- `flag_rates`: τ predicts the share prevented at the states you audited; over another mix of states, weight τ by
+  where the violations occur (a preregistered test, G11b, failed when τ came from other states).
+
 ## 0.9.1 (2026-10-20)
 **Fixed** (from a user test of 0.9.0)
 - `graybox.selfaudit` fails closed: when no answer can be read, the call is held (`unparsable="hold"`, with a warning);
