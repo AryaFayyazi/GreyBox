@@ -1822,3 +1822,18 @@ Dated log of every experiment, decision and correction. Newest last.
   answers alone recover the safety subspace on Gemma-4 (0.995, R2 0.15); a single source's coordinates can fail (Gemma->Qwen
   0.58) but the ensemble of other agents' grey boxes matches the own white box on average (about −0.005). Hostile
   controls: shuffled pairs -> chance on Gemma-4; label-free recreation beats a supervised probe on the answers.
+- **2026-10-21 15:40, G14 integrity note.** After the lock, scripts/171 gained a post-hoc stage (stage=posthoc,
+  exploratory baselines asked for by a review: tuned white box, direct reader probes, answers' added value), written
+  before any held-out result was seen. The locked analysis runs from scripts/171_decision_greybox_LOCKED.py, whose
+  SHA-256 equals the lock's (f075527bba...). The Muse-Glimmer and Qwen3.8 batteries started after the edit load the edited
+  file; their code path (stage_battery and OR.one) is unchanged.
+- **Second restructure review (4/10; 6 if G14 passes):** theory restated (exact in population; empirical loss of a light
+  recreation; novelty = carrying true-state probes to unseen agents); "grey box" now means only the recreated state; the
+  reader monitor is "reader probe"; self-policing is "the agent's own answer used as a monitor"; Thm exact and the channel
+  ladder moved to the appendix; title -> "Grey Box: White-Box Probes for Black-Box Agents".
+- **2026-10-21 15:45, user correction and G15.** The user restated (emphatically) that the METHOD must be training-free and
+  API-only for closed models; G14's recreation (ridge maps + probes fit on open models) is trained and is now only a
+  comparison. Development: a FIXED read-out of the agent's 8 answers (mean of violation-direction angles; no labels,
+  nothing fit) matches or beats a probe trained on its true decision states on 3/4 agents (0.983 vs 0.957; 0.781 vs 0.796;
+  0.864 vs 0.852; 0.942 vs 0.855) and beats the single self-audit answer. G15 locked on G14's not-yet-analysed held-out
+  batteries.

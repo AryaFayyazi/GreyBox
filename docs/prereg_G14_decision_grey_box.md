@@ -70,3 +70,4 @@ The Claude ledger cap rises from $39.10 to $39.40. Reason: after 40 actions the 
 pilot's $0.0076 (later conversations are longer), so 495 actions need about $5.07 and would stop near $39.15. The cap
 is a spending guard, not an analysis parameter; the sample, prompts, settings and analysis are unchanged. If the run
 stops at $39.10 it resumes from its checkpoint with cap=39.40.
+Note (14:20): the Claude battery finished all 495 actions at $37.908, under the original cap; Deviation 1 was not used.
