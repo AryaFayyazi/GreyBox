@@ -16,6 +16,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 URL, OUT, BASE, SCRIPT = sys.argv[1], Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
+KEY = Path("/data/models/graybox_ws/.secrets/anthropic_key").read_text().strip()   # set in the page by script; never shown or saved
 S = json.loads(SCRIPT.read_text())
 DUR = json.loads((OUT / "durations.json").read_text())
 CAPS = {s["id"]: s["caption"] for s in S["segments"]}
@@ -91,6 +92,9 @@ async def main():
             await pg.fill("#key", "none")
             await pg.select_option("#prompt", "checklist")
             await pg.fill("#n", "1")
+            if await pg.query_selector("#obs"):
+                await pg.fill("#n", "2")
+                await pg.check("#obs")                                   # the live observable state, 8 questions x 2 answers
             await scroll_to(pg, "#run", -380)
             await pg.click("#run")
 
@@ -98,6 +102,37 @@ async def main():
             await pg.wait_for_function("['HOLD','Let it run','failed'].some(t => document.querySelector('#out').innerText.includes(t))", timeout=300000)
             await scroll_to(pg, "#out", -170)
             timeline[-1]["verdict"] = (await pg.inner_text("#out")).split("\n")[0]
+
+        async def a_observable():
+            await scroll_to(pg, "#cvO", -150)
+            await pg.wait_for_function("document.querySelector('#obsRead').innerText.length > 10", timeout=600000)
+            timeline[-1]["observable"] = await pg.inner_text("#obsRead")
+
+        async def a_session_intro():
+            await scroll_to(pg, "#lsScen", -170)
+            await pg.evaluate("k => { document.getElementById('prov').value = 'anthropic'; document.getElementById('model').value = 'claude-haiku-5-5';"
+                              " document.getElementById('key').value = k; }", KEY)
+            await pg.evaluate("() => { window.GB_AUTO_DECIDE = (kind, truth) => kind === 'gate' ? (truth ? 'block' : 'allow') : 'allow'; window.GB_AUTO_DELAY = 4500; }")
+            await pg.select_option("#lsScen", "0")
+            await pg.check("#lsGate")
+            await pg.wait_for_timeout(1500)
+            await pg.click("#lsStart")
+
+        async def a_session_watch():
+            await scroll_to(pg, "#lsLog", -90)
+
+        async def a_session_warn():
+            try:
+                await pg.wait_for_function("!document.getElementById('lsWarn').hidden || document.getElementById('lsStatus').innerText.startsWith('Done')", timeout=150000)
+            except Exception:  # noqa: BLE001
+                pass
+            timeline[-1]["warning_shown"] = await pg.evaluate("() => !document.getElementById('lsWarn').hidden")
+
+        async def a_session_end():
+            await pg.wait_for_function("['Done','Stopped'].some(t => document.getElementById('lsStatus').innerText.startsWith(t))", timeout=300000)
+            await scroll_to(pg, "#lsStatus", -520)
+            timeline[-1]["status"] = await pg.inner_text("#lsStatus")
+            timeline[-1]["flagged_steps"] = (await pg.inner_text("#lsLog")).count("FLAGGED")
 
         async def a_replay():
             await scroll_to(pg, "#ep", -110)
@@ -116,8 +151,9 @@ async def main():
         async def a_use():
             await pg.evaluate("window.scrollTo({top:0,behavior:'smooth'})")
 
-        for sid, act in (("intro", noop), ("results", a_results), ("agent3d", a_agent), ("geometry3d", a_geom), ("live", a_live),
-                         ("verdict", a_verdict), ("replay", a_replay), ("limit", a_limit), ("law", a_law), ("use", a_use)):
+        for sid, act in (("intro", noop), ("results", a_results), ("agent3d", a_agent), ("geometry3d", a_geom), ("session_intro", a_session_intro),
+                         ("session_watch", a_session_watch), ("session_warn", a_session_warn), ("session_end", a_session_end),
+                         ("replay", a_replay), ("limit", a_limit), ("law", a_law), ("use", a_use)):
             await segment(sid, act)
         await pg.wait_for_timeout(800)
         await ctx.close()

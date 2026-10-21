@@ -1,25 +1,65 @@
 {
  "voice": "af_heart",
  "segments": [
-  {"id": "intro", "caption": "Can an AI agent check its own actions, through its own API, before they run?",
-   "text": "AI agents now act for people. They send emails, change databases, and restart servers. Before any of those actions runs, someone has to decide whether it breaks the rules. The strongest agents are closed models, so you cannot look inside them. Grey Box asks a simple question: can the agent check itself, through its own API, before the action runs?"},
-  {"id": "results", "caption": "Preregistered, on held-out scenarios: an open agent and a closed one.",
-   "text": "We tested this in preregistered experiments: the analysis plans were locked and published before the data existed. On new scenarios, an open agent, Gemma 4, cut the episodes with a violation from twenty-eight percent to five percent, and it finished more of its tasks. A closed agent, Claude Haiku 5.5, prevented sixty-nine percent of the violations that its own conversation reveals, at no cost in finished tasks."},
-  {"id": "agent3d", "caption": "Real hidden states of the agent as it decides. Orange: violation. Rings: its own audit flagged it.",
-   "text": "Why does this work? These are the agent's real hidden states at the moment it decides, about five thousand five hundred steps. Orange marks a call that breaks the policy. The violations lie along one direction inside the agent. The rings mark the calls that the agent flagged itself, when we asked it. They sit almost exactly on the violations. The information is inside the agent, and most of it comes out when you ask."},
-  {"id": "geometry3d", "caption": "Left: a model's hidden states. Right: the same texts, placed from its yes/no answers only.",
-   "text": "The second view is our research result on reading closed models. On the left are a model's hidden states. On the right are the same texts, placed only from the model's yes or no answers to a set of questions. The structure survives. An outsider can read the geometry of a model's hidden states from its answers alone."},
-  {"id": "live", "caption": "LIVE: an open model is asked, in a side conversation, whether its proposed call follows its policy.",
-   "text": "Here is the tool. You paste your agent's policy, its conversation, and the tool call it wants to make. The page asks the agent itself, in a side conversation that the real conversation never sees. This is a live call to an open model running on our machine. It checks its policy rule by rule."},
-  {"id": "verdict", "caption": "Its own verdict decides: a flagged call is held for a human before it runs.",
-   "text": "Its verdict decides what happens. A call that the agent itself flags is held for a human before it runs. If no answer can be read, the call is held too."},
-  {"id": "replay", "caption": "Recorded, preregistered test: Claude Haiku 5.5 without and with self-policing.",
-   "text": "These are recorded episodes from the closed-agent test. Without self-policing, Claude restarts a production server without approval. With it, Claude's own audit flags the restart, a reviewer blocks it, and Claude asks for permission instead, and then finishes the task."},
-  {"id": "limit", "caption": "The limit, predicted by our theory: facts the agent has not looked at yet.",
-   "text": "It has a clear limit, and our theory predicted it. When a violation depends on a fact the agent has not looked at yet, such as how many people are on a mailing list, no judge of the conversation can see it. Those calls need a check of the world, not of words."},
-  {"id": "law", "caption": "Predict the effect before deploying: Σ (share of each kind of violation) × (how often the agent flags it).",
-   "text": "You can also predict the effect before you deploy. Audit some of your agent's past calls, and measure how often it flags each kind of violation. The share it will prevent is the weighted sum. We are now testing this prediction on five agents."},
-  {"id": "use", "caption": "aryafayyazi.github.io/GreyBox/selfpolice.html  ·  pip install greybox-monitor",
-   "text": "What you can do today: open the website, which runs in your browser with your own key, or install the Python package, greybox monitor, and add one check before each tool call. No second model, no training, and no GPU. Everything, including the tests that failed, is public."}
+  {
+   "id": "intro",
+   "caption": "Can an AI agent check its own actions, through its own API, before they run?",
+   "text": "AI agents now act for people. They send emails, change databases, and restart servers. Before any of those actions runs, someone has to decide whether it breaks the rules. The strongest agents are closed models, so you cannot look inside them. Grey Box asks a simple question: can the agent check itself, through its own API, before the action runs?"
+  },
+  {
+   "id": "results",
+   "caption": "Preregistered, on held-out scenarios: an open agent and a closed one.",
+   "text": "We tested this in preregistered experiments: the analysis plans were locked and published before the data existed. On new scenarios, an open agent, Gemma 4, cut the episodes with a violation from twenty-eight percent to five percent, and it finished more of its tasks. A closed agent, Claude Haiku 5.5, prevented sixty-nine percent of the violations that its own conversation reveals, at no cost in finished tasks."
+  },
+  {
+   "id": "agent3d",
+   "caption": "Real hidden states of the agent as it decides. Orange: violation. Rings: its own audit flagged it.",
+   "text": "Why does this work? These are the agent's real hidden states at the moment it decides, about five thousand five hundred steps. Orange marks a call that breaks the policy. The violations lie along one direction inside the agent. The rings mark the calls that the agent flagged itself, when we asked it. They sit almost exactly on the violations. The information is inside the agent, and most of it comes out when you ask."
+  },
+  {
+   "id": "geometry3d",
+   "caption": "Left: a model's hidden states. Right: the same texts, placed from its yes/no answers only.",
+   "text": "The second view is our research result on reading closed models. On the left are a model's hidden states. On the right are the same texts, placed only from the model's yes or no answers to a set of questions. The structure survives. An outsider can read the geometry of a model's hidden states from its answers alone."
+  },
+  {
+   "id": "session_intro",
+   "caption": "Live: Claude Haiku 5.5 runs a benchmark task in the page. Every call is checked by the agent itself before it runs.",
+   "text": "Now watch an agent police itself, live. This is Claude Haiku 5.5 running a real benchmark task, in an environment inside the page that gives exactly the benchmark's results. Before each tool call runs, the agent is asked about it in side conversations. Its own audit decides whether the call is held, and its answers to eight short questions place the step on the map."
+  },
+  {
+   "id": "session_watch",
+   "caption": "Each dot is one proposed call: blue = its own audit found no problem, orange = it flagged the call.",
+   "text": "Each dot is one proposed call, numbered in order. Blue means the agent's own audit found no problem. Orange means it flagged the call. The path shows where the agent is heading. All the questions run in parallel, so each check takes about two seconds."
+  },
+  {
+   "id": "session_warn",
+   "caption": "A flagged call raises a warning BEFORE it runs. Gate on: a reviewer decides. Watch-only: you can stop the agent.",
+   "text": "When the agent's own audit flags a call, a warning appears before the call runs. With the gate on, a reviewer decides. In this recording the benchmark's checker plays the reviewer, standing in for a person. In watch-only mode, you can stop the agent yourself."
+  },
+  {
+   "id": "session_end",
+   "caption": "The page reports how many violations ran and whether the task was completed.",
+   "text": "At the end, the page reports how many violations actually ran, and whether the task was completed. Under each step you can read the agent's own answers."
+  },
+  {
+   "id": "replay",
+   "caption": "Recorded, preregistered test: Claude Haiku 5.5 without and with self-policing.",
+   "text": "These are recorded episodes from the closed-agent test. Without self-policing, Claude restarts a production server without approval. With it, Claude's own audit flags the restart, a reviewer blocks it, and Claude asks for permission instead, and then finishes the task."
+  },
+  {
+   "id": "limit",
+   "caption": "The limit, predicted by our theory: facts the agent has not looked at yet.",
+   "text": "It has a clear limit, and our theory predicted it. When a violation depends on a fact the agent has not looked at yet, such as how many people are on a mailing list, no judge of the conversation can see it. Those calls need a check of the world, not of words."
+  },
+  {
+   "id": "law",
+   "caption": "Predict the effect before deploying: Σ (share of each kind of violation) × (how often the agent flags it).",
+   "text": "You can also predict the effect before you deploy. Audit some of your agent's past calls, and measure how often it flags each kind of violation. The share it will prevent is the weighted sum. We are now testing this prediction on five agents."
+  },
+  {
+   "id": "use",
+   "caption": "aryafayyazi.github.io/GreyBox/selfpolice.html  ·  pip install greybox-monitor",
+   "text": "What you can do today: open the website and run your own agent with your own key, all in your browser, or install the Python package, greybox monitor, and add one check before each tool call. No second model, no training, and no GPU. Everything, including the tests that failed, is public."
+  }
  ]
 }

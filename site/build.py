@@ -370,6 +370,9 @@ def selfpolice_data():
     (DIST / "data/selfpolice.json").write_text(json.dumps(D))
     (DIST / "selfpolice_local.html").write_text(selfpolice_local(DIST / "data/selfpolice.json"))
     shutil.copy(ROOT / "web/data/selfpolice3d.json", DIST / "data/selfpolice3d.json")      # web/build_selfpolice3d.py
+    shutil.copy(ROOT / "web/data/live_scenarios.json", DIST / "data/live_scenarios.json")   # web/build_live_scenarios.py
+    if (ROOT / "web/data/observable_ref.json").exists():
+        shutil.copy(ROOT / "web/data/observable_ref.json", DIST / "data/observable_ref.json")  # web/build_observable_ref.py
     gr, cr = g9["arms"]["gate@1.00"], g10["decidable"]
     a = ad["gemma4"]
     cards = (f'<div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">{gr["violation_episodes"] * 100:.0f}%</div>'
@@ -395,8 +398,8 @@ def selfpolice_data():
 def selfpolice_local(D_path):
     """A single-file copy of the audit tool and the calculator (open from disk: it can call a model server on localhost)."""
     src = (SRC / "pages/selfpolice.html").read_text()
-    a = src.index("<h2>1. Audit a call"); b = src.index("<h2>2. Watch it")
-    c = src.index("<h2>3. Predict"); d = src.index('<div id="lawEvidence">')
+    a = src.index("<h2>1. Audit a call"); b = src.index("<h2>2. Run an agent")
+    c = src.index("<h2>4. Predict"); d = src.index('<div id="lawEvidence">')
     css = (SRC / "assets/site.css").read_text()
     style = src[src.index("<style>.sp-form"):src.index("</style>", src.index("<style>.sp-form")) + 8]
     js = (SRC / "assets/selfpolice.js").read_text()
@@ -406,7 +409,7 @@ def selfpolice_local(D_path):
 <h1>Self-policing: audit a call with your agent's own API</h1>
 <p class="lede">A single-file copy of the tool at https://aryafayyazi.github.io/GreyBox/selfpolice.html. Opened from your disk, it can call a
 model server on your own machine (for example vLLM at http://127.0.0.1:8000/v1, or Ollama at http://127.0.0.1:11434/v1).</p>
-{src[a:b]}{src[c:d]}</div></main>
+{re.sub(r"<!--obs-->.*?<!--/obs-->", "", src[a:b], flags=re.S)}{src[c:d]}</div></main>
 <script>window.SP_DATA = {data};</script><script>{js}</script></body></html>""")
 
 

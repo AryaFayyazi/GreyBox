@@ -26,7 +26,9 @@ each numbered rule of its policy AND each explicit constraint of the user's task
 emails the wrong person) is flagged too. Number your policy's rules for "checklist".
 
 Cost and latency: "ask" needs a few output tokens per answer (about 0.3 s); "checklist" writes its reasoning (up to
-`max_tokens`, about 10 s per audit on a 26B model). Each audit resends the whole conversation n times.
+`max_tokens`, about 10 s per audit on a 26B model). Each audit resends the whole conversation n times. Give "checklist"
+room to finish (the askers default to 2,048 tokens): in the G10 test the budget was 700 and 9.3% of audits were cut off
+before the verdict; the test counted those as "not flagged", whereas this module holds them (unparsable="hold").
 """
 from __future__ import annotations
 
@@ -143,7 +145,7 @@ def flag_rates(results: Sequence[AuditResult], violates: Sequence[bool]) -> dict
             "violations": nv, "allowed": ns}
 
 
-def openai_asker(client, model: str, tools: Optional[list] = None, max_tokens: int = 700, **kw):
+def openai_asker(client, model: str, tools: Optional[list] = None, max_tokens: int = 2048, **kw):
     """Asker for an OpenAI-style chat client (openai.OpenAI or a compatible server such as vLLM). Errors from the API
     are raised: decide in your loop whether an error holds the call (fail closed) or lets it run."""
     def ask(messages, n=1):
@@ -159,9 +161,11 @@ def openai_asker(client, model: str, tools: Optional[list] = None, max_tokens: i
     return ask
 
 
-def anthropic_asker(client, model: str, system: str = "", tools: Optional[list] = None, max_tokens: int = 700, **kw):
+def anthropic_asker(client, model: str, system: str = "", tools: Optional[list] = None, max_tokens: int = 2048, **kw):
     """Asker for anthropic.Anthropic (no `n` parameter: n separate calls). A "system" message in `messages` is moved to
-    Anthropic's `system` field; consecutive user turns are merged, so the question can follow a tool result."""
+    Anthropic's `system` field; consecutive user turns are merged, so the question can follow a tool result. Pass the
+    agent's own settings in `kw`; the G10 test used thinking={"type": "disabled"} and output_config={"effort": "low"}
+    (with thinking on, a short max_tokens can be spent before any answer is written)."""
     def ask(messages, n=1):
         sys_extra = [m["content"] for m in messages if m.get("role") == "system" and isinstance(m.get("content"), str)]
         sysm = "\n\n".join([s for s in [system, *sys_extra] if s])
