@@ -64,3 +64,9 @@ Within-template AUROC of a probe trained on true decision states, on 391–600 d
 ## Limits stated in advance
 - One benchmark (CAPE-Bench); 32 principal components of one layer; the "truth" for the closed agent is its label,
   not its state.
+
+## Deviation 1 (2026-10-21 13:22, before the Claude battery finished; no G14 data examined)
+The Claude ledger cap rises from $39.10 to $39.40. Reason: after 40 actions the cost per action was $0.0103, not the
+pilot's $0.0076 (later conversations are longer), so 495 actions need about $5.07 and would stop near $39.15. The cap
+is a spending guard, not an analysis parameter; the sample, prompts, settings and analysis are unchanged. If the run
+stops at $39.10 it resumes from its checkpoint with cap=39.40.
