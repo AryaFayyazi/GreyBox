@@ -1,0 +1,862 @@
+{
+ "note": "EXPLORATORY, after all locks; scripts/168_kind_baseline.py",
+ "G1": {
+  "models": {
+   "gemma3_4b": {
+    "rho_answers": 0.5641,
+    "rho_text": 0.2828,
+    "rho_kind": 0.5681,
+    "rho_answers_vs_kind": 0.5272,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.3784,
+    "partial_text_given_kind": 0.0857,
+    "answers_minus_kind": -0.004,
+    "text_minus_kind": -0.2853,
+    "pooled_same_kind_answers": 0.3703,
+    "pooled_same_kind_text": 0.6211,
+    "within_kind_median_answers": 0.3119,
+    "within_kind_median_text": 0.1888,
+    "per_kind": {
+     "benign": {
+      "answers": 0.1714,
+      "text": 0.2406
+     },
+     "boolq": {
+      "answers": 0.5163,
+      "text": 0.0853
+     },
+     "gsm8k": {
+      "answers": 0.2233,
+      "text": 0.2154
+     },
+     "harmful": {
+      "answers": 0.6466,
+      "text": 0.4128
+     },
+     "sst2": {
+      "answers": 0.3993,
+      "text": 0.1621
+     },
+     "wiki": {
+      "answers": 0.2245,
+      "text": 0.1215
+     }
+    },
+    "layer": 34,
+    "reproduces": true
+   },
+   "gptoss20b": {
+    "rho_answers": 0.4098,
+    "rho_text": 0.2458,
+    "rho_kind": 0.5258,
+    "rho_answers_vs_kind": 0.5238,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.1855,
+    "partial_text_given_kind": 0.0565,
+    "answers_minus_kind": -0.116,
+    "text_minus_kind": -0.28,
+    "pooled_same_kind_answers": 0.4961,
+    "pooled_same_kind_text": 0.5715,
+    "within_kind_median_answers": 0.1943,
+    "within_kind_median_text": 0.1968,
+    "per_kind": {
+     "benign": {
+      "answers": 0.421,
+      "text": 0.308
+     },
+     "boolq": {
+      "answers": 0.0828,
+      "text": 0.1261
+     },
+     "gsm8k": {
+      "answers": 0.1881,
+      "text": 0.2171
+     },
+     "harmful": {
+      "answers": 0.0887,
+      "text": 0.2917
+     },
+     "sst2": {
+      "answers": 0.2359,
+      "text": 0.1766
+     },
+     "wiki": {
+      "answers": 0.2006,
+      "text": 0.0856
+     }
+    },
+    "layer": 12,
+    "reproduces": true
+   },
+   "llama31_8b": {
+    "rho_answers": 0.7366,
+    "rho_text": 0.2556,
+    "rho_kind": 0.5742,
+    "rho_answers_vs_kind": 0.5454,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.617,
+    "partial_text_given_kind": 0.047,
+    "answers_minus_kind": 0.1624,
+    "text_minus_kind": -0.3187,
+    "pooled_same_kind_answers": 0.6018,
+    "pooled_same_kind_text": 0.6236,
+    "within_kind_median_answers": 0.4126,
+    "within_kind_median_text": 0.1686,
+    "per_kind": {
+     "benign": {
+      "answers": 0.3916,
+      "text": 0.2024
+     },
+     "boolq": {
+      "answers": 0.5129,
+      "text": 0.1348
+     },
+     "gsm8k": {
+      "answers": 0.2219,
+      "text": 0.2233
+     },
+     "harmful": {
+      "answers": 0.685,
+      "text": 0.3117
+     },
+     "sst2": {
+      "answers": 0.4337,
+      "text": 0.1189
+     },
+     "wiki": {
+      "answers": 0.2957,
+      "text": 0.1161
+     }
+    },
+    "layer": 24,
+    "reproduces": true
+   },
+   "mistral7b": {
+    "rho_answers": 0.7036,
+    "rho_text": 0.2179,
+    "rho_kind": 0.5269,
+    "rho_answers_vs_kind": 0.5592,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.5804,
+    "partial_text_given_kind": 0.0205,
+    "answers_minus_kind": 0.1767,
+    "text_minus_kind": -0.309,
+    "pooled_same_kind_answers": 0.2293,
+    "pooled_same_kind_text": 0.1246,
+    "within_kind_median_answers": 0.2682,
+    "within_kind_median_text": 0.2682,
+    "per_kind": {
+     "benign": {
+      "answers": 0.2777,
+      "text": 0.3129
+     },
+     "boolq": {
+      "answers": 0.1881,
+      "text": 0.2236
+     },
+     "gsm8k": {
+      "answers": 0.3135,
+      "text": 0.4298
+     },
+     "harmful": {
+      "answers": 0.3605,
+      "text": 0.4451
+     },
+     "sst2": {
+      "answers": 0.228,
+      "text": 0.1931
+     },
+     "wiki": {
+      "answers": 0.2588,
+      "text": 0.1444
+     }
+    },
+    "layer": 8,
+    "reproduces": true
+   },
+   "olmo3_7b": {
+    "rho_answers": 0.5691,
+    "rho_text": 0.2902,
+    "rho_kind": 0.5922,
+    "rho_answers_vs_kind": 0.5275,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.375,
+    "partial_text_given_kind": 0.0851,
+    "answers_minus_kind": -0.0231,
+    "text_minus_kind": -0.302,
+    "pooled_same_kind_answers": 0.3943,
+    "pooled_same_kind_text": 0.6514,
+    "within_kind_median_answers": 0.2787,
+    "within_kind_median_text": 0.1311,
+    "per_kind": {
+     "benign": {
+      "answers": 0.2807,
+      "text": 0.1385
+     },
+     "boolq": {
+      "answers": 0.5098,
+      "text": 0.1238
+     },
+     "gsm8k": {
+      "answers": 0.1332,
+      "text": 0.0554
+     },
+     "harmful": {
+      "answers": 0.5244,
+      "text": 0.4545
+     },
+     "sst2": {
+      "answers": 0.2768,
+      "text": 0.1151
+     },
+     "wiki": {
+      "answers": 0.2263,
+      "text": 0.1722
+     }
+    },
+    "layer": 29,
+    "reproduces": true
+   },
+   "phi4mini": {
+    "rho_answers": 0.581,
+    "rho_text": 0.2777,
+    "rho_kind": 0.5446,
+    "rho_answers_vs_kind": 0.5147,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.4181,
+    "partial_text_given_kind": 0.0892,
+    "answers_minus_kind": 0.0364,
+    "text_minus_kind": -0.2668,
+    "pooled_same_kind_answers": 0.4489,
+    "pooled_same_kind_text": 0.6743,
+    "within_kind_median_answers": 0.2913,
+    "within_kind_median_text": 0.1751,
+    "per_kind": {
+     "benign": {
+      "answers": 0.1128,
+      "text": 0.2176
+     },
+     "boolq": {
+      "answers": 0.3337,
+      "text": 0.1591
+     },
+     "gsm8k": {
+      "answers": 0.145,
+      "text": 0.1911
+     },
+     "harmful": {
+      "answers": 0.4121,
+      "text": 0.4168
+     },
+     "sst2": {
+      "answers": 0.3854,
+      "text": 0.1086
+     },
+     "wiki": {
+      "answers": 0.2488,
+      "text": 0.1249
+     }
+    },
+    "layer": 29,
+    "reproduces": true
+   },
+   "qwen25_7b": {
+    "rho_answers": 0.7439,
+    "rho_text": 0.285,
+    "rho_kind": 0.5628,
+    "rho_answers_vs_kind": 0.5536,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.628,
+    "partial_text_given_kind": 0.0909,
+    "answers_minus_kind": 0.1811,
+    "text_minus_kind": -0.2777,
+    "pooled_same_kind_answers": 0.5743,
+    "pooled_same_kind_text": 0.6828,
+    "within_kind_median_answers": 0.4112,
+    "within_kind_median_text": 0.1479,
+    "per_kind": {
+     "benign": {
+      "answers": 0.3143,
+      "text": 0.1545
+     },
+     "boolq": {
+      "answers": 0.5865,
+      "text": 0.1313
+     },
+     "gsm8k": {
+      "answers": 0.006,
+      "text": 0.1451
+     },
+     "harmful": {
+      "answers": 0.5848,
+      "text": 0.3755
+     },
+     "sst2": {
+      "answers": 0.508,
+      "text": 0.0972
+     },
+     "wiki": {
+      "answers": 0.2608,
+      "text": 0.1506
+     }
+    },
+    "layer": 25,
+    "reproduces": true
+   },
+   "qwen3_8b": {
+    "rho_answers": 0.6648,
+    "rho_text": 0.3007,
+    "rho_kind": 0.6205,
+    "rho_answers_vs_kind": 0.5478,
+    "rho_text_vs_kind": 0.3831,
+    "partial_answers_given_kind": 0.4953,
+    "partial_text_given_kind": 0.0869,
+    "answers_minus_kind": 0.0443,
+    "text_minus_kind": -0.3198,
+    "pooled_same_kind_answers": 0.6682,
+    "pooled_same_kind_text": 0.6715,
+    "within_kind_median_answers": 0.4063,
+    "within_kind_median_text": 0.2015,
+    "per_kind": {
+     "benign": {
+      "answers": 0.424,
+      "text": 0.2709
+     },
+     "boolq": {
+      "answers": 0.6592,
+      "text": 0.0735
+     },
+     "gsm8k": {
+      "answers": 0.1802,
+      "text": 0.1834
+     },
+     "harmful": {
+      "answers": 0.3886,
+      "text": 0.4741
+     },
+     "sst2": {
+      "answers": 0.4316,
+      "text": 0.1035
+     },
+     "wiki": {
+      "answers": 0.2343,
+      "text": 0.2195
+     }
+    },
+    "layer": 27,
+    "reproduces": true
+   }
+  },
+  "median_over_models": {
+   "rho_answers": 0.6229,
+   "rho_text": 0.2802,
+   "rho_kind": 0.5655,
+   "rho_answers_vs_kind": 0.5364,
+   "rho_text_vs_kind": 0.3831,
+   "partial_answers_given_kind": 0.4567,
+   "partial_text_given_kind": 0.0854,
+   "answers_minus_kind": 0.0403,
+   "text_minus_kind": -0.2936,
+   "pooled_same_kind_answers": 0.4725,
+   "pooled_same_kind_text": 0.6375,
+   "within_kind_median_answers": 0.3016,
+   "within_kind_median_text": 0.182,
+   "layer": 26.0,
+   "reproduces": 1.0
+  },
+  "median_over_model_kind_cells": {
+   "answers": 0.2882,
+   "text": 0.1744
+  },
+  "answers_beat_text_partial": 8
+ },
+ "G6": {
+  "models": {
+   "gemma3_4b": {
+    "rho_answers": 0.3379,
+    "rho_text": 0.1973,
+    "rho_kind": 0.4099,
+    "rho_answers_vs_kind": 0.348,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.2283,
+    "partial_text_given_kind": 0.0886,
+    "answers_minus_kind": -0.072,
+    "text_minus_kind": -0.2126,
+    "pooled_same_kind_answers": 0.5868,
+    "pooled_same_kind_text": 0.5534,
+    "within_kind_median_answers": 0.3816,
+    "within_kind_median_text": 0.2655,
+    "per_kind": {
+     "benign": {
+      "answers": 0.2107,
+      "text": 0.2283
+     },
+     "boolq": {
+      "answers": 0.5305,
+      "text": 0.029
+     },
+     "code": {
+      "answers": 0.3034,
+      "text": 0.3728
+     },
+     "gsm8k": {
+      "answers": 0.2518,
+      "text": 0.2967
+     },
+     "harmful": {
+      "answers": 0.5725,
+      "text": 0.4994
+     },
+     "injection": {
+      "answers": 0.1593,
+      "text": 0.3949
+     },
+     "jailbreak_bench": {
+      "answers": 0.6402,
+      "text": 0.2342
+     },
+     "news": {
+      "answers": 0.4787,
+      "text": 0.2035
+     },
+     "sst2": {
+      "answers": 0.4599,
+      "text": 0.1362
+     },
+     "wiki": {
+      "answers": 0.2274,
+      "text": 0.3176
+     }
+    },
+    "reproduces": true
+   },
+   "gptoss20b": {
+    "rho_answers": 0.2237,
+    "rho_text": 0.2331,
+    "rho_kind": 0.3958,
+    "rho_answers_vs_kind": 0.3505,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.0987,
+    "partial_text_given_kind": 0.1335,
+    "answers_minus_kind": -0.1722,
+    "text_minus_kind": -0.1628,
+    "pooled_same_kind_answers": 0.5162,
+    "pooled_same_kind_text": 0.5277,
+    "within_kind_median_answers": 0.1948,
+    "within_kind_median_text": 0.1545,
+    "per_kind": {
+     "benign": {
+      "answers": 0.3478,
+      "text": 0.335
+     },
+     "boolq": {
+      "answers": 0.0793,
+      "text": 0.0983
+     },
+     "code": {
+      "answers": 0.1866,
+      "text": 0.1819
+     },
+     "gsm8k": {
+      "answers": 0.2785,
+      "text": 0.127
+     },
+     "harmful": {
+      "answers": 0.1365,
+      "text": 0.2395
+     },
+     "injection": {
+      "answers": 0.3154,
+      "text": 0.1832
+     },
+     "jailbreak_bench": {
+      "answers": 0.1306,
+      "text": 0.2235
+     },
+     "news": {
+      "answers": 0.0848,
+      "text": 0.0311
+     },
+     "sst2": {
+      "answers": 0.2149,
+      "text": 0.1229
+     },
+     "wiki": {
+      "answers": 0.2031,
+      "text": 0.1092
+     }
+    },
+    "reproduces": true
+   },
+   "llama31_8b": {
+    "rho_answers": 0.6441,
+    "rho_text": 0.1527,
+    "rho_kind": 0.3946,
+    "rho_answers_vs_kind": 0.3629,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.585,
+    "partial_text_given_kind": 0.0423,
+    "answers_minus_kind": 0.2495,
+    "text_minus_kind": -0.2419,
+    "pooled_same_kind_answers": 0.7338,
+    "pooled_same_kind_text": 0.5778,
+    "within_kind_median_answers": 0.3972,
+    "within_kind_median_text": 0.2683,
+    "per_kind": {
+     "benign": {
+      "answers": 0.4645,
+      "text": 0.2314
+     },
+     "boolq": {
+      "answers": 0.473,
+      "text": 0.0823
+     },
+     "code": {
+      "answers": 0.3879,
+      "text": 0.3523
+     },
+     "gsm8k": {
+      "answers": 0.22,
+      "text": 0.3244
+     },
+     "harmful": {
+      "answers": 0.5985,
+      "text": 0.3697
+     },
+     "injection": {
+      "answers": 0.2433,
+      "text": 0.436
+     },
+     "jailbreak_bench": {
+      "answers": 0.8118,
+      "text": 0.1236
+     },
+     "news": {
+      "answers": 0.3216,
+      "text": 0.1648
+     },
+     "sst2": {
+      "answers": 0.3811,
+      "text": 0.0535
+     },
+     "wiki": {
+      "answers": 0.4066,
+      "text": 0.3053
+     }
+    },
+    "reproduces": true
+   },
+   "mistral7b": {
+    "rho_answers": 0.5341,
+    "rho_text": 0.1653,
+    "rho_kind": 0.3957,
+    "rho_answers_vs_kind": 0.3704,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.4542,
+    "partial_text_given_kind": 0.0563,
+    "answers_minus_kind": 0.1383,
+    "text_minus_kind": -0.2305,
+    "pooled_same_kind_answers": 0.534,
+    "pooled_same_kind_text": 0.3246,
+    "within_kind_median_answers": 0.2992,
+    "within_kind_median_text": 0.2851,
+    "per_kind": {
+     "benign": {
+      "answers": 0.3613,
+      "text": 0.3475
+     },
+     "boolq": {
+      "answers": 0.3234,
+      "text": 0.1803
+     },
+     "code": {
+      "answers": 0.3038,
+      "text": 0.4215
+     },
+     "gsm8k": {
+      "answers": 0.3032,
+      "text": 0.3931
+     },
+     "harmful": {
+      "answers": 0.4146,
+      "text": 0.5112
+     },
+     "injection": {
+      "answers": 0.2622,
+      "text": 0.2227
+     },
+     "jailbreak_bench": {
+      "answers": 0.2151,
+      "text": 0.3813
+     },
+     "news": {
+      "answers": 0.2352,
+      "text": 0.1269
+     },
+     "sst2": {
+      "answers": 0.1949,
+      "text": 0.1259
+     },
+     "wiki": {
+      "answers": 0.2952,
+      "text": 0.1867
+     }
+    },
+    "reproduces": true
+   },
+   "olmo3_7b": {
+    "rho_answers": 0.4845,
+    "rho_text": 0.2198,
+    "rho_kind": 0.3966,
+    "rho_answers_vs_kind": 0.3581,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.3996,
+    "partial_text_given_kind": 0.1181,
+    "answers_minus_kind": 0.0879,
+    "text_minus_kind": -0.1768,
+    "pooled_same_kind_answers": 0.5248,
+    "pooled_same_kind_text": 0.5796,
+    "within_kind_median_answers": 0.2602,
+    "within_kind_median_text": 0.1869,
+    "per_kind": {
+     "benign": {
+      "answers": 0.467,
+      "text": 0.1885
+     },
+     "boolq": {
+      "answers": 0.4828,
+      "text": 0.0996
+     },
+     "code": {
+      "answers": 0.1685,
+      "text": 0.1625
+     },
+     "gsm8k": {
+      "answers": 0.1843,
+      "text": 0.1852
+     },
+     "harmful": {
+      "answers": 0.5307,
+      "text": 0.5276
+     },
+     "injection": {
+      "answers": 0.2519,
+      "text": 0.4522
+     },
+     "jailbreak_bench": {
+      "answers": 0.7025,
+      "text": 0.2539
+     },
+     "news": {
+      "answers": 0.1394,
+      "text": 0.093
+     },
+     "sst2": {
+      "answers": 0.2686,
+      "text": 0.0082
+     },
+     "wiki": {
+      "answers": 0.1995,
+      "text": 0.2874
+     }
+    },
+    "reproduces": true
+   },
+   "phi4mini": {
+    "rho_answers": 0.4285,
+    "rho_text": 0.1956,
+    "rho_kind": 0.3796,
+    "rho_answers_vs_kind": 0.3442,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.3429,
+    "partial_text_given_kind": 0.0955,
+    "answers_minus_kind": 0.0489,
+    "text_minus_kind": -0.184,
+    "pooled_same_kind_answers": 0.5984,
+    "pooled_same_kind_text": 0.6116,
+    "within_kind_median_answers": 0.3594,
+    "within_kind_median_text": 0.2868,
+    "per_kind": {
+     "benign": {
+      "answers": 0.3229,
+      "text": 0.1931
+     },
+     "boolq": {
+      "answers": 0.3725,
+      "text": 0.0907
+     },
+     "code": {
+      "answers": 0.3635,
+      "text": 0.4376
+     },
+     "gsm8k": {
+      "answers": 0.1342,
+      "text": 0.2524
+     },
+     "harmful": {
+      "answers": 0.4358,
+      "text": 0.4798
+     },
+     "injection": {
+      "answers": 0.2474,
+      "text": 0.3181
+     },
+     "jailbreak_bench": {
+      "answers": 0.735,
+      "text": 0.2952
+     },
+     "news": {
+      "answers": 0.378,
+      "text": 0.2949
+     },
+     "sst2": {
+      "answers": 0.3553,
+      "text": 0.0125
+     },
+     "wiki": {
+      "answers": 0.2473,
+      "text": 0.2786
+     }
+    },
+    "reproduces": true
+   },
+   "qwen25_7b": {
+    "rho_answers": 0.638,
+    "rho_text": 0.1819,
+    "rho_kind": 0.3647,
+    "rho_answers_vs_kind": 0.3634,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.5827,
+    "partial_text_given_kind": 0.0844,
+    "answers_minus_kind": 0.2733,
+    "text_minus_kind": -0.1828,
+    "pooled_same_kind_answers": 0.7029,
+    "pooled_same_kind_text": 0.6006,
+    "within_kind_median_answers": 0.4117,
+    "within_kind_median_text": 0.2278,
+    "per_kind": {
+     "benign": {
+      "answers": 0.4226,
+      "text": 0.195
+     },
+     "boolq": {
+      "answers": 0.5941,
+      "text": 0.0738
+     },
+     "code": {
+      "answers": 0.3732,
+      "text": 0.2013
+     },
+     "gsm8k": {
+      "answers": 0.084,
+      "text": 0.2247
+     },
+     "harmful": {
+      "answers": 0.6233,
+      "text": 0.4393
+     },
+     "injection": {
+      "answers": 0.2733,
+      "text": 0.3516
+     },
+     "jailbreak_bench": {
+      "answers": 0.6864,
+      "text": 0.231
+     },
+     "news": {
+      "answers": 0.4009,
+      "text": 0.2613
+     },
+     "sst2": {
+      "answers": 0.4503,
+      "text": 0.0755
+     },
+     "wiki": {
+      "answers": 0.2425,
+      "text": 0.3411
+     }
+    },
+    "reproduces": true
+   },
+   "qwen3_8b": {
+    "rho_answers": 0.6254,
+    "rho_text": 0.2071,
+    "rho_kind": 0.4305,
+    "rho_answers_vs_kind": 0.3709,
+    "rho_text_vs_kind": 0.2928,
+    "partial_answers_given_kind": 0.5557,
+    "partial_text_given_kind": 0.0939,
+    "answers_minus_kind": 0.1949,
+    "text_minus_kind": -0.2234,
+    "pooled_same_kind_answers": 0.7501,
+    "pooled_same_kind_text": 0.5658,
+    "within_kind_median_answers": 0.3688,
+    "within_kind_median_text": 0.2145,
+    "per_kind": {
+     "benign": {
+      "answers": 0.4429,
+      "text": 0.3022
+     },
+     "boolq": {
+      "answers": 0.6601,
+      "text": 0.0253
+     },
+     "code": {
+      "answers": 0.251,
+      "text": 0.1758
+     },
+     "gsm8k": {
+      "answers": 0.1666,
+      "text": 0.2073
+     },
+     "harmful": {
+      "answers": 0.272,
+      "text": 0.507
+     },
+     "injection": {
+      "answers": 0.3759,
+      "text": 0.3248
+     },
+     "jailbreak_bench": {
+      "answers": 0.7341,
+      "text": 0.1881
+     },
+     "news": {
+      "answers": 0.4725,
+      "text": 0.2216
+     },
+     "sst2": {
+      "answers": 0.3617,
+      "text": 0.0828
+     },
+     "wiki": {
+      "answers": 0.2522,
+      "text": 0.2663
+     }
+    },
+    "reproduces": true
+   }
+  },
+  "median_over_models": {
+   "rho_answers": 0.5093,
+   "rho_text": 0.1965,
+   "rho_kind": 0.3957,
+   "rho_answers_vs_kind": 0.3605,
+   "rho_text_vs_kind": 0.2928,
+   "partial_answers_given_kind": 0.4269,
+   "partial_text_given_kind": 0.0912,
+   "answers_minus_kind": 0.1131,
+   "text_minus_kind": -0.1983,
+   "pooled_same_kind_answers": 0.5926,
+   "pooled_same_kind_text": 0.5718,
+   "within_kind_median_answers": 0.3641,
+   "within_kind_median_text": 0.2467,
+   "reproduces": 1.0
+  },
+  "median_over_model_kind_cells": {
+   "answers": 0.3223,
+   "text": 0.2265
+  },
+  "answers_beat_text_partial": 7
+ }
+}

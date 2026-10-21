@@ -38,3 +38,9 @@ Scores change only on preregistered results (exploratory results can move a scor
   the audit and let run by the stand-in reviewer; travel tau assumed without data). R3 → 2: live self-policing on two
   benchmarks, five families, open and closed, two behaviours (policy breaks; injected instructions). Remaining gap:
   no closed agent on AgentDojo live; R8 (coherence) 1.5.
+- 2026-10-21 05:30: **External harsh review scores 6/16** (R1 0, R2 1, R3 0, R4 1, R5 1, R6 2, R7 1, R8 0) against my
+  15.5/16. Its reasons: no single claim; in-distribution synthetic benchmark; Claude ties a template prior; tau2 failure
+  absent from main text; G12 tolerance set after retrospective fits and w from the plain arm; G13 A2 failed; reviewer is
+  an oracle; two papers stapled together. My self-scores were too generous; treat the external scores as the honest
+  baseline. Fixed: all factual overclaims; kind baseline run (answers keep partial rho 0.46 vs text 0.09 given kind).
+  Open: strong policy judge (running), live baseline gates (template prior/TF-IDF) on closed agents, one-story rewrite.

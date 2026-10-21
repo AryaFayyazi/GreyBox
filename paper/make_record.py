@@ -25,7 +25,7 @@ def tex(s: str) -> str:
 
 
 NAMES = {  # descriptive names for the paper (the released record keeps its ids)
-    "L1": "Interrogation state, open chat models", "L2": "Interrogation state, confirmation", "L3": "Claude chat readouts",
+    "L1": "Interrogation state, Othello", "L2": "Interrogation state, open chat models", "L3": "Claude chat readouts",
     "L3b": "Claude refusals vs moderation", "L3c": "Claude, one-call grey box", "L3d": "Claude, transcript readout",
     "L3e": "Claude vs graded moderators",
     "T1": "Resampling vs a probe", "T2": "When the internals are read", "T3": "Resampling with a deployable judge",
@@ -45,7 +45,9 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G9": "Live self-policing (G9)",
           "G10": "A closed agent polices itself (G10)",
           "G11": "The prevention law across agents (G11, stopped)",
-          "G11b": "The prevention law across agents (G11b)"}
+          "G11b": "The prevention law across agents (G11b)",
+          "G12": "The composition-weighted law (G12)",
+          "G13": "Self-policing against prompt injection (G13)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -97,6 +99,9 @@ def main():
             continue
         gm = re.match(r"(G\d*b?)\s+", cells[0])                  # the geometry tests: named before endpoint ids are rewritten
         if gm and gm.group(1) in GNAMES:
+            if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids
+                cells = [re.sub(r"\bL([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
+                cells = [c.replace("S4@", "resampling@").replace("S4 ", "resampling ") for c in cells]
             rows.append(("\x00" + GNAMES[gm.group(1)] + "\x01" + names(endpoints(anon(cells[0][gm.end():]), None)),
                          names(endpoints(anon(cells[-1]), None))))
             continue

@@ -1794,3 +1794,18 @@ Dated log of every experiment, decision and correction. Newest last.
   travel's tau = 1.0 was written into the lock with no offline travel unit for Gemma-4 (an assumption, not a measure).
   gpt-oss: 108 of 154 remaining successes had a flagged call that ran. Lesson: measure tau for every kind used in a
   prediction; the reviewer stand-in, not the audit, limited prevention.
+- **2026-10-21 05:30, second AC review (weak reject 4/10; rubric 6/16) and fixes.** Real errors fixed in the paper:
+  abstract's cross-fit claim (Thm 1(d) is unbiased for squared distance between per-question transforms, not for a
+  transform of d_Q); "far better than embeddings" (MiniLM only; mostly kind separation); "no model-specific geometry"
+  -> "little or no"; "Claude reveals the same" -> stable geometry of the same kind; "84% of prompt injections" -> 84% and
+  50% for two open agents, prediction held for one; "6 points" -> 1.8 and 5.8; G10 is violating EPISODES; told agent
+  97.1% at a cut that escalated 15.2% (88.6% at 5%); "limit is coverage, not the agent" qualified by tau2 (0.535);
+  G12 tolerance set after retrospective fits (disclosed); G8 "adds little" -> did not help reliably; record appendix
+  now has G12/G13, G9 endpoint labels fixed (were rewritten as test names), Othello row named correctly, battery
+  paragraph no longer cites an appendix without that content.
+- **Kind baseline (exploratory; scripts/168, results/t1/kind_baseline_exploratory.json).** A same-kind indicator alone
+  matches hidden geometry with median Spearman 0.57 (G1; answers 0.62, MiniLM text 0.28). Partial Spearman given kind:
+  answers 0.46, text 0.09 (G6: 0.43 vs 0.09; answers ahead in 7/8 models). The headline rho is mostly kind
+  separation; the answers' advantage over text survives control for kind. Pooled same-kind pairs favour text in G1
+  (0.47 vs 0.64).
+- **Strong policy judge (exploratory, scripts/169, job 4247):** Qwen3-32B thinking, rule-by-rule, on T8b/T11 actions.
