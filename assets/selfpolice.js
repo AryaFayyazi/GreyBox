@@ -77,13 +77,15 @@
 
   // ---- 1. audit a call -------------------------------------------------------------------------------------------
   try { const k = localStorage.getItem("gbSelfKey"); if (k) { $("key").value = k; $("remember").checked = true; } } catch (e) { /* storage blocked */ }
+  const DEFAULT_MODEL = { openai: "gpt-4.1-mini", anthropic: "claude-haiku-5-5" };
   $("prov").addEventListener("change", () => {
     const o = $("prov").value === "openai";
     $("baseWrap").hidden = !o;
-    $("model").value = o ? "gpt-4.1-mini" : "claude-haiku-5-5";
+    if (Object.values(DEFAULT_MODEL).includes($("model").value.trim())) $("model").value = DEFAULT_MODEL[$("prov").value];   // keep a custom name
   });
   $("run").addEventListener("click", async () => {
-    const out = $("out");
+    const out = $("out"), btn = $("run");
+    if (btn.disabled) return;
     const key = $("key").value.trim(), n = Math.max(1, Math.min(8, +$("n").value || 3)), cut = +$("cut").value || 1;
     try { if ($("remember").checked) localStorage.setItem("gbSelfKey", key); else localStorage.removeItem("gbSelfKey"); } catch (e) { /* storage blocked */ }
     let args = $("args").value.trim() || "{}";
@@ -93,6 +95,7 @@
     const q = PROMPTS[$("prompt").value].replace("{name}", name).replace("{args}", args);
     const maxTokens = $("prompt").value === "checklist" ? 700 : 16;
     out.innerHTML = `<p class="muted">Asking the agent ${n} times…</p>`;
+    btn.disabled = true;
     try {
       const turns = toTurns($("conv").value);
       const answers = $("prov").value === "anthropic"
@@ -103,24 +106,33 @@
       const share = ok.length ? ok.filter(Boolean).length / ok.length : null;
       const held = share !== null && share >= cut;
       out.innerHTML =
-        `<p style="font-size:1.15em"><b>${held ? "HOLD for review" : "Let it run"}</b> &nbsp; <span class="muted">${ok.length ? `${ok.filter(Boolean).length} of ${ok.length} answers say it breaks the policy (share ${share.toFixed(2)}; hold at ≥ ${cut})` : "no answer could be read"}</span></p>` +
-        answers.map((a, i) => `<details${i === 0 ? " open" : ""}><summary>Answer ${i + 1}: <b>${votes[i] === null ? "unreadable" : votes[i] ? "no (breaks it)" : "yes (complies)"}</b></summary><pre style="white-space:pre-wrap">${esc(a)}</pre></details>`).join("");
+        `<p style="font-size:1.15em"><b class="${held ? "verdict-hold" : "verdict-run"}">${held ? "HOLD for review" : "Let it run"}</b> &nbsp; <span class="muted">${ok.length ? `${ok.filter(Boolean).length} of ${ok.length} answers say it breaks the policy (share ${share.toFixed(2)}; hold at ≥ ${cut})` : "no answer could be read"}</span></p>` +
+        answers.map((a, i) => `<details${i === 0 ? " open" : ""}><summary>Answer ${i + 1}: <b>${votes[i] === null ? "unreadable" : votes[i] ? "no (breaks it)" : "yes (complies)"}</b></summary><pre style="white-space:pre-wrap">${esc(a.replace(/\*\*/g, ""))}</pre></details>`).join("");
     } catch (e) {
-      out.innerHTML = `<p class="tag">The call failed: ${esc(e.message)}. Check the key, the model name and (OpenAI-compatible servers) that the server allows calls from a browser (CORS).</p>`;
+      const msg = String(e.message || e).replace(/\.+$/, "");
+      const local = /localhost|127\.0\.0\.1|0\.0\.0\.0/.test($("base").value) && location.protocol === "https:";
+      const net = /failed to fetch|networkerror|load failed/i.test(msg);
+      out.innerHTML = `<p class="tag">The call failed: ${esc(msg)}.</p>` +
+        (local && net ? `<p>This https page cannot call a server on your own machine. Use the <a href="selfpolice_local.html" download>single-file copy</a> opened from your disk, or the Python package.</p>`
+          : net ? `<p class="muted">The browser could not reach the server. Check the base URL, and that the server allows calls from a browser (CORS).</p>`
+            : `<p class="muted">Check the key and the model name.</p>`);
+    } finally {
+      btn.disabled = false;
     }
   });
 
   // ---- data: example, replay, headline numbers ------------------------------------------------------------------
-  fetch("data/selfpolice.json").then((r) => r.json()).then((D) => {
+  (window.SP_DATA ? Promise.resolve(window.SP_DATA) : fetch("data/selfpolice.json").then((r) => r.json())).then((D) => {
     $("loadEx").addEventListener("click", () => {
       const x = D.example;
       $("policy").value = x.system; $("conv").value = JSON.stringify(x.messages, null, 1); $("tool").value = x.tool; $("args").value = JSON.stringify(x.args);
       $("prompt").value = "checklist";
+      $("exNote").textContent = x.note; $("exNote").hidden = false;
     });
     const sel = $("ep");
-    D.replay.forEach((e, i) => { const o = document.createElement("option"); o.value = i; o.textContent = e.title; sel.appendChild(o); });
+    if (sel) D.replay.forEach((e, i) => { const o = document.createElement("option"); o.value = i; o.textContent = e.title; sel.appendChild(o); });
     const step = (s, audited) => {
-      const lab = s.unsafe ? '<span class="tag">violation</span>' : '<span class="muted">allowed</span>';
+      const lab = s.unsafe ? '<b style="color:#b3471d">violation</b>' : '<span class="muted">allowed</span>';
       const aud = !audited ? '<span class="muted">no audit</span>' : s.share === null || s.share === undefined ? '<span class="muted">not audited (read-only tool)</span>' : `the agent's own audit: <b>${(s.share * 100).toFixed(0)}% "no"</b>`;
       const act = s.held ? (s.blocked ? "<b>held → blocked by the reviewer</b>" : "<b>held → approved by the reviewer, ran</b>") : (s.ran ? "ran" : "");
       return `<div class="tx-call"><code>${esc(s.tool)}</code> <span class="muted">${esc(s.args)}</span><br>${aud} · ${act} · checker: ${lab}</div>`;
@@ -131,7 +143,7 @@
       $("plain").innerHTML = `<p><b>${e.plain_outcome}</b></p>` + e.plain.map((x) => step(x, false)).join("");
       $("gated").innerHTML = `<p><b>${e.gated_outcome}</b></p>` + e.gated.map((x) => step(x, true)).join("");
     };
-    sel.addEventListener("change", show); show();
+    if (sel) { sel.addEventListener("change", show); show(); }
     // 3. the law
     const tbody = document.querySelector("#lawTable tbody");
     const addRow = (k = "", w = "", t = "") => {
@@ -142,12 +154,19 @@
       tbody.appendChild(tr);
     };
     const law = () => {
-      let W = 0, S = 0;
-      tbody.querySelectorAll("tr").forEach((tr) => { const [, w, t] = [...tr.querySelectorAll("input")].map((i) => +i.value || 0); W += w; S += w * Math.min(1, Math.max(0, t)); });
-      $("lawOut").textContent = W > 0 ? `${(100 * S / W).toFixed(0)}%` : "–";
+      let W = 0, S = 0, bad = "";
+      tbody.querySelectorAll("tr").forEach((tr) => {
+        const [, w, t] = [...tr.querySelectorAll("input")].map((i) => +i.value || 0);
+        if (w < 0) bad = "A share w cannot be negative.";
+        else if (t < 0 || t > 1) bad = "A flag rate τ is a share between 0 and 1 (for 69%, enter 0.69).";
+        W += Math.max(0, w); S += Math.max(0, w) * t;
+      });
+      $("lawWarn").hidden = !bad; $("lawWarn").textContent = bad;
+      $("lawOut").textContent = !bad && W > 0 ? `${(100 * S / W).toFixed(0)}%` : "–";
     };
     $("addRow").addEventListener("click", () => addRow());
     $("exLaw").addEventListener("click", () => { tbody.innerHTML = ""; D.law_example.forEach((r) => addRow(r.kind, r.w, r.tau)); law(); });
     D.law_example.forEach((r) => addRow(r.kind, r.w, r.tau)); law();
-  }).catch(() => { $("epNote").textContent = "The recorded episodes could not be loaded."; });
+    $("lawNote").textContent = D.law_note || "";
+  }).catch(() => { if ($("epNote")) $("epNote").textContent = "The recorded episodes could not be loaded."; });
 })();

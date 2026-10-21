@@ -20,12 +20,13 @@
   }
 
   // one view: points P [[x,y,z]], colours C ["#..."], optional ring mask, labels for the tooltip
-  function view(canvas, tip, P, C, rings, label, axes) {
+  function view(canvas, tip, P, C, rings, label, axes, shared) {
     const W = () => canvas.clientWidth, H = () => canvas.clientHeight;
     const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-    let dist = 3.6, az = 0.7, el = 0.35;
+    const st = shared || { dist: 3.6, az: 0.7, el: 0.35, views: [] };
+    let dist = st.dist, az = st.az, el = st.el;
     const group = new THREE.Group(); scene.add(group);
     const pos = new Float32Array(P.length * 3), col = new Float32Array(P.length * 3);
     P.forEach((p, i) => { pos.set(p, 3 * i); const c = new THREE.Color(C[i]); col.set([c.r, c.g, c.b], 3 * i); });
@@ -54,17 +55,21 @@
       r.render(scene, cam);
     };
     let drag = null;
-    canvas.addEventListener("pointerdown", (e) => { drag = [e.clientX, e.clientY, az, el]; canvas.setPointerCapture(e.pointerId); });
+    const sync = () => { st.dist = dist; st.az = az; st.el = el; st.views.forEach((v) => v !== self && v.set(dist, az, el)); };
+    canvas.addEventListener("pointerdown", (e) => { drag = [e.clientX, e.clientY, az, el]; tip.hidden = true; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener("pointerup", () => { drag = null; });
+    canvas.addEventListener("pointerleave", () => { tip.hidden = true; });
     canvas.addEventListener("pointermove", (e) => {
-      if (drag) { az = drag[2] - (e.clientX - drag[0]) * 0.01; el = Math.max(-1.4, Math.min(1.4, drag[3] + (e.clientY - drag[1]) * 0.01)); draw(); return; }
+      if (drag) { az = drag[2] - (e.clientX - drag[0]) * 0.01; el = Math.max(-1.4, Math.min(1.4, drag[3] + (e.clientY - drag[1]) * 0.01)); draw(); sync(); return; }
       const b = canvas.getBoundingClientRect(); const m = new THREE.Vector2(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1);
       ray.setFromCamera(m, cam); const hit = ray.intersectObject(group.children[0])[0];
       if (hit) { tip.textContent = label(hit.index); tip.style.left = `${e.clientX - b.left + 12}px`; tip.style.top = `${e.clientY - b.top + 12}px`; tip.hidden = false; } else tip.hidden = true;
     });
-    canvas.addEventListener("wheel", (e) => { e.preventDefault(); dist = Math.max(1.6, Math.min(8, dist * (e.deltaY > 0 ? 1.08 : 0.93))); draw(); }, { passive: false });
+    canvas.addEventListener("wheel", (e) => { e.preventDefault(); dist = Math.max(1.6, Math.min(8, dist * (e.deltaY > 0 ? 1.08 : 0.93))); draw(); sync(); }, { passive: false });
     window.addEventListener("resize", draw); draw();
-    return { setColors(Cn) { Cn.forEach((c, i) => { const q = new THREE.Color(c); col.set([q.r, q.g, q.b], 3 * i); }); geo.attributes.color.needsUpdate = true; draw(); }, draw };
+    const self = { set(d, a, e2) { dist = d; az = a; el = e2; draw(); }, draw };
+    st.views.push(self);
+    return self;
   }
 
   const legend = (el, items) => { el.innerHTML = items.map(([c, t, ring]) => `<span style="margin-right:14px;white-space:nowrap"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;${ring ? `border:2px solid ${INK};` : `background:${c};`}vertical-align:-1px"></span> ${t}</span>`).join(""); };
@@ -76,25 +81,28 @@
     const PA = robust(A.x.map((x, i) => [x - xm, A.y[i], A.z[i]]));
     view(document.getElementById("cvA"), document.getElementById("tipA"), PA, A.viol.map((v) => (v ? VIOL : SAFE)), A.flag,
       (i) => `${A.template[i]} · checker: ${A.viol[i] ? "violation" : "allowed"} · the agent's own audit: ${A.flag[i] ? "flagged" : "not flagged"}`,
-      ["readout of 'violation' →", "direction 2", "direction 3"]);
+      ["violation readout →", "direction 2", "direction 3"]);
     legend(document.getElementById("legA"), [[VIOL, "violation (checker)"], [SAFE, "allowed"], [INK, "flagged by the agent's own audit", true]]);
     document.getElementById("statA").innerHTML =
       `Gemma-4, ${sA.n.toLocaleString()} decision steps (${sA.violations} violations), its state at layer ${sA.layer}. The horizontal axis is the ` +
-      `direction in the agent's own state that best separates violations (a linear readout, cross-fitted by scenario): within-template AUROC ` +
+      `direction in the agent's own state that best separates violations (a linear readout, cross-fitted by scenario). How well it separates ` +
+      `violations from allowed calls of the same kind (AUROC; 1 = perfect, 0.5 = chance): ` +
       `<b>${sA.readout_auroc_within}</b>. The agent's own spoken audit reaches <b>${sA.selfaudit_auroc_within}</b> and flags ` +
-      `<b>${Math.round(sA.selfaudit_flag_violation * 100)}%</b> of the violations (${(sA.selfaudit_flag_safe * 100).toFixed(1)}% of allowed calls). ` +
+      `<b>${Math.round(sA.selfaudit_flag_violation * 100)}%</b> of the violations when all four answers must say "no" (97% when most must), ` +
+      `${(sA.selfaudit_flag_safe * 100).toFixed(1)}% of allowed calls. ` +
       `Directions 2 and 3 hold ${Math.round(sA.variance_yz * 100)}% of the remaining variance. So the information that the call is a violation is ` +
       `inside the agent, and most of it reaches its answer when asked. Display: scaled by the 98th percentile of each axis.`;
     // B. what answers reveal
     const G = D.geometry, sG = G.stats, kinds = [...new Set(G.kind)].sort();
     const colB = G.kind.map((k) => SLOTS[kinds.indexOf(k) % SLOTS.length]);
     const lab = (i) => `${G.kind[i]}: ${G.text[i]}`;
-    view(document.getElementById("cvB1"), document.getElementById("tipB1"), robust(G.hidden), colB, null, lab, ["", "", ""]);
-    view(document.getElementById("cvB2"), document.getElementById("tipB2"), robust(G.answers), colB, null, lab, ["", "", ""]);
+    const shared = { dist: 3.6, az: 0.7, el: 0.35, views: [] };                 // the two panels turn and zoom together
+    view(document.getElementById("cvB1"), document.getElementById("tipB1"), robust(G.hidden), colB, null, lab, ["", "", ""], shared);
+    view(document.getElementById("cvB2"), document.getElementById("tipB2"), robust(G.answers), colB, null, lab, ["", "", ""], shared);
     legend(document.getElementById("legB"), kinds.map((k, i) => [SLOTS[i % SLOTS.length], k]));
     document.getElementById("statB").innerHTML =
       `${sG.model}, ${sG.shown} of ${sG.contexts} confirmation contexts. Left: classical scaling of its hidden states (layer ${sG.layer}; the three ` +
-      `axes hold ${Math.round(sG.mds_variance_hidden * 100)}% of the variance). Right: the same contexts placed only from the model's yes/no answers ` +
+      `axes hold ${Math.round(sG.mds_variance_hidden * 100)}% of the variance; classical scaling places points so that their distances match). Right: the same contexts placed only from the model's yes/no answers ` +
       `to 88 questions (Fisher–Rao distances; ${Math.round(sG.mds_variance_answers * 100)}%), turned onto the left by a rotation and one scale, ` +
       `with no other fitting. Over all ${sG.contexts.toLocaleString()} contexts, the two distance matrices agree at Spearman <b>${sG.spearman_all_pairs}</b> ` +
       `(preregistered, G1). The geometry an outsider can read is the geometry models share; it is not unique to this model (G6). ` +
