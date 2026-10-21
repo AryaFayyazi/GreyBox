@@ -225,14 +225,22 @@ if r.flagged:                                          # unparsable answers also
 - Measure your agent first: audit some labelled calls and run `flag_rates(results, violates)` for τ (violations
   flagged) and φ (allowed calls flagged). `prevention_law(R, tau, phi, M)` gives the expected effect.
 
-Preregistered results (locks published before the data; held-out scenarios):
+Preregistered results (hash-locked before the data, locks published; held-out scenarios):
 - Gemma-4 (open, G9): episodes with an executed violation 27.9% → 5.0%; task success 33.5% → 43.7%.
 - Claude Haiku 5.5 (closed, G10): violations that its conversation reveals fell by 69% [51, 88], at no cost in task
   success; violations decided by a fact it never checked (a mailing list's size) did not fall (7% [0, 17]), as the
-  theory predicts. All its violations: −31%. A plain "does it comply?" question did not work on Claude; checking the
+  locked prediction said. All its violations: −31%. A plain "does it comply?" question did not work on Claude; checking the
   rules one by one did.
 - It works when the agent judges its policy well. With the plain question (most answers "no"), agents flag 97%
   (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Claude) of their own violations.
+- The effect is predictable (G12): each agent's offline flag rates per kind of task, weighted by where it violates,
+  predicted the live reduction for five agents within the registered ±0.15 (Gemma-4 0.63, gpt-oss 0.17, Qwen3.8 0.01,
+  Muse-Glimmer 0.27, Claude 0.30; mean error 0.035). Measure τ on enough calls of each kind (Claude was over-predicted
+  by 0.08 because one rate rested on 38 calls).
+- A second benchmark (G13, prompt injection on AgentDojo, predictions fixed in advance): attack success 11.5% → 1.8%
+  (Gemma-4) and 24.4% → 12.2% (gpt-oss; predicted reduction 0.58, observed 0.50), with no loss of utility. Gemma-4
+  missed its predicted 1.00 by 0.16, just beyond the tolerance: most of its remaining attacks ran calls that its audit
+  had flagged but our stand-in reviewer let through. Hold every flagged call for a person.
 
 ## Chat: forecast a refusal before the reply
 

@@ -104,10 +104,10 @@ def law_panel(ax, pts):
     xs = np.array([0, 1.05])
     ax.fill_between(xs, xs - 0.15, xs + 0.15, color=GRID, alpha=0.7, lw=0, zorder=0)
     ax.plot(xs, xs, color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
-    off = {("Gemma-4", "g12"): (-0.03, 0.03, "right"), ("gpt-oss", "g12"): (0.03, -0.055, "left"), ("Qwen3.8", "g12"): (0.0, -0.17, "center"),
+    off = {("Gemma-4", "g12"): (0.03, -0.06, "left"), ("gpt-oss", "g12"): (0.03, -0.055, "left"), ("Qwen3.8", "g12"): (0.0, -0.17, "center"),
            ("Muse-Glimmer", "g12"): (-0.03, 0.075, "right"), ("Claude Haiku 5.5", "g12"): (0.03, 0.05, "left"),
-           ("Muse-Glimmer", "g11b"): (0.0, 0.17, "center"), ("Qwen3.8", "g11b"): (0.03, -0.03, "left"),
-           ("Gemma-4", "g13"): (-0.03, -0.09, "right"), ("gpt-oss", "g13"): (0.03, -0.04, "left")}
+           ("Muse-Glimmer", "g11b"): (0.0, -0.16, "center"), ("Qwen3.8", "g11b"): (0.03, -0.03, "left"),
+           ("Gemma-4", "g13"): (-0.03, 0.0, "right"), ("gpt-oss", "g13"): (0.03, -0.04, "left")}
     for name, x, y, lo, hi, c, kind in pts:
         ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=c, elinewidth=0.8, capsize=1.5, alpha=0.9, zorder=2)
         if kind == "g11b":
@@ -125,8 +125,8 @@ def law_panel(ax, pts):
     ax.set_axisbelow(True)
     hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="G12, CAPE: preregistered, passed")]
     if any(p[6] == "g13" for p in pts):
-        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="G13, AgentDojo (preregistered)"))
-    hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="G11b: registered, failed ($\\tau$ from other tasks)"))
+        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="G13, AgentDojo: preregistered"))
+    hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="G11b: registered, failed"))
     from matplotlib.patches import Patch
     hs.append(Patch(facecolor=GRID, alpha=0.7, label="tolerance: predicted $\\pm$ 0.15"))
     ax.legend(handles=hs, loc="upper left", handletextpad=0.3, fontsize=5.2, borderaxespad=0.3)

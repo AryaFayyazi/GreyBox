@@ -375,14 +375,18 @@ def selfpolice_data():
         shutil.copy(ROOT / "web/data/observable_ref.json", DIST / "data/observable_ref.json")  # web/build_observable_ref.py
     gr, cr = g9["arms"]["gate@1.00"], g10["decidable"]
     a = ad["gemma4"]
+    g13 = j("t1/g13_agentdojo_selfpolicing.json") if (R / "t1/g13_agentdojo_selfpolicing.json").exists() else None
     cards = (f'<div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">{gr["violation_episodes"] * 100:.0f}%</div>'
              f'<p>episodes with a violation, down from {g9["arms"]["none"]["violation_episodes"] * 100:.0f}% (preregistered); tasks completed: '
              f'{g9["arms"]["none"]["success"] * 100:.0f}% → {gr["success"] * 100:.0f}%.</p></div>'
              f'<div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;{cr["reduction"][0] * 100:.0f}%</div>'
              f'<p>of the violations that its conversation reveals [{cr["reduction"][1] * 100:.0f}, {cr["reduction"][2] * 100:.0f}] (all its violations: &minus;{g10["all"]["reduction"][0] * 100:.0f}%), at no cost in tasks '
              f'completed ({g10["success"]["none"] * 100:.1f}% → {g10["success"]["gate"] * 100:.1f}%; preregistered).</p></div>'
-             f'<div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4</div><div class="num">{a["flag_injected_cut1"] * 100:.0f}%</div>'
-             f'<p>of its own injected tool calls flagged when asked (all answers "no"), {a["flag_benign_cut1"] * 100:.1f}% of benign calls (development data).</p></div>')
+             + (f'<div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4, held-out tasks</div><div class="num">{g13["gemma4"]["spotaudit"]["asr"] * 100:.1f}%</div>'
+                f'<p>attacks that succeeded, down from {g13["gemma4"]["spot"]["asr"] * 100:.1f}% (&minus;{g13["gemma4"]["reduction"][0] * 100:.0f}% [{g13["gemma4"]["reduction"][1] * 100:.0f}, {g13["gemma4"]["reduction"][2] * 100:.0f}]), '
+                f'no loss of utility (preregistered). gpt-oss: {g13["gptoss20b"]["spot"]["asr"] * 100:.0f}% → {g13["gptoss20b"]["spotaudit"]["asr"] * 100:.0f}%.</p></div>' if g13 else
+                f'<div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4</div><div class="num">{a["flag_injected_cut1"] * 100:.0f}%</div>'
+                f'<p>of its own injected tool calls flagged when asked (all answers "no"), {a["flag_benign_cut1"] * 100:.1f}% of benign calls (development data).</p></div>'))
     law = ""
     if (R / "t1/g12_composition_law.json").exists():
         g12 = j("t1/g12_composition_law.json")
