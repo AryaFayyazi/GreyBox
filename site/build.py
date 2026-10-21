@@ -418,6 +418,8 @@ def main():
         shutil.copy(f, DIST / "assets" / f.name)
     shutil.copy(SRC / "coi-sw.js", DIST / "coi-sw.js")      # the trainer's cross-origin isolation (multi-threaded reader)
     shutil.copytree(R / "figures", DIST / "figures", ignore=shutil.ignore_patterns("*.pdf"))
+    if (SRC / "media").exists():
+        shutil.copytree(SRC / "media", DIST / "media")           # explainer video, subtitles, GIF (web/record_explainer.py)
     (DIST / ".nojekyll").write_text("")
     pages = {"index.html": index_page(), "results.html": results_page()}
     sp_cards, sp_law = selfpolice_data()

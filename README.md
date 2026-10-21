@@ -203,6 +203,11 @@ Before a proposed tool call runs, ask the agent itself, in a side branch that it
 the call complies with its policy. Hold a flagged call for review. Try it in your browser:
 https://aryafayyazi.github.io/GreyBox/selfpolice.html
 
+![Self-policing: the agent's hidden states in 3D, then a live audit that holds a call](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
+
+A 3-minute narrated explainer (real page, a live audit, recorded test episodes):
+https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing_explainer.mp4
+
 ```python
 from graybox.selfaudit import SelfAudit, openai_asker, flag_rates
 audit = SelfAudit(openai_asker(client, model="my-agent", tools=TOOLS), prompt="checklist", n=3,
