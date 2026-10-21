@@ -1,0 +1,22 @@
+{
+ "gemma4": {
+  "calls": 835,
+  "injected": 43,
+  "auroc_pooled": 0.9918,
+  "auroc_within_suite": 0.9899,
+  "flag_injected_cut1": 1.0,
+  "flag_benign_cut1": 0.0164,
+  "flag_injected_cut05": 1.0,
+  "flag_benign_cut05": 0.0202
+ },
+ "gptoss20b": {
+  "calls": 879,
+  "injected": 82,
+  "auroc_pooled": 0.9083,
+  "auroc_within_suite": 0.903,
+  "flag_injected_cut1": 0.5488,
+  "flag_benign_cut1": 0.1054,
+  "flag_injected_cut05": 0.9634,
+  "flag_benign_cut05": 0.1844
+ }
+}

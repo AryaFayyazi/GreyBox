@@ -44,7 +44,8 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G8": "Reading the reasoning (G8)",
           "G9": "Live self-policing (G9)",
           "G10": "A closed agent polices itself (G10)",
-          "G11": "The prevention law across agents (G11)"}
+          "G11": "The prevention law across agents (G11, stopped)",
+          "G11b": "The prevention law across agents (G11b)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -94,7 +95,7 @@ def main():
         cells = [c.strip() for c in line.strip().strip("|").split(" | ")]
         if len(cells) < 4:
             continue
-        gm = re.match(r"(G\d?)\s+", cells[0])                  # the geometry tests: named before endpoint ids are rewritten
+        gm = re.match(r"(G\d*b?)\s+", cells[0])                  # the geometry tests: named before endpoint ids are rewritten
         if gm and gm.group(1) in GNAMES:
             rows.append(("\x00" + GNAMES[gm.group(1)] + "\x01" + names(endpoints(anon(cells[0][gm.end():]), None)),
                          names(endpoints(anon(cells[-1]), None))))

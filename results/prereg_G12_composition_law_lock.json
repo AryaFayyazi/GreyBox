@@ -1,0 +1,18 @@
+{
+ "locked_at": "2026-10-20T20:02:06-07:00",
+ "sha256": {
+  "docs/prereg_G12_composition_law.md": "e3bf6dc46243ad04026367bcacf77c48c52ef2a0d4296d49c535b5880991ed45",
+  "docs/G11b_amendment_note.md": "43620630f49447257221f9cb415caffa40ffed5ff6914d42dab6c282f50347e7",
+  "scripts/150_self_audit.py": "42dde9cfec4aa4b0bc04935062036ca0ecdd7960c8fcf0b076a7b71734bc3a29",
+  "scripts/151_live_selfaudit.py": "0136a9ee45a56c44a635e4a666d45958147c7d2bbcabd9908c865e0ec1f8b450",
+  "scripts/152_live_selfaudit_analysis.py": "fac2e2ee536aee4f0647200ac721566f3360c5b1a49ba31a34cdaf111b57a52b",
+  "scripts/153_claude_self_audit.py": "9a62070e1cd4663f7b1ae94ab7f3050196d514c818a1a647e3f58ec0f5187950",
+  "scripts/161_offline_tau.py": "52d3a18c0523a4130aa6c6175f74ab9a159baac9f8d6fd24deb46454bceae685",
+  "scripts/162_live_g12.py": "5709a4e96c7577a0ab3240a661d6dca1112192f251f3a58cc892b6cbd619cc4a",
+  "scripts/163_g12_analysis.py": "b11e2cec58c7b2b7aa1401efe3543a842622de1bee3a7852fd4e605579caa3a3",
+  "slurm/g12_live.sh": "488b3851abe475200ae770703b841b8bfea52c7a2d191c927e21582bb5a5dc57",
+  "slurm/g12_claude.sh": "b064bb16958aeb9baa652c923d79b665bb0ff70874e592bdaf793cfe1d77ed2a",
+  "results/t1/g12_offline_tau.json": "1663378cef8cd89b9ef55b88d3b464a891d7cfb974a53e713ed094872bd1d88c",
+  "/data/models/graybox_ws/outputs/claude_selfaudit/offline_g12tau_claude.jsonl": "c4df0144930ca32c9147093ab0a17e65a6334cf6e4677fa800e33d5a57cf5ebf"
+ }
+}

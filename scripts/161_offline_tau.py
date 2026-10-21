@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sa = importlib.import_module("150_self_audit")
 OUT = Path("/data/models/graybox_ws/outputs/g12")
 SETS = {"gemma4": "xm_gemma4_core24b_minus*", "gptoss20b": "xm_gptoss20b_core24b_minus*", "museglimmer": "xm_museglimmer_core24b_minus*",
-        "qwen38": ["core24b_minus", "core24b_minus2345", "core24b_reasoning_minus0123"]}
+        "qwen38": ["core24b_minus", "core24b_minus2345"]}                 # plain prompts only, as for the other agents
 D = OmegaConf.merge(sa.D, {"stage": "run", "actor": "gemma4", "per_template": 40, "mode": "sample", "prompt": "ask", "n": 4,
                            "max_tokens": 4096})
 
