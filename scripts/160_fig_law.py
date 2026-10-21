@@ -37,31 +37,21 @@ def boot_red(none, gate, groups, nb=2000, seed=0):
 
 
 def points():
+    """(label, predicted, observed, lo, hi, color, kind): kind 'g12' / 'g13' preregistered predictions; 'g11b' registered, failed."""
     pts = []
-    A = pd.read_parquet(SA / "gemma4_clean_sample.parquet")
-    A = A[np.isfinite(A.s)]
-    A["tm"] = A.template.str.split("|").str[0]
-    g9 = json.loads((T1 / "g9_live_self_policing.json").read_text())["arms"]["gate@1.00"]["relative_violation_reduction"]
-    pts.append(("Gemma-4 (G9)", (A.s[A.y == 1] >= 1 - 1e-9).mean(), *g9, BLUE, True))
-    d = pd.read_parquet(LS / "gemma4_v4fresh_g9_c100.parquet")
-    tau = A[A.y == 1].groupby("tm").s.apply(lambda x: (x >= 1 - 1e-9).mean())
-    for tm, e in d.groupby("template"):
-        none, gate = e[e.arm == "none"].set_index(["instance_id", "seed"]).unsafe_episode, e[e.arm == "gate"].set_index(["instance_id", "seed"]).unsafe_episode
-        if none.sum() < 10 or tm not in tau.index:
-            continue
-        j = pd.concat([none.rename("n"), gate.rename("a")], axis=1).dropna().reset_index()
-        pts.append((None, tau[tm], *boot_red(j.n.astype(float), j.a.astype(float), j.instance_id), BLUE, False))
-    g11 = T1 / "g11b_selfpolicing_law.json"
-    if g11.exists():
-        r = json.loads(g11.read_text())
-        for a, name, c in (("museglimmer", "Muse-Glimmer (G11b)", AQUA), ("qwen38", "Qwen3.8 (G11b)", YELLOW)):
-            pts.append((name, r[a]["predicted"], *r[a]["reduction"], c, True))
-    g10 = json.loads((T1 / "g10_claude_self_policing.json").read_text())
-    D = pd.DataFrame([json.loads(x) for x in open(CS / "offline_dev_checklist.jsonl")])
-    D = D[D.s.notna() & ~D.tool.isin({"list_files", "read_file", "open_mock_url"}) & (D.y == 1)]
-    for key, m, name in (("decidable", D.template != "tp_campaign_test", "Claude, transcript decides (G10)"),
-                         ("unseen_fact", D.template == "tp_campaign_test", "Claude, unchecked fact (G10)")):
-        pts.append((name, (D.s[m] >= 0.67).mean(), *g10[key]["reduction"], ORANGE, False))
+    g12 = json.loads((T1 / "g12_composition_law.json").read_text())
+    for a, name in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss"), ("qwen38", "Qwen3.8"), ("museglimmer", "Muse-Glimmer"), ("claude", "Claude Haiku 5.5")):
+        r = g12[a]
+        pts.append((name, r["predicted"], *r["observed"], ORANGE if a == "claude" else BLUE, "g12"))
+    r = json.loads((T1 / "g11b_selfpolicing_law.json").read_text())
+    for a, name in (("museglimmer", "Muse-Glimmer"), ("qwen38", "Qwen3.8")):
+        pts.append((name, r[a]["predicted"], *r[a]["reduction"], MUTE, "g11b"))
+    g13 = T1 / "g13_agentdojo_selfpolicing.json"
+    if g13.exists():
+        r = json.loads(g13.read_text())
+        for a, name in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss")):
+            if a in r and r[a].get("predicted_reduction") is not None:
+                pts.append((name, r[a]["predicted_reduction"], *r[a]["reduction"], BLUE, "g13"))
     return pts
 
 
@@ -97,43 +87,49 @@ def main():
     fig2, (axa, axb) = plt.subplots(1, 2, figsize=(6.85, 2.7), gridspec_kw={"width_ratios": [1, 1.05], "wspace": 0.42})
     recognition(axa)
     law_panel(axb, pts)
-    axb.set_title("b  Offline audit vs live prevention", fontsize=6.8, loc="left", fontweight="bold", color=INK, pad=14)
-    axb.set_xlabel("own violating calls flagged offline (development)")
+    axb.set_title("b  The law predicts live prevention", fontsize=6.8, loc="left", fontweight="bold", color=INK, pad=14)
     fig2.subplots_adjust(left=0.215, right=0.985, top=0.86, bottom=0.16)
     fig2.savefig(ROOT / "paper/figures/selfpolice.pdf")
     fig2.savefig(ROOT / "results/figures/selfpolice.png", dpi=220)
-    fig, ax = plt.subplots(figsize=(3.3, 2.55))
+    fig, ax = plt.subplots(figsize=(3.3, 1.95))
     law_panel(ax, pts)
     fig.tight_layout(pad=0.3)
     (ROOT / "paper/figures").mkdir(parents=True, exist_ok=True)
     fig.savefig(ROOT / "paper/figures/law.pdf")
     fig.savefig(ROOT / "results/figures/law.png", dpi=220)
-    print(json.dumps([(p[0], round(float(p[1]), 3), [round(float(v), 3) for v in p[2:5]]) for p in pts], indent=0))
+    print(json.dumps([(p[0], p[6], round(float(p[1]), 3), [round(float(v), 3) for v in p[2:5]]) for p in pts], indent=0))
 
 
 def law_panel(ax, pts):
-    ax.plot([0, 1], [0, 1], color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
-    ax.text(0.30, 0.335, "law: reduction = flag rate", ha="left", fontsize=5.6, color=MUTE, rotation=37, rotation_mode="anchor")
-    LAB = {"Gemma-4 (G9)": (0.985, 0.655, "right"), "Claude, transcript decides (G10)": (0.64, 0.775, "right"),
-           "Claude, unchecked fact (G10)": (0.175, 0.085, "left"), "Muse-Glimmer (G11b)": (None, None, "right"),
-           "Qwen3.8 (G11b)": (None, None, "left")}
-    for name, x, y, lo, hi, c, conf in pts:
-        ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=c, elinewidth=0.8, capsize=1.5, alpha=0.9 if conf else 0.55, zorder=2)
-        ax.scatter([x], [y], s=26 if conf else 14, facecolor=c if conf else "white", edgecolor=c, linewidth=1.0, zorder=3)
-        if name:
-            lx, ly, ha = LAB.get(name, (None, None, "left"))
-            lx = x + (0.025 if ha == "left" else -0.025) if lx is None else lx
-            ly = y + 0.02 if ly is None else ly
-            ax.text(lx, ly, name, fontsize=5.4, color=INK, ha=ha)
-    ax.set_xlim(0, 1.02)
-    ax.set_ylim(-0.3, 1.08)
-    ax.set_xlabel("own violating calls flagged in an offline audit (development)")
-    ax.set_ylabel("live reduction in violating episodes")
+    xs = np.array([0, 1.05])
+    ax.fill_between(xs, xs - 0.15, xs + 0.15, color=GRID, alpha=0.7, lw=0, zorder=0)
+    ax.plot(xs, xs, color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
+    off = {("Gemma-4", "g12"): (-0.03, 0.03, "right"), ("gpt-oss", "g12"): (0.03, -0.055, "left"), ("Qwen3.8", "g12"): (0.0, -0.17, "center"),
+           ("Muse-Glimmer", "g12"): (-0.03, 0.075, "right"), ("Claude Haiku 5.5", "g12"): (0.03, 0.05, "left"),
+           ("Muse-Glimmer", "g11b"): (0.0, 0.17, "center"), ("Qwen3.8", "g11b"): (0.03, -0.03, "left"),
+           ("Gemma-4", "g13"): (-0.03, -0.09, "right"), ("gpt-oss", "g13"): (0.03, -0.04, "left")}
+    for name, x, y, lo, hi, c, kind in pts:
+        ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=c, elinewidth=0.8, capsize=1.5, alpha=0.9, zorder=2)
+        if kind == "g11b":
+            ax.scatter([x], [y], s=22, marker="x", color=c, linewidth=1.1, zorder=3)
+        else:
+            ax.scatter([x], [y], s=24, marker="s" if kind == "g13" else "o", facecolor=c, edgecolor="white", linewidth=0.6, zorder=3)
+        dx, dy, ha = off.get((name, kind), (0.03, 0.0, "left"))
+        tag = {"g12": "", "g13": " (AgentDojo)", "g11b": " (G11b)"}[kind]
+        ax.text(x + dx, y + dy, name + tag, fontsize=5.3, color=MUTE if kind == "g11b" else INK, ha=ha, va="center")
+    ax.set_xlim(-0.05, 1.05)
+    ax.set_ylim(-0.3, 1.0)
+    ax.set_xlabel("predicted: $\\sum_k w_k\\tau_k$ ($\\tau_k$: offline flag rates)")
+    ax.set_ylabel("observed live reduction")
     ax.grid(color=GRID, lw=0.5)
     ax.set_axisbelow(True)
-    h1 = ax.scatter([], [], s=26, facecolor=INK, edgecolor=INK, label="preregistered")
-    h2 = ax.scatter([], [], s=14, facecolor="white", edgecolor=INK, label="exploratory (Gemma-4 per template; Claude)")
-    ax.legend(handles=[h1, h2], loc="upper left", handletextpad=0.3)
+    hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="G12, CAPE: preregistered, passed")]
+    if any(p[6] == "g13" for p in pts):
+        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="G13, AgentDojo (preregistered)"))
+    hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="G11b: registered, failed ($\\tau$ from other tasks)"))
+    from matplotlib.patches import Patch
+    hs.append(Patch(facecolor=GRID, alpha=0.7, label="tolerance: predicted $\\pm$ 0.15"))
+    ax.legend(handles=hs, loc="upper left", handletextpad=0.3, fontsize=5.2, borderaxespad=0.3)
 
 
 if __name__ == "__main__":
