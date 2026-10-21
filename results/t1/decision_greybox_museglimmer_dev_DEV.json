@@ -1,0 +1,51 @@
+{
+ "actor": "museglimmer",
+ "mode": "dev",
+ "layer_index": 3,
+ "units": 600,
+ "violations": 300,
+ "templates_mixed": 10,
+ "recreation_r2_top32": 0.096,
+ "r2": {
+  "answers": 0.096,
+  "reader": 0.303,
+  "reader+answers": 0.302
+ },
+ "within_all": {
+  "true_state": 0.8555,
+  "answers": 0.8619,
+  "reader": 0.8975,
+  "reader+answers": 0.9021,
+  "complies_alone": 0.8907
+ },
+ "pooled_all": {
+  "true_state": 0.9507,
+  "answers": 0.874,
+  "reader": 0.9791,
+  "reader+answers": 0.9814
+ },
+ "reader+answers_minus_true_within": [
+  0.0466,
+  0.003,
+  0.1088
+ ],
+ "within": {
+  "true_state": 0.8555,
+  "recreated_from_answers": 0.8619,
+  "complies_answer_alone": 0.8907
+ },
+ "pooled": {
+  "true_state": 0.9507,
+  "recreated_from_answers": 0.874,
+  "complies_answer_alone": 0.8611
+ },
+ "recreated_minus_true_within": [
+  0.0065,
+  -0.0659,
+  0.0803
+ ],
+ "hostile_controls": {
+  "shuffled_pairs_map": 0.7253,
+  "supervised_probe_on_answers": 0.9057
+ }
+}

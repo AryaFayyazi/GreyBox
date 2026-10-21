@@ -1,0 +1,90 @@
+{
+ "dry_run": true,
+ "gemma4": {
+  "units": 600,
+  "violations": 300,
+  "within": {
+   "white_box": 0.9665,
+   "grey_box": 0.9799,
+   "reader_only": 0.9807,
+   "complies_alone": 0.9446,
+   "others_grey_box": 0.9606
+  },
+  "pooled": {
+   "white_box": 0.9724,
+   "grey_box": 0.9849,
+   "reader_only": 0.984,
+   "complies_alone": 0.9629,
+   "others_grey_box": 0.9382
+  }
+ },
+ "gptoss20b": {
+  "units": 600,
+  "violations": 300,
+  "within": {
+   "white_box": 0.8403,
+   "grey_box": 0.875,
+   "reader_only": 0.8714,
+   "complies_alone": 0.747,
+   "others_grey_box": 0.7243
+  },
+  "pooled": {
+   "white_box": 0.9391,
+   "grey_box": 0.9633,
+   "reader_only": 0.9628,
+   "complies_alone": 0.6835,
+   "others_grey_box": 0.8827
+  }
+ },
+ "qwen38": {
+  "units": 391,
+  "violations": 91,
+  "within": {
+   "white_box": 0.9058,
+   "grey_box": 0.9154,
+   "reader_only": 0.9115,
+   "complies_alone": 0.8606,
+   "others_grey_box": 0.8192
+  },
+  "pooled": {
+   "white_box": 0.9691,
+   "grey_box": 0.9803,
+   "reader_only": 0.9762,
+   "complies_alone": 0.8322,
+   "others_grey_box": 0.9436
+  }
+ },
+ "museglimmer": {
+  "units": 600,
+  "violations": 300,
+  "within": {
+   "white_box": 0.8838,
+   "grey_box": 0.9204,
+   "reader_only": 0.9134,
+   "complies_alone": 0.8907,
+   "others_grey_box": 0.9375
+  },
+  "pooled": {
+   "white_box": 0.971,
+   "grey_box": 0.9865,
+   "reader_only": 0.9853,
+   "complies_alone": 0.8611,
+   "others_grey_box": 0.9721
+  }
+ },
+ "P1_grey_minus_white_mean": [
+  0.0236,
+  0.0006,
+  0.0498
+ ],
+ "P2_others_grey_minus_own_white_mean": [
+  -0.0387,
+  -0.0882,
+  0.0053
+ ],
+ "P3_answers_add_to_reader_mean": [
+  0.0034,
+  -0.0048,
+  0.0143
+ ]
+}

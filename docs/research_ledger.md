@@ -1816,3 +1816,9 @@ Dated log of every experiment, decision and correction. Newest last.
   94.1% and 98.5%). It scores all 42 of Claude's mailing-list sends 0 (the fact is not in the transcript), half-separates
   restarts (mean 52 vs 26), and gives >= 50 to 14.6% of allowed actions (mostly credential commands the checker allows).
   The zero-shot judge was not a strawman: a reasoning judge given the policy does no better on these labels.
+- **2026-10-21 13:13, G14 locked (the grey-box method's direct test).** User direction: one method that makes a closed
+  agent grey (recreate its decision state through its API) and monitors with it. Development (scenario-disjoint
+  cross-fit): grey box (open reader + the agent's 8 answers) >= white box on all four open agents (+0.010 to +0.061);
+  answers alone recover the safety subspace on Gemma-4 (0.995, R2 0.15); a single source's coordinates can fail (Gemma->Qwen
+  0.58) but the ensemble of other agents' grey boxes matches the own white box on average (about −0.005). Hostile
+  controls: shuffled pairs -> chance on Gemma-4; label-free recreation beats a supervised probe on the answers.

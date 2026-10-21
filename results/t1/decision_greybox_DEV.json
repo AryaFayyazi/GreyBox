@@ -1,0 +1,40 @@
+{
+ "units": 600,
+ "violations": 300,
+ "layer": 21,
+ "geometry": {
+  "answers": {
+   "spearman": 0.031,
+   "partial_given_template": -0.005
+  },
+  "reader": {
+   "spearman": 0.455,
+   "partial_given_template": 0.417
+  },
+  "template_indicator": {
+   "spearman": 0.219
+  }
+ },
+ "recreation_r2_top32": {
+  "answers": 0.153,
+  "reader": 0.677
+ },
+ "monitor_true_state_probe": {
+  "true_state (white box)": {
+   "within_template": 0.958,
+   "pooled": 0.973
+  },
+  "recreated from answers": {
+   "within_template": 0.991,
+   "pooled": 0.978
+  },
+  "recreated by the reader": {
+   "within_template": 0.972,
+   "pooled": 0.982
+  },
+  "audit question alone (answers q0, 'complies?')": {
+   "within_template": 0.945,
+   "pooled": 0.963
+  }
+ }
+}

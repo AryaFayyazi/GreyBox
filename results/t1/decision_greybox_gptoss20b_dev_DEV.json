@@ -1,0 +1,51 @@
+{
+ "actor": "gptoss20b",
+ "mode": "dev",
+ "layer_index": 3,
+ "units": 600,
+ "violations": 300,
+ "templates_mixed": 15,
+ "recreation_r2_top32": 0.109,
+ "r2": {
+  "answers": 0.109,
+  "reader": 0.481,
+  "reader+answers": 0.475
+ },
+ "within_all": {
+  "true_state": 0.7978,
+  "answers": 0.6986,
+  "reader": 0.8559,
+  "reader+answers": 0.8589,
+  "complies_alone": 0.747
+ },
+ "pooled_all": {
+  "true_state": 0.9245,
+  "answers": 0.8433,
+  "reader": 0.9566,
+  "reader+answers": 0.9576
+ },
+ "reader+answers_minus_true_within": [
+  0.061,
+  -0.0089,
+  0.1343
+ ],
+ "within": {
+  "true_state": 0.7978,
+  "recreated_from_answers": 0.6986,
+  "complies_answer_alone": 0.747
+ },
+ "pooled": {
+  "true_state": 0.9245,
+  "recreated_from_answers": 0.8433,
+  "complies_answer_alone": 0.6835
+ },
+ "recreated_minus_true_within": [
+  -0.0993,
+  -0.234,
+  0.0466
+ ],
+ "hostile_controls": {
+  "shuffled_pairs_map": 0.6663,
+  "supervised_probe_on_answers": 0.753
+ }
+}

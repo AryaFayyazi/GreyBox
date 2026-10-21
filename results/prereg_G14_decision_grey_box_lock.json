@@ -1,0 +1,24 @@
+{
+ "locked_at": "2026-10-21T13:13:42-07:00",
+ "sha256": {
+  "docs/prereg_G14_decision_grey_box.md": "1a6a105bf612642ee25b504734a2ccc5883048a17c1aeac252014dea68c1ba82",
+  "scripts/171_decision_greybox.py": "f075527bbabd8ab9e7a19fecc783acb85a7551dce107d3f6535c77b9a83b49bf",
+  "scripts/172_claude_decision_greybox.py": "1ca34d9405fec02c353f5a6b74cf58e06f449d77a50822ab8f21751d076eb226",
+  "web/build_observable_ref.py": "0b576322c4cb8987582139b4714f491e7d4fd877e8b0d52134555168ff394bc6",
+  "scripts/150_self_audit.py": "42dde9cfec4aa4b0bc04935062036ca0ecdd7960c8fcf0b076a7b71734bc3a29",
+  "paper/make_g14_numbers.py": "c5bef96fa923eb925af43342ae1aa8deb254a421e7503fe113083486bde709d0",
+  "slurm/g14.sh": "ed1e5b51d69e6954be973e6d9e51f6aead077f18c359144f35a38a8d86da0381",
+  "slurm/dgb_dev.sh": "54a4b5a89c1c2d0b629607c8174f64de22140088ba2e9c045fa55bdfa9fcd528",
+  "results/t1/g14_DRYRUN_dev.json": "ee7c7597eaa0b66ce821f943e49fbf117b22f89f7630901a1a427a6a637d0891",
+  "results/t1/decision_greybox_gemma4_dev_DEV.json": "a6fba8919fe72daa20f9f67277441f7370f14e3dec8181ecd7743f94ed75f43f",
+  "results/t1/decision_greybox_gptoss20b_dev_DEV.json": "289a4733893fce9bd1148a934726f112bd8758e413a23d872d1ead2b35109259",
+  "results/t1/decision_greybox_museglimmer_dev_DEV.json": "98c3899e7ad8592353b319253f016276e8f131cbda2371d75f9e3cec8db9fe61",
+  "results/t1/decision_greybox_qwen38_dev_DEV.json": "6a6e5ffc7727baf3011366497324af3d753af5e8b85c14647a3d8f36287f571d",
+  "/data/models/graybox_ws/outputs/decision_greybox/gemma4_dev.parquet": "91cc4e72724f818adf2ff9e0d11f2044f73a48d3bfe8afbb783b24cc657bd4d6",
+  "/data/models/graybox_ws/outputs/decision_greybox/gptoss20b_dev.parquet": "53ef9e2b4437b2033e73d9cf2b52da2c280828c479b5eef9d6ff668a4ff7bcb6",
+  "/data/models/graybox_ws/outputs/decision_greybox/qwen38_dev.parquet": "994951d352dedb35000ac9202ca8eb0bc54d64fa090e31050150e72c53b86808",
+  "/data/models/graybox_ws/outputs/decision_greybox/museglimmer_dev.parquet": "93488678fb631dac44b4adf164173f3f9881e06f8580e83e53d657af4690676d",
+  "/data/models/graybox_ws/outputs/decision_greybox/claude_t8b.jsonl": "2f2abc3e784ab65795a9053203305d8c1ee34c63a252721229f321e27d7f16a7",
+  "/data/models/graybox_ws/outputs/decision_greybox/claude_t8b_act.npz": "043b54ff8e75819ef2e3d67cbfe779ca5825397fe39fb785b513b426036dac81"
+ }
+}
