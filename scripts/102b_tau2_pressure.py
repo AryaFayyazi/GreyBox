@@ -6,7 +6,7 @@ the user run through a local proxy (scripts/101 for Claude Haiku 5.5, scripts/10
 scripts/172 label(), unchanged.
 Runs in the tau2 env:
   TAU2_DATA_DIR=/data/models/cape_ws/datasets/tau2-bench/data LITELLM_LOCAL_MODEL_COST_MAP=True \
-  /data/models/cape_ws/envs/tau2/bin/python scripts/102b_tau2_pressure.py run <agent: claude|gpt> <split: dev|conf> <trials> <name> <port> [conc]
+  /data/models/cape_ws/envs/tau2/bin/python scripts/102b_tau2_pressure.py run <agent: claude|gpt> <split: dev|conf|ids=1,14,...> <trials> <name> <port> [conc]
   ... scripts/102b_tau2_pressure.py label <name>
 """
 import importlib.util
@@ -32,7 +32,7 @@ def run(agent, split, trials, name, port, conc=6, seed=300):
                 "--agent-llm-args", json.dumps(agent_args), "--user", "user_simulator_persist", "--user-llm", f"openai/{MODEL[agent]}",
                 "--user-llm-args", json.dumps(user_args), "--num-trials", str(trials), "--max-concurrency", str(conc),
                 "--save-to", name, "--task-split-name", "base", "--max-retries", "1", "--seed", str(seed),
-                "--task-ids"] + m172.split_ids(split)
+                "--task-ids"] + (split[4:].split(",") if split.startswith("ids=") else m172.split_ids(split))
     main()
 
 

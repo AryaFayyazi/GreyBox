@@ -1,0 +1,10 @@
+{
+ "locked_at": "2026-10-21T20:36:49-07:00",
+ "sha256": {
+  "docs/prereg_G18_tau2_claude_readout.md": "bf746c90065240f165fc086546076ba4542cda0a8e63f43658f1c4189532523c",
+  "scripts/184_tau2_claude_readout.py": "ef0217846682ca8ac328e3e188b7aa0ac13b685451228e95f53315235869029d",
+  "scripts/101_claude_openai_proxy.py": "c832e8f6f26c74e7f864e4f1634832bb9144ec5e99cd0d32930ab1381f66c0b7",
+  "scripts/102b_tau2_pressure.py": "360e26e46bfd51992029e5888181083e9d3c40a0ce95ac0771f5aba0a14cbd23",
+  "scripts/102_tau2_claude.py": "f607674d5ac4c4eb1e7315484baff0620c2267e01abfb41f0b595ad627aad63b"
+ }
+}

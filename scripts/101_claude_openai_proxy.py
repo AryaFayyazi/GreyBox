@@ -10,6 +10,7 @@ python scripts/101_claude_openai_proxy.py port=8801 log=/data/models/graybox_ws/
 """
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,7 +23,7 @@ from graybox.budget import HAIKU55, BudgetExceeded, Ledger  # noqa: E402
 
 KEY = Path("/data/models/graybox_ws/.secrets/anthropic_key")
 LEDGER = Path("/data/models/graybox_ws/outputs/l3/spend.json")
-CAP = 14.80                                   # $9.90 + the $5.00 added on 2026-10-17, less $0.10 margin
+CAP = float(os.environ.get("GB_CAP", "14.80"))  # default: $9.90 + the $5.00 added on 2026-10-17, less $0.10 margin; GB_CAP overrides
 MODEL = "claude-haiku-5-5"
 D = OmegaConf.create({"port": 8801, "log": "/data/models/graybox_ws/outputs/tau2_claude/proxy.jsonl", "max_tokens": 2048})
 START = "(The conversation starts.)"          # Anthropic needs a user turn first; tau2's agent speaks first
