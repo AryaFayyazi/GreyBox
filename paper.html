@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paper · Grey Box</title><meta name="description" content="Monitoring closed AI agents by asking yes/no questions, with no training and nothing but APIs.">
+<title>Paper · Grey Box</title><meta name="description" content="Reading and monitoring closed AI agents through their own APIs alone, with no other model and no training.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="assets/site.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23596470'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%23eef0f2'/%3E%3C/svg%3E">
@@ -8,9 +8,9 @@
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="selfpolice.html">Self-policing</a><a href="train.html">Train a monitor</a><a href="monitor.html">Agent replay</a><a href="chat.html">Chat grey box</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html" aria-current=page>Paper</a></nav></div></header>
 <main><div class="wrap">
 <!--title: Paper-->
-<!--desc: Monitoring closed AI agents by asking yes/no questions, with no training and nothing but APIs.-->
+<!--desc: Reading and monitoring closed AI agents through their own APIs alone, with no other model and no training.-->
 <h1>Grey Box</h1>
-<p class="lede"><b>Grey Box: Monitoring Closed Agents by Asking Yes/No Questions.</b> A closed model's yes/no answers reveal the geometry of its hidden states, a geometry that models share, with no training. At an agent's proposed call, a fixed read-out of answers to 8 questions about the call monitors it nearly as well as a probe trained on the agent's hidden states, whether the agent or another model answers; the agent's own answer, used as a gate, prevents violations by an amount a law predicts.</p>
+<p class="lede"><b>Grey Box: Reading Closed Agents Through Their APIs Alone.</b> A closed model's yes/no answers reveal the geometry of its hidden states, a geometry that models share, with no training. At an agent's proposed call, a fixed read-out of answers to 8 questions about the call monitors it nearly as well as a probe trained on the agent's hidden states, whether the agent or another model answers; the agent's own answer, used as a gate, prevents violations by an amount a law predicts.</p>
 <p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
 <figure><a class="zoom" href="figures/teaser_geometry.png" title="Open the full-size figure"><img src="figures/teaser_geometry.png" alt="A model's latent geometry, read from its answers" loading="eager"></a>
 <figcaption><span class="zoomhint"><a href="figures/teaser_geometry.png">Tap to open the full-size figure.</a> </span>(a) The hidden
