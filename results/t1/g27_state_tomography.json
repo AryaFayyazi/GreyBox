@@ -1,0 +1,48 @@
+{
+ "steps": 2505,
+ "episodes": 300,
+ "violating_calls": 150,
+ "within_stratum": {
+  "forecast": 0.5001,
+  "filtered": 0.7402,
+  "raw": 0.7622,
+  "forecast_steps_after_first": 0.507
+ },
+ "K1_forecast_minus_prior_after_first": [
+  0.0132,
+  -0.1154,
+  0.1547
+ ],
+ "prior_only_after_first": 0.4939,
+ "forecast_all_steps_ci": [
+  0.4286,
+  0.585
+ ],
+ "K1b_forecast_after_first_ci": [
+  0.4334,
+  0.5876
+ ],
+ "K2_filtered_minus_raw": [
+  -0.022,
+  -0.0735,
+  0.0304
+ ],
+ "K3_nis_mean_over_K": 0.5215,
+ "K3_iv_noise_over_theory_noise": [
+  -0.134,
+  0.419,
+  -1.039,
+  -1.795,
+  -6.316,
+  -0.059,
+  -2.446,
+  0.117
+ ],
+ "caught_at_5pct_steps": {
+  "forecast": 0.06,
+  "filtered": 0.2667,
+  "raw": 0.0717,
+  "prior": 0.0867
+ },
+ "K1_pass": false
+}

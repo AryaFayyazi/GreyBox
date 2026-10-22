@@ -61,6 +61,38 @@ p = ROOT / "results/t1/g25_fisher_snr_own.json"
 if p.exists():
     R = json.loads(p.read_text())
     m["GTfFone"] = f"{f3(R['F1_mean_spearman_snr_vs_auroc'][0])} [{f3(R['F1_mean_spearman_snr_vs_auroc'][1])}, {f3(R['F1_mean_spearman_snr_vs_auroc'][2])}]"
+p = ROOT / "results/t1/g27_state_tomography.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTsForecast"] = f3(R["within_stratum"]["forecast_steps_after_first"])
+    m["GTsPrior"] = f3(R["prior_only_after_first"])
+    m["GTsKone"] = ci(R["K1_forecast_minus_prior_after_first"])
+    m["GTsKtwo"] = ci(R["K2_filtered_minus_raw"])
+    m["GTsFiltered"] = f3(R["within_stratum"]["filtered"])
+    m["GTsRaw"] = f3(R["within_stratum"]["raw"])
+    m["GTsNis"] = f"{R['K3_nis_mean_over_K']:.2f}"
+p = ROOT / "results/t1/g28_tomography_vs_truth.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTeFiltered"] = f3(R["rsa_with_true_state"]["filtered"])
+    m["GTeRaw"] = f3(R["rsa_with_true_state"]["raw"])
+    m["GTeForecast"] = f3(R["rsa_with_true_state"]["forecast"])
+    m["GTeTone"] = ci(R["T1_filtered_minus_raw"])
+    m["GTeSteps"] = str(R["steps_with_true_state"])
+p = ROOT / "results/t1/g27b_replication.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    if "K1_pooled_forecast_minus_prior_after_first" in R:
+        m["GTbKone"] = ci(R["K1_pooled_forecast_minus_prior_after_first"])
+        m["GTbKtwo"] = ci(R["K2_pooled_filtered_minus_raw"])
+p = ROOT / "results/t1/g29_live_forecast_gate.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTnRed"] = ci(R["P1_relative_reduction"], sign=False)
+    m["GTnSucc"] = ci(R["P2_success_difference"])
+    m["GTnNone"] = f"{100 * R['violating_episodes']['none']:.1f}\\%"
+    m["GTnPre"] = f"{100 * R['violating_episodes']['pre']:.1f}\\%"
+    m["GTnReviews"] = f"{R['reviews_per_episode']:.2f}"
 p = ROOT / "results/t1/g17_agentdojo_readout.json"
 if p.exists():
     R = json.loads(p.read_text())

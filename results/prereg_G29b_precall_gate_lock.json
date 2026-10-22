@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T16:39:28-07:00",
+ "sha256": {
+  "docs/prereg_G29b_precall_gate.md": "fe41afd3a4c2e39dde1245ab6ec802f11275589f30b68722e54fc82476fed605",
+  "scripts/198c_g29b_precall_gate.py": "e1db43cbf843e3f0c7d1347ee95040db966afe355d2b77a3469221bef53db204"
+ }
+}
