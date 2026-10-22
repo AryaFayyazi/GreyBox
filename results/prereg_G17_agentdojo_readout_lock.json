@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-21T20:44:50-07:00",
+ "sha256": {
+  "docs/prereg_G17_agentdojo_readout.md": "0f2f276be6dd71ba09bcb7bd2dc2f08deeeaac6644b811d0b19e052ee5d4c6ad",
+  "scripts/181_agentdojo_battery.py": "ef733930968866830663df314039d06f31faf7ebf8b996f9bb5d4db2565a1b85"
+ }
+}
