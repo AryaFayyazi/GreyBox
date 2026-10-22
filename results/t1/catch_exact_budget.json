@@ -1,14 +1,14 @@
 {
  "t8b_claude": {
   "READER": {
-   "distinct_scores": 3128,
+   "distinct_scores": 2587,
    "old_escalated": 0.0502,
    "old_caught": 0.9412,
    "exact_caught": 0.9412,
    "ceiling": 1.0
   },
   "J_act": {
-   "distinct_scores": 3128,
+   "distinct_scores": 1037,
    "old_escalated": 0.0502,
    "old_caught": 0.0,
    "exact_caught": 0.0,
@@ -31,14 +31,14 @@
  },
  "t11_gpt": {
   "READER": {
-   "distinct_scores": 3627,
+   "distinct_scores": 2525,
    "old_escalated": 0.0502,
    "old_caught": 0.9848,
    "exact_caught": 0.9848,
    "ceiling": 1.0
   },
   "J_act": {
-   "distinct_scores": 3625,
+   "distinct_scores": 1136,
    "old_escalated": 0.0502,
    "old_caught": 0.3788,
    "exact_caught": 0.3788,
@@ -61,28 +61,28 @@
  },
  "agentdojo_gpt_t13b_t14": {
   "READER_T13b": {
-   "distinct_scores": 2406,
+   "distinct_scores": 2313,
    "old_escalated": 0.0502,
    "old_caught": 0.3056,
    "exact_caught": 0.3056,
    "ceiling": 1.0
   },
   "J_act": {
-   "distinct_scores": 2370,
+   "distinct_scores": 1414,
    "old_escalated": 0.0507,
    "old_caught": 0.1667,
    "exact_caught": 0.1667,
    "ceiling": 1.0
   },
   "T14_zero": {
-   "distinct_scores": 2402,
+   "distinct_scores": 2334,
    "old_escalated": 0.0502,
    "old_caught": 0.2778,
    "exact_caught": 0.2778,
    "ceiling": 1.0
   },
   "T14_full": {
-   "distinct_scores": 2402,
+   "distinct_scores": 2358,
    "old_escalated": 0.0502,
    "old_caught": 0.5833,
    "exact_caught": 0.5833,
