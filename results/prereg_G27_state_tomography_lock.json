@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-22T09:32:41-07:00",
+ "sha256": {
+  "docs/prereg_G27_state_tomography.md": "0f52fa3cc92bc5eec0ab575b922065a9d3e9ab36ed195e4be9cb6a3bbad90781",
+  "scripts/194_g27_state_tomography.py": "ecb6765a57bf2493451ee2cba81cf18cc49f1c75abd7bbc330a89df64a6f1abb",
+  "slurm/g27.sh": "417520719e3768982b9d11e7226e8162bdba6db917e19b79d23960eeb2e0a7d2"
+ }
+}
