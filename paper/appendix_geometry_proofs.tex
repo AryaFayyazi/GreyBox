@@ -1,5 +1,14 @@
 \subsection*{Exact recovery from log-probabilities}
 \label{app:exact}
+\textbf{The model-specific final geometry from log-probabilities.} \Cref{thm:exact} recovers a model's own final geometry exactly from full log-probabilities. On Qwen3-0.6B ($d=1{,}024$), from 1.15 million self-generated contexts, the recovered cosines of 2{,}000 held-out contexts correlate with the true ones at \GThreeBelow\ below $d(d+1)/2$ contexts (at $0.75\times$ and $0.9\times$ the minimum-norm solution is indefinite and the recovery fails); at $1.1\times$ the correlation is \GThreeOneOne, and at $2\times$ the median error is $\GThreeErr$ (maximum $\GThreeMax$) (\cref{fig:channels}b; preregistered). Closed APIs do not return full log-probabilities.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/geometry_channels.pdf}
+\caption{(a) Own-model excess for each API channel, against the last layer and the chosen layer, on 1{,}000 fresh contexts (G7, preregistered; 95\% intervals). (b) Exact recovery of the final hidden geometry from full log-probabilities (Qwen3-0.6B, 2{,}000 held-out contexts) against the number of contexts; the threshold is $d(d+1)/2$ (G3, preregistered).}
+\label{fig:channels}
+\end{figure}
+
 Where an API returns full log-probabilities, the final state is not estimated but recovered, by the construction of \citet[App.~H]{carlini2024stealing}.
 \begin{theorem}[exact recovery; after Carlini et al.]\label{thm:exact}
 Let the logits be $Wu$, with $u=x/\mathrm{rms}(x)$ the normalised final state, the normalisation gain folded into $W$, and no output bias. The centred log-probabilities $c(x)$ lie in a $d$-dimensional subspace; write $b=Q_d^{\top}c$ for an orthonormal basis $Q_d$ of it. Then $u=Kb$ for an unknown invertible $K$, and $\|u\|^2=d$ gives $b_i^{\top}Sb_i=d$ with $S=K^{\top}K$: a linear system in $S$. If the $b_ib_i^{\top}$ span the symmetric matrices (generically, $N\ge d(d+1)/2$ contexts), $S$ is unique, and the Gram matrix of the final states, $b_i^{\top}Sb_j=u_i^{\top}u_j$, is exact for every new context. The states follow up to an orthogonal map: the gauge group.
