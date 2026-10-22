@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T08:50:14-07:00",
+ "sha256": {
+  "docs/prereg_G23_fisher_snr.md": "0787222aaff39858419808f3dd33b2700beeb0166282ea30e9c7c02c5b940e7d",
+  "scripts/190_g23_fisher_snr.py": "2b1c8ba7ed53d6701eab7c292a2b4f969aafa4689995e5c394f8f139d918cd1c"
+ }
+}
