@@ -1,7 +1,60 @@
-{"note": "exploratory controls, computed after the locked G18 analysis (scripts/184 stage=analyze); not preregistered",
- "within_task_and_tool": {"read_out_8": 0.610, "ci95_task_cluster": [0.455, 0.965], "single_answer": 0.449,
-   "strata_with_both_classes": {"14|book_reservation": [27, 12, 0.736], "19|update_reservation_flights": [5, 4, 0.75], "20|book_reservation": [27, 1, 1.0], "23|book_reservation": [25, 1, 0.625], "39|cancel_reservation": [37, 7, 0.45]},
-   "reading": "within the same task and tool the read-out is weaker (0.61, interval includes 0.5): part of the within-tool signal separates violation-prone situations across tasks rather than individual writes"},
- "excluding_targeted_run_within_tool": {"read_out_8": 0.730, "violations": 18},
- "drop_one_question_within_tool": [0.695, 0.697, 0.673, 0.699, 0.664, 0.718, 0.709, 0.702],
- "rule_questions_2_to_7_only_within_tool": 0.700}
+{
+ "note": "exploratory controls, computed after the locked G18 analysis (scripts/184 stage=analyze); not preregistered",
+ "within_task_and_tool": {
+  "read_out_8": 0.61,
+  "ci95_task_cluster": [
+   0.455,
+   0.965
+  ],
+  "single_answer": 0.449,
+  "strata_with_both_classes": {
+   "14|book_reservation": [
+    27,
+    12,
+    0.736
+   ],
+   "19|update_reservation_flights": [
+    5,
+    4,
+    0.75
+   ],
+   "20|book_reservation": [
+    27,
+    1,
+    1.0
+   ],
+   "23|book_reservation": [
+    25,
+    1,
+    0.625
+   ],
+   "39|cancel_reservation": [
+    37,
+    7,
+    0.45
+   ]
+  },
+  "reading": "within the same task and tool the read-out is weaker (0.61, interval includes 0.5): part of the within-tool signal separates violation-prone situations across tasks rather than individual writes"
+ },
+ "excluding_targeted_run_within_tool": {
+  "read_out_8": 0.73,
+  "violations": 18
+ },
+ "drop_one_question_within_tool": [
+  0.695,
+  0.697,
+  0.673,
+  0.699,
+  0.664,
+  0.718,
+  0.709,
+  0.702
+ ],
+ "rule_questions_2_to_7_only_within_tool": 0.7,
+ "task_tool_prior_from_other_episodes_labels": {
+  "within_tool": 0.87,
+  "read_out_plus_prior_z_sum": 0.899,
+  "spearman_read_out_vs_prior": 0.201,
+  "reading": "a prior that knows each task and tool's violation rate from labelled other episodes (not available for a new task) ranks well; the read-out is only weakly correlated with it and adds to it"
+ }
+}

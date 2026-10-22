@@ -3,88 +3,85 @@
   "mean8_arcsine": {
    "within": 0.994,
    "pooled": 0.988,
-   "catch5": 0.01
+   "caught_at_exact_5pct": 0.1
   },
   "mean8_raw_p": {
    "within": 0.994,
-   "pooled": 0.988,
-   "catch5": 0.01
+   "pooled": 0.988
   },
   "majority_any_rule_or_noncompliant": {
    "within": 0.994,
-   "pooled": 0.987,
-   "catch5": 0.01
+   "pooled": 0.987
   },
   "complies_alone": {
    "within": 0.966,
    "pooled": 0.966,
-   "catch5": 0.01
-  }
+   "caught_at_exact_5pct": 0.095
+  },
+  "max_possible_at_5pct": 0.1
  },
  "gptoss20b": {
   "mean8_arcsine": {
    "within": 0.822,
    "pooled": 0.79,
-   "catch5": 0.01
+   "caught_at_exact_5pct": 0.097
   },
   "mean8_raw_p": {
    "within": 0.802,
-   "pooled": 0.78,
-   "catch5": 0.01
+   "pooled": 0.78
   },
   "majority_any_rule_or_noncompliant": {
    "within": 0.802,
-   "pooled": 0.788,
-   "catch5": 0.01
+   "pooled": 0.788
   },
   "complies_alone": {
    "within": 0.758,
    "pooled": 0.729,
-   "catch5": 0.009
-  }
+   "caught_at_exact_5pct": 0.09
+  },
+  "max_possible_at_5pct": 0.1
  },
  "qwen38": {
   "mean8_arcsine": {
    "within": 0.951,
    "pooled": 0.833,
-   "catch5": 0.055
+   "caught_at_exact_5pct": 0.215
   },
   "mean8_raw_p": {
    "within": 0.941,
-   "pooled": 0.82,
-   "catch5": 0.055
+   "pooled": 0.82
   },
   "majority_any_rule_or_noncompliant": {
    "within": 0.951,
-   "pooled": 0.833,
-   "catch5": 0.055
+   "pooled": 0.833
   },
   "complies_alone": {
    "within": 0.894,
    "pooled": 0.801,
-   "catch5": 0.049
-  }
+   "caught_at_exact_5pct": 0.192
+  },
+  "max_possible_at_5pct": 0.255
  },
  "museglimmer": {
   "mean8_arcsine": {
    "within": 0.929,
    "pooled": 0.858,
-   "catch5": 0.01
+   "caught_at_exact_5pct": 0.1
   },
   "mean8_raw_p": {
    "within": 0.927,
-   "pooled": 0.857,
-   "catch5": 0.01
+   "pooled": 0.857
   },
   "majority_any_rule_or_noncompliant": {
    "within": 0.929,
-   "pooled": 0.86,
-   "catch5": 0.01
+   "pooled": 0.86
   },
   "complies_alone": {
    "within": 0.935,
    "pooled": 0.893,
-   "catch5": 0.009
-  }
- }
+   "caught_at_exact_5pct": 0.088
+  },
+  "max_possible_at_5pct": 0.1
+ },
+ "correction_2026-10-21": "The earlier field catch5 (about 0.01) was computed wrongly and is removed. caught_at_exact_5pct is graybox.stats.caught_at_budget(y, s, 0.05) on the held-out G15 batteries (scripts/174 score()); with balanced test sets the most possible is 0.05 x calls / violations (max_possible_at_5pct). Found by an independent review."
 }

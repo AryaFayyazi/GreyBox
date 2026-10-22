@@ -1,0 +1,21 @@
+{
+ "writes": 180,
+ "violations": 50,
+ "parsed_share_outside": 0.9993,
+ "within_tool": {
+  "own_8": 0.699,
+  "outside_8": 0.6558,
+  "own_single": 0.5515,
+  "outside_single": 0.6371
+ },
+ "O1_own_minus_outside_8": [
+  0.0431,
+  -0.1359,
+  0.226
+ ],
+ "reported_own_minus_outside_single": [
+  -0.0855,
+  -0.2817,
+  0.1409
+ ]
+}
