@@ -1837,3 +1837,9 @@ Dated log of every experiment, decision and correction. Newest last.
   nothing fit) matches or beats a probe trained on its true decision states on 3/4 agents (0.983 vs 0.957; 0.781 vs 0.796;
   0.864 vs 0.852; 0.942 vs 0.855) and beats the single self-audit answer. G15 locked on G14's not-yet-analysed held-out
   batteries.
+- **2026-10-21 18:05, G15 result: PASS (T1, T2, T3).** Training-free, API-only: a fixed read-out of the agent's own 8
+  answers at its decision. Within-template AUROC on held-out calls, 8 answers / 1 answer / probe trained on true states:
+  Gemma-4 0.994/0.966/0.980; gpt-oss 0.822/0.758/0.772; Qwen3.8 0.951/0.894/0.826; Muse-Glimmer 0.929/0.935/0.941.
+  T1 (8 − 1) +0.036 [+0.006, +0.064]; T2 (8 − trained) +0.045 [−0.017, +0.135]; T3 Claude restarts 0.909 [0.858, 0.952]
+  where Claude's single "complies?" answer scores 0.323. Caveats: Muse below its trained probe; Claude pooled 0.475 because
+  mailing-list sends (decided by an unchecked fact) are not flagged — the predicted boundary.
