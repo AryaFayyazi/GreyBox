@@ -2,21 +2,31 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
-**Replicating agents' hidden states from their transcripts, to predict and prevent the violations of closed agents.**
+**Monitor closed AI agents through their own answers: no training, API only.**
 
-![Seeing inside closed agents](https://raw.githubusercontent.com/AryaFayyazi/GreyBox/main/results/figures/teaser.png)
+![Self-policing, live: Claude's proposed calls, a warning before a violating call runs, and the reviewer's block](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
 
-An agent's internal state is a function of the tokens that it read. So an open model that reads the same tokens can
-hold a replica of part of it. From the transcript alone, the replica reconstructs 66% of the variance of the 128 main
-components of an agent's hidden state (51–54% of each full layer; text features: 59%), and readouts trained on the
-true state work on the replica (T15). Readouts also work on a replica from text features, because the information that
-decides a violation is in the tokens. The same reader replicates three more open agents (46–54%, T17). We use the
-reader to predict and block policy violations of closed agents (run with reasoning off) before they run.
+Before a tool call runs, ask the agent itself, in side branches that its conversation never sees, a few yes/no
+questions about the call. Their answers are its *observable state* at the decision, in exact coordinates: in the
+angles θ = 2 arcsin √P(yes), Fisher–Rao distance between answer laws is Euclidean distance. A fixed read-out of these
+answers, with no labels and nothing trained, scores the call; a gate holds the riskiest calls for a person. The closed
+model is reached only through its API.
 
-Grey Box monitors AI agents that you cannot open. It decides if an agent's next action must go to a human
-**before the action runs**. It reads only the data that every deployment can see: the agent's instructions, the
-user's task, the earlier tool results and the proposed action. It does not need the model's weights, so it works on
-closed models.
+Preregistered results (hash-locked, locks published; held-out data; failures reported):
+- **Self-policing** (the agent's own answer to "does this call comply?" as a gate): an open agent's episodes with a
+  violation fell from 27.9% to 5.0% (G9); Claude Haiku 5.5 prevented 69% of the violating episodes its transcript
+  decides, 31% of all (G10).
+- **Predicted before deploying**: a law predicted the share each of five agents prevents, within 0.15 (mean error
+  0.035; G12). On a second benchmark it cut successful prompt injections by 84% and 50% (G13).
+- **The full observable state at the decision** (8 questions, fixed read-out, no training; G15): on held-out calls of
+  four open agents it ranked violations as well as a probe trained on the agent's own hidden states (within-template
+  AUROC 0.82–0.99; mean difference +0.045 [−0.017, +0.135]) and better than the single answer; on Claude Haiku 5.5 it
+  ranked unapproved restarts at 0.909 [0.858, 0.952], where Claude's single answer scored 0.32.
+- **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
+  it is the geometry that models share, Claude's included (G1–G7).
+
+Trained monitors (an open reader with a probe trained on labelled steps) are also in the package, as an option and as
+the comparison in the paper; they need labels and do not transfer to new kinds of task without them.
 
 **Website: https://aryafayyazi.github.io/GreyBox/**
 - Train a monitor on your own labelled agent steps, in your browser. The browser does not upload your data.
@@ -215,6 +225,14 @@ audit = SelfAudit(openai_asker(client, model="my-agent", tools=TOOLS), prompt="c
 r = audit.check(messages, "send_email", {"to": "x@partner.com", "body": "..."})
 if r.flagged:                                          # unparsable answers also hold the call (unparsable="hold")
     hold_for_review(r)
+```
+
+Training-free observable state at the decision (8 questions, fixed read-out; the G15 test):
+
+```python
+from graybox.selfaudit import observable_state
+st = observable_state(ask, messages, "send_email", {"to": "x@partner.com"}, n=4)   # ask: an openai_/anthropic_asker
+st.theta, st.score        # 8 arcsine coordinates; higher score = more likely a violation (hold above your traffic's 95th pct)
 ```
 
 - `messages` is the conversation **before** the assistant turn that proposes the call, in your provider's own format

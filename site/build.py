@@ -124,6 +124,36 @@ environment's own rule checker (an oracle; not deployable: with an LLM judge as 
     return page("results.html", "Evidence", "Every preregistered test, its lock and its outcome, including failures.", body)
 
 
+def g14_card():
+    """The training-free monitor's direct test (G15), with the trained comparison (G14); empty until the results exist."""
+    f15, f14 = R / "t1/g15_training_free.json", R / "t1/g14_decision_grey_box.json"
+    if not f15.exists():
+        return ""
+    g = json.loads(f15.read_text())
+    N = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss", "qwen38": "Qwen3.8", "museglimmer": "Muse-Glimmer"}
+    rows = "".join(f"<tr><td>{N[a]}</td><td>{g[a]['within']['mean8']:.3f}</td><td>{g[a]['within']['complies']:.3f}</td><td>{g[a]['within']['white']:.3f}</td></tr>"
+                   for a in N if a in g)
+    E = g["endpoints"]
+    npass = sum(bool(v) for v in E.values())
+    verdict = "all preregistered endpoints passed" if npass == len(E) else f"{npass} of {len(E)} preregistered endpoints passed (" + ", ".join(
+        f"{k.split('_')[0]} {'pass' if v else 'FAIL'}" for k, v in E.items()) + ")"
+    t1, t2 = g["T1_mean8_minus_complies"], g["T2_mean8_minus_white_box"]
+    cl = g.get("claude")
+    claude = (f" On the closed Claude Haiku 5.5, the read-out ranks its unapproved production restarts at {cl['restart_mean8']:.3f} "
+              f"[{cl['restart_mean8_ci'][0]:.2f}, {cl['restart_mean8_ci'][1]:.2f}].") if cl else ""
+    trained = ""
+    if f14.exists():
+        h = json.loads(f14.read_text())
+        trained = (" A trained comparison that recreates the decision state from an open reader and the answers, then reads it with the "
+                   f"probe on true states, differs from the true state by {h['P1_grey_minus_white_mean'][0]:+.3f} on average (G14).")
+    return (f'<div class="card" style="margin-bottom:14px"><h3>The agent\'s own answers, read with a fixed rule, monitor its decisions</h3>'
+            f'<p>At each proposed call the agent answers 8 yes/no questions about the call, through its own API, in side branches. A fixed '
+            f'read-out of the answers scores the call: no labels, nothing trained. On held-out calls of four open agents, {verdict}.{claude}{trained}</p>'
+            f'<table class="tablewrap"><tr><th>Agent</th><th>its 8 answers (no training)</th><th>its 1 answer (self-audit)</th><th>probe trained on its hidden states</th></tr>{rows}</table>'
+            f'<p class="muted">Within-template AUROC. Mean difference, 8 answers − 1 answer: {t1[0]:+.3f} [{t1[1]:+.3f}, {t1[2]:+.3f}]; '
+            f'8 answers − trained probe: {t2[0]:+.3f} [{t2[1]:+.3f}, {t2[2]:+.3f}]. Preregistered (G15).</p></div>')
+
+
 def index_page():
     t4, t8, t9, t10 = j("t1/t4_reader.json"), j("t1/t8b_claude_all_actions.json"), j("t1/t9_text_baseline.json"), j("t1/t10_claude_unseen_families.json")
     t2, br = j("t1/t2_time.json"), j("t1/t8b_breakdown_exploratory.json")
@@ -139,13 +169,15 @@ def index_page():
     r17 = [a["r2_fresh"]["READER"] for a in t17.values()]
     pl = {L: v for L, v in t15["r2_fresh_per_layer_full_space"]["READER"].items()}
     body = f"""<h1>Monitor AI agents that you cannot open.</h1>
-<p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>. It reads only
-the data that every deployment can see: the agent's instructions, the user's task, the earlier tool results and the
-proposed action. It does not need the model's weights, so it works on closed models. The confirmatory claims on this site come from
+<p class="lede">Grey Box decides if an AI agent's next action must go to a human <i>before the action runs</i>, with no training
+and nothing but the agent's own API. Before a call runs, it asks the agent itself, in side branches that its conversation
+never sees, a few yes/no questions about the call; a fixed read-out of the answers scores the call. It needs no weights
+and no labels, so it works on closed models. The confirmatory claims on this site come from
 preregistered, hash-locked tests (lock times self-reported); exploratory results are marked. We show the failures too.</p>
 <div class="note" style="margin-top:14px"><b>In plain words.</b> Before an AI agent runs an action (send an email, delete a file, issue a
-refund), Grey Box gives it a risk score from the conversation so far, and sends the riskiest few percent to a person. It needs no access
-to the model's internals. It learns your policy from examples that you label. It works best on the kinds of tasks that you labelled; on
+refund), Grey Box asks the agent about that action, in a side conversation, and holds the action for a person when the agent's own
+answers say it may break a rule. Try it live on the <a href="selfpolice.html">self-policing page</a>. Optionally, a monitor can also
+learn your policy from examples that you label. It works best on the kinds of tasks that you labelled; on
 a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
 <a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
 {(ROOT / "site/src/assets/workflow.svg.html").read_text()}
@@ -165,6 +197,7 @@ gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.
 </div>
 
 <h2>What we found</h2>
+{g14_card()}
 <div class="grid2">
 <div class="card"><h3>The grey box replicates part of the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
   So an open model that reads the same tokens can hold a replica of part of it. From the transcript alone, the replica reconstructs

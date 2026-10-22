@@ -47,7 +47,9 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G11": "The prevention law across agents (G11, stopped)",
           "G11b": "The prevention law across agents (G11b)",
           "G12": "The composition-weighted law (G12)",
-          "G13": "Self-policing against prompt injection (G13)"}
+          "G13": "Self-policing against prompt injection (G13)",
+          "G14": "Recreating the decision state, trained comparison (G14)",
+          "G15": "The agent's own answers, training-free (G15)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 

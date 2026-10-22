@@ -2,6 +2,17 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.10.0 (2026-10-21)
+**Added**
+- `graybox.selfaudit.observable_state(ask, messages, name, args, n=4)`: the agent's observable state at a proposed call,
+  training-free and API-only. The agent answers 8 yes/no questions about the call in side branches (`STATE_QUESTIONS`,
+  the battery of the G15 test, verbatim); the answers' arcsine angles are exact Fisher-Rao coordinates; `score` is the
+  fixed read-out (mean angle in each question's violation direction; no labels, nothing fit). In the preregistered G15
+  test it ranked held-out violations as well as a probe trained on the agent's hidden states (within-template AUROC
+  0.82-0.99 on four open agents; mean difference +0.045 [-0.017, +0.135]) and Claude Haiku 5.5's unapproved restarts at
+  0.909. Limits: the questions were written for CAPE-Bench's kinds of violation; a violation decided by a fact the agent
+  never checked is not flagged. Set the hold cut on your own unlabelled traffic.
+
 ## 0.9.2 (2026-10-21)
 **Changed**
 - `openai_asker` and `anthropic_asker` default to `max_tokens=2048`. In the G10 test the "checklist" audit had 700

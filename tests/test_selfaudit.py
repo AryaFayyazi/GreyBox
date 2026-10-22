@@ -114,3 +114,19 @@ def test_merge_user_turns():
     m = _merge_user_turns([{"role": "user", "content": [{"type": "tool_result", "tool_use_id": "x", "content": "ok"}]},
                            {"role": "user", "content": "question"}])
     assert len(m) == 1 and m[0]["content"][-1] == {"type": "text", "text": "question"}
+
+
+def test_observable_state_fixed_readout():
+    import math
+    from graybox.selfaudit import STATE_QUESTIONS, observable_state
+
+    def ask(msgs, n):                      # "no" to "does it comply", "yes" to every rule question: a violation
+        q = msgs[-1]["content"]
+        return ["no"] * n if "comply with the policy" in q else ["yes"] * n
+    st = observable_state(ask, [{"role": "user", "content": "task"}], "send_email", {"to": "x"}, n=4)
+    assert len(st.theta) == len(STATE_QUESTIONS) == 8
+    top = 2 * math.asin(math.sqrt((4 + 3 / 8) / (4 + 3 / 4)))
+    assert abs(st.theta[1] - top) < 1e-9 and st.counts[0] == [0, 4]
+    safe = observable_state(lambda m, n: ["yes"] * n if "comply with the policy" in m[-1]["content"] else ["no"] * n,
+                            [{"role": "user", "content": "task"}], "read_file", {"path": "a"}, n=4)
+    assert st.score > safe.score
