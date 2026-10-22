@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-22T00:10:06-07:00",
+ "sha256": {
+  "docs/prereg_G20_questionnaire_vs_judge.md": "8bcbb4a5090d0e85d04c861d69d5d7f600e5704eaf839f7ecf849fe73438833a",
+  "scripts/187_g20_reasoning_judge.py": "2c1c7cbf1b69810864792a3516931168f62ae28f554810e81d1820e471096214",
+  "slurm/g20.sh": "06bc0146bda757a9a33977a262dd284b3dc28a7227dc85f82cd397f8b7b969a0"
+ }
+}
