@@ -167,6 +167,13 @@ def second_card():
                 f'{r1[0]:.3f} [{r1[1]:.2f}, {r1[2]:.2f}] within tool ({g["writes"]} writes, {g["violations"]} violations); its single answer '
                 f'scores {g["within_tool_single_answer"]:.3f} (difference {r2[0]:+.3f} [{r2[1]:+.3f}, {r2[2]:+.3f}]). Within one task it is '
                 f'weaker (0.61, exploratory).</p>')
+    f19 = R / "t1/g19_own_vs_outside_claude.json"
+    if f19.exists():
+        g = json.loads(f19.read_text())
+        d = g["O1_own_minus_outside_8"]
+        out += (f'<p><b>Own seat or outside reviewer</b> (G19, preregistered). The same model, reading the same conversation as an outside '
+                f'reviewer, scores {g["within_tool"]["outside_8"]:.3f} against {g["within_tool"]["own_8"]:.3f} in its own conversation '
+                f'({d[0]:+.3f} [{d[1]:+.3f}, {d[2]:+.3f}]): no detectable difference. The value is in the questions and the read-out.</p>')
     f17 = R / "t1/g17_agentdojo_readout.json"
     if f17.exists():
         g = json.loads(f17.read_text())

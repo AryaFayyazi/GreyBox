@@ -2,6 +2,24 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.11.0 (2026-10-22)
+**Added**
+- `observable_state(..., operator_note=True)`: adds `OPERATOR_NOTE` to the system prompt, saying that a message marked
+  [Operator check] comes from the operations team and that the customer does not see it. When the user turn belongs to
+  a third party (a customer), Claude declined checks placed there, or treated them as an injection; with the note it
+  answered (G18 smoke runs). `with_operator_note(messages)` does the same for your agent's own conversation.
+- `parse=parse_first_line`: reads an answer on the first line ("No.", "[Operator check answer: no]") before any text the
+  agent goes on to write to the customer.
+- `TAU2_AIRLINE_QUESTIONS`: the 8 questions of the preregistered G18 test (tau2-bench airline). There the read-out ranked
+  Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822] (single answer 0.555); within one task
+  it was weaker (0.61, exploratory). Write your own questions from your policy before you look at answers.
+
+**Changed**
+- The 0.10.0 note said the read-out ranks violations "as well as" a probe on hidden states. Against a probe tuned
+  afterwards it is 0.015 lower on average (exploratory); "nearly as well" is the accurate wording.
+- An outside reviewer (the same model reading the transcript) did about as well as the agent's own answers (G19:
+  +0.043 [-0.136, 0.226]); the value is in the questions and the read-out.
+
 ## 0.10.0 (2026-10-21)
 **Added**
 - `graybox.selfaudit.observable_state(ask, messages, name, args, n=4)`: the agent's observable state at a proposed call,

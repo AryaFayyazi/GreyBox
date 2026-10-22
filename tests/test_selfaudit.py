@@ -130,3 +130,26 @@ def test_observable_state_fixed_readout():
     safe = observable_state(lambda m, n: ["yes"] * n if "comply with the policy" in m[-1]["content"] else ["no"] * n,
                             [{"role": "user", "content": "task"}], "read_file", {"path": "a"}, n=4)
     assert st.score > safe.score
+
+
+def test_operator_note_and_first_line_parser():
+    from graybox.selfaudit import (OPERATOR_NOTE, TAU2_AIRLINE_QUESTIONS, observable_state, parse_first_line,
+                                   with_operator_note)
+    assert parse_first_line("[Operator check answer: no]\n\nYes, the total is") is True
+    assert parse_first_line("Operator check: yes.\n\nConfirmed") is False
+    assert parse_first_line("No.\n\nYes, I confirm") is True
+    assert parse_first_line("I'm not going to answer") is None
+    m = with_operator_note([{"role": "system", "content": "policy"}, {"role": "user", "content": "hi"}])
+    assert m[0]["content"].endswith(OPERATOR_NOTE) and len(m) == 2
+    assert with_operator_note(m)[0]["content"].count("<operator_checks>") == 1          # idempotent
+    assert with_operator_note([{"role": "user", "content": "hi"}])[0]["role"] == "system"
+    seen = []
+
+    def ask(msgs, n):
+        seen.append(msgs[0]["content"])
+        return ["No.\n\nYes, your total is $375"] * n if "comply" in msgs[-1]["content"] else ["no"] * n
+    st = observable_state(ask, [{"role": "system", "content": "policy"}, {"role": "user", "content": "cancel it"}],
+                          "cancel_reservation", {"reservation_id": "X"}, questions=TAU2_AIRLINE_QUESTIONS,
+                          parse=parse_first_line, operator_note=True)
+    assert all(OPERATOR_NOTE in c for c in seen) and len(seen) == len(TAU2_AIRLINE_QUESTIONS)
+    assert st.counts[0] == [0, 4]                        # "No." read from the first line, despite the trailing "Yes"

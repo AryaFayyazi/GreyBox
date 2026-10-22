@@ -26,6 +26,8 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
 - **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
   answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
+  The agent's own seat is not what matters: the same model, reading the conversation as an outside reviewer, scored
+  0.656 vs 0.699 (G19, +0.043 [−0.136, 0.226], no detectable difference). The value is in the questions and the read-out.
 - **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
   it is the geometry that models share, Claude's included (G1–G7).
 
@@ -237,6 +239,15 @@ Training-free observable state at the decision (8 questions, fixed read-out; the
 from graybox.selfaudit import observable_state
 st = observable_state(ask, messages, "send_email", {"to": "x@partner.com"}, n=4)   # ask: an openai_/anthropic_asker
 st.theta, st.score        # 8 arcsine coordinates; higher score = more likely a violation (hold above your traffic's 95th pct)
+```
+
+When the user turn is a third party's (a customer), say in the system prompt where the check comes from, and read the
+first line of each answer (the G18 settings):
+
+```python
+from graybox.selfaudit import TAU2_AIRLINE_QUESTIONS, parse_first_line
+st = observable_state(ask, messages, "cancel_reservation", {"reservation_id": "GV1N64"}, n=4,
+                      questions=TAU2_AIRLINE_QUESTIONS, parse=parse_first_line, operator_note=True)
 ```
 
 - `messages` is the conversation **before** the assistant turn that proposes the call, in your provider's own format

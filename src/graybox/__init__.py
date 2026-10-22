@@ -1,20 +1,19 @@
-"""Grey Box: read a model's latent geometry from its answers, and monitor an AI agent's proposed tool calls from its
-transcript, before they run.
+"""Grey Box: monitor a closed AI agent through its own API, with no training.
 
-The observable geometry (numpy only; no trained model):
+The method (training-free, API only):
+    from graybox.selfaudit import observable_state, openai_asker, anthropic_asker
+    st = observable_state(ask, messages, "send_email", {"to": "x@partner.com"}, n=4)
+    st.score     # fixed read-out of the agent's answers to 8 yes/no questions; hold above your traffic's 95th percentile
+    from graybox.selfaudit import SelfAudit       # one-question gate (self-policing)
+The observable geometry (numpy only):
     from graybox.geometry import interrogate, crossfit_distances, mds     # or the command `graybox-geometry`
-Main entry points (numpy only to score; training needs the [text] extra):
+Trained monitors, kept as comparisons and options (they need labels):
     from graybox import Guard, TextMonitor, QuantileGate, conversation_steps
-    guard = Guard(TextMonitor.load_json("greybox-text-monitor.json"))
-    v = guard.check_openai(messages, tool_call)          # or check_anthropic(system, messages, tool_use)
-Train a monitor: python -m graybox.train_text labelled.jsonl (CPU) or in the browser trainer; the GPU reader:
-graybox.train_reader / graybox.reader_load; the HTTP server: graybox.monitor_server. Docs: docs.html on the website.
-
-graybox.sdk (Reader, AgentGuard) is the earlier research interface (black-box state from answers); graybox.server is
-the research viewer for that interface. Neither is needed for monitoring.
+Train one: python -m graybox.train_text labelled.jsonl (CPU), the browser trainer, or graybox.train_reader (GPU);
+the HTTP server: graybox.monitor_server. graybox.sdk (Reader, AgentGuard) is the earlier research interface.
 """
 from .guard import Guard, Verdict, conversation_steps  # noqa: F401
 from .monitor import QuantileGate, TextMonitor  # noqa: F401
 from .sdk import AgentGuard, Reader, Reading  # noqa: F401  (research interface, kept for compatibility)
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
