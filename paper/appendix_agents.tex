@@ -20,6 +20,10 @@ Suppose that for every violating action an attacker can reach a still-violating 
 Under rewording, no monitor's operating point beats the clean ROC curve of the best monitor of the decisive fields.
 
 \textbf{Self-policing: a prevention law.} The agent is asked in a side branch whether its proposed call complies; a flagged call is replaced by a fresh draw, at most $M$ draws, and after $M$ flags goes to review ($M=1$ is the gate).
+\begin{proposition}[shift and bursts]\label{prop:shift}\label{prop:burst}
+If deployment scores follow $Q$ and warm-up scores follow $P$, a frozen cut escalates within $K(P,Q)+\tfrac2{n+1}$ of $\beta$, with $K$ the Kolmogorov distance. A cut set at the top $\beta$ of a window in which a share $\rho>\beta$ of the actions are violations catches at most $\beta/\rho$ of them; a frozen cut catches each violation with probability $P(S\ge\hat c\mid Y=1)$, whatever $\rho$ is.
+\end{proposition}
+The full statements of the monitor's algorithm and a ceiling on robustness to rewording (\cref{prop:ceiling}) follow.
 \begin{proposition}[prevention law]\label{prop:prevention}
 At a state let $R$ be the agent's probability of proposing a violating call, and let the audit flag a violating call with probability $\tau$ and a safe one with probability $\varphi$, independently across draws. With $f=R\tau+(1-R)\varphi$, a violation runs without review with probability $R(1-\tau)\,(1-f^M)/(1-f)$, and the step goes to review with probability $f^M$.
 \end{proposition}
