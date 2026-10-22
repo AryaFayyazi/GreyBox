@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-22T09:14:07-07:00",
+ "sha256": {
+  "docs/prereg_G25_fisher_snr_own.md": "167469bf1508ae90a537f717061a227005d920497f8e496ee94db249c40f8166",
+  "scripts/192_g25_fisher_snr_own.py": "00a6be0160b62aa758c1c7564e1aa95071a2d1059f2d0ebb64e2eceb74bafbbb",
+  "scripts/190_g23_fisher_snr.py": "2b1c8ba7ed53d6701eab7c292a2b4f969aafa4689995e5c394f8f139d918cd1c"
+ }
+}
