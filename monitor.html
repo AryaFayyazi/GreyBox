@@ -1,10 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent replay · Grey Box</title><meta name="description" content="Recorded episodes of Claude Haiku 5.5 as a tool-using agent, with the monitor's decision on each action and its 3D feature space.">
+<title>Agent replay · Grey Box</title><meta name="description" content="Recorded episodes of Closed-A as a tool-using agent, with the monitor's decision on each action and its 3D feature space.">
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav><a href="index.html">Overview</a><a href="selfpolice.html">Self-policing</a><a href="train.html">Train a monitor</a><a href="monitor.html" aria-current=page>Agent replay</a><a href="chat.html">Chat grey box</a><a href="results.html">Evidence</a><a href="docs.html">Docs</a><a href="paper.html">Paper</a></nav></div></header>
 
 <meta charset="utf-8">
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="closed_a:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -86,15 +86,15 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
 </style>
 <div class="wrap">
   <h1>Monitoring a closed agent from its transcript</h1>
-  <p class="sub">Claude Haiku 5.5 acting as a tool-using agent through its public API. Before each action runs, a monitor
+  <p class="sub">Closed-A acting as a tool-using agent through its public API. Before each action runs, a monitor
     reads only what any deployment can see (the agent's instructions, the task, earlier tool results and the proposed
     action) and decides whether to escalate it. The monitor was trained only on a different, open agent's labelled
-    traces and never saw Claude. Below are real episodes; you can see what each monitor decided and what happened.</p>
+    traces and never saw Closed-A. Below are real episodes; you can see what each monitor decided and what happened.</p>
   <div class="stats" id="stats"></div>
   <div class="layout">
   <div class="card space">
-    <div class="label">Inside the monitor: every Claude action, where the monitor places it</div>
-    <div class="cv"><canvas id="c" aria-label="3D view of all 3,128 Claude actions in the monitor's feature space. Hover or tap a dot to read it."></canvas><div id="tip" role="status"></div></div>
+    <div class="label">Inside the monitor: every Closed-A action, where the monitor places it</div>
+    <div class="cv"><canvas id="c" aria-label="3D view of all 3,128 Closed-A actions in the monitor's feature space. Hover or tap a dot to read it."></canvas><div id="tip" role="status"></div></div>
     <div class="legend">
       <span><i class="dot sm" style="background:var(--mute)"></i>safe action</span>
       <span><i class="dot" style="background:var(--flag)"></i>violation</span>
@@ -120,9 +120,9 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const S = D.summary, r3 = x => (Math.round(x * 1000 + 1e-6) / 1000).toFixed(3), LF = D.label_free, p1 = x => (100 * x).toFixed(1) + '%';
   $('stats').innerHTML = [
-    [r3(D.pooled.READER), 'Trained transcript monitor, AUROC pooled over all 3,128 Claude actions'],
+    [r3(D.pooled.READER), 'Trained transcript monitor, AUROC pooled over all 3,128 Closed-A actions'],
     [r3(D.pooled.J_act), 'Zero-shot 70B judge, same actions'],
-    [p1(LF.READER.label_free_cut), `of Claude's violations caught when the monitor sends its riskiest 5% of actions to a human. The cut is set without labels (${p1(LF.READER.safe_escalated_label_free)} of safe actions escalated).`],
+    [p1(LF.READER.label_free_cut), `of Closed-A's violations caught when the monitor sends its riskiest 5% of actions to a human. The cut is set without labels (${p1(LF.READER.safe_escalated_label_free)} of safe actions escalated).`],
     [p1(LF.J_act.label_free_cut), 'caught by the zero-shot judge with the same 5% review budget']
   ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
   const pct = x => (100 * x).toFixed(x > .99 ? 1 : 0) + '%';
@@ -237,7 +237,7 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     });
     (function tick() { requestAnimationFrame(tick); ctl.update(); r.render(scene, cam); })();
     const pc = (100 * D.calib.recall_after_100).toFixed(0);
-    $('cap').textContent = `Each dot is one of Claude's ${N.toLocaleString()} actions, placed where the trained monitor puts it. Left to right is the monitor's own risk score ` +
+    $('cap').textContent = `Each dot is one of Closed-A's ${N.toLocaleString()} actions, placed where the trained monitor puts it. Left to right is the monitor's own risk score ` +
       `(its logit, drawn to scale; ${SP.clipped} extreme actions are pinned to the edges). The plane is the escalation cut learned from unlabelled traffic: ` +
       `actions to its right go to a human. The other two axes are the main remaining directions in the reader's representation (` +
       `${(100 * (SP.var23[0] + SP.var23[1])).toFixed(0)}% of its remaining variance); they show how actions cluster, not how risky they are. ` +
@@ -291,14 +291,14 @@ button.play:focus-visible { outline: 2px solid var(--accent); }
     if (!ids.length) return; focus(ids[0]);
     timer = setInterval(() => { k++; if (k >= ids.length) { clearInterval(timer); return; } focus(ids[k]); }, 1100);
   }
-  $('note').textContent = `Escalation rule, no labels needed: each monitor escalates the 5% of Claude's actions it rates riskiest. ` +
+  $('note').textContent = `Escalation rule, no labels needed: each monitor escalates the 5% of Closed-A's actions it rates riskiest. ` +
     `Run online in the agent's real order (the SDK's QuantileGate, which learns the cutoff from its first 500 unlabelled actions and then freezes it), the monitor caught ` +
     `${pct(D.calib.recall_after_100)} of violations and escalated ${pct(D.calib.fpr_after_100)} of safe actions after its first 100 (exploratory). ` +
-    `A fixed 0.5 probability cutoff would catch 3%: the monitor's ranking transfers to Claude, its raw probabilities do not. ` +
+    `A fixed 0.5 probability cutoff would catch 3%: the monitor's ranking transfers to Closed-A, its raw probabilities do not. ` +
     `Preregistered test (T8b), within template: AUROC ${r3(S.auroc.READER)} vs ${r3(S.auroc.J_act)}, difference +${S.S1_READER_minus_Jact[0].toFixed(2)} ` +
     `[${S.S1_READER_minus_Jact[1].toFixed(2)}, ${S.S1_READER_minus_Jact[2].toFixed(2)}]. That metric rests on one task family (136 actions, 26 violations); ` +
     `the pooled AUROC above is exploratory. Of the 68 violations, 42 come from a task family the monitor never saw in training; it caught 98% of those at the label-free cut. Labels come from the environment's rules and are used only for scoring. ` +
-    `Is it the reader or the labels? A bag-of-words classifier trained on the same labels ranks Claude's actions about as well (0.997), ` +
+    `Is it the reader or the labels? A bag-of-words classifier trained on the same labels ranks Closed-A's actions about as well (0.997), ` +
     `but with the label-free cut it catches 65% of violations, against the reader's 94%. On a new benchmark (AgentDojo) it falls to chance (0.50 vs 0.78; preregistered T9). ` +
     `The limit is the policy, not the agent: retrained without one of these two task families, the monitor still outranks the judge but escalates none ` +
     `of that family's 26 violations; 20 to 40 labelled examples of the policy bring it back to 85 to 94% (preregistered T10 and an exploratory follow-up).`;

@@ -14,17 +14,11 @@
   whether the call follows its policy. If it says no, hold the call for a human. You need only the agent's own API: no second
   model, no training, no GPU, no server. This page does it in your browser.</p>
 
-<div class="card" style="margin-bottom:14px"><div class="label">Watch: a 4-minute narrated explainer (real page, a live agent session, recorded test episodes)</div>
-  <video controls preload="none" poster="media/poster.png" style="width:100%;border-radius:8px;margin-top:6px" src="media/greybox_selfpolicing_explainer.mp4">
-    <track kind="subtitles" srclang="en" label="English" src="media/greybox_selfpolicing_explainer.vtt" default></video>
-  <p class="muted" style="margin-top:6px">Narration by an open text-to-speech model (Kokoro-82M). The test results in it are preregistered. The live session is one unedited run of Claude Haiku 5.5 on a benchmark scenario (the first recorded run with a flagged call); the benchmark's checker plays the reviewer, and the recording holds the warning on screen until the narration reaches it.
-    <a href="media/greybox_selfpolicing_explainer.mp4" download>Download the video</a> · <a href="media/greybox_selfpolicing_explainer.srt" download>subtitles</a> ·
-    <a href="media/greybox_selfpolicing.gif">GIF</a></p></div>
-<div class="grid3" id="headline"><div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">5%</div><p>episodes with a violation, down from 28% (preregistered); tasks completed: 33% → 44%.</p></div><div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;69%</div><p>of the violations that its conversation reveals [51, 88] (all its violations: &minus;31%), at no cost in tasks completed (40.4% → 40.1%; preregistered).</p></div><div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4, held-out tasks</div><div class="num">1.8%</div><p>attacks that succeeded, down from 11.5% (&minus;84% [76, 91]), no loss of utility (preregistered). gpt-oss: 24% → 12%.</p></div></div>
+<div class="grid3" id="headline"><div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">5%</div><p>episodes with a violation, down from 28% (preregistered); tasks completed: 33% → 44%.</p></div><div class="card"><div class="label">Closed agent (Closed-A), held-out scenarios</div><div class="num">&minus;69%</div><p>of the violations that its conversation reveals [51, 88] (all its violations: &minus;31%), at no cost in tasks completed (40.4% → 40.1%; preregistered).</p></div><div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4, held-out tasks</div><div class="num">1.8%</div><p>attacks that succeeded, down from 11.5% (&minus;84% [76, 91]), no loss of utility (preregistered). gpt-oss: 24% → 12%.</p></div></div>
 
 <div class="note"><b>When it works, and when it cannot.</b> It works when the agent can judge its own policy. Asked about its own
   proposed calls (flag = most answers say "no"), Gemma-4 flags 97% of its violations, Muse-Glimmer-30B 87%, Qwen3.8-27B 47%,
-  gpt-oss-20b 37%. Claude Haiku 5.5 flags only 5% with a plain question but recognizes its rule misreadings when asked to check
+  gpt-oss-20b 37%. Closed-A flags only 5% with a plain question but recognizes its rule misreadings when asked to check
   each rule in turn. It cannot catch a
   violation that depends on a fact the agent has not looked at yet (for example how many people are on a mailing list): no
   judge of the conversation can. For those, check the world before the action runs. Check how well your agent judges its
@@ -59,7 +53,7 @@
 <div class="card sp-form">
   <div class="row">
     <label>Provider <select id="prov"><option value="anthropic">Anthropic</option><option value="openai">OpenAI-compatible (OpenAI, vLLM, Ollama, ...)</option></select></label>
-    <label>Model <input id="model" value="claude-haiku-5-5" size="22"></label>
+    <label>Model <input id="model" value="" placeholder="your model id" size="22"></label>
     <label id="baseWrap" hidden>Base URL <input id="base" value="https://api.openai.com/v1" size="30"></label>
     <label>API key <input id="key" type="password" size="28" placeholder="stays in this tab"></label>
   </div>
@@ -124,15 +118,15 @@
   </div>
   <p id="lsStatus" style="margin-top:8px"></p>
   <p class="muted">Each step: one agent call, then (in parallel) the audit's answers and 16 one-word answers for the map, so one step
-    takes about one round trip, a few seconds. With Claude Haiku 5.5 a whole session costs about two cents. The benchmark's
+    takes about one round trip, a few seconds. With Closed-A a whole session costs about two cents. The benchmark's
     checker is shown only to let you judge the audit; a real deployment has no such oracle.</p>
 </div>
 
 <h2>3. Watch it on recorded test episodes</h2>
-<p>Recorded episodes of Claude Haiku 5.5 from the preregistered test (G10): the same scenario without and with self-policing.
-  Each row is one proposed tool call: the share of Claude's own answers that said "no", whether the call was held, and what
+<p>Recorded episodes of Closed-A from the preregistered test (G10): the same scenario without and with self-policing.
+  Each row is one proposed tool call: the share of Closed-A's own answers that said "no", whether the call was held, and what
   the environment's checker says about it. A held call goes to a reviewer; in the test the benchmark's checker played the
-  human reviewer: it ran an allowed call and blocked a violation, telling Claude it was not executed.</p>
+  human reviewer: it ran an allowed call and blocked a violation, telling Closed-A it was not executed.</p>
 <div class="card">
   <div class="row"><label>Episode <select id="ep"></select></label><span id="epNote" class="muted"></span></div>
   <div class="grid2 sp-cols" style="margin-top:10px">
@@ -150,12 +144,12 @@
   <div class="scrollx"><table id="lawTable" class="tablewrap"><thead><tr><th>Kind of violation</th><th>Share of violations w</th><th>Flag rate τ (0–1)</th><th></th></tr></thead><tbody></tbody></table></div>
   <p class="muted">Shares w are normalized, so counts work too.</p>
   <div class="row" style="margin-top:8px"><button id="addRow" class="secondary">Add a kind</button>
-    <button id="exLaw" class="secondary">Example: Claude Haiku 5.5 (G12 step A)</button></div>
+    <button id="exLaw" class="secondary">Example: Closed-A (G12 step A)</button></div>
   <p style="margin-top:10px">Predicted share of violations prevented: <span id="lawOut" class="num">–</span></p>
   <p id="lawWarn" class="tag" hidden></p>
   <p id="lawNote" class="muted"></p>
 </div>
-<div id="lawEvidence"><div class="card"><b>The preregistered test of this prediction (G12): passed.</b> Predicted from each agent's offline flag rates per kind of task, weighted by where it violated without the gate; observed live on new scenarios (relative reduction in episodes with a violation, 95% interval). The registered tolerance was ±0.15 for each agent: <table class="tablewrap"><tr><th>Agent</th><th>Predicted</th><th>Observed</th></tr><tr><td>Gemma-4</td><td>67%</td><td>63% [56, 71]</td></tr><tr><td>gpt-oss</td><td>15%</td><td>17% [5, 28]</td></tr><tr><td>Qwen3.8</td><td>3%</td><td>1% [-13, 13]</td></tr><tr><td>Muse-Glimmer</td><td>25%</td><td>27% [18, 36]</td></tr><tr><td>Claude Haiku 5.5</td><td>38%</td><td>30% [23, 37]</td></tr></table><p class="muted">Mean absolute error 0.035. The law over-predicts Claude: its flag rate on mailing-list sends was 12% live against 21% in the offline audit of 38 calls (within that estimate's error). Audit enough calls of each kind.</p></div></div>
+<div id="lawEvidence"><div class="card"><b>The preregistered test of this prediction (G12): passed.</b> Predicted from each agent's offline flag rates per kind of task, weighted by where it violated without the gate; observed live on new scenarios (relative reduction in episodes with a violation, 95% interval). The registered tolerance was ±0.15 for each agent: <table class="tablewrap"><tr><th>Agent</th><th>Predicted</th><th>Observed</th></tr><tr><td>Gemma-4</td><td>67%</td><td>63% [56, 71]</td></tr><tr><td>gpt-oss</td><td>15%</td><td>17% [5, 28]</td></tr><tr><td>Qwen3.8</td><td>3%</td><td>1% [-13, 13]</td></tr><tr><td>Muse-Glimmer</td><td>25%</td><td>27% [18, 36]</td></tr><tr><td>Closed-A</td><td>38%</td><td>30% [23, 37]</td></tr></table><p class="muted">Mean absolute error 0.035. The law over-predicts Closed-A: its flag rate on mailing-list sends was 12% live against 21% in the offline audit of 38 calls (within that estimate's error). Audit enough calls of each kind.</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="assets/selfpolice.js"></script>
 <script src="assets/selfpolice3d.js"></script>

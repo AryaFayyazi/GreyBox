@@ -79,7 +79,7 @@
 
   // ---- 1. audit a call -------------------------------------------------------------------------------------------
   try { const k = localStorage.getItem("gbSelfKey"); if (k) { $("key").value = k; $("remember").checked = true; } } catch (e) { /* storage blocked */ }
-  const DEFAULT_MODEL = { openai: "gpt-4.1-mini", anthropic: "claude-haiku-5-5" };
+  const DEFAULT_MODEL = { openai: "gpt-4.1-mini", anthropic: "" };
   $("prov").addEventListener("change", () => {
     const o = $("prov").value === "openai";
     $("baseWrap").hidden = !o;
