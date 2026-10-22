@@ -55,8 +55,8 @@
 % first-page figure, built in a box before the title block
 \newsavebox{\teaserbox}
 \sbox{\teaserbox}{\begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth]{figures/teaser_trainingfree.pdf}\par\vspace{-2mm}
-\captionof{figure}{\textbf{Monitoring a closed agent through its own answers, with no training.} (a) An open model's hidden geometry (classical scaling of its states on 1{,}440 held-out contexts) and (b) the same contexts placed only by its yes/no answers, in exact Fisher--Rao coordinates (rotated onto (a) for display; nothing else is fit). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call, against its single self-audit answer and against a probe trained on its true hidden states (a trained comparison): within-template AUROC on held-out calls of four open agents and on the closed Claude Haiku~5.5 (G15, preregistered). (d) Self-policing, the agent's own answer used as a gate: live reduction in violations vs the prevention law's prediction (G12 dots, G13 squares, preregistered; crosses: G11b, failed).}
+\includegraphics[width=\textwidth]{figures/teaser_v4.pdf}\par\vspace{-2mm}
+\captionof{figure}{\textbf{Monitoring a closed agent through its own answers, with no training.} (a) An open model's hidden geometry (classical scaling of its states on 1{,}440 held-out contexts) and (b) the same contexts placed only by its yes/no answers in exact Fisher--Rao coordinates (rotated onto (a) for display; nothing else is fit); Spearman 0.74 between their distances (preregistered, G1). (c) At an agent's proposed call, a fixed read-out of its own answers to 8 questions about the call ranks its violations, within each kind of task, about as well as a probe trained on its hidden states (held-out calls; 95\% scenario-bootstrap intervals; G15, preregistered). Claude is closed: no hidden states exist to train on; its row is its unapproved restarts. (d) The agent's own answer used as a gate: live reduction in violations against the prediction of the prevention law from offline flag rates (G12, G13, preregistered; band: the registered $\pm0.15$).}
 \label{fig:teaser}
 \end{minipage}}
 

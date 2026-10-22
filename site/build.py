@@ -181,11 +181,12 @@ learn your policy from examples that you label. It works best on the kinds of ta
 a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
 <a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
 {(ROOT / "site/src/assets/workflow.svg.html").read_text()}
-<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser.png" title="Open the full-size figure"><img src="figures/teaser.png" alt="True hidden state of an open agent, its replica from the transcript, replicas of two closed agents, and live prevention rates" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser.png">Tap to open the full-size figure.</a> </span><b>Seeing inside closed agents.</b> Panels (a–d) share the main axes of one open agent's hidden state. (a) Its true state. (b) Its
-replica, computed from the transcript only. (c, d) Two closed agents, mapped through the same reader: we never saw their weights, and their replica cannot be checked, so we test prediction. Red: policy
-violations. In every agent they occupy their own region. (e) Live prevention: the share of episodes in which a violation ran, without the
-gate (grey) and with the monitor in the agent's loop (blue), for GPT and Claude.</figcaption></figure>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v4.png" title="Open the full-size figure"><img src="figures/teaser_v4.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_v4.png">Tap to open the full-size figure.</a> </span><b>Monitoring a closed agent through its own answers, with no training.</b>
+(a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
+but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call, its single self-audit answer, and a
+probe trained on its hidden states, on held-out calls (G15, preregistered). (d) The agent's own answer as a gate: the live reduction in violations
+against the law's prediction (G12, G13 preregistered).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
@@ -470,7 +471,7 @@ def main():
     for name, title, desc in (("train.html", "Train a monitor", "Train an agent-action monitor on your own labelled steps, in your browser."),
                               ("docs.html", "Docs", "Install, deploy and evaluate Grey Box monitors."),
                               ("selfpolice.html", "Self-policing", "Let an AI agent check its own tool calls before they run, through its own API."),
-                              ("paper.html", "Paper", "Grey Box: What Crosses the API, and How to Police Closed Agents.")):
+                              ("paper.html", "Paper", "Grey Box: Monitoring Closed Agents Through Their Own Answers.")):
         if (SRC / "pages" / name).exists():
             s = (SRC / "pages" / name).read_text()
             m1, m2 = re.search(r"<!--title: (.*?)-->", s), re.search(r"<!--desc: (.*?)-->", s)
