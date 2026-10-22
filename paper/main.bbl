@@ -1,4 +1,4 @@
-\begin{thebibliography}{43}
+\begin{thebibliography}{44}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -192,6 +192,11 @@ Sriramanan, G., Bharti, S., Sadasivan, V.~S., Saha, S., Kattakinda, P., and Feiz
 Torgerson, W.~S.
 \newblock Multidimensional scaling: {I}. {T}heory and method.
 \newblock \emph{Psychometrika}, 17\penalty0 (4):\penalty0 401--419, 1952.
+
+\bibitem[Turpin et~al.(2023)Turpin, Michael, Perez, and Bowman]{turpin2023unfaithful}
+Turpin, M., Michael, J., Perez, E., and Bowman, S.~R.
+\newblock Language models don't always say what they think: Unfaithful explanations in chain-of-thought prompting.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
 
 \bibitem[Vovk et~al.(2005)Vovk, Gammerman, and Shafer]{vovk2005algorithmic}
 Vovk, V., Gammerman, A., and Shafer, G.
