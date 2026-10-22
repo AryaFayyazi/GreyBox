@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-21T21:22:45-07:00",
+ "sha256": {
+  "docs/prereg_G19_own_vs_outside_claude.md": "8e5eb0554490a3998dc713822ca0e4325b48e295ca0dc803f60c07d34364a0b4",
+  "scripts/185_tau2_claude_outside.py": "7735263024d32ce517639a5d1f6c20590980a45e1bc410e393a9d6e91992d8ea",
+  "scripts/184_tau2_claude_readout.py": "ef0217846682ca8ac328e3e188b7aa0ac13b685451228e95f53315235869029d"
+ }
+}
