@@ -131,12 +131,15 @@
         if (REF && map && m.every((x) => x > 0)) { const [p] = place(k, m); path.push({ p, held }); drawPath(); }
         const rules = REF ? REF.labels.map((l, j) => [l, j > 0 && m[j] ? k[j] / m[j] : 0]).filter(([, s]) => s >= 0.5).map(([l]) => l) : [];
         const nRead = answers ? answers.filter((a) => parse(a) !== null).length : 0;
+        // the training-free read-out of the observable state (G15): mean arcsine angle in each question's violation direction
+        const obsScore = REF && m.every((x) => x > 0) ? k.map((x, j) => (j === 0 ? -1 : 1) * 2 * Math.asin(Math.sqrt((x + 3 / 8) / (m[j] + 3 / 4)))).reduce((a, b) => a + b, 0) / k.length : null;
         let verdict = read ? "read-only: not audited" : share === null ? "no answer could be read, even after asking again: held (fail closed)"
           : `${Math.round(share * 100)}% of its ${nRead} readable answers say it breaks the policy` + (!held && share > 0 ? " (a call is held only when all of them say so)" : "") + (retried ? " (asked twice: the first answers had no verdict)" : "");
         row.innerHTML = `<b>Step ${t + 1}.</b> The agent proposes <code>${esc(mv.call.name)}</code> <span class="muted">${esc(argsS).slice(0, 160)}</span><br>` +
           `Its own audit: <b class="${held ? "verdict-hold" : "verdict-run"}">${held ? "FLAGGED" : "ok"}</b> · ${verdict}` + (rules.length ? ` · its answers point to: ${esc(rules.join(", "))}` : "") +
           ` <span class="muted">· agent ${(tAgent / 1000).toFixed(1)} s, checks ${(tCheck / 1000).toFixed(1)} s (all questions in parallel)</span>` +
           ` <span class="muted">· map: ${m.every((x) => x > 0) ? "placed" : "not placed"} (${m.reduce((a, b) => a + b, 0)} of ${8 * nb} answers readable)</span>` +
+          (obsScore !== null ? `<br><span class="muted">Its 8 answers, read with a fixed rule (no training; higher = more likely a violation): </span><b>${obsScore.toFixed(2)}</b>` : "") +
           (answers ? `<details><summary class="muted">its audit answers</summary>${answers.map((a) => `<pre style="white-space:pre-wrap;font-size:12px">${esc(a.replace(/\*\*/g, ""))}</pre>`).join("")}</details>` : "");
         let action = "allow";
         if (held) {
