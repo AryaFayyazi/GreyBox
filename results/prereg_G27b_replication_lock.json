@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-22T11:56:32-07:00",
+ "sha256": {
+  "docs/prereg_G27b_replication.md": "bfe39262cf8c6f06acf44fd4f8fcc2e0d5e9d5233ef707f6e2a5644a503fe01a",
+  "scripts/197_g27b_replication.py": "904f24ca3e1a8800d0747621023f1289a6655bd8e22ec0a07ae2ff075ccf9b99",
+  "slurm/g27b.sh": "8e6917db1b147bb0cc5de11bf790862fab4ec23bfde23b9a256f95ae2656f923"
+ }
+}
