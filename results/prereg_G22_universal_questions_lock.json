@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-22T01:15:32-07:00",
+ "sha256": {
+  "docs/prereg_G22_universal_questions.md": "aa8b0d161ec9ff9ef91c10c39e1e00ca07e6dfe6ec3d5b81e71385fd21aee295",
+  "scripts/189_g22_universal_questions.py": "75a367b95ed12ad0f9fb8468e80f799880d6813b16958fd4ca4a1ce9b9135b8e",
+  "slurm/g22.sh": "c19aeeb1e9ddd8e56668005f6afa4a9cefa9b55365c9c9f1579ca9ae3bd85d67"
+ }
+}
