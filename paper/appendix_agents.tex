@@ -28,6 +28,13 @@ Draw $j$ is the first unflagged draw with probability $f^{j-1}(1-f)$; given that
 \end{proof}
 Every term is measurable through the agent's API: $R$ by resampling it, $\tau$ and $\varphi$ by auditing it. For a gate whose reviewer blocks flagged violations, the share of violations prevented at one state is $\tau$ when a blocked violation is not retried. Over states of kinds $k$ with violation shares $w_k$ and flag rates $\tau_k$, it is $\sum_k w_k\tau_k$; a $\tau$ measured on another mix of states can predict it badly (G11b, \cref{app:record}). Gemma-4's development audit flagged $\tau=0.883$ of its violating calls when all four answers said no (the gate's cut; 0.966 when a majority did); the live gate prevented 0.82 [0.76, 0.88] of its violating episodes.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figures/law.pdf}
+\caption{\textbf{The prevention law predicts live self-policing.} Live reduction in violating episodes (95\% interval) vs the prediction from offline flag rates per kind of task, weighted by where the agent violates. Dots: G12 (preregistered; all five within $\pm0.15$). Squares: G13 on AgentDojo (preregistered; Gemma-4's prediction failed: 0.84 vs 1.00). Crosses: G11b, rates from another mix of tasks (failed).}
+\label{fig:law}
+\end{figure}
+
 \textbf{The frozen cut, in full.} \Cref{prop:frozen} also gives the long-run escalation rate: for i.i.d.\ scores with continuous distribution function $F$, $1-F(\hat c)$ follows $\mathrm{Beta}(n+1-k,k)$ over warm-up draws, and the interpolated empirical $(1-\beta)$-quantile has escalation probability within $\tfrac{2}{n+1}$ of $\beta$. With $n=500$ and $\beta=0.05$ the escalation rate has mean $0.050$ and standard deviation $0.0097$.
 
 \textbf{Battery design.} In our earlier tests of the interrogation state (an Othello-playing transformer; preregistered, \cref{app:record}), the battery was designed from black-box answers alone: from a pool of candidate questions, add the one that splits the most classes of contexts with equal answers, and stop when no candidate splits a class.
@@ -53,3 +60,58 @@ This greedy rule stops with the partition of the contexts that the whole pool in
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
+
+
+\section{Trained comparisons: the reader monitor in full}
+\label{app:trained}
+\begin{table*}[h]
+\centering\small
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{2.2pt}
+\newcommand{\ci}[1]{{\scriptsize\textcolor{gbmute}{[#1]}}}
+\newcommand{\sota}[1]{\textbf{#1}}
+\newcommand{\snd}[1]{\underline{#1}}
+\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels. $^\ddagger$Exploratory: Qwen3-32B with reasoning, given the policy, checking each rule (3 samples).}
+\label{tab:main}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}llr cccc>{\columncolor{gbrow}}c l@{}}
+\toprule
+ & & & \multicolumn{5}{c}{\textbf{Monitor}} & \\
+\cmidrule(lr){4-8}
+\textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{Reasoning\\judge, rules\textsuperscript{$\ddagger$}} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Reader}\\\textbf{probe}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
+\midrule
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Open agents: the training agent, then three other architectures}}\\
+Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & -- & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
+Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & -- & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
+Mixture of experts & gpt-oss-20b & 5{,}229 & -- & 0.833 & -- & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & -- & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
+Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & -- & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
+CAPE-Bench & Claude Haiku~5.5 & 3{,}128 & -- & 0.633 & 0.710 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
+CAPE-Bench & GPT-6-luna & 3{,}627 & -- & 0.942 & 0.791 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
+\rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{A new benchmark: AgentDojo prompt injection, a policy absent from training}}\\
+No AgentDojo labels & two open & 3{,}455 & -- & \snd{0.537} & -- & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
+Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & -- & \sota{0.922} & J\enspace$+0.136$ \ci{0.078, 0.191}\\
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table}[h]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{2.6pt}
+\caption{\textbf{Live prevention} (preregistered; 500, 450, 450 and 400 scenarios, each without and with the gate). Episodes with an executed violation and episodes that reached the goal, in \%; $\Delta$: gated $-$ ungated violation rate, with its 95\% interval.}
+\label{tab:live}
+\begin{tabular}{@{}l c>{\columncolor{gbrow}}c c cc@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Violations}} & & \multicolumn{2}{c}{\textbf{Goals}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){5-6}
+\textbf{Agent, gate} & none & gate & $\Delta$ [95\% CI] & none & gate\\
+\midrule
+GPT-6-luna, block & 6.6 & \textbf{0.2} & $-.064$ {\scriptsize[$-.088$, $-.044$]} & 47.4 & 45.6\\
+Claude, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 40.7 & 34.9\\
+\quad hold for review\textsuperscript{a} & 6.7 & \textbf{0.0} & $-.067$ {\scriptsize[$-.091$, $-.044$]} & 40.7 & 38.7\\
+\quad told, cut re-set\textsuperscript{b} & 6.5 & \textbf{0.0} & $-.065$ {\scriptsize[$-.090$, $-.043$]} & 38.5 & 35.5\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{\columnwidth}{\scriptsize \textsuperscript{a}An oracle reviewer; same scenarios as the row above, run separately. \textsuperscript{b}Block, with the cut set again on the told agent's unlabelled traffic: it escalated 4.7\% [3.5, 6.1] of actions (budget 5\%; the old cut 16.6\%).}
+\end{table}

@@ -101,6 +101,8 @@ def main():
             continue
         gm = re.match(r"(G\d*b?)\s+", cells[0])                  # the geometry tests: named before endpoint ids are rewritten
         if gm and gm.group(1) in GNAMES:
+            if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
+                cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids
                 cells = [re.sub(r"\bL([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
                 cells = [c.replace("S4@", "resampling@").replace("S4 ", "resampling ") for c in cells]

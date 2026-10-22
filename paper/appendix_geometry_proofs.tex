@@ -1,3 +1,11 @@
+\subsection*{Exact recovery from log-probabilities}
+\label{app:exact}
+Where an API returns full log-probabilities, the final state is not estimated but recovered, by the construction of \citet[App.~H]{carlini2024stealing}.
+\begin{theorem}[exact recovery; after Carlini et al.]\label{thm:exact}
+Let the logits be $Wu$, with $u=x/\mathrm{rms}(x)$ the normalised final state, the normalisation gain folded into $W$, and no output bias. The centred log-probabilities $c(x)$ lie in a $d$-dimensional subspace; write $b=Q_d^{\top}c$ for an orthonormal basis $Q_d$ of it. Then $u=Kb$ for an unknown invertible $K$, and $\|u\|^2=d$ gives $b_i^{\top}Sb_i=d$ with $S=K^{\top}K$: a linear system in $S$. If the $b_ib_i^{\top}$ span the symmetric matrices (generically, $N\ge d(d+1)/2$ contexts), $S$ is unique, and the Gram matrix of the final states, $b_i^{\top}Sb_j=u_i^{\top}u_j$, is exact for every new context. The states follow up to an orthogonal map: the gauge group.
+\end{theorem}
+The subspace \citep{finlayson2024logits} and the ellipsoid fit that removes all but an orthogonal ambiguity \citep[App.~H]{carlini2024stealing} are known; we state the consequence for the gauge-invariant geometry and test its sharp transition at $d(d+1)/2$ contexts. Recovery holds up to the normalisation's $\epsilon$, and near the threshold the system is badly conditioned.
+
 \subsection{The observable geometry}
 \begin{proof}[Proof of \cref{thm:geometry}]
 (a) The Fisher information of $\mathrm{Bernoulli}(p)$ is $1/(p(1-p))$ and $\mathrm{d}\vartheta/\mathrm{d}p=1/\sqrt{p(1-p)}$, so the metric is $\mathrm{d}\vartheta^2$. The Fisher metric of a product of independent factors is the sum of the factors' metrics, so in $\vartheta$ the family is the box $[0,\pi]^m$ with the Euclidean metric. The box is convex, so geodesics are segments and the distance is Euclidean. Check for one factor: the Bhattacharyya coefficient of $\mathrm{Bernoulli}(\sin^2\alpha)$ and $\mathrm{Bernoulli}(\sin^2\beta)$ is $\cos(\alpha-\beta)$, and $2\arccos\cos(\alpha-\beta)=|\vartheta-\vartheta'|$.
