@@ -71,3 +71,10 @@ pilot's $0.0076 (later conversations are longer), so 495 actions need about $5.0
 is a spending guard, not an analysis parameter; the sample, prompts, settings and analysis are unchanged. If the run
 stops at $39.10 it resumes from its checkpoint with cap=39.40.
 Note (14:20): the Claude battery finished all 495 actions at $37.908, under the original cap; Deviation 1 was not used.
+
+## Deviation (2026-10-21 17:55, before any held-out result was computed)
+Both locked analyses stopped at their first assertion: one held-out gpt-oss call (1 of 600) has no stored decision
+state (ok = False; the battery sampled calls without checking it), so the white-box comparison cannot score it. Calls
+without a stored decision state are dropped from all scores. The locked scripts are run unchanged through
+scripts/175_run_locked_excluding_missing_states.py, which drops such calls as the battery files are read and reports the
+count. No score was computed before this deviation (the stopped runs printed only the assertion).
