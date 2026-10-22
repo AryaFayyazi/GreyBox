@@ -25,17 +25,17 @@ def tex(s: str) -> str:
 
 
 NAMES = {  # descriptive names for the paper (the released record keeps its ids)
-    "L1": "Interrogation state, Othello", "L2": "Interrogation state, open chat models", "L3": "Claude chat readouts",
-    "L3b": "Claude refusals vs moderation", "L3c": "Claude, one-call grey box", "L3d": "Claude, transcript readout",
-    "L3e": "Claude vs graded moderators",
+    "L1": "Interrogation state, Othello", "L2": "Interrogation state, open chat models", "L3": "Closed-A chat readouts",
+    "L3b": "Closed-A refusals vs moderation", "L3c": "Closed-A, one-call grey box", "L3d": "Closed-A, transcript readout",
+    "L3e": "Closed-A vs graded moderators",
     "T1": "Resampling vs a probe", "T2": "When the internals are read", "T3": "Resampling with a deployable judge",
     "T4": "Reader vs the agent's internals", "T5": "Unseen task families", "T6": "Another open agent",
-    "T7": "AgentDojo, no labels", "T8": "Claude, after a reveal", "T8b": "Closed agent: Claude",
+    "T7": "AgentDojo, no labels", "T8": "Closed-A, after a reveal", "T8b": "Closed agent: Closed-A",
     "T9": "Reader vs TF-IDF", "T10": "A policy removed from training", "T11": "Closed agent: GPT-6-luna",
     "T12": "Labels for a new policy", "T13": "AgentDojo with a defense", "T13b": "AgentDojo, closed agent",
     "T14": "Open-agent labels for a closed agent", "T15": "Replication (Gemma-4)", "T16": "Live prevention (GPT)",
-    "T16b": "Live prevention (Claude)", "T16c": "Hold for review", "T17": "Replication, three architectures",
-    "T18": "tau2-bench, Claude", "T19": "Browser-size readers", "T20": "tau2-bench, two closed agents",
+    "T16b": "Live prevention (Closed-A)", "T16c": "Hold for review", "T17": "Replication, three architectures",
+    "T18": "tau2-bench, Closed-A", "T19": "Browser-size readers", "T20": "tau2-bench, two closed agents",
     "T21": "tau2-bench, unseen tasks", "T22": "tau2-bench, reasoning judge", "T23": "Reasoning judge, frontier agents",
     "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor",
     "T27": "Training against the attack", "T28": "Cut set again after a prompt change"}
@@ -52,7 +52,7 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G15": "The agent's own answers, training-free (G15)",
           "G16": "Own answers or another model's (G16)",
           "G17": "Training-free read-out, prompt injection (G17)",
-          "G18": "Training-free read-out, a second benchmark for Claude (G18)",
+          "G18": "Training-free read-out, a second benchmark for Closed-A (G18)",
           "G19": "Own conversation or outside reviewer, same closed model (G19)",
           "G20": "Questionnaire or reasoning judge (G20)",
           "G21": "An open model answers about a closed agent (G21)",
@@ -61,7 +61,8 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G24": "The closed agent's own answers with reasoning (G24)",
           "G25": "The theory predicts which of the agent's own questions monitor (G25)",
           "G26": "The closed model reviews its own calls, with reasoning (G26)",
-          "G27": "State tomography and forecasting (G27)"}
+          "G27": "State tomography and forecasting (G27)",
+          "G28": "The estimated state against the true hidden state (G28)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -100,6 +101,9 @@ def anon(s: str) -> str:
     """Double-blind: no repository paths, job ids or commit hashes in the paper (the released record keeps them)."""
     s = PATH.sub("[released file]", s)
     s = JOB.sub("a GPU job", s)
+    for x, y in (("Claude Haiku 5.5", "Closed-A"), ("Claude Haiku 4.5", "an older model of Closed-A's family"), ("Claude's", "Closed-A's"),
+                 ("Claude", "Closed-A"), ("claude", "closed-A")):        # the closed model is not named in publications
+        s = s.replace(x, y)
     return COMMIT.sub(lambda m: "[a public commit]" if m.group(0).strip()[:6] != "commit" else "[a public commit]", s)
 
 
@@ -115,7 +119,7 @@ def main():
         if gm and gm.group(1) in GNAMES:
             if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
                 cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
-            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
+            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K", "G28": "T"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
             if ep:
                 cells = [re.sub(rf"\b{ep}([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids

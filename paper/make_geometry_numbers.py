@@ -64,10 +64,10 @@ else:
     for n in ("GTwoSplit", "GTwoText", "GTwoRhoText", "GTwoOpen"):
         mac(n, r"\PENDING{G2}")
 if cf:
-    mac("CFClaudeNeg", r"%.0f\%%" % (100 * cf["claude"]["neg_mds_subtract"]))
-    mac("CFClaudeNegCF", r"%.0f\%%" % (100 * cf["claude"]["neg_mds_crossfit"]))
+    mac("CFClosedANeg", r"%.0f\%%" % (100 * cf["claude"]["neg_mds_subtract"]))
+    mac("CFClosedANegCF", r"%.0f\%%" % (100 * cf["claude"]["neg_mds_crossfit"]))
 else:
-    mac("CFClaudeNeg", r"\PENDING{}"); mac("CFClaudeNegCF", r"\PENDING{}")
+    mac("CFClosedANeg", r"\PENDING{}"); mac("CFClosedANegCF", r"\PENDING{}")
 if g3:
     b = g3["by_N"]
     mac("GThreeBelow", "%.2f and %.2f (at $0.25\\times$ and $0.5\\times$)" % (b["0.25x"]["pearson_cos"], b["0.5x"]["pearson_cos"]))
@@ -166,9 +166,9 @@ if rf:
     e = rf["g6"]["new_kinds"]["pooled"]
     mac("GSixNewExcess", "%+.3f" % e[0] + r" {\scriptsize[%+.3f, %+.3f]}" % (e[1], e[2]))
     o = rf["claude_reference"]["other"]
-    mac("ClaudeRefOther", "%.2f--%.2f (median %.2f)" % (o[0], o[2], o[1]))
+    mac("ClosedARefOther", "%.2f--%.2f (median %.2f)" % (o[0], o[2], o[1]))
 else:
-    for n in ("GSixPerModel", "GSixNewExcess", "ClaudeRefOther"):
+    for n in ("GSixPerModel", "GSixNewExcess", "ClosedARefOther"):
         mac(n, r"\PENDING{}")
 if ag:
     v = [x["rho_reader_vs_agent"] for x in ag.values()]

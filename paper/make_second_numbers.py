@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Write paper/second_numbers.tex from the second-benchmark results (the paper quotes them only through these macros):
-G18 results/t1/g18_tau2_claude_readout.json (tau2-bench, Claude) and, when present, G17
+G18 results/t1/g18_tau2_claude_readout.json (tau2-bench, Closed-A) and, when present, G17
 results/t1/g17_agentdojo_readout.json (AgentDojo, open agents).
 python paper/make_second_numbers.py"""
 import json
@@ -35,8 +35,8 @@ if p.exists():
     for a, k in (("gemma4", "Gemma"), ("gptoss20b", "Gpt"), ("qwen38", "Qwen"), ("museglimmer", "Muse")):
         m[f"GSixteen{k}"] = f"{f3(R[a]['own'])}/{f3(R[a]['other'])}"
     m["GSixteenOone"] = ci(R["O1_own_minus_other_mean"])
-    m["GSixteenClaudeOwn"] = f3(R["claude"]["restart_own"])
-    m["GSixteenClaudeOther"] = f3(R["claude"]["restart_other"])
+    m["GSixteenClosedAOwn"] = f3(R["claude"]["restart_own"])
+    m["GSixteenClosedAOther"] = f3(R["claude"]["restart_other"])
 p = ROOT / "results/t1/g19_own_vs_outside_claude.json"
 if p.exists():
     R = json.loads(p.read_text())
@@ -48,8 +48,8 @@ if p.exists():
     m["GTwJone"] = ci(R["J1_read_out_minus_judge_mean"])
     for a, k in (("gemma4", "Gemma"), ("gptoss20b", "Gpt"), ("qwen38", "Qwen"), ("museglimmer", "Muse")):
         m[f"GTwJudge{k}"] = f3(R[a]["within"]["judge"])
-    m["GTwClaudeJudge"] = f3(R["claude"]["restart_judge"])
-    m["GTwClaudePooledJudge"] = f3(R["claude"]["pooled_judge"])
+    m["GTwClosedAJudge"] = f3(R["claude"]["restart_judge"])
+    m["GTwClosedAPooledJudge"] = f3(R["claude"]["pooled_judge"])
 p = ROOT / "results/t1/g21_tau2_open_answerer.json"
 if p.exists():
     R = json.loads(p.read_text())

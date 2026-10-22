@@ -24,7 +24,7 @@ m = {"GFtFixed": ", ".join(f"{N[a]} {f3(R[a]['within']['mean8'])}" for a in OPEN
      "GFtTone": ci(R["T1_mean8_minus_complies"]), "GFtTtwo": ci(R["T2_mean8_minus_white_box"])}
 if "claude" in R:
     c = R["claude"]
-    m["GFtClaudeFixed"] = f"{f3(c['restart_mean8'])} [{f3(c['restart_mean8_ci'][0])}, {f3(c['restart_mean8_ci'][1])}]"
+    m["GFtClosedAFixed"] = f"{f3(c['restart_mean8'])} [{f3(c['restart_mean8_ci'][0])}, {f3(c['restart_mean8_ci'][1])}]"
 t2 = R["T2_mean8_minus_white_box"]
 m["GFtIntro"] = (f"as well as a probe trained on its true hidden states (mean difference {ci(t2)})" if E.get("T2_lower_gt_-0.05")
                  else f"short of a probe trained on its true hidden states (mean difference {ci(t2)})")

@@ -6,12 +6,12 @@ The package is `greybox-monitor` on PyPI; you import `graybox`.
 **Added**
 - `observable_state(..., operator_note=True)`: adds `OPERATOR_NOTE` to the system prompt, saying that a message marked
   [Operator check] comes from the operations team and that the customer does not see it. When the user turn belongs to
-  a third party (a customer), Claude declined checks placed there, or treated them as an injection; with the note it
+  a third party (a customer), Closed-A declined checks placed there, or treated them as an injection; with the note it
   answered (G18 smoke runs). `with_operator_note(messages)` does the same for your agent's own conversation.
 - `parse=parse_first_line`: reads an answer on the first line ("No.", "[Operator check answer: no]") before any text the
   agent goes on to write to the customer.
 - `TAU2_AIRLINE_QUESTIONS`: the 8 questions of the preregistered G18 test (tau2-bench airline). There the read-out ranked
-  Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822] (single answer 0.555); within one task
+  Closed-A's policy violations at within-tool AUROC 0.704 [0.536, 0.822] (single answer 0.555); within one task
   it was weaker (0.61, exploratory). Write your own questions from your policy before you look at answers.
 
 **Changed**
@@ -27,7 +27,7 @@ The package is `greybox-monitor` on PyPI; you import `graybox`.
   the battery of the G15 test, verbatim); the answers' arcsine angles are exact Fisher-Rao coordinates; `score` is the
   fixed read-out (mean angle in each question's violation direction; no labels, nothing fit). In the preregistered G15
   test it ranked held-out violations as well as a probe trained on the agent's hidden states (within-template AUROC
-  0.82-0.99 on four open agents; mean difference +0.045 [-0.017, +0.135]) and Claude Haiku 5.5's unapproved restarts at
+  0.82-0.99 on four open agents; mean difference +0.045 [-0.017, +0.135]) and Closed-A's unapproved restarts at
   0.909. Limits: the questions were written for CAPE-Bench's kinds of violation; a violation decided by a fact the agent
   never checked is not flagged. Set the hold cut on your own unlabelled traffic.
 
@@ -35,7 +35,7 @@ The package is `greybox-monitor` on PyPI; you import `graybox`.
 **Changed**
 - `openai_asker` and `anthropic_asker` default to `max_tokens=2048`. In the G10 test the "checklist" audit had 700
   tokens and 9.3% of audits were cut off before the verdict (disclosed in the paper). The docstrings give the G10
-  settings for Claude (thinking disabled, low effort).
+  settings for Closed-A (thinking disabled, low effort).
 **Docs**
 - `flag_rates`: τ predicts the share prevented at the states you audited; over another mix of states, weight τ by
   where the violations occur (a preregistered test, G11b, failed when τ came from other states).
@@ -63,7 +63,7 @@ The package is `greybox-monitor` on PyPI; you import `graybox`.
     the preregistered tests, verbatim, and the same answer parser. Read-only tools are not audited.
   - `openai_asker(client, model, tools)` and `anthropic_asker(client, model, system, tools)`: the agent's own answers.
   - `prevention_law(R, tau, phi, M)`: the expected share of violations that run and of steps that go to review.
-  - Preregistered results: Gemma-4, violating episodes 27.9% → 5.0% (G9); Claude Haiku 5.5, violations that its
+  - Preregistered results: Gemma-4, violating episodes 27.9% → 5.0% (G9); Closed-A, violations that its
     transcript decides −69% [51, 88] at no cost in task success, and no effect on violations decided by a fact it never
     checked, as predicted (G10). It needs an agent that judges its policy well: measure that on labelled steps first.
 
@@ -159,7 +159,7 @@ First PyPI release.
 **Fixed**
 - `Guard.check_anthropic` and `conversation_steps`: Anthropic SDK content blocks inside a dict message (the SDK's own
   loop, `messages.append({"role": "assistant", "content": response.content})`) lost every earlier call and result.
-  On the Claude example data, 1 of 68 violations was escalated instead of 29. SDK objects are now converted
+  On the Closed-A example data, 1 of 68 violations was escalated instead of 29. SDK objects are now converted
   recursively; a test uses the real `anthropic.types`.
 - Cross-validation in `graybox.train_text`, `graybox.train_reader` and the browser trainer now groups by task (the
   first user request), not by conversation: on the GPT example, 0.989 (by conversation) vs 0.948 (by task). Folds are

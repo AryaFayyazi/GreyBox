@@ -1,7 +1,7 @@
 """One-call battery: every question in a single side-branch message; the model answers all of them, one per line.
 
 batch_block(battery) -> the numbered question list; parse_batch(text, k) -> (k, 3) counts of yes / no / missing.
-Shared by the open-model experiment (scripts/47), the Claude test and the in-browser Live page (same wording).
+Shared by the open-model experiment (scripts/47), the Closed-A test and the in-browser Live page (same wording).
 """
 import re
 

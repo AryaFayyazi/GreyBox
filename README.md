@@ -4,7 +4,6 @@
 
 **Read and monitor closed AI agents through their own APIs alone: no other model, no training.**
 
-![Self-policing, live: Claude's proposed calls, a warning before a violating call runs, and the reviewer's block](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
 
 Before a tool call runs, ask the agent itself, in side branches that its conversation never sees, a few yes/no
 questions about the call. Their answers are its *observable state* at the decision, in exact coordinates: in the
@@ -14,39 +13,39 @@ model is reached only through its API.
 
 Preregistered results (hash-locked, locks published; held-out data; failures reported):
 - **Self-policing** (the agent's own answer to "does this call comply?" as a gate): an open agent's episodes with a
-  violation fell from 27.9% to 5.0% (G9); Claude Haiku 5.5 prevented 69% of the violating episodes its transcript
+  violation fell from 27.9% to 5.0% (G9); Closed-A prevented 69% of the violating episodes its transcript
   decides, 31% of all (G10).
 - **Predicted before deploying**: a law predicted the share each of five agents prevents, within 0.15 (mean error
   0.035; G12). On a second benchmark it cut successful prompt injections by 84% and 50% (G13).
 - **The full observable state at the decision** (8 questions, fixed read-out, no training; G15): on held-out calls of
   four open agents it ranked violations about as well as a probe trained on the agent's own hidden states
   (within-template AUROC 0.82–0.99; mean difference to the preregistered probe +0.045 [−0.017, +0.135]; a probe tuned
-  afterwards is 0.015 higher, exploratory) and better than the single answer; on Claude Haiku 5.5 it ranked unapproved
-  restarts at 0.909 [0.858, 0.952], where Claude's single answer scored 0.32.
+  afterwards is 0.015 higher, exploratory) and better than the single answer; on Closed-A it ranked unapproved
+  restarts at 0.909 [0.858, 0.952], where Closed-A's single answer scored 0.32.
 - **Prompt injection, a second benchmark** (G17, AgentDojo, questions written from its policy before any answer): the
   read-out ranked open agents' injected calls at within-suite AUROC 0.985 [0.964, 0.998] (Gemma-4) and 0.904
   [0.872, 0.932] (gpt-oss-20b) on held-out tasks; the single answer was nearly as good (0.975, 0.900).
 - **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
-  answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
+  answer): the same read-out ranked Closed-A's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
 - **Against a reasoning judge** (G20): the questionnaire ranked the open agents' violations better than a reasoning
   model asked for one verdict on the same conversation (+0.073 [0.021, 0.123]).
 - **Comparison, not the method: another model answering** (G21): Gemma-4, with reasoning on, answered the same
-  questions about Claude's τ²-bench writes at 0.989 [0.954, 1.000], against 0.704 from Claude's own answers given with
-  reasoning off. The method uses only the agent's own API; G24 tests Claude's own answers with its reasoning on.
+  questions about Closed-A's τ²-bench writes at 0.989 [0.954, 1.000], against 0.704 from Closed-A's own answers given with
+  reasoning off. The method uses only the agent's own API; G24 tests Closed-A's own answers with its reasoning on.
 - **Whose answers?** Not the agent's own seat: another model answering the same questions did as well on four open
   agents (G16: own − other +0.012 [−0.018, 0.040]), and so did the same model reading the conversation as an outside
   reviewer (G19: +0.043 [−0.136, 0.226]). The value is in the questions and the read-out, so an open model can answer
   about a closed agent's calls.
 - **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
-  it is the geometry that models share, Claude's included (G1–G7).
+  it is the geometry that models share, Closed-A's included (G1–G7).
 
 Trained monitors (an open reader with a probe trained on labelled steps) are also in the package, as an option and as
 the comparison in the paper; they need labels and do not transfer to new kinds of task without them.
 
 **Website: https://aryafayyazi.github.io/GreyBox/**
 - Train a monitor on your own labelled agent steps, in your browser. The browser does not upload your data.
-- See a monitor on a closed frontier agent (Claude Haiku 5.5), action by action, in 3D.
+- See a monitor on a closed frontier agent (Closed-A), action by action, in 3D.
 - Read every preregistered result, with the failures.
 
 **Model card:** [MODEL_CARD.md](MODEL_CARD.md) (training data, measured performance, limits of the released probes).
@@ -65,7 +64,7 @@ pip install "greybox-monitor[server,text]"     # import graybox; [reader] adds t
 1. Train a monitor on your own labelled logs (OpenAI or Anthropic conversations with a `"labels"` field
    `{call_id: 0/1}`), in seconds on a CPU, or in the [browser trainer](https://aryafayyazi.github.io/GreyBox/train.html).
    Example data to try: [300 GPT conversations](https://aryafayyazi.github.io/GreyBox/data/example_gpt_openai.jsonl),
-   [150 Claude conversations](https://aryafayyazi.github.io/GreyBox/data/example_claude_anthropic.jsonl).
+   [150 Closed-A conversations](https://aryafayyazi.github.io/GreyBox/data/example_closed_a.jsonl).
    ```
    python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json   # --chat for agents that talk with a user
    ```
@@ -123,7 +122,7 @@ probability does not transfer between agents.
 
 The browser trainer imports OpenAI and Anthropic agent logs, shows each action with the conversation before it, lets
 you label actions (a review queue shows the riskiest first), and trains the monitor. Its importer and the guard build
-the same steps as our research pipeline (979/979 GPT and 373/373 Claude units identical; `results/tool/`).
+the same steps as our research pipeline (979/979 GPT and 373/373 Closed-A units identical; `results/tool/`).
 
 Self-host the HTTP API: `uvicorn graybox.monitor_server:app` (see `deploy/` for Docker). Your transcripts stay on your
 machine.
@@ -146,8 +145,8 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T4, T5: a transcript reader with labels | 0.994 on the same scenarios (the agent's internals: 0.979). 0.969 on unseen task families (internals: 0.976). |
 | T6: another open agent | Trained on Gemma, applied to gpt-oss: 0.915 (zero-shot judge: 0.833). |
 | T7: an external benchmark | AgentDojo prompt injection, no AgentDojo training: 0.78 (judge: 0.54). On gpt-oss it beats CAPE's white-box gate (0.82 vs 0.60). |
-| T8b: a closed frontier agent | Claude Haiku 5.5, 3,128 actions. Trained only on Gemma, the reader catches 94.1% of the 68 violations when the top 5% of actions go to review, with a cut set without labels (95.6% with a cut set on labelled safe actions). The judge catches 0%. Claude ran with thinking off. Pooled AUROC 0.989 (judge 0.570; exploratory). The preregistered within-template AUROC (0.991 vs 0.633) uses only one stratum: 136 actions, 26 violations. A prior that knows only each template's and tool's violation rate (fit out of fold) does as well on Claude: AUROC 0.992, 91.6% caught (exploratory; 42 of the 68 violations are in a template where every call violates). On GPT-6-luna and Gemma-4 the reader beats that prior. |
-| T9: reader or labels? | A TF-IDF monitor with the same labels is equal to the reader on the training benchmark (Claude 0.997 vs 0.991). On unseen task families the reader is better (0.969 vs 0.950). On AgentDojo, TF-IDF is at chance (0.50 vs 0.78). |
+| T8b: a closed frontier agent | Closed-A, 3,128 actions. Trained only on Gemma, the reader catches 94.1% of the 68 violations when the top 5% of actions go to review, with a cut set without labels (95.6% with a cut set on labelled safe actions). The judge catches 0%. Closed-A ran with thinking off. Pooled AUROC 0.989 (judge 0.570; exploratory). The preregistered within-template AUROC (0.991 vs 0.633) uses only one stratum: 136 actions, 26 violations. A prior that knows only each template's and tool's violation rate (fit out of fold) does as well on Closed-A: AUROC 0.992, 91.6% caught (exploratory; 42 of the 68 violations are in a template where every call violates). On GPT-6-luna and Gemma-4 the reader beats that prior. |
+| T9: reader or labels? | A TF-IDF monitor with the same labels is equal to the reader on the training benchmark (Closed-A 0.997 vs 0.991). On unseen task families the reader is better (0.969 vs 0.950). On AgentDojo, TF-IDF is at chance (0.50 vs 0.78). |
 | T10: a policy that the monitor never saw | The reader still ranks the violations well (pooled 0.912; judge 0.570). But at a 5% budget it escalates 0 of 26 violations. With 20 to 40 labelled examples of that policy, it catches 85% to 94% (exploratory). |
 | T11: a second closed family (GPT) | GPT-6-luna, 3,627 actions, 66 violations in 6 families. Pooled AUROC 0.996 (judge 0.778; tool identity alone 0.856). Within tool 0.994 (judge 0.956). At a 5% budget it catches 98.5% (judge 37.9%). All three preregistered endpoints pass. |
 | T12: labels for a new policy, prospective | We held out a credentials policy. With no labels of it, the reader caught all 18 of GPT's violations of it. The preregistered H1 (labels improve the catch rate) fails: there was nothing to fix. A new policy that resembles a trained one can transfer; one that does not (T10) needs labels. |
@@ -156,13 +155,13 @@ each outcome, with the failures and the deviations. AUROC 0.5 is chance; 1.0 is 
 | T15: does the grey box replicate the hidden state? | From the transcript and the proposed action, the reader replica reconstructs 66.4% of the variance of the 128 main components of the agent's decision state (51–54% of each full layer; text features: 58.6%). A probe trained on the true state scores 0.987 on the replica and 0.984 on the true state; on a replica from text features it scores 0.983, so the information that decides a violation is in the tokens. |
 | T17: replication on three more open agents | gpt-oss-20b (mixture of experts), Qwen3.8-27B (hybrid linear attention), Muse-Glimmer-30B (dense), on scenarios that the map never saw. The same reader replicates each agent's decision state better than text features: R² 0.49, 0.54, 0.46 (text 0.39, 0.44, 0.40). A probe trained on the true states works on every replica (0.900 → 0.924, 0.955 → 0.972, 0.929 → 0.969). All six endpoints pass. Replication is partial (about half of the variance), and the readout also works on a text replica. |
 | T16: live prevention on a closed agent | The monitor in GPT-6-luna's loop (500 scenarios, with and without the gate). Episodes with an executed violation: 6.6% → 0.2% (−0.064 [−0.088, −0.044]). No violation after a block. Goals reached 47.4% → 45.6%. Round trip 89 ms. |
-| T16b: live prevention on Claude | The same live test on Claude Haiku 5.5 (450 scenarios). Episodes with an executed violation: 6.7% → 0.2% (−0.064 [−0.087, −0.044]). No violation after a block. Goals reached 40.7% → 34.9%. Round trip 80 ms. |
-| T20: a second outside benchmark (τ²-bench), two closed agents | Monitors trained on four frontier agents' published, labelled τ² trajectories; tested on Claude Haiku 5.5 and GPT-6-luna with a persistent customer (19 violations in 262 writes). Within tool: word counts 0.987 (G2 passes), reader 0.738 (G1 fails). But the test tasks also occur in training: see T21. |
+| T16b: live prevention on Closed-A | The same live test on Closed-A (450 scenarios). Episodes with an executed violation: 6.7% → 0.2% (−0.064 [−0.087, −0.044]). No violation after a block. Goals reached 40.7% → 34.9%. Round trip 80 ms. |
+| T20: a second outside benchmark (τ²-bench), two closed agents | Monitors trained on four frontier agents' published, labelled τ² trajectories; tested on Closed-A and GPT-6-luna with a persistent customer (19 violations in 262 writes). Within tool: word counts 0.987 (G2 passes), reader 0.738 (G1 fails). But the test tasks also occur in training: see T21. |
 | T21: τ²-bench, unseen tasks | T20 with every training write of a test task removed (554 writes of 28 other tasks remain). Within tool: reader 0.535, word counts 0.519; both preregistered endpoints fail (reader − word counts +0.017 [−0.514, +0.539]; reader − tool +0.035 [−0.230, +0.259]). Word counts with entities masked: 0.366. T20's word-count score was memorization of the tasks. |
 | T22: a zero-shot reasoning judge on τ²-bench | Qwen3-32B with thinking reads the policy, the conversation and the proposed write; no labels. On T20's 262 writes: within tool 0.804 (T21's reader 0.535). Both preregistered endpoints fail: judge − tool +0.304 [−0.084, +0.427], judge − reader +0.268 [−0.074, +0.511]; only 7 tasks have a violation. |
-| T23: the same judge on four closed frontier agents | T22's judge, unchanged, on the 894 published τ² writes of Claude 3.7 Sonnet, GPT-4.1, GPT-4.1-mini and o4-mini (227 violations, 29 tasks). Within tool: judge 0.766, reader trained on other tasks 0.646. K1 passes (judge − tool +0.266 [0.151, 0.338]); K2 fails (judge − reader +0.120 [−0.047, +0.274]). With exactly 5% of writes reviewed the reader catches more: 18.4% vs 11.7% (most possible 19.7%). The judge separates violating from allowed writes of the same tool without labels, but as a review queue it is below the tool alone (13.0%). |
-| T16c: hold for review instead of block | On Claude (450 scenarios), escalated actions go to a reviewer (here an oracle; an upper bound on a human). Episodes with an executed violation: 6.7% → 0.0% (R1 passes). Goals 38.7% (no gate 40.7%, blocking 34.9%); the preregistered "at most 3 points lost" fails (−0.020 [−0.051, +0.007]). Exploratory: episodes in which the reviewer let a held action run kept their goals (60.8% vs 58.8%); the gap is in episodes where nothing was held, which we suggest is variation between runs (untested: the control was not concurrent). 0.20 reviews per episode. |
-| T24: a closed agent told it is monitored | Claude Haiku 5.5 on 990 scenarios, with and without an oversight notice, with the cut frozen on its earlier traffic. Caught 97.1% [92.9%, 100%] of the told agent's violations and 83.6% of the others (both endpoints pass). The notice moved all scores up: the frozen cut escalated 15.2% of actions instead of 5.3%, so set the cut again after a prompt change. Violation rate unchanged. |
+| T23: the same judge on four closed frontier agents | T22's judge, unchanged, on the 894 published τ² writes of Closed-A 3.7 Sonnet, GPT-4.1, GPT-4.1-mini and o4-mini (227 violations, 29 tasks). Within tool: judge 0.766, reader trained on other tasks 0.646. K1 passes (judge − tool +0.266 [0.151, 0.338]); K2 fails (judge − reader +0.120 [−0.047, +0.274]). With exactly 5% of writes reviewed the reader catches more: 18.4% vs 11.7% (most possible 19.7%). The judge separates violating from allowed writes of the same tool without labels, but as a review queue it is below the tool alone (13.0%). |
+| T16c: hold for review instead of block | On Closed-A (450 scenarios), escalated actions go to a reviewer (here an oracle; an upper bound on a human). Episodes with an executed violation: 6.7% → 0.0% (R1 passes). Goals 38.7% (no gate 40.7%, blocking 34.9%); the preregistered "at most 3 points lost" fails (−0.020 [−0.051, +0.007]). Exploratory: episodes in which the reviewer let a held action run kept their goals (60.8% vs 58.8%); the gap is in episodes where nothing was held, which we suggest is variation between runs (untested: the control was not concurrent). 0.20 reviews per episode. |
+| T24: a closed agent told it is monitored | Closed-A on 990 scenarios, with and without an oversight notice, with the cut frozen on its earlier traffic. Caught 97.1% [92.9%, 100%] of the told agent's violations and 83.6% of the others (both endpoints pass). The notice moved all scores up: the frozen cut escalated 15.2% of actions instead of 5.3%, so set the cut again after a prompt change. Violation rate unchanged. |
 | T28: set the cut again after a prompt change, live | The told agent in its tool loop (400 scenarios × gated / ungated), with the cut set from its earlier unlabelled scores. The new cut escalated 4.7% [3.5%, 6.1%] of actions (the old cut: 16.6%), and the gate cut episodes with an executed violation from 6.5% to 0.0% (both endpoints pass). After any change of prompt, tools or agent: `/v1/monitor/calibrate` on new traffic. |
 | T25–T27: an attacker who can query the score | Rewriting only the free text of 134 real violations, with score feedback, cut the reader's catch rate from 96% to 29% (fails). Two preregistered defenses also failed: canonical actions (score cannot move, but clean catch fell to 51–59% because a message body can be the leaked content) and training on rewrites of both classes (60% caught after a fresh, defense-aware attack). The monitor is not robust to adaptive rewording: do not show the score to the agent. |
 | Review threshold without labels (exploratory) | A threshold from the agent's own unlabelled traffic, frozen after 500 actions: 95.4% caught online, 1.9% of safe actions escalated. With a burst of violations, it stays at 94%; a rolling threshold falls to 36%. |
@@ -174,14 +173,14 @@ white-box probe (T1, F3), and resampling scored by an LLM judge loses to the pro
 
 - Most agent tests use one benchmark, CAPE-Bench. On the external test (AgentDojo), the reader beats a zero-shot judge
   for open agents (0.78 vs 0.54), but not significantly for a closed agent (0.840 vs 0.787, T13b).
-- On τ²-bench (T20: Claude Haiku 5.5 and GPT-6-luna with a customer who insists after a refusal; 262 writes, 19
+- On τ²-bench (T20: Closed-A and GPT-6-luna with a customer who insists after a refusal; 262 writes, 19
   violations), monitors trained on four frontier agents' labelled trajectories: word counts reached within-tool AUROC
   0.987 (preregistered G2 passes), the reader only 0.738 (G1 fails; reader − word counts −0.250 [−0.518, −0.077]).
   But every test task also occurs in training. With those tasks removed (T21), neither monitor transfers: reader 0.535,
   word counts 0.519. T20's word-count score was memorization of tasks (codes, names, dates). τ² violations break
   explicit rules over facts of the case (dates, amounts, cabin); label-trained readouts do not learn these checks for
   new tasks. A zero-shot reasoning judge, which needs no labels, separates violating from allowed writes of the same tool
-  (T23: 0.766 on four closed frontier agents), but at a 5% review budget it catches fewer violations than the reader. (T18, on Claude
+  (T23: 0.766 on four closed frontier agents), but at a 5% review budget it catches fewer violations than the reader. (T18, on Closed-A
   alone, had too few violations to test.)
 - Catch rates are at exactly the stated budget. A first computation (score ≥ the 95th percentile) over-counted
   monitors with tied scores (the tool baseline, a judge's 0/100 answers); the record lists the corrections. The
@@ -206,7 +205,7 @@ Preregistered results (each lock was published before its data; `docs/PREREGISTR
   models' hidden geometries as well as its own (own-model excess +0.002). Another open model's hidden state is the
   better stand-in for 6 of 7 models. This holds on new kinds of context (news, code, jailbreaks, prompt injections).
   Picozzi (2026) found the same sharing for next-token distributions.
-- Claude Haiku 5.5, from 8 sampled answers to 24 questions, reveals the same shared geometry. Two independent halves
+- Closed-A, from 8 sampled answers to 24 questions, reveals the same shared geometry. Two independent halves
   of the samples agree at 0.95.
 - The model's *own* final geometry needs full log-probabilities. Then it is exact: cosine error 7e-6 on Qwen3-0.6B
   above d(d+1)/2 contexts (the construction of Carlini et al. 2024).
@@ -229,10 +228,7 @@ Before a proposed tool call runs, ask the agent itself, in a side branch that it
 the call complies with its policy. Hold a flagged call for review. Try it in your browser:
 https://aryafayyazi.github.io/GreyBox/selfpolice.html
 
-![Self-policing, live: Claude's path of proposed calls, a warning before a violating call runs, and the reviewer's block](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
 
-A 4-minute narrated explainer (real page, a live agent session, recorded test episodes):
-https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing_explainer.mp4
 
 ```python
 from graybox.selfaudit import SelfAudit, openai_asker, flag_rates
@@ -270,15 +266,15 @@ st = observable_state(ask, messages, "cancel_reservation", {"reservation_id": "G
 
 Preregistered results (hash-locked before the data, locks published; held-out scenarios):
 - Gemma-4 (open, G9): episodes with an executed violation 27.9% → 5.0%; task success 33.5% → 43.7%.
-- Claude Haiku 5.5 (closed, G10): violations that its conversation reveals fell by 69% [51, 88], at no cost in task
+- Closed-A (closed, G10): violations that its conversation reveals fell by 69% [51, 88], at no cost in task
   success; violations decided by a fact it never checked (a mailing list's size) did not fall (7% [0, 17]), as the
-  locked prediction said. All its violations: −31%. A plain "does it comply?" question did not work on Claude; checking the
+  locked prediction said. All its violations: −31%. A plain "does it comply?" question did not work on Closed-A; checking the
   rules one by one did.
 - It works when the agent judges its policy well. With the plain question (most answers "no"), agents flag 97%
-  (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Claude) of their own violations.
+  (Gemma-4), 87% (Muse-Glimmer), 47% (Qwen3.8), 37% (gpt-oss) and 5% (Closed-A) of their own violations.
 - The effect is predictable (G12): each agent's offline flag rates per kind of task, weighted by where it violates,
   predicted the live reduction for five agents within the registered ±0.15 (Gemma-4 0.63, gpt-oss 0.17, Qwen3.8 0.01,
-  Muse-Glimmer 0.27, Claude 0.30; mean error 0.035). Measure τ on enough calls of each kind (Claude was over-predicted
+  Muse-Glimmer 0.27, Closed-A 0.30; mean error 0.035). Measure τ on enough calls of each kind (Closed-A was over-predicted
   by 0.08 because one rate rested on 38 calls).
 - A second benchmark (G13, prompt injection on AgentDojo, predictions fixed in advance): attack success 11.5% → 1.8%
   (Gemma-4) and 24.4% → 12.2% (gpt-oss; predicted reduction 0.58, observed 0.50), with no loss of utility. Gemma-4
@@ -291,15 +287,15 @@ A *grey box* is the model's **interrogation state** Ψ(x): the probabilities of 
 questions. We ask the questions in side branches of the conversation, so the real reply never sees them.
 - Ψ recovers the hidden state of models with known internals: a program compiled into a transformer (21/21 states with a battery designed for it; 16/21 with a random one),
   Othello-GPT (R² 0.967) and 8 open chat models. L1 and L2 are preregistered; L0 is a development test.
-- Readouts trained only on open models transfer to Claude: harmful request 0.993, refusal 0.997 AUROC (L3).
-- As a refusal forecast on Claude, Ψ only ties a graded moderator (L3e: 0.87 vs 0.85, not significant). With a
+- Readouts trained only on open models transfer to Closed-A: harmful request 0.993, refusal 0.997 AUROC (L3).
+- As a refusal forecast on Closed-A, Ψ only ties a graded moderator (L3e: 0.87 vs 0.85, not significant). With a
   moderator, it doubles the precision of an alarm for harmful requests that the model answers (0.54 vs 0.27).
 - It is not a content filter: a text moderator is better at the decision "is this message harmful?" (0.97 vs
   0.85–0.93).
 
-**Grey Box Live in the browser** (`web/live_browser.html`) chats with Claude Haiku 5.5. It shows Claude's path in a
-3D space shared with open models, the forecast "Claude will refuse", and the alarm "a moderator says Unsafe and
-Claude will not refuse". Each message uses 4 Claude calls on the viewer's own account.
+**Grey Box Live in the browser** (`web/live_browser.html`) chats with Closed-A. It shows Closed-A's path in a
+3D space shared with open models, the forecast "Closed-A will refuse", and the alarm "a moderator says Unsafe and
+Closed-A will not refuse". Each message uses 4 Closed-A calls on the viewer's own account.
 
 ## Reproduce
 

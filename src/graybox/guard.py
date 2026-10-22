@@ -204,7 +204,7 @@ class Guard:
     (time, tool, args, score, unit, allow, held, by_rule, review_error, threshold). Neither can change a decision.
     hold_tools: tools whose every call is escalated (an explicit rule, e.g. {"issue_refund"}), on top of the score; the
     gate still sees their scores. Prefer this to a budget per tool: offline, a 5% budget per tool caught 39% / 46% of
-    Claude's / GPT's violations against 94% / 98% with one budget, because violations cluster in a few tools."""
+    Closed-A's / GPT's violations against 94% / 98% with one budget, because violations cluster in a few tools."""
 
     def __init__(self, monitor, gate=None, reviewer=None, chat: bool | None = None, hold_tools=(), reviewer_timeout: float | None = None,
                  on_decision=None, audit_log: str | None = None):

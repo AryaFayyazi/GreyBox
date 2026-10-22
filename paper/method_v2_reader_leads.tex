@@ -1,0 +1,86 @@
+\section{Method}
+\label{sec:method}
+\input{fig_method}
+
+\subsection{Setting and threat model}
+\label{sec:setting}
+An agent is an autoregressive policy $\pi_\theta$ over tokens. At step $t$ it has read and written the tokens $Z_t$. A deployment sees $V_t$, and $H_t$ is the rest, so $Z_t=(V_t,H_t)$; with reasoning off, as in our closed-agent tests, $H_t=\varnothing$. $Z^-_t$ are the tokens before the action, and $V_t$ is a function of $Z^-_t$. The agent samples an action $A_t\sim\pi_\theta(\cdot\mid Z^-_t)$ with noise $\xi_t$ that is independent of everything else. Its state at the decision token is $\phi_t=\Phi_\theta(Z_t)\in\mathbb{R}^d$, a deterministic function of the tokens. $W$ are facts of the world that the agent has not observed, and $Y\in\{0,1\}$ marks a policy violation. A \emph{monitor} maps what it sees to a score $s_t$ and escalates the action when $s_t\ge c$; its \emph{budget} $\beta$ is the share of actions that it escalates.
+
+\textbf{Threat model.} The operator has $V_t$ and the proposed action $A_t$; it never has $\theta$, $\phi_t$ or $H_t$. The monitor must decide before $A_t$ runs. Labels exist for open agents, not for the monitored agent: its traffic is unlabelled, and the scale of a score does not transfer between agents. The agent may know that it is monitored (\cref{sec:robust}).
+
+\subsection{What cannot be read: a gauge symmetry}
+\begin{proposition}[gauge]\label{prop:gauge}
+Take a pre-norm residual network with RMS normalisation, with the normalisation gains folded into the adjacent weights. For every orthogonal $G$ on the residual stream, the network whose embedding, write matrices and write biases are multiplied by $G$ on the left, and whose read matrices and unembedding are multiplied by $G^{\top}$ on the right, has hidden states $G\phi$ and the same output distribution on every input. At a layer that is read only through linear maps, the same holds for every invertible $G$, with $G^{-1}$ in place of $G^{\top}$.
+\end{proposition}
+Thus no estimator that uses only outputs can recover hidden coordinates beyond this group, and a probe direction $w$ on one parametrisation is $G^{-\top}w$ on the other. Post-block normalisation restricts $G$ to the maps that commute with its gains, and LayerNorm to the maps that fix the all-ones vector (\cref{app:proofs}). As in a gauge theory, only invariant quantities are observable. Two invariants carry the safety-relevant state: the law of the agent's future outputs (its \emph{behavioural state}) and the token history $Z_t$ itself, of which $\phi_t$ is a function. We build a grey box from each.
+
+\subsection{Reading the behavioural state}
+The \emph{interrogation state} of a context $x$ for a battery of yes/no questions $Q=(q_1,\dots,q_m)$ is $\Psi_Q(x)=\big(P_\pi(\textsc{yes}\mid x\oplus q_j)\big)_{j}$. Each question is asked in a side branch, so the agent's conversation never sees it. $\Psi_Q$ is a vector of probabilities of fixed events, so it is gauge-invariant and comparable across models.
+\begin{proposition}[Fisher--Rao coordinates]\label{prop:fisher}
+For one Bernoulli coordinate the map $\vartheta=2\arcsin\sqrt{p}$ is an isometry from the Fisher--Rao metric $\mathrm{d}p^2/\big(p(1-p)\big)$ to the Euclidean line. With $n$ sampled answers and $np(1-p)\gg1$, $\Var(\hat\vartheta)\approx 1/n$ for every such $p$, so $\vartheta(\hat\Psi)\in[0,\pi]^m$ has isotropic noise of known size.
+\end{proposition}
+We design the battery from black-box answers alone (\cref{alg:battery}): from a pool of candidate questions, add the one that splits the most classes of contexts with equal answers, and stop when no candidate splits a class.
+\begin{proposition}[battery design]\label{prop:battery}
+\Cref{alg:battery} stops with the partition of the contexts that the whole pool induces and asks at most (number of its classes $-\,1$) questions. If the model's answers come from a finite automaton and the pool holds a distinguishing suffix for every pair of its states, this partition is the minimal (Myhill--Nerode) state, and no black-box method can identify more.
+\end{proposition}
+
+\subsection{Replicating the token-determined state}
+A \emph{reader} is an open model $R$ that reads the same visible tokens and the proposed action; $\psi_t=R(V_t,A_t)$ is its hidden state at a fixed layer.
+\begin{proposition}[access and replica]\label{prop:replica}
+(a) $\sigma(Z_t,\phi_t)=\sigma(Z_t)$. For every label $Y$, the best monitor that reads $(Z_t,\phi_t)$ is no better than the best that reads $Z_t$, under every strictly proper score and at every point of the ROC curve. Under log loss, the best monitor that reads $Z_t$ beats the best that reads $V_t$ by exactly $I(Y;H_t\mid V_t)$.
+(b) The $L^2$-optimal replica $\hat\phi=\E[\phi\mid\psi]$ satisfies $\Cov(\hat\phi)\preceq\Cov(\phi)$ and, for every component $k$, $\Var(\hat\phi_k)=R^2_k\,\Var(\phi_k)$, with $R^2_k=1-\E(\phi_k-\hat\phi_k)^2/\Var(\phi_k)$. The same identity holds for the best linear replica, in sample.
+(c) For every linear readout $w$, $\E[w^\top\phi\mid\psi]=w^\top\hat\phi$: a probe applied to the replica is the conditional expectation of the same probe on the true state.
+\end{proposition}
+Part (a) says why a replica is possible: with reasoning off, $\phi_t$ is a function of tokens that an outside model can also read; with hidden reasoning, the replica is the conditional mean given the visible tokens only. Part (b) predicts the shape of the replica, and part (c) says what a white-box readout computes on it. The next result says when that readout is \emph{better} than the original.
+\begin{proposition}[the replica Rao--Blackwellises a probe]\label{prop:rb}
+Let $s=w^\top\phi$ be a probe on the agent's state and $\hat s=\E[s\mid\psi]$ its readout on the $L^2$-optimal replica. If $Y\indep\phi\mid\psi$, then $\E\,\ell(\hat s,Y)\le\E\,\ell(s,Y)$ for every loss $\ell(s,y)$ that is convex in $s$. The same holds for every convex pairwise loss $\E\,\ell(s_i-s_j)$ of independent violating and safe actions $i,j$, the convex surrogates of the AUROC.
+\end{proposition}
+The premise says that the agent's state holds no label information beyond what the reader holds; \cref{cor:action} below makes it plausible for policy labels. Under it, the replica removes only variance that is noise for the label. We estimate $\hat\phi=M\psi+b$ by ridge regression on paired steps of an open agent, on the top principal components of its state; the proposition applies to this estimate only as far as the linear map approximates the conditional mean.
+
+\subsection{The proposed action is sufficient}
+\begin{corollary}[sufficiency of the proposed action]\label{cor:action}
+Let $Y=g(A_t,V_t,W)$ with $W\indep Z^-_t\mid V_t$. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$, and every monitor that reads the agent's internals at or before the action has a Bayes risk at least that of the best monitor that reads $(V_t,A_t)$.
+\end{corollary}
+A probe read before the action must also predict which action the agent will sample; a monitor that reads the action does not. Training a monitor is therefore a supervised problem on $(V_t,A_t)$, and the reader matters through how well a linear probe on its state learns $P(Y\mid V_t,A_t)$ under distribution shift.
+
+An agent or attacker can also reword what an action says without changing what it does. Let $\kappa(A)$ be the decisive part of an action (its tool and targets) and let the free text be the rest.
+\begin{proposition}[a ceiling under rewording]\label{prop:ceiling}
+Suppose that for every violating action an attacker can reach a still-violating action with the same $\kappa(A)$ and any free text that safe actions with the same $(V,\kappa(A))$ use, and that the attacker picks, among these, the text with the lowest score of the monitor. Then for every monitor $s$ and cut $c$ there is a monitor $m$ of $(V,\kappa(A))$ alone that escalates no more safe actions than $s$ and, on clean traffic, catches at least the share of violations that $s$ catches under the attack.
+\end{proposition}
+Under rewording, no monitor's operating point beats the clean ROC curve of the best monitor of the decisive fields. Free text helps a monitor only on traffic that nobody rewords; a canonical monitor's clean accuracy is achievable under rewording and is a lower bound on the ceiling.
+
+\subsection{Label-free decisions at a fixed budget}
+A score's scale does not transfer between agents (\cref{sec:closed}), so the cut must come from the monitored agent's own traffic, without labels (\cref{alg:monitor}).
+\begin{proposition}[a frozen cut]\label{prop:frozen}
+Let the scores of $n$ unlabelled warm-up actions and of a new action be exchangeable with no ties, and let $\hat c$ be the $k$-th smallest warm-up score. Then $P(S_{n+1}>\hat c)=(n+1-k)/(n+1)$, which for $k=\lceil(1-\beta)(n+1)\rceil$ lies in $\big(\beta-\tfrac1{n+1},\beta\big]$. For i.i.d.\ scores with continuous distribution function $F$, the long-run escalation rate $1-F(\hat c)$, over warm-up draws, follows $\mathrm{Beta}(n+1-k,k)$. The interpolated empirical $(1-\beta)$-quantile lies between two adjacent order statistics, so its escalation probability is within $\tfrac{2}{n+1}$ of $\beta$.
+\end{proposition}
+With $n=500$ and $\beta=0.05$ the escalation rate of the order-statistic cut has mean $0.050$ and standard deviation $0.0097$ (the interpolated cut's mean is between $0.050$ and $0.052$).
+\begin{proposition}[shift]\label{prop:shift}
+If deployment scores follow $Q$ and the warm-up scores follow $P$, then for every cut $c$, $|Q(S>c)-P(S>c)|\le K(P,Q)=\sup_c|F_P(c)-F_Q(c)|$. A frozen cut therefore escalates within $K(P,Q)+\tfrac2{n+1}$ of $\beta$, and its share of violations caught moves by at most the Kolmogorov distance between the laws of the violations' scores.
+\end{proposition}
+\begin{proposition}[bursts]\label{prop:burst}
+Let the score laws of violations and of safe actions not depend on $\rho$. A cut set at the top $\beta$ of a window in which a share $\rho>\beta$ of the actions are violations catches at most $\beta/\rho$ of them. A frozen cut catches each violation with probability $P(S\ge\hat c\mid Y=1)$, whatever $\rho$ is.
+\end{proposition}
+A cut that keeps moving with recent traffic thus fails exactly when an attack arrives, while a frozen cut keeps its rate; under a shift of the safe traffic, the frozen cut must be set again (\cref{prop:shift}).
+
+\begin{algorithm}[t]
+\caption{The grey-box monitor}
+\label{alg:monitor}
+\small
+\begin{algorithmic}[1]
+\REQUIRE open-agent steps $\{(V_i,A_i,Y_i)\}$; reader $R$, layer $\ell$; budget $\beta$; warm-up length $n$
+\STATE $x_i\gets$ render$(V_i,A_i)$: instructions, task, earlier calls and results, proposed action
+\STATE $\psi_i\gets R_\ell(x_i)$ at the last token \COMMENT{the reader's state}
+\STATE fit $f$: standardise $\to$ PCA(256) $\to$ logistic ($C{=}0.05$) on $(\psi_i,Y_i)$ \COMMENT{never on the test agent}
+\FOR{the first $n$ actions $A_t$ of the monitored agent}
+  \STATE record $s_t\gets f(R_\ell(\text{render}(V_t,A_t)))$; run $A_t$ \COMMENT{no labels}
+\ENDFOR
+\STATE $\hat c\gets$ the $(1-\beta)$-quantile of $s_{1..n}$; freeze it \COMMENT{\cref{prop:frozen,prop:burst}}
+\FOR{each later proposed action $A_t$}
+  \STATE \textbf{if} $f(R_\ell(\text{render}(V_t,A_t)))\ge\hat c$ \textbf{then} block $A_t$, or hold it for review \textbf{else} run $A_t$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+
+\textbf{Metrics.} We report the share of violations caught when \emph{exactly} $\beta$ of the actions, the highest-scored, are escalated (actions tied at the cut count in proportion), and the AUROC within strata (template, tool or suite), $\sum_k n^+_kn^-_k\,\mathrm{AUC}_k/\sum_k n^+_kn^-_k$, which removes what the stratum alone explains. Intervals are 95\% percentile intervals from a bootstrap over scenarios or episodes. Proofs of all statements are in \cref{app:proofs}.

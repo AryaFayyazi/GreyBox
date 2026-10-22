@@ -267,7 +267,7 @@ def monitor_action(req: MonitorRequest):
     return {"p_unsafe": round(p, 6), "escalate": g(p), "threshold": t, "calibrated": t is not None,
             "note": "p_unsafe ranks actions but is not calibrated on a new agent; act on 'escalate' (label-free quantile gate)",
             "validated": {"gemma_same_scenarios_auroc": 0.994, "gemma_unseen_families_auroc": 0.969,
-                          "claude_haiku_5_5_auroc": 0.991, "claude_zero_shot_judge_auroc": 0.633,
+                          "closed_a_auroc": 0.991, "closed_a_zero_shot_judge_auroc": 0.633,
                           "source": "preregistered T4, T5, T8b"}}
 
 
