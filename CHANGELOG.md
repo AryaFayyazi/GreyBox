@@ -2,6 +2,18 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.12.0 (2026-10-22)
+**Added**
+- `graybox.tomography`: state tomography of an agent through its own API (numpy only; no labels, no other model).
+  `measure(ask, messages)` asks the agent forward-looking yes/no questions before its next step (`FORWARD_QUESTIONS`,
+  the battery of the preregistered G27 test); `angles(counts)` gives the arcsine coordinates and the theory's noise
+  1/(m + 1/2); `identify(trajectories)` fits the state dynamics from unlabelled trajectories by instrumental variables
+  (consistent whatever the measurement noise; plain regression shrinks the dynamics); `kalman(Y, R, model)` gives the
+  estimated state, the forecast of the next state, and a calibration check (normalized innovations).
+
+**Changed**
+- Documentation names the closed model of our tests "Closed-A".
+
 ## 0.11.0 (2026-10-22)
 **Added**
 - `observable_state(..., operator_note=True)`: adds `OPERATOR_NOTE` to the system prompt, saying that a message marked
