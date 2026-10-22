@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
-**Monitor closed AI agents through their own answers: no training, API only.**
+**Monitor closed AI agents by asking yes/no questions about their calls: no training, API only.**
 
 ![Self-policing, live: Claude's proposed calls, a warning before a violating call runs, and the reviewer's block](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
 
@@ -26,8 +26,10 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
 - **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
   answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
-  The agent's own seat is not what matters: the same model, reading the conversation as an outside reviewer, scored
-  0.656 vs 0.699 (G19, +0.043 [−0.136, 0.226], no detectable difference). The value is in the questions and the read-out.
+- **Whose answers?** Not the agent's own seat: another model answering the same questions did as well on four open
+  agents (G16: own − other +0.012 [−0.018, 0.040]), and so did the same model reading the conversation as an outside
+  reviewer (G19: +0.043 [−0.136, 0.226]). The value is in the questions and the read-out, so an open model can answer
+  about a closed agent's calls.
 - **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
   it is the geometry that models share, Claude's included (G1–G7).
 

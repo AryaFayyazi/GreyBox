@@ -146,7 +146,7 @@ def g14_card():
         h = json.loads(f14.read_text())
         trained = (" A trained comparison that recreates the decision state from an open reader and the answers, then reads it with the "
                    f"probe on true states, differs from the true state by {h['P1_grey_minus_white_mean'][0]:+.3f} on average (G14).")
-    return (f'<div class="card" style="margin-bottom:14px"><h3>The agent\'s own answers, read with a fixed rule, monitor its decisions</h3>'
+    return (f'<div class="card" style="margin-bottom:14px"><h3>Answers to fixed yes/no questions, read with a fixed rule, monitor an agent\'s decisions</h3>'
             f'<p>At each proposed call the agent answers 8 yes/no questions about the call, through its own API, in side branches. A fixed '
             f'read-out of the answers scores the call: no labels, nothing trained. On held-out calls of four open agents, {verdict}.{claude}{trained}</p>'
             f'<table class="tablewrap"><tr><th>Agent</th><th>its 8 answers (no training)</th><th>its 1 answer (self-audit)</th><th>probe trained on its hidden states</th></tr>{rows}</table>'
@@ -167,6 +167,14 @@ def second_card():
                 f'{r1[0]:.3f} [{r1[1]:.2f}, {r1[2]:.2f}] within tool ({g["writes"]} writes, {g["violations"]} violations); its single answer '
                 f'scores {g["within_tool_single_answer"]:.3f} (difference {r2[0]:+.3f} [{r2[1]:+.3f}, {r2[2]:+.3f}]). Within one task it is '
                 f'weaker (0.61, exploratory).</p>')
+    f16 = R / "t1/g16_own_vs_other.json"
+    if f16.exists():
+        g = json.loads(f16.read_text())
+        d = g["O1_own_minus_other_mean"]
+        out += (f'<p><b>Whose answers?</b> (G16, preregistered). Another model answering the same 8 questions about each call ranks the '
+                f'violations as well as the agent\'s own answers: own &minus; other {d[0]:+.3f} [{d[1]:+.3f}, {d[2]:+.3f}] over four open agents; '
+                f'on Claude\'s restarts Gemma-4\'s answers score {g["claude"]["restart_other"]:.3f} against Claude\'s {g["claude"]["restart_own"]:.3f}. '
+                f'The monitor is a fixed questionnaire that any capable model can answer.</p>')
     f19 = R / "t1/g19_own_vs_outside_claude.json"
     if f19.exists():
         g = json.loads(f19.read_text())
@@ -180,7 +188,7 @@ def second_card():
         N = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss"}
         parts = [f"{N[a]} {g[a]['within_suite']['read_out_8']:.3f} [{g[a]['read_out_8_ci'][0]:.2f}, {g[a]['read_out_8_ci'][1]:.2f}]"
                  for a in N if a in g]
-        out += (f'<p><b>Prompt injection</b> (G17, preregistered). On AgentDojo, open agents\' own answers rank their injected calls at '
+        out += (f'<p><b>Prompt injection</b> (G17, preregistered). On AgentDojo, open agents\' answers rank their injected calls at '
                 f'{"; ".join(parts)} within suite.</p>')
     return out
 
@@ -212,12 +220,13 @@ learn your policy from examples that you label. It works best on the kinds of ta
 a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
 <a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
 {(ROOT / "site/src/assets/workflow.svg.html").read_text()}
-<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v4.png" title="Open the full-size figure"><img src="figures/teaser_v4.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser_v4.png">Tap to open the full-size figure.</a> </span><b>Monitoring a closed agent through its own answers, with no training.</b>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v5.png" title="Open the full-size figure"><img src="figures/teaser_v5.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_v5.png">Tap to open the full-size figure.</a> </span><b>Monitoring a closed agent by asking it yes/no questions, with no training.</b>
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
-but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call, its single self-audit answer, and a
-probe trained on its hidden states, on held-out calls (G15, preregistered). (d) The agent's own answer as a gate: the live reduction in violations
-against the law's prediction (G12, G13 preregistered).</figcaption></figure>
+but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
+probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude is closed, so it has no probe. Below the line, the
+second benchmark: Claude on &tau;&sup2;-bench (G18, preregistered). (d) The agent's own answer as a gate: the live reduction in violations against
+the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
@@ -502,7 +511,7 @@ def main():
     for name, title, desc in (("train.html", "Train a monitor", "Train an agent-action monitor on your own labelled steps, in your browser."),
                               ("docs.html", "Docs", "Install, deploy and evaluate Grey Box monitors."),
                               ("selfpolice.html", "Self-policing", "Let an AI agent check its own tool calls before they run, through its own API."),
-                              ("paper.html", "Paper", "Grey Box: Monitoring Closed Agents Through Their Own Answers.")):
+                              ("paper.html", "Paper", "Grey Box: Monitoring Closed Agents by Asking Yes/No Questions.")):
         if (SRC / "pages" / name).exists():
             s = (SRC / "pages" / name).read_text()
             m1, m2 = re.search(r"<!--title: (.*?)-->", s), re.search(r"<!--desc: (.*?)-->", s)

@@ -1,0 +1,42 @@
+{
+ "gemma4": {
+  "answerer": "museglimmer",
+  "calls": 600,
+  "own": 0.9938,
+  "other": 0.9934
+ },
+ "gptoss20b": {
+  "answerer": "gemma4",
+  "calls": 599,
+  "own": 0.8224,
+  "other": 0.7992
+ },
+ "qwen38": {
+  "answerer": "gemma4",
+  "calls": 373,
+  "own": 0.9513,
+  "other": 0.8893
+ },
+ "museglimmer": {
+  "answerer": "gemma4",
+  "calls": 600,
+  "own": 0.9289,
+  "other": 0.9684
+ },
+ "O1_own_minus_other_mean": [
+  0.0116,
+  -0.0184,
+  0.0398
+ ],
+ "claude": {
+  "answerer": "gemma4",
+  "restart_own": 0.9087,
+  "restart_other": 1.0,
+  "O2_restart_own_minus_other": [
+   -0.0913,
+   -0.1417,
+   -0.0453
+  ]
+ },
+ "reading": "no detectable difference"
+}

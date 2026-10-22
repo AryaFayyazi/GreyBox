@@ -29,6 +29,14 @@ if p.exists():
               "GEeJudgeOurs": f3(R["R3_vs_reasoning_judge"]["read_out_8"]),
               "GEeRthree": ci(R["R3_vs_reasoning_judge"]["difference"]),
               "GEeCaught": f"{100 * R['caught_at_5pct']['read_out_8']:.0f}\\% vs {100 * R['caught_at_5pct']['single_answer']:.0f}\\%"})
+p = ROOT / "results/t1/g16_own_vs_other.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    for a, k in (("gemma4", "Gemma"), ("gptoss20b", "Gpt"), ("qwen38", "Qwen"), ("museglimmer", "Muse")):
+        m[f"GSixteen{k}"] = f"{f3(R[a]['own'])}/{f3(R[a]['other'])}"
+    m["GSixteenOone"] = ci(R["O1_own_minus_other_mean"])
+    m["GSixteenClaudeOwn"] = f3(R["claude"]["restart_own"])
+    m["GSixteenClaudeOther"] = f3(R["claude"]["restart_other"])
 p = ROOT / "results/t1/g19_own_vs_outside_claude.json"
 if p.exists():
     R = json.loads(p.read_text())
