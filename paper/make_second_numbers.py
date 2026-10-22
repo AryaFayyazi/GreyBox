@@ -57,6 +57,10 @@ if p.exists():
     m["GTwoneOwn"] = f3(R["within_tool"]["claude_own_8"])
     m["GTwoneDiff"] = ci(R["A2_own_minus_gemma4"])
     m["GTwoneSingle"] = f3(R["within_tool"]["gemma4_single"])
+p = ROOT / "results/t1/g25_fisher_snr_own.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTfFone"] = f"{f3(R['F1_mean_spearman_snr_vs_auroc'][0])} [{f3(R['F1_mean_spearman_snr_vs_auroc'][1])}, {f3(R['F1_mean_spearman_snr_vs_auroc'][2])}]"
 p = ROOT / "results/t1/g17_agentdojo_readout.json"
 if p.exists():
     R = json.loads(p.read_text())

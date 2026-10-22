@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
-**Monitor closed AI agents by asking yes/no questions about their calls: no training, API only.**
+**Read and monitor closed AI agents through their own APIs alone: no other model, no training.**
 
 ![Self-policing, live: Claude's proposed calls, a warning before a violating call runs, and the reviewer's block](https://aryafayyazi.github.io/GreyBox/media/greybox_selfpolicing.gif)
 
@@ -31,9 +31,9 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
 - **Against a reasoning judge** (G20): the questionnaire ranked the open agents' violations better than a reasoning
   model asked for one verdict on the same conversation (+0.073 [0.021, 0.123]).
-- **An open model answers for a closed agent** (G21): Gemma-4, with reasoning on, answered the same questions about
-  Claude's τ²-bench writes: within-tool AUROC 0.989 [0.954, 1.000] (0.965 within one task), against 0.704 from
-  Claude's own answers given with reasoning off. A closed agent can be monitored with no call to it.
+- **Comparison, not the method: another model answering** (G21): Gemma-4, with reasoning on, answered the same
+  questions about Claude's τ²-bench writes at 0.989 [0.954, 1.000], against 0.704 from Claude's own answers given with
+  reasoning off. The method uses only the agent's own API; G24 tests Claude's own answers with its reasoning on.
 - **Whose answers?** Not the agent's own seat: another model answering the same questions did as well on four open
   agents (G16: own − other +0.012 [−0.018, 0.040]), and so did the same model reading the conversation as an outside
   reviewer (G19: +0.043 [−0.136, 0.226]). The value is in the questions and the read-out, so an open model can answer
@@ -253,18 +253,6 @@ st.theta, st.score        # 8 arcsine coordinates; higher score = more likely a 
 
 When the user turn is a third party's (a customer), say in the system prompt where the check comes from, and read the
 first line of each answer (the G18 settings):
-
-The answerer need not be the agent. Any capable model can answer the questions about the agent's call from its
-transcript (G16: no detectable difference on average; G21: an open model with reasoning on, answering about Claude's
-τ²-bench calls, scored 0.989). Point `ask` at a local open model served by vLLM, and the closed agent is never called:
-
-```python
-from openai import OpenAI
-from graybox.selfaudit import openai_asker
-ask = openai_asker(OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY"), model="google/gemma-4-26B-A4B-it",
-                   max_tokens=6000)                    # room for the answerer's reasoning
-st = observable_state(ask, messages, "send_email", {"to": "x@partner.com"}, n=4)     # messages: the agent's transcript
-```
 
 ```python
 from graybox.selfaudit import TAU2_AIRLINE_QUESTIONS, parse_first_line

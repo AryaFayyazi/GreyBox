@@ -1,0 +1,31 @@
+{
+ "writes": 180,
+ "violations": 50,
+ "parsed_share": 1.0,
+ "within_tool": {
+  "reviewer_reasoning_1q": 0.9183,
+  "own_conversation_8x4": 0.699,
+  "reviewer_no_reasoning_8x4": 0.6558
+ },
+ "R1_ci": [
+  0.7297,
+  0.99
+ ],
+ "R2_minus_own_conversation": [
+  0.2193,
+  -0.0201,
+  0.427
+ ],
+ "R3_minus_reviewer_no_reasoning": [
+  0.2624,
+  0.0066,
+  0.4779
+ ],
+ "reported_within_task_and_tool": 1.0,
+ "flagged": {
+  "violations": 46,
+  "allowed": 10
+ },
+ "mean_output_tokens": 690.8,
+ "R1_pass": true
+}

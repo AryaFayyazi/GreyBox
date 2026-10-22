@@ -51,10 +51,7 @@ def panel_decision(ax):
                    for a, N in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss")) if a in g]
     g = json.loads((ROOT / "results/t1/g18_tau2_claude_readout.json").read_text())
     second.append(("Claude, τ²-bench", g["R1_within_tool_read_out_8"][0], g["R1_within_tool_read_out_8"][1:], None, ORANGE))
-    f21 = ROOT / "results/t1/g21_tau2_open_answerer.json"
-    if f21.exists():
-        h = json.loads(f21.read_text())
-        second.append(("  same, open model answers", h["within_tool"]["gemma4_8"], h["A1_gemma4_8_ci"], None, "hollow"))
+    # (G21, another model answering, is a comparison outside the method: not shown)
     style(ax)
     ax.grid(axis="y", visible=False)
     X0 = 0.5

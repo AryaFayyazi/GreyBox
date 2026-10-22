@@ -184,10 +184,10 @@ def second_card():
     f21 = R / "t1/g21_tau2_open_answerer.json"
     if f21.exists():
         g = json.loads(f21.read_text())
-        out += (f'<p><b>An open model answers for the closed agent</b> (G21, preregistered). Gemma-4 (reasoning on) answered the same '
+        out += (f'<p><b>Comparison: another model answering</b> (G21, preregistered; not the method). Gemma-4 (reasoning on) answered the same '
                 f'questions about Claude\'s &tau;&sup2;-bench writes: {g["within_tool"]["gemma4_8"]:.3f} [{g["A1_gemma4_8_ci"][0]:.2f}, '
                 f'{g["A1_gemma4_8_ci"][1]:.2f}] within tool, against {g["within_tool"]["claude_own_8"]:.3f} from Claude\'s own answers '
-                f'(given with reasoning off). A closed agent can be monitored with no call to it.</p>')
+                f'(given with reasoning off). The method itself uses only the agent\'s own API.</p>')
     f19 = R / "t1/g19_own_vs_outside_claude.json"
     if f19.exists():
         g = json.loads(f19.read_text())
@@ -238,7 +238,7 @@ a new kind of task it needs new labels, and its review cut should be set on your
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
 but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
 probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude is closed, so it has no probe. Below the line, the
-second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude on &tau;&sup2;-bench (G18); the hollow circle is the same writes answered by an open model (G21); all preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
+second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude on &tau;&sup2;-bench (G18); both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
 the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
@@ -524,7 +524,7 @@ def main():
     for name, title, desc in (("train.html", "Train a monitor", "Train an agent-action monitor on your own labelled steps, in your browser."),
                               ("docs.html", "Docs", "Install, deploy and evaluate Grey Box monitors."),
                               ("selfpolice.html", "Self-policing", "Let an AI agent check its own tool calls before they run, through its own API."),
-                              ("paper.html", "Paper", "Grey Box: Monitoring Closed Agents by Asking Yes/No Questions.")):
+                              ("paper.html", "Paper", "Grey Box: Reading Closed Agents Through Their APIs Alone.")):
         if (SRC / "pages" / name).exists():
             s = (SRC / "pages" / name).read_text()
             m1, m2 = re.search(r"<!--title: (.*?)-->", s), re.search(r"<!--desc: (.*?)-->", s)

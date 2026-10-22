@@ -1,0 +1,20 @@
+{
+ "writes": 130,
+ "violations": 50,
+ "parsed_share_on": 0.7,
+ "within_tool": {
+  "reasoning_on": 0.5681,
+  "reasoning_off": 0.6188
+ },
+ "E1_reasoning_on_ci": [
+  0.4545,
+  0.7708
+ ],
+ "E2_on_minus_off": [
+  -0.0507,
+  -0.2464,
+  0.1503
+ ],
+ "mean_output_tokens": 549.2,
+ "E1_pass": false
+}
