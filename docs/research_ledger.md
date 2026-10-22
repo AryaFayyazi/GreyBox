@@ -1847,3 +1847,6 @@ Dated log of every experiment, decision and correction. Newest last.
   others' coordinates +0.009 [−0.050, 0.097]; Claude restarts 1.000. Answers add nothing to the reader (−0.0002). Caveat
   found on reading: Claude's restart template is easy for any reader of the command text (reader alone 1.000; allowed
   calls are mostly help/status commands) — this qualifies G15's T3 (0.909) too: it is below a text-based ceiling.
+- **2026-10-21 19:45, Claude on AgentDojo (development, no defense; scripts/182):** 285 attack episodes, 14 errors;
+  attack success 1.1% (3/271, all travel), 0 calls carrying an attacker-only value; utility 0.705; $0.59. Claude is
+  robust to this attack, so a closed-agent arm of G17 has no positives and is not run.

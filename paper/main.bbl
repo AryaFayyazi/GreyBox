@@ -1,4 +1,4 @@
-\begin{thebibliography}{31}
+\begin{thebibliography}{40}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -9,6 +9,11 @@
 Amari, S.-i.
 \newblock \emph{Information Geometry and Its Applications}.
 \newblock Springer, 2016.
+
+\bibitem[Angelopoulos \& Bates(2023)Angelopoulos and Bates]{angelopoulos2023conformal}
+Angelopoulos, A.~N. and Bates, S.
+\newblock Conformal prediction: A gentle introduction.
+\newblock \emph{Foundations and Trends in Machine Learning}, 16\penalty0 (4):\penalty0 494--591, 2023.
 
 \bibitem[Anscombe(1948)]{anscombe1948transformation}
 Anscombe, F.~J.
@@ -34,10 +39,20 @@ Baker, B., Huizinga, J., Gao, L., Dou, Z., Guan, M.~Y., Madry, A., Zaremba, W., 
 \newblock Monitoring reasoning models for misbehavior and the risks of promoting obfuscation.
 \newblock \emph{arXiv preprint arXiv:2503.11926}, 2025.
 
+\bibitem[Barres et~al.(2025)Barres, Dong, Ray, Si, and Narasimhan]{barres2025tau2}
+Barres, V., Dong, H., Ray, S., Si, X., and Narasimhan, K.
+\newblock $\tau^2$-bench: Evaluating conversational agents in a dual-control environment.
+\newblock \emph{arXiv preprint arXiv:2506.07982}, 2025.
+
 \bibitem[Benara et~al.(2024)Benara, Singh, Morris, Antonello, Stoica, Huth, and Gao]{benara2024crafting}
 Benara, V., Singh, C., Morris, J.~X., Antonello, R., Stoica, I., Huth, A.~G., and Gao, J.
 \newblock Crafting interpretable embeddings by asking {LLMs} questions.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Bhatt et~al.(2025)Bhatt, Rushing, Kaufman, Tracy, Georgiev, Matolcsi, Khan, and Shlegeris]{bhatt2025ctrlz}
+Bhatt, A., Rushing, C., Kaufman, A., Tracy, T., Georgiev, V., Matolcsi, D., Khan, A., and Shlegeris, B.
+\newblock {Ctrl-Z}: Controlling {AI} agents via resampling.
+\newblock \emph{arXiv preprint arXiv:2504.10374}, 2025.
 
 \bibitem[Burns et~al.(2023)Burns, Ye, Klein, and Steinhardt]{burns2023ccs}
 Burns, C., Ye, H., Klein, D., and Steinhardt, J.
@@ -115,6 +130,11 @@ Kriegeskorte, N., Mur, M., and Bandettini, P.~A.
 Levy, M., Goldberg, Y., and {Cooper Stickland}, A.
 \newblock Forecasting future behavior as a learning task, 2026.
 
+\bibitem[Li et~al.(2025)Li, Fung, Weiss, Xiong, Al-Hussaeni, and Fachkha]{li2025odcv}
+Li, M.~Q., Fung, B. C.~M., Weiss, M., Xiong, P., Al-Hussaeni, K., and Fachkha, C.
+\newblock A benchmark for evaluating outcome-driven constraint violations in autonomous {AI} agents.
+\newblock \emph{arXiv preprint arXiv:2512.20798}, 2025.
+
 \bibitem[Marks \& Tegmark(2023)Marks and Tegmark]{marks2023geometry}
 Marks, S. and Tegmark, M.
 \newblock The geometry of truth: Emergent linear structure in large language model representations of true/false datasets, 2023.
@@ -124,10 +144,20 @@ Pacchiardi, L., Chan, A.~J., Mindermann, S., Moscovitz, I., Pan, A.~Y., Gal, Y.,
 \newblock How to catch an {AI} liar: Lie detection in black-box {LLM}s by asking unrelated questions.
 \newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
 
+\bibitem[Parrack et~al.(2025)Parrack, Attubato, and Heimersheim]{parrack2025blacktowhite}
+Parrack, A., Attubato, C.~L., and Heimersheim, S.
+\newblock Benchmarking deception probes via black-to-white performance boosts.
+\newblock \emph{arXiv preprint arXiv:2507.12691}, 2025.
+
 \bibitem[Picozzi(2026)]{picozzi2026information}
 Picozzi, D.
 \newblock The information geometry of large language models is shared, learned, and controllable.
 \newblock \emph{arXiv preprint arXiv:2609.11063}, 2026.
+
+\bibitem[Reddy et~al.(2026)Reddy, Challaram, and Basu]{reddy2026reasonless}
+Reddy, V., Challaram, S.~R., and Basu, A.
+\newblock Reason less, verify more: Deterministic gates recover a silent policy-violation failure mode in tool-using {LLM} agents.
+\newblock \emph{arXiv preprint arXiv:2607.07405}, 2026.
 
 \bibitem[Sam et~al.(2025)Sam, Finzi, and Kolter]{sam2025quere}
 Sam, D., Finzi, M., and Kolter, J.~Z.
@@ -138,10 +168,25 @@ Schiekiera, L., Zimmer, M., Roux, C., Pokutta, S., and G{\"u}nther, F.
 \newblock From associations to activations: Comparing behavioral and hidden-state semantic geometry in {LLMs}.
 \newblock \emph{arXiv preprint arXiv:2602.00628}, 2026.
 
+\bibitem[Sriramanan et~al.(2024)Sriramanan, Bharti, Sadasivan, Saha, Kattakinda, and Feizi]{sriramanan2024llmcheck}
+Sriramanan, G., Bharti, S., Sadasivan, V.~S., Saha, S., Kattakinda, P., and Feizi, S.
+\newblock {LLM-Check}: Investigating detection of hallucinations in large language models.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
 \bibitem[Torgerson(1952)]{torgerson1952mds}
 Torgerson, W.~S.
 \newblock Multidimensional scaling: {I}. {T}heory and method.
 \newblock \emph{Psychometrika}, 17\penalty0 (4):\penalty0 401--419, 1952.
+
+\bibitem[Vovk et~al.(2005)Vovk, Gammerman, and Shafer]{vovk2005algorithmic}
+Vovk, V., Gammerman, A., and Shafer, G.
+\newblock \emph{Algorithmic Learning in a Random World}.
+\newblock Springer, 2005.
+
+\bibitem[Walther et~al.(2016)Walther, Nili, Ejaz, Alink, Kriegeskorte, and Diedrichsen]{walther2016reliability}
+Walther, A., Nili, H., Ejaz, N., Alink, A., Kriegeskorte, N., and Diedrichsen, J.
+\newblock Reliability of dissimilarity measures for multi-voxel pattern analysis.
+\newblock \emph{NeuroImage}, 137:\penalty0 188--200, 2016.
 
 \bibitem[Zhou \& Klindt(2026)Zhou and Klindt]{zhou2026identifiabilities}
 Zhou, J. and Klindt, D.

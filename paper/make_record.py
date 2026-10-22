@@ -49,7 +49,10 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G12": "The composition-weighted law (G12)",
           "G13": "Self-policing against prompt injection (G13)",
           "G14": "Recreating the decision state, trained comparison (G14)",
-          "G15": "The agent's own answers, training-free (G15)"}
+          "G15": "The agent's own answers, training-free (G15)",
+          "G16": "Own answers or another model's (G16)",
+          "G17": "Training-free read-out, prompt injection (G17)",
+          "G18": "Training-free read-out, a second benchmark for Claude (G18)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -103,6 +106,9 @@ def main():
         if gm and gm.group(1) in GNAMES:
             if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
                 cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
+            ep = {"G16": "O", "G17": "V", "G18": "R"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
+            if ep:
+                cells = [re.sub(rf"\b{ep}([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids
                 cells = [re.sub(r"\bL([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
                 cells = [c.replace("S4@", "resampling@").replace("S4 ", "resampling ") for c in cells]

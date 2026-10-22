@@ -151,7 +151,31 @@ def g14_card():
             f'read-out of the answers scores the call: no labels, nothing trained. On held-out calls of four open agents, {verdict}.{claude}{trained}</p>'
             f'<table class="tablewrap"><tr><th>Agent</th><th>its 8 answers (no training)</th><th>its 1 answer (self-audit)</th><th>probe trained on its hidden states</th></tr>{rows}</table>'
             f'<p class="muted">Within-template AUROC. Mean difference, 8 answers − 1 answer: {t1[0]:+.3f} [{t1[1]:+.3f}, {t1[2]:+.3f}]; '
-            f'8 answers − trained probe: {t2[0]:+.3f} [{t2[1]:+.3f}, {t2[2]:+.3f}]. Preregistered (G15).</p></div>')
+            f'8 answers − trained probe: {t2[0]:+.3f} [{t2[1]:+.3f}, {t2[2]:+.3f}]. Preregistered (G15). A probe tuned afterwards is 0.015 '
+            f'higher on average (exploratory).</p>{second_card()}</div>')
+
+
+def second_card():
+    """Second benchmarks for the training-free read-out: G18 (tau2-bench, Claude) and G17 (AgentDojo, open agents)."""
+    out = ""
+    f18 = R / "t1/g18_tau2_claude_readout.json"
+    if f18.exists():
+        g = json.loads(f18.read_text())
+        r1, r2 = g["R1_within_tool_read_out_8"], g["R2_read_out_minus_single"]
+        out += (f'<p><b>A second benchmark for the closed agent</b> (G18, preregistered). On &tau;&sup2;-bench airline, with 8 questions '
+                f'written from its published policy before any answer, the same read-out ranks Claude Haiku 5.5\'s policy violations at '
+                f'{r1[0]:.3f} [{r1[1]:.2f}, {r1[2]:.2f}] within tool ({g["writes"]} writes, {g["violations"]} violations); its single answer '
+                f'scores {g["within_tool_single_answer"]:.3f} (difference {r2[0]:+.3f} [{r2[1]:+.3f}, {r2[2]:+.3f}]). Within one task it is '
+                f'weaker (0.61, exploratory).</p>')
+    f17 = R / "t1/g17_agentdojo_readout.json"
+    if f17.exists():
+        g = json.loads(f17.read_text())
+        N = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss"}
+        parts = [f"{N[a]} {g[a]['within_suite']['read_out_8']:.3f} [{g[a]['read_out_8_ci'][0]:.2f}, {g[a]['read_out_8_ci'][1]:.2f}]"
+                 for a in N if a in g]
+        out += (f'<p><b>Prompt injection</b> (G17, preregistered). On AgentDojo, open agents\' own answers rank their injected calls at '
+                f'{"; ".join(parts)} within suite.</p>')
+    return out
 
 
 def index_page():

@@ -1,0 +1,55 @@
+{
+ "note": "exploratory; written before the held-out results were seen",
+ "gemma4": {
+  "tuned_white_box": 0.991,
+  "reader_probe_own_labels": 0.9995,
+  "grey_box": 0.9867,
+  "reader_only": 0.983,
+  "white_box_locked": 0.9796,
+  "grey_minus_reader_only": [
+   0.0037,
+   -0.0009,
+   0.0108
+  ],
+  "reader_probe_other_agents_labels": 0.9986
+ },
+ "gptoss20b": {
+  "tuned_white_box": 0.8406,
+  "reader_probe_own_labels": 0.9477,
+  "grey_box": 0.881,
+  "reader_only": 0.8757,
+  "white_box_locked": 0.7716,
+  "grey_minus_reader_only": [
+   0.0053,
+   -0.003,
+   0.0241
+  ],
+  "reader_probe_other_agents_labels": 0.8959
+ },
+ "qwen38": {
+  "tuned_white_box": 0.9497,
+  "reader_probe_own_labels": 0.953,
+  "grey_box": 0.9161,
+  "reader_only": 0.9295,
+  "white_box_locked": 0.8255,
+  "grey_minus_reader_only": [
+   -0.0134,
+   -0.0765,
+   0.0252
+  ],
+  "reader_probe_other_agents_labels": 0.9966
+ },
+ "museglimmer": {
+  "tuned_white_box": 0.9724,
+  "reader_probe_own_labels": 0.9872,
+  "grey_box": 0.9852,
+  "reader_only": 0.9816,
+  "white_box_locked": 0.9413,
+  "grey_minus_reader_only": [
+   0.0036,
+   -0.0008,
+   0.0123
+  ],
+  "reader_probe_other_agents_labels": 0.9696
+ }
+}

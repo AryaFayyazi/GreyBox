@@ -389,9 +389,57 @@ def stage_g14(cfg):
     print(json.dumps(res, indent=1))
 
 
+def stage_posthoc(cfg):
+    """EXPLORATORY baselines asked for by a review, written before the held-out results were seen (not G14 endpoints):
+    (a) a tuned white box: 256 PCs of the true state, logistic regression with C chosen by inner 5-fold CV (dev);
+    (b) a direct reader probe on the agent's own development labels (reader 256 PCs, CV-tuned logistic);
+    (c) a direct reader probe trained on the OTHER open agents' development labels (pooled), the label-matched comparison
+        for the ensemble of other agents' grey boxes;
+    (d) grey box − reader only (do the answers add?), per agent, scenario-cluster bootstrap."""
+    from sklearn.decomposition import PCA
+    from sklearn.linear_model import LogisticRegressionCV
+    OPEN = ["gemma4", "gptoss20b", "qwen38", "museglimmer"]
+    sp = lambda a: "fresh" if a == "gemma4" else "heldout"  # noqa: E731
+    out, store = {"note": "exploratory; written before the held-out results were seen"}, {}
+    for a in OPEN:
+        U, H = states(a)
+        H = H[:, cfg.layer].astype(np.float64)
+        dm = (U.dev & U.ok).values
+        key = {k: i for i, k in enumerate(zip(U.episode_id, U.event_id.astype(int)))}
+        B = pd.read_parquet(OUT / f"{a}_{sp(a)}.parquet")
+        ids = np.array([key[k] for k in zip(B.episode_id, B.event_id.astype(int))])
+        R = reader(a)
+        store[a] = (U, dm, R, B, ids)
+        y, tm = B.y.values.astype(int), B.template.values
+        p256 = PCA(256, random_state=0).fit(H[dm])
+        wb = LogisticRegressionCV(Cs=[0.01, 0.03, 0.1, 0.3, 1, 3], cv=5, max_iter=5000).fit(p256.transform(H[dm]), U.y.values[dm])
+        rp = PCA(256, random_state=0).fit(R[dm])
+        rpb = LogisticRegressionCV(Cs=[0.01, 0.03, 0.1, 0.3, 1, 3], cv=5, max_iter=5000).fit(rp.transform(R[dm]), U.y.values[dm])
+        _, S = own_scores(a, sp(a), cfg.layer)
+        sc = {"tuned_white_box": wb.decision_function(p256.transform(H[ids])), "reader_probe_own_labels": rpb.decision_function(rp.transform(R[ids])),
+              "grey_box": S["grey_box"], "reader_only": S["reader_only"], "white_box_locked": S["white_box"]}
+        out[a] = {k: round(float(within_auroc(y, v, tm)), 4) for k, v in sc.items()}
+        b = cluster_boot(lambda i: within_auroc(y[i], S["grey_box"][i], tm[i]) - within_auroc(y[i], S["reader_only"][i], tm[i]), B.scenario_id.values, 1000, seed=1760)
+        b = b[np.isfinite(b)]
+        out[a]["grey_minus_reader_only"] = [round(float(out[a]["grey_box"] - out[a]["reader_only"]), 4), round(float(np.percentile(b, 2.5)), 4), round(float(np.percentile(b, 97.5)), 4)]
+    for t in OPEN:                                                   # (c) reader probe trained on the other agents' labels
+        Xs, ys = [], []
+        for s_ in OPEN:
+            if s_ != t:
+                U, dm, R, _, _ = store[s_]
+                Xs.append(R[dm]); ys.append(U.y.values[dm])
+        X, Y = np.concatenate(Xs), np.concatenate(ys)
+        rp = PCA(256, random_state=0).fit(X)
+        clf = LogisticRegressionCV(Cs=[0.01, 0.03, 0.1, 0.3, 1, 3], cv=5, max_iter=5000).fit(rp.transform(X), Y)
+        U, dm, R, B, ids = store[t]
+        out[t]["reader_probe_other_agents_labels"] = round(float(within_auroc(B.y.values.astype(int), clf.decision_function(rp.transform(R[ids])), B.template.values)), 4)
+        print(t, json.dumps(out[t]), flush=True)
+    (ROOT / "results/t1/g14_posthoc_exploratory.json").write_text(json.dumps(out, indent=1))
+
+
 def main():
     cfg = OmegaConf.merge(CFG, OmegaConf.from_cli())
-    {"battery": stage_battery, "analyze": stage_analyze, "transfer": stage_transfer, "g14": stage_g14, "loo": stage_loo}[cfg.stage](cfg)
+    {"battery": stage_battery, "analyze": stage_analyze, "transfer": stage_transfer, "g14": stage_g14, "loo": stage_loo, "posthoc": stage_posthoc}[cfg.stage](cfg)
 
 
 if __name__ == "__main__":

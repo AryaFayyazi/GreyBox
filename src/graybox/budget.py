@@ -52,7 +52,7 @@ class Ledger:
             d["input_tokens"] += int(input_tokens)
             d["output_tokens"] += int(output_tokens)
             d["calls"] += 1
-            d["usd"] = d["input_tokens"] * self.pin + d["output_tokens"] * self.pout
+            d["usd"] = d["usd"] + int(input_tokens) * self.pin + int(output_tokens) * self.pout   # this call at its own price
             return d["usd"]
         return self._update(f)
 

@@ -19,9 +19,13 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
 - **Predicted before deploying**: a law predicted the share each of five agents prevents, within 0.15 (mean error
   0.035; G12). On a second benchmark it cut successful prompt injections by 84% and 50% (G13).
 - **The full observable state at the decision** (8 questions, fixed read-out, no training; G15): on held-out calls of
-  four open agents it ranked violations as well as a probe trained on the agent's own hidden states (within-template
-  AUROC 0.82–0.99; mean difference +0.045 [−0.017, +0.135]) and better than the single answer; on Claude Haiku 5.5 it
-  ranked unapproved restarts at 0.909 [0.858, 0.952], where Claude's single answer scored 0.32.
+  four open agents it ranked violations about as well as a probe trained on the agent's own hidden states
+  (within-template AUROC 0.82–0.99; mean difference to the preregistered probe +0.045 [−0.017, +0.135]; a probe tuned
+  afterwards is 0.015 higher, exploratory) and better than the single answer; on Claude Haiku 5.5 it ranked unapproved
+  restarts at 0.909 [0.858, 0.952], where Claude's single answer scored 0.32.
+- **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
+  answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
+  (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
 - **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
   it is the geometry that models share, Claude's included (G1–G7).
 
