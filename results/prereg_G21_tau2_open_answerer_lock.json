@@ -1,0 +1,9 @@
+{
+ "locked_at": "2026-10-22T00:12:37-07:00",
+ "sha256": {
+  "docs/prereg_G21_tau2_open_answerer.md": "2aeebd5af3fffc2d1fec02ab9af9cac2794c4488f7291ac95e12f6078bd5caca",
+  "scripts/188_g21_tau2_open_answerer.py": "3826e406456efdc81c898ec2a1ace8782b2a2c5b55ba143bd4d93ec1f948f4a0",
+  "slurm/g21.sh": "62c5b993a51cebbe7836918d8fd2533d582e1df77d648420f5f64b17def17ae7",
+  "scripts/184_tau2_claude_readout.py": "ef0217846682ca8ac328e3e188b7aa0ac13b685451228e95f53315235869029d"
+ }
+}
