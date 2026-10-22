@@ -1843,3 +1843,7 @@ Dated log of every experiment, decision and correction. Newest last.
   T1 (8 − 1) +0.036 [+0.006, +0.064]; T2 (8 − trained) +0.045 [−0.017, +0.135]; T3 Claude restarts 0.909 [0.858, 0.952]
   where Claude's single "complies?" answer scores 0.323. Caveats: Muse below its trained probe; Claude pooled 0.475 because
   mailing-list sends (decided by an unchecked fact) are not flagged — the predicted boundary.
+- **2026-10-21 18:40, G14 result (trained comparison): PASS P1–P3.** Recreation − true state +0.063 [0.026, 0.122];
+  others' coordinates +0.009 [−0.050, 0.097]; Claude restarts 1.000. Answers add nothing to the reader (−0.0002). Caveat
+  found on reading: Claude's restart template is easy for any reader of the command text (reader alone 1.000; allowed
+  calls are mostly help/status commands) — this qualifies G15's T3 (0.909) too: it is below a text-based ceiling.

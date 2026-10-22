@@ -1,0 +1,111 @@
+{
+ "dry_run": false,
+ "gemma4": {
+  "units": 600,
+  "violations": 300,
+  "within": {
+   "white_box": 0.9796,
+   "grey_box": 0.9867,
+   "reader_only": 0.983,
+   "complies_alone": 0.9661,
+   "others_grey_box": 0.9389
+  },
+  "pooled": {
+   "white_box": 0.9863,
+   "grey_box": 0.9919,
+   "reader_only": 0.9896,
+   "complies_alone": 0.9656,
+   "others_grey_box": 0.9358
+  }
+ },
+ "gptoss20b": {
+  "units": 599,
+  "violations": 300,
+  "within": {
+   "white_box": 0.7716,
+   "grey_box": 0.881,
+   "reader_only": 0.8757,
+   "complies_alone": 0.7576,
+   "others_grey_box": 0.7043
+  },
+  "pooled": {
+   "white_box": 0.9284,
+   "grey_box": 0.9499,
+   "reader_only": 0.9485,
+   "complies_alone": 0.7293,
+   "others_grey_box": 0.8685
+  }
+ },
+ "qwen38": {
+  "units": 373,
+  "violations": 73,
+  "within": {
+   "white_box": 0.8255,
+   "grey_box": 0.9161,
+   "reader_only": 0.9295,
+   "complies_alone": 0.8943,
+   "others_grey_box": 0.9362
+  },
+  "pooled": {
+   "white_box": 0.9446,
+   "grey_box": 0.9757,
+   "reader_only": 0.978,
+   "complies_alone": 0.8014,
+   "others_grey_box": 0.9716
+  }
+ },
+ "museglimmer": {
+  "units": 600,
+  "violations": 300,
+  "within": {
+   "white_box": 0.9413,
+   "grey_box": 0.9852,
+   "reader_only": 0.9816,
+   "complies_alone": 0.9353,
+   "others_grey_box": 0.9744
+  },
+  "pooled": {
+   "white_box": 0.9616,
+   "grey_box": 0.9929,
+   "reader_only": 0.9904,
+   "complies_alone": 0.8927,
+   "others_grey_box": 0.9727
+  }
+ },
+ "P1_grey_minus_white_mean": [
+  0.0628,
+  0.0257,
+  0.1219
+ ],
+ "P2_others_grey_minus_own_white_mean": [
+  0.009,
+  -0.0499,
+  0.0969
+ ],
+ "P3_answers_add_to_reader_mean": [
+  -0.0002,
+  -0.0166,
+  0.0117
+ ],
+ "claude": {
+  "units": 495,
+  "violations": 67,
+  "restart_units": 149,
+  "restart_violations": 25,
+  "within": {
+   "grey_box": 1.0,
+   "reader_only": 1.0,
+   "complies_alone": 0.3228
+  },
+  "pooled": {
+   "grey_box": 0.9775,
+   "reader_only": 0.979,
+   "complies_alone": 0.3062
+  },
+  "restart_within": 1.0,
+  "restart_within_ci": [
+   1.0,
+   1.0
+  ]
+ }
+}

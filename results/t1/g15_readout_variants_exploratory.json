@@ -1,0 +1,90 @@
+{
+ "gemma4": {
+  "mean8_arcsine": {
+   "within": 0.994,
+   "pooled": 0.988,
+   "catch5": 0.01
+  },
+  "mean8_raw_p": {
+   "within": 0.994,
+   "pooled": 0.988,
+   "catch5": 0.01
+  },
+  "majority_any_rule_or_noncompliant": {
+   "within": 0.994,
+   "pooled": 0.987,
+   "catch5": 0.01
+  },
+  "complies_alone": {
+   "within": 0.966,
+   "pooled": 0.966,
+   "catch5": 0.01
+  }
+ },
+ "gptoss20b": {
+  "mean8_arcsine": {
+   "within": 0.822,
+   "pooled": 0.79,
+   "catch5": 0.01
+  },
+  "mean8_raw_p": {
+   "within": 0.802,
+   "pooled": 0.78,
+   "catch5": 0.01
+  },
+  "majority_any_rule_or_noncompliant": {
+   "within": 0.802,
+   "pooled": 0.788,
+   "catch5": 0.01
+  },
+  "complies_alone": {
+   "within": 0.758,
+   "pooled": 0.729,
+   "catch5": 0.009
+  }
+ },
+ "qwen38": {
+  "mean8_arcsine": {
+   "within": 0.951,
+   "pooled": 0.833,
+   "catch5": 0.055
+  },
+  "mean8_raw_p": {
+   "within": 0.941,
+   "pooled": 0.82,
+   "catch5": 0.055
+  },
+  "majority_any_rule_or_noncompliant": {
+   "within": 0.951,
+   "pooled": 0.833,
+   "catch5": 0.055
+  },
+  "complies_alone": {
+   "within": 0.894,
+   "pooled": 0.801,
+   "catch5": 0.049
+  }
+ },
+ "museglimmer": {
+  "mean8_arcsine": {
+   "within": 0.929,
+   "pooled": 0.858,
+   "catch5": 0.01
+  },
+  "mean8_raw_p": {
+   "within": 0.927,
+   "pooled": 0.857,
+   "catch5": 0.01
+  },
+  "majority_any_rule_or_noncompliant": {
+   "within": 0.929,
+   "pooled": 0.86,
+   "catch5": 0.01
+  },
+  "complies_alone": {
+   "within": 0.935,
+   "pooled": 0.893,
+   "catch5": 0.009
+  }
+ }
+}

@@ -1,0 +1,11 @@
+{
+ "locked_at": "2026-10-21T18:35:38-07:00",
+ "sha256": {
+  "docs/prereg_G16_own_vs_other.md": "d549a456f47012a5e8bc71480a0ae6d43ab8bbcf157b6f9d0735e2fbee78dd24",
+  "scripts/176_other_answerer.py": "26e1e8cfc7b5e4b4c0db3f1eb6181ce2c7686e0b64d135ba4421fb542bc45287",
+  "scripts/177_g16_analysis.py": "8eac27f7110730f60687b426a626ed16f34bcd45ee62fa21f748fb1e5294012a",
+  "slurm/g16.sh": "85d32a861c075ae8ff8979b3181a2fa05eb6d4e8ce8c7826afbb34c98f046c37",
+  "web/build_observable_ref.py": "0b576322c4cb8987582139b4714f491e7d4fd877e8b0d52134555168ff394bc6",
+  "scripts/171_decision_greybox_LOCKED.py": "f075527bbabd8ab9e7a19fecc783acb85a7551dce107d3f6535c77b9a83b49bf"
+ }
+}
