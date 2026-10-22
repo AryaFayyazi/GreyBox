@@ -103,7 +103,10 @@ def panel_law(ax):
     ax.set_xticks([0, 0.5, 1.0]); ax.set_yticks([0, 0.5, 1.0])
     ax.set_xlabel("predicted from offline flag rates", fontsize=6.2, color=INK, labelpad=2)
     ax.set_ylabel("observed live reduction", fontsize=6.2, color=INK, labelpad=1)
-    ax.text(0.03, 0.97, "mean |error| 0.035", transform=ax.transAxes, fontsize=5.9, color=INK, fontweight="bold", va="top")
+    e12 = np.mean([abs(y - x) for _, x, y, *_r, kind in pts if kind == "g12"])
+    eall = np.mean([abs(y - x) for _, x, y, *_r in pts])
+    ax.text(0.03, 0.97, f"mean |error| {e12:.3f} (G12)", transform=ax.transAxes, fontsize=5.6, color=INK, fontweight="bold", va="top")
+    ax.text(0.03, 0.89, f"all 7 points: {eall:.3f}", transform=ax.transAxes, fontsize=5.3, color=INK2, va="top")
     h = [ax.scatter([], [], s=34, marker="o", color=BLUE, edgecolor="white", lw=0.8, label="violations, 5 agents"),
          ax.scatter([], [], s=34, marker="s", color=BLUE, edgecolor="white", lw=0.8, label="injections, 2 agents"),
          ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Claude (closed)")]
