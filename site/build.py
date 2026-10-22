@@ -175,6 +175,19 @@ def second_card():
                 f'violations as well as the agent\'s own answers: own &minus; other {d[0]:+.3f} [{d[1]:+.3f}, {d[2]:+.3f}] over four open agents; '
                 f'on Claude\'s restarts Gemma-4\'s answers score {g["claude"]["restart_other"]:.3f} against Claude\'s {g["claude"]["restart_own"]:.3f}. '
                 f'The monitor is a fixed questionnaire that any capable model can answer.</p>')
+    f20 = R / "t1/g20_questionnaire_vs_judge.json"
+    if f20.exists():
+        g = json.loads(f20.read_text())
+        d = g["J1_read_out_minus_judge_mean"]
+        out += (f'<p><b>Against a reasoning judge</b> (G20, preregistered). A reasoning model that reads the same conversation and gives one '
+                f'verdict ranks the open agents\' violations worse than the questionnaire: read-out &minus; judge {d[0]:+.3f} [{d[1]:+.3f}, {d[2]:+.3f}].</p>')
+    f21 = R / "t1/g21_tau2_open_answerer.json"
+    if f21.exists():
+        g = json.loads(f21.read_text())
+        out += (f'<p><b>An open model answers for the closed agent</b> (G21, preregistered). Gemma-4 (reasoning on) answered the same '
+                f'questions about Claude\'s &tau;&sup2;-bench writes: {g["within_tool"]["gemma4_8"]:.3f} [{g["A1_gemma4_8_ci"][0]:.2f}, '
+                f'{g["A1_gemma4_8_ci"][1]:.2f}] within tool, against {g["within_tool"]["claude_own_8"]:.3f} from Claude\'s own answers '
+                f'(given with reasoning off). A closed agent can be monitored with no call to it.</p>')
     f19 = R / "t1/g19_own_vs_outside_claude.json"
     if f19.exists():
         g = json.loads(f19.read_text())
@@ -225,7 +238,7 @@ a new kind of task it needs new labels, and its review cut should be set on your
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
 but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
 probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude is closed, so it has no probe. Below the line, the
-second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude on &tau;&sup2;-bench (G18), both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
+second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude on &tau;&sup2;-bench (G18); the hollow circle is the same writes answered by an open model (G21); all preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
 the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic

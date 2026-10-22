@@ -29,6 +29,11 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
 - **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
   answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
+- **Against a reasoning judge** (G20): the questionnaire ranked the open agents' violations better than a reasoning
+  model asked for one verdict on the same conversation (+0.073 [0.021, 0.123]).
+- **An open model answers for a closed agent** (G21): Gemma-4, with reasoning on, answered the same questions about
+  Claude's τ²-bench writes: within-tool AUROC 0.989 [0.954, 1.000] (0.965 within one task), against 0.704 from
+  Claude's own answers given with reasoning off. A closed agent can be monitored with no call to it.
 - **Whose answers?** Not the agent's own seat: another model answering the same questions did as well on four open
   agents (G16: own − other +0.012 [−0.018, 0.040]), and so did the same model reading the conversation as an outside
   reviewer (G19: +0.043 [−0.136, 0.226]). The value is in the questions and the read-out, so an open model can answer

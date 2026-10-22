@@ -51,6 +51,10 @@ def panel_decision(ax):
                    for a, N in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss")) if a in g]
     g = json.loads((ROOT / "results/t1/g18_tau2_claude_readout.json").read_text())
     second.append(("Claude, τ²-bench", g["R1_within_tool_read_out_8"][0], g["R1_within_tool_read_out_8"][1:], None, ORANGE))
+    f21 = ROOT / "results/t1/g21_tau2_open_answerer.json"
+    if f21.exists():
+        h = json.loads(f21.read_text())
+        second.append(("  same, open model answers", h["within_tool"]["gemma4_8"], h["A1_gemma4_8_ci"], None, "hollow"))
     style(ax)
     ax.grid(axis="y", visible=False)
     X0 = 0.5
@@ -65,8 +69,12 @@ def panel_decision(ax):
     for (name, eight, ci_, wb, col), yy in allrows:
         if wb is not None:
             ax.scatter([wb], [yy], s=30, marker="D", facecolor="white", edgecolor=INK, lw=1.0, zorder=3)
-        ax.plot(list(ci_), [yy, yy], color=col, lw=1.0, alpha=0.55, zorder=2, solid_capstyle="round")
-        ax.scatter([eight], [yy], s=46, color=col, edgecolor="white", lw=0.9, zorder=4)
+        c_ = ORANGE if col == "hollow" else col
+        ax.plot(list(ci_), [yy, yy], color=c_, lw=1.0, alpha=0.55, zorder=2, solid_capstyle="round")
+        if col == "hollow":
+            ax.scatter([eight], [yy], s=40, facecolor="white", edgecolor=ORANGE, lw=1.4, zorder=4)
+        else:
+            ax.scatter([eight], [yy], s=46, color=c_, edgecolor="white", lw=0.9, zorder=4)
         ax.text(X0 - 0.006, yy, name, fontsize=6.2, color=INK, ha="right", va="center")
     ax.axhline(ydiv, color=MUTE, lw=0.6, ls=(0, (2, 2)))
     ax.text(X0 + 0.006, ydiv - 0.30, "second benchmarks", fontsize=5.3, color=INK2, va="center", ha="left")

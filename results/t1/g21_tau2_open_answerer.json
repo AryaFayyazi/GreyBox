@@ -1,0 +1,21 @@
+{
+ "writes": 360,
+ "violations": 50,
+ "parsed_share_gemma4": 0.997,
+ "within_tool": {
+  "claude_own_8": 0.7044,
+  "gemma4_8": 0.989,
+  "claude_own_single": 0.5547,
+  "gemma4_single": 0.9604
+ },
+ "A1_gemma4_8_ci": [
+  0.9537,
+  1.0
+ ],
+ "A2_own_minus_gemma4": [
+  -0.2846,
+  -0.4244,
+  -0.1713
+ ],
+ "A1_pass": true
+}

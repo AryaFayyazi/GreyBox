@@ -42,6 +42,21 @@ if p.exists():
     R = json.loads(p.read_text())
     m.update({"GNnOwn": f3(R["within_tool"]["own_8"]), "GNnOut": f3(R["within_tool"]["outside_8"]),
               "GNnDiff": ci(R["O1_own_minus_outside_8"])})
+p = ROOT / "results/t1/g20_questionnaire_vs_judge.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTwJone"] = ci(R["J1_read_out_minus_judge_mean"])
+    for a, k in (("gemma4", "Gemma"), ("gptoss20b", "Gpt"), ("qwen38", "Qwen"), ("museglimmer", "Muse")):
+        m[f"GTwJudge{k}"] = f3(R[a]["within"]["judge"])
+    m["GTwClaudeJudge"] = f3(R["claude"]["restart_judge"])
+    m["GTwClaudePooledJudge"] = f3(R["claude"]["pooled_judge"])
+p = ROOT / "results/t1/g21_tau2_open_answerer.json"
+if p.exists():
+    R = json.loads(p.read_text())
+    m["GTwoneGemma"] = f"{f3(R['within_tool']['gemma4_8'])} [{f3(R['A1_gemma4_8_ci'][0])}, {f3(R['A1_gemma4_8_ci'][1])}]"
+    m["GTwoneOwn"] = f3(R["within_tool"]["claude_own_8"])
+    m["GTwoneDiff"] = ci(R["A2_own_minus_gemma4"])
+    m["GTwoneSingle"] = f3(R["within_tool"]["gemma4_single"])
 p = ROOT / "results/t1/g17_agentdojo_readout.json"
 if p.exists():
     R = json.loads(p.read_text())

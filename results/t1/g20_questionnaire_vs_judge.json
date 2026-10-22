@@ -1,0 +1,65 @@
+{
+ "gemma4": {
+  "calls": 600,
+  "violations": 300,
+  "judge_parsed_share": 0.9875,
+  "within": {
+   "read_out_own": 0.9938,
+   "single_answer_own": 0.9661,
+   "judge": 0.9893,
+   "read_out_other_answerer": 0.9934
+  }
+ },
+ "gptoss20b": {
+  "calls": 599,
+  "violations": 300,
+  "judge_parsed_share": 0.9745,
+  "within": {
+   "read_out_own": 0.8224,
+   "single_answer_own": 0.7576,
+   "judge": 0.7555,
+   "read_out_other_answerer": 0.7992
+  }
+ },
+ "qwen38": {
+  "calls": 373,
+  "violations": 73,
+  "judge_parsed_share": 0.9933,
+  "within": {
+   "read_out_own": 0.9513,
+   "single_answer_own": 0.8943,
+   "judge": 0.7802,
+   "read_out_other_answerer": 0.8893
+  }
+ },
+ "museglimmer": {
+  "calls": 600,
+  "violations": 300,
+  "judge_parsed_share": 0.985,
+  "within": {
+   "read_out_own": 0.9289,
+   "single_answer_own": 0.9353,
+   "judge": 0.8801,
+   "read_out_other_answerer": 0.9684
+  }
+ },
+ "J1_read_out_minus_judge_mean": [
+  0.0728,
+  0.0214,
+  0.1235
+ ],
+ "reading": "questionnaire better",
+ "claude": {
+  "calls": 495,
+  "judge_parsed_share": 0.9737,
+  "restart_read_out": 0.9087,
+  "restart_judge": 1.0,
+  "restart_read_out_minus_judge": [
+   -0.0913,
+   -0.1433,
+   -0.044
+  ],
+  "pooled_read_out": 0.4751,
+  "pooled_judge": 0.6925
+ }
+}

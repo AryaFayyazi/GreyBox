@@ -1,0 +1,6 @@
+{"note": "exploratory, after the locked G21 analysis",
+ "within_task_and_tool": {"gemma4_8": 0.965, "ci95_task_cluster": [0.927, 1.0], "claude_own_8": 0.61},
+ "excluding_targeted_run_within_tool": {"gemma4_8": 0.981},
+ "per_question_within_tool_gemma4": [0.96, 0.583, 0.695, 0.546, 0.669, 0.766, 0.497, 0.964],
+ "claude_cape_gemma4_questionnaire_from_g16": {"pooled": 0.63, "claude_own_pooled": 0.475, "mailing_list_sends_above_median_allowed": 0.452, "claude_own": 0.048},
+ "confound": "Gemma-4 answered with reasoning on; Claude Haiku 5.5's own answers (G15/G18 settings) had reasoning off and effort low"}
