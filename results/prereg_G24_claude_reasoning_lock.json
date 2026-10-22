@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T09:09:02-07:00",
+ "sha256": {
+  "docs/prereg_G24_claude_reasoning.md": "cbae6d80d069e01437ef042c57fe35c140ea5b255bfe179e6434fef2678c868b",
+  "scripts/191_g24_claude_reasoning.py": "b6ac5a93cb5974e99c892d728f5e782f007cdbea23882a4d29486f614830405e"
+ }
+}
