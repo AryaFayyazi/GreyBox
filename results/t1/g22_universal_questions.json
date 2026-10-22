@@ -1,0 +1,57 @@
+{
+ "gptoss20b": {
+  "calls": 599,
+  "universal": 0.8079,
+  "tailored": 0.7992,
+  "parsed_share_universal": 0.9677
+ },
+ "qwen38": {
+  "calls": 373,
+  "universal": 0.906,
+  "tailored": 0.8893,
+  "parsed_share_universal": 0.9825
+ },
+ "museglimmer": {
+  "calls": 600,
+  "universal": 0.9551,
+  "tailored": 0.9684,
+  "parsed_share_universal": 0.9819
+ },
+ "U1a_cape_universal_mean": [
+  0.8896,
+  0.8183,
+  0.9503
+ ],
+ "U2a_cape_universal_minus_tailored": [
+  0.004,
+  -0.0289,
+  0.0358
+ ],
+ "tau2": {
+  "writes": 360,
+  "universal": 0.9353,
+  "tailored": 0.989,
+  "parsed_share_universal": 0.9799
+ },
+ "U1b_tau2_universal": [
+  0.9353,
+  0.841,
+  0.985
+ ],
+ "U2b_tau2_universal_minus_tailored": [
+  -0.0537,
+  -0.1403,
+  -0.0136
+ ],
+ "claude_reported": {
+  "calls": 495,
+  "restart_universal": 0.9478,
+  "restart_tailored": 1.0,
+  "pooled_universal": 0.4427,
+  "pooled_tailored": 0.6297
+ },
+ "endpoints": {
+  "U1a_lower_gt_0.5": true,
+  "U1b_lower_gt_0.5": true
+ }
+}
