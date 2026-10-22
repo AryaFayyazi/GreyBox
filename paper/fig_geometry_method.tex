@@ -1,63 +1,67 @@
 % The method figure: coordinates are gauge -> ask in side branches -> each answer law on a quarter circle (Fisher-Rao =
-% twice the arc) -> the geometry, compared with the hidden one; with full log-probabilities: the sphere -> exact Gram
+% twice the arc; exact flat coordinates) -> at the decision: the angles, a fixed read-out, hold or run. No training.
 \begin{figure*}[t]
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[font=\scriptsize, >={Stealth[length=4pt]},
-  box/.style={draw=gbmute, rounded corners=2pt, line width=0.4pt, inner sep=3pt},
+  box/.style={draw=gbmute, rounded corners=2pt, line width=0.4pt, inner sep=2.5pt, fill=white},
+  msg/.style={rounded corners=2pt, inner sep=2.2pt, fill=gbrow, text=gbink, font=\tiny, minimum height=0.30cm},
   ttl/.style={font=\scriptsize\bfseries, text=gbink, anchor=west},
+  sub/.style={font=\tiny, text=gbmute, anchor=west},
   arr/.style={->, line width=0.6pt, draw=gbmute}]
 % ---- panel 1: gauge
 \begin{scope}[shift={(0,0)}]
-  \node[ttl] at (-0.1,1.55) {(1) Coordinates are gauge};
-  \draw[->, gbmute] (0,0) -- (1.1,0); \draw[->, gbmute] (0,0) -- (0,1.1);
-  \begin{scope}[rotate=30]\draw[->, gbblue] (0,0) -- (1.1,0); \draw[->, gbblue] (0,0) -- (0,1.1);\end{scope}
-  \fill[gborange] (0.75,0.45) circle (1.3pt); \fill[gborange] (0.3,0.85) circle (1.3pt);
-  \draw[gborange, densely dotted] (0.75,0.45) -- (0.3,0.85);
-  \node[anchor=west, text width=1.75cm, align=left] at (1.25,0.55) {$h$ and $Gh$ give the same outputs; distances and angles survive};
+  \node[ttl] at (-0.1,1.95) {(1) Coordinates are gauge};
+  \node[sub] at (-0.1,1.68) {what an API cannot reveal};
+  \draw[->, gbmute] (0.2,0.1) -- (1.5,0.1); \draw[->, gbmute] (0.2,0.1) -- (0.2,1.4);
+  \begin{scope}[shift={(0.2,0.1)}, rotate=28]\draw[->, gbblue, line width=0.6pt] (0,0) -- (1.3,0); \draw[->, gbblue, line width=0.6pt] (0,0) -- (0,1.3);\end{scope}
+  \fill[gborange] (1.0,0.55) circle (1.6pt); \fill[gborange] (0.55,1.05) circle (1.6pt);
+  \draw[gborange, densely dotted, line width=0.7pt] (1.0,0.55) -- (0.55,1.05);
+  \node[anchor=west, text width=2.0cm, align=left, font=\tiny] at (1.65,0.75) {$h$ and $Gh$ give the same outputs; distances and angles survive};
 \end{scope}
 % ---- panel 2: side branches
-\begin{scope}[shift={(3.55,0)}]
-  \node[ttl] at (-0.1,1.55) {(2) Ask in side branches};
-  \node[box, fill=gbrow] (x) at (0.25,0.55) {$x$};
-  \foreach \y/\q in {1.05/q_1, 0.55/q_2, 0.05/q_m}{
-    \draw[arr] (x.east) -- (0.95,\y);
-    \node[anchor=west] at (0.95,\y) {$\q$:};
+\begin{scope}[shift={(4.35,0)}]
+  \node[ttl] at (-0.1,1.95) {(2) Ask in side branches};
+  \node[sub] at (-0.1,1.68) {its own API; its conversation never sees them};
+  \node[msg, anchor=west] (m1) at (0,1.25) {task};
+  \node[msg, anchor=west] (m2) at (0,0.82) {tool result};
+  \node[msg, anchor=west, fill=gborange!25] (m3) at (0,0.39) {proposed call};
+  \draw[gbmute, line width=0.5pt] (m1.south west) ++(0.1,0) -- ++(0,-0.13);
+  \draw[gbmute, line width=0.5pt] (m2.south west) ++(0.1,0) -- ++(0,-0.13);
+  \foreach \y/\q/\a/\c in {1.25/{complies with the policy?}/yes/gbmute, 0.82/{production, no approval?}/yes/gborange, 0.39/{breaks a task constraint?}/no/gbmute}{
+    \draw[arr, densely dashed] (m3.east) to[out=0, in=180] (1.75,\y);
+    \node[anchor=west, font=\tiny, text=gbink] at (1.78,\y) {\q};
+    \node[anchor=west, font=\tiny\bfseries, text=\c] at (4.25,\y) {\a};
   }
-  \foreach \y/\p in {1.05/0.8, 0.55/0.25, 0.05/0.6}{
-    \fill[gbblue!80] (1.42,\y-0.07) rectangle ++(\p*0.7,0.14);
-    \draw[gbmute, line width=0.2pt] (1.42,\y-0.07) rectangle ++(0.7,0.14);
-  }
-  \node[anchor=west] at (0.95,-0.38) {$\Psi_j(x)=P(\textsc{yes}\mid x\oplus q_j)$};
+  \node[anchor=west, font=\tiny, text=gbmute] at (1.78,0.02) {\ldots\ $K$ questions, $n$ answers each};
 \end{scope}
 % ---- panel 3: quarter circle
-\begin{scope}[shift={(7.25,0)}]
-  \node[ttl] at (-0.1,1.55) {(3) Each answer law on a circle};
-  \draw[gbmute, line width=0.4pt] (1.1,0) arc (0:90:1.1);
-  \draw[->, gbmute] (0,0) -- (1.35,0) node[below, text=gbmute] {$\sqrt{1-p}$};
-  \draw[->, gbmute] (0,0) -- (0,1.3) node[left, text=gbmute] {$\sqrt{p}$};
-  \fill[gbblue] ({1.1*cos(70)},{1.1*sin(70)}) circle (1.4pt) node[above right=-1pt] {$x$};
-  \fill[gborange] ({1.1*cos(25)},{1.1*sin(25)}) circle (1.4pt) node[right] {$x'$};
-  \draw[gbink, line width=1.0pt] ({1.1*cos(25)},{1.1*sin(25)}) arc (25:70:1.1);
-  \draw[gbmute, densely dotted] (0,0) -- ({1.1*cos(70)},{1.1*sin(70)}); \draw[gbmute, densely dotted] (0,0) -- ({1.1*cos(25)},{1.1*sin(25)});
-  \node[anchor=west, text width=2.05cm, align=left] at (1.55,0.6) {Fisher--Rao $=2\times$ arc: $|\vartheta-\vartheta'|$, $\vartheta=2\arcsin\!\sqrt{p}$. Questions add as squares: exact, flat};
+\begin{scope}[shift={(9.75,0)}]
+  \node[ttl] at (-0.1,1.95) {(3) Each answer law on a circle};
+  \node[sub] at (-0.1,1.68) {exact Fisher--Rao coordinates (Thm.~1)};
+  \draw[gbmute, line width=0.5pt] (1.25,0.05) arc (0:90:1.2);
+  \draw[->, gbmute] (0.05,0.05) -- (1.5,0.05) node[below, text=gbmute, font=\tiny] {$\sqrt{1-p}$};
+  \draw[->, gbmute] (0.05,0.05) -- (0.05,1.45) node[left, text=gbmute, font=\tiny] {$\sqrt{p}$};
+  \fill[gbblue] ({0.05+1.2*cos(70)},{0.05+1.2*sin(70)}) circle (1.7pt) node[above right=-1pt, font=\tiny] {$x$};
+  \fill[gborange] ({0.05+1.2*cos(25)},{0.05+1.2*sin(25)}) circle (1.7pt) node[right, font=\tiny] {$x'$};
+  \draw[gbink, line width=1.1pt] ({0.05+1.2*cos(25)},{0.05+1.2*sin(25)}) arc (25:70:1.2);
+  \node[anchor=west, text width=2.05cm, align=left, font=\tiny] at (1.65,0.75) {$\vartheta=2\arcsin\!\sqrt{p}$; Fisher--Rao distance $=|\vartheta-\vartheta'|$; questions add as squares: flat, exact, no fit};
 \end{scope}
-% ---- panel 4: the geometry vs hidden
-\begin{scope}[shift={(11.6,0)}]
-  \node[ttl] at (-0.1,1.55) {(4) The observable geometry};
-  \foreach \a/\b in {0.1/0.3, 0.4/0.9, 0.8/0.5, 1.15/1.05, 0.35/0.05}{\fill[gbblue] (\a,\b) circle (1.2pt);}
-  \foreach \a/\b in {0.1/0.3}{\draw[gbmute, line width=0.3pt] (0.1,0.3) -- (0.4,0.9) -- (0.8,0.5) -- (0.1,0.3) (0.8,0.5) -- (1.15,1.05);}
-  \node[anchor=west, text width=1.9cm, align=left] at (1.35,0.55) {distances $d_Q$; unique (\v{C}encov); vs hidden: Spearman, no fit};
-\end{scope}
-% ---- panel 5: exact recovery
-\begin{scope}[shift={(15.1,0)}]
-  \node[ttl] at (-0.1,1.55) {(5) With log-probabilities};
-  \draw[gbmute, line width=0.4pt] (0.55,0.55) circle (0.5);
-  \draw[gbmute, line width=0.3pt] (0.05,0.55) arc (180:360:0.5 and 0.15);
-  \fill[gborange] (0.85,0.95) circle (1.2pt); \fill[gborange] (0.2,0.8) circle (1.2pt); \fill[gborange] (0.7,0.12) circle (1.2pt);
-  \node[anchor=west, text width=1.45cm, align=left] at (1.1,0.55) {$\|u\|^2{=}d\Rightarrow b_i^{\top}Sb_i{=}d$: exact Gram from $\tfrac{d(d+1)}{2}$ contexts};
+% ---- panel 4: at the decision
+\begin{scope}[shift={(14.1,0)}]
+  \node[ttl] at (-0.1,1.95) {(4) At the decision: read, then hold};
+  \node[sub] at (-0.1,1.68) {a fixed read-out; no labels, nothing trained};
+  \foreach \i/\h/\c in {0/0.18/gbmute, 1/0.12/gbmute, 2/0.10/gbmute, 3/0.14/gbmute, 4/0.95/gborange, 5/0.12/gbmute, 6/0.16/gbmute, 7/0.13/gbmute}{
+    \fill[\c] ({0.05+\i*0.2},0.15) rectangle ++(0.14,\h);
+  }
+  \draw[gbmute, line width=0.3pt] (0,0.15) -- (1.7,0.15);
+  \node[font=\tiny, text=gbmute, anchor=north west] at (0,0.13) {$\sigma_j\vartheta_j$, $j=1..K$};
+  \draw[arr] (1.78,0.6) -- (2.15,0.6);
+  \node[anchor=west, font=\tiny] at (2.18,0.85) {$s=\tfrac1K\sum_j\sigma_j\vartheta_j$};
+  \node[anchor=west, font=\tiny\bfseries, text=white, fill=gbink, rounded corners=2pt, inner sep=2pt] at (2.18,0.38) {hold for review};
+  \node[anchor=west, font=\tiny, text=gbmute] at (2.18,0.08) {if $s$ passes a cut};
 \end{scope}
 \end{tikzpicture}}
-\caption{\textbf{The method.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) Yes/no questions are asked in side branches; the real conversation never sees them. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The distances between contexts are the observable geometry; we compare it with hidden geometry without fitting anything. (5) With full log-probabilities, the normalisation sphere gives a linear system for the exact Gram matrix of the final states (\cref{thm:exact}).}
+\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
 \label{fig:method}
 \end{figure*}
