@@ -61,7 +61,24 @@
   \node[anchor=west, font=\tiny\bfseries, text=white, fill=gbink, rounded corners=2pt, inner sep=2pt] at (2.18,0.38) {hold for review};
   \node[anchor=west, font=\tiny, text=gbmute] at (2.18,0.08) {if $s$ passes a cut};
 \end{scope}
+% ---- panel 5: across steps
+\begin{scope}[shift={(18.6,0)}]
+  \node[ttl] at (-0.1,1.95) {(5) Across steps: filter, forecast};
+  \node[sub] at (-0.1,1.68) {dynamics from unlabelled runs (Prop.~\ref{prop:iv})};
+  \draw[->, gbmute] (0.05,0.1) -- (2.55,0.1) node[below, font=\tiny, text=gbmute] {step $t$};
+  \draw[->, gbmute] (0.05,0.1) -- (0.05,1.45) node[left, font=\tiny, text=gbmute] {$s_t$};
+  \draw[gborange, densely dashed, line width=0.5pt] (0.05,1.05) -- (2.5,1.05);
+  \node[anchor=south west, font=\tiny, text=gborange, inner sep=1pt] at (0.08,1.06) {cut};
+  \foreach \x/\y in {0.35/0.30, 0.75/0.52, 1.15/0.44, 1.55/0.72}{
+    \draw[gbmute, line width=0.4pt] (\x,\y-0.17) -- (\x,\y+0.17);
+    \fill[gbblue!55] (\x,\y) circle (1.3pt);
+  }
+  \draw[gbblue, line width=0.9pt] (0.35,0.32) .. controls (0.9,0.45) and (1.2,0.55) .. (1.55,0.70);
+  \draw[gbink, ->, line width=0.7pt, densely dotted] (1.55,0.70) -- (1.98,1.12);
+  \fill[gbink] (1.98,1.12) circle (1.5pt);
+  \node[anchor=north west, font=\tiny, text width=1.0cm, align=left] at (2.12,1.0) {hold \emph{before} the call};
+\end{scope}
 \end{tikzpicture}}
-\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
+\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. (5) Across an episode, the angles are noisy measurements (error bars: the theory's noise) of a state whose dynamics are identified from unlabelled runs; a Kalman filter gives the estimated state and a forecast of the next one, which can hold the agent before it proposes the call. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
 \label{fig:method}
 \end{figure*}
