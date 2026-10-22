@@ -254,6 +254,18 @@ st.theta, st.score        # 8 arcsine coordinates; higher score = more likely a 
 When the user turn is a third party's (a customer), say in the system prompt where the check comes from, and read the
 first line of each answer (the G18 settings):
 
+The answerer need not be the agent. Any capable model can answer the questions about the agent's call from its
+transcript (G16: no detectable difference on average; G21: an open model with reasoning on, answering about Claude's
+τ²-bench calls, scored 0.989). Point `ask` at a local open model served by vLLM, and the closed agent is never called:
+
+```python
+from openai import OpenAI
+from graybox.selfaudit import openai_asker
+ask = openai_asker(OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY"), model="google/gemma-4-26B-A4B-it",
+                   max_tokens=6000)                    # room for the answerer's reasoning
+st = observable_state(ask, messages, "send_email", {"to": "x@partner.com"}, n=4)     # messages: the agent's transcript
+```
+
 ```python
 from graybox.selfaudit import TAU2_AIRLINE_QUESTIONS, parse_first_line
 st = observable_state(ask, messages, "cancel_reservation", {"reservation_id": "GV1N64"}, n=4,
