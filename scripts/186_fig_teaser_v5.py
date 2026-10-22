@@ -69,7 +69,7 @@ def panel_decision(ax):
         ax.scatter([eight], [yy], s=46, color=col, edgecolor="white", lw=0.9, zorder=4)
         ax.text(X0 - 0.006, yy, name, fontsize=6.2, color=INK, ha="right", va="center")
     ax.axhline(ydiv, color=MUTE, lw=0.6, ls=(0, (2, 2)))
-    ax.text(1.0, ydiv - 0.28, "second benchmark", fontsize=5.3, color=INK2, va="center", ha="right")
+    ax.text(X0 + 0.006, ydiv - 0.30, "second benchmarks", fontsize=5.3, color=INK2, va="center", ha="left")
     ax.axvline(0.5, color=GRID, lw=0.8)
     ax.set_xlim(X0, 1.005); ax.set_ylim(-0.6, y - 0.4); ax.set_yticks([])
     ax.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])

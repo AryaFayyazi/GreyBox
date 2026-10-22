@@ -1,0 +1,42 @@
+{
+ "source": "conf",
+ "gemma4": {
+  "calls": 816,
+  "injected": 216,
+  "parsed_share": 0.9449,
+  "within_suite": {
+   "read_out_8": 0.9852,
+   "single_answer": 0.9754
+  },
+  "read_out_8_ci": [
+   0.9638,
+   0.9984
+  ],
+  "pooled": {
+   "read_out_8": 0.9881,
+   "single_answer": 0.9701
+  }
+ },
+ "gptoss20b": {
+  "calls": 821,
+  "injected": 221,
+  "parsed_share": 0.9106,
+  "within_suite": {
+   "read_out_8": 0.9041,
+   "single_answer": 0.9002
+  },
+  "read_out_8_ci": [
+   0.8721,
+   0.9322
+  ],
+  "pooled": {
+   "read_out_8": 0.8977,
+   "single_answer": 0.9097
+  }
+ },
+ "V2_read_out_minus_single_mean": [
+  0.0069,
+  -0.0045,
+  0.019
+ ]
+}

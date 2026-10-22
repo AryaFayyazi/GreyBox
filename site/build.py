@@ -225,7 +225,7 @@ a new kind of task it needs new labels, and its review cut should be set on your
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
 but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
 probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude is closed, so it has no probe. Below the line, the
-second benchmark: Claude on &tau;&sup2;-bench (G18, preregistered). (d) The agent's own answer as a gate: the live reduction in violations against
+second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude on &tau;&sup2;-bench (G18), both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
 the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic

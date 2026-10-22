@@ -23,6 +23,9 @@ Preregistered results (hash-locked, locks published; held-out data; failures rep
   (within-template AUROC 0.82–0.99; mean difference to the preregistered probe +0.045 [−0.017, +0.135]; a probe tuned
   afterwards is 0.015 higher, exploratory) and better than the single answer; on Claude Haiku 5.5 it ranked unapproved
   restarts at 0.909 [0.858, 0.952], where Claude's single answer scored 0.32.
+- **Prompt injection, a second benchmark** (G17, AgentDojo, questions written from its policy before any answer): the
+  read-out ranked open agents' injected calls at within-suite AUROC 0.985 [0.964, 0.998] (Gemma-4) and 0.904
+  [0.872, 0.932] (gpt-oss-20b) on held-out tasks; the single answer was nearly as good (0.975, 0.900).
 - **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
   answer): the same read-out ranked Claude Haiku 5.5's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
   (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).

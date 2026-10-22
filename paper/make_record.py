@@ -55,7 +55,8 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G18": "Training-free read-out, a second benchmark for Claude (G18)",
           "G19": "Own conversation or outside reviewer, same closed model (G19)",
           "G20": "Questionnaire or reasoning judge (G20)",
-          "G21": "An open model answers about a closed agent (G21)"}
+          "G21": "An open model answers about a closed agent (G21)",
+          "G22": "One universal questionnaire on two benchmarks (G22)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -109,7 +110,7 @@ def main():
         if gm and gm.group(1) in GNAMES:
             if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
                 cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
-            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
+            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
             if ep:
                 cells = [re.sub(rf"\b{ep}([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids

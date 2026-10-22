@@ -1,4 +1,4 @@
-\begin{thebibliography}{40}
+\begin{thebibliography}{41}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -87,6 +87,11 @@ Chen, Y., Benton, J., Radhakrishnan, A., Uesato, J., Denison, C., Schulman, J., 
 \bibitem[Cooney et~al.(2026)Cooney, Africa, and Irving]{cooney2026didyoulie}
 Cooney, A., Africa, D., and Irving, G.
 \newblock ``did you lie?'' evaluating lie detectors across scale and belief-verified model organisms, 2026.
+
+\bibitem[Debenedetti et~al.(2024)Debenedetti, Zhang, Balunovi{\'c}, Beurer-Kellner, Fischer, and Tram{\`e}r]{debenedetti2024agentdojo}
+Debenedetti, E., Zhang, J., Balunovi{\'c}, M., Beurer-Kellner, L., Fischer, M., and Tram{\`e}r, F.
+\newblock {AgentDojo}: A dynamic environment to evaluate prompt injection attacks and defenses for {LLM} agents.
+\newblock In \emph{Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)}, 2024.
 
 \bibitem[Fayyazi et~al.(2026)Fayyazi, Kamal, and Pedram]{fayyazi2026cape}
 Fayyazi, A., Kamal, M., and Pedram, M.
