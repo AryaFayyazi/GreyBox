@@ -1,0 +1,206 @@
+{
+ "contexts": 192,
+ "questions": 24,
+ "samples": 8,
+ "V_leave_one_out": {
+  "gemma3_4b": {
+   "observed": 0.5429,
+   "predicted": 0.5969,
+   "interval": [
+    0.3829,
+    0.6326
+   ]
+  },
+  "gptoss20b": {
+   "observed": 0.4792,
+   "predicted": 0.697,
+   "interval": [
+    0.6062,
+    0.7445
+   ]
+  },
+  "llama31_8b": {
+   "observed": 0.4971,
+   "predicted": 0.534,
+   "interval": [
+    0.3472,
+    0.5624
+   ]
+  },
+  "mistral7b": {
+   "observed": 0.5625,
+   "predicted": 0.5939,
+   "interval": [
+    0.3763,
+    0.6214
+   ]
+  },
+  "olmo3_7b": {
+   "observed": 0.6044,
+   "predicted": 0.6678,
+   "interval": [
+    0.4186,
+    0.7074
+   ]
+  },
+  "phi4mini": {
+   "observed": 0.6173,
+   "predicted": 0.5961,
+   "interval": [
+    0.376,
+    0.6364
+   ]
+  },
+  "qwen25_7b": {
+   "observed": 0.4774,
+   "predicted": 0.5069,
+   "interval": [
+    0.3332,
+    0.5453
+   ]
+  },
+  "qwen3_8b": {
+   "observed": 0.5849,
+   "predicted": 0.6172,
+   "interval": [
+    0.4034,
+    0.6316
+   ]
+  }
+ },
+ "V1_mean_abs_error": [
+  0.0608,
+  0.0512,
+  0.0701
+ ],
+ "V2_inside_interval": 7,
+ "E_closed": {
+  "predicted": [
+   0.4948,
+   0.4371,
+   0.5538
+  ],
+  "interval_open_lambda_range": [
+   0.318,
+   0.5261
+  ],
+  "kappa": 0.55,
+  "lambda_open": [
+   0.9026,
+   0.5782,
+   0.9148,
+   0.789,
+   0.8967,
+   0.8922,
+   0.9247,
+   0.9565
+  ]
+ },
+ "open_own_rho_sampled_design": {
+  "gemma3_4b": 0.5429,
+  "gptoss20b": 0.4792,
+  "llama31_8b": 0.4971,
+  "mistral7b": 0.5625,
+  "olmo3_7b": 0.6044,
+  "phi4mini": 0.6173,
+  "qwen25_7b": 0.4774,
+  "qwen3_8b": 0.5849
+ },
+ "rho_closed_answers_vs_open_hidden": {
+  "gemma3_4b": 0.478,
+  "gptoss20b": 0.5125,
+  "llama31_8b": 0.4897,
+  "mistral7b": 0.4533,
+  "olmo3_7b": 0.4647,
+  "phi4mini": 0.4824,
+  "qwen25_7b": 0.4616,
+  "qwen3_8b": 0.5028
+ },
+ "fit": {
+  "own_excess_given_true_lambda": {
+   "gemma3_4b": -0.0549,
+   "gptoss20b": 0.0326,
+   "llama31_8b": -0.0431,
+   "mistral7b": 0.0443,
+   "olmo3_7b": -0.0559,
+   "phi4mini": 0.0271,
+   "qwen25_7b": -0.0506,
+   "qwen3_8b": -0.0692
+  },
+  "rms_offdiag_residual_hidden": 0.0322
+ },
+ "g6_reported": {
+  "gemma3_4b": {
+   "observed": 0.3379,
+   "predicted": 0.514,
+   "interval": [
+    0.2294,
+    0.5497
+   ]
+  },
+  "gptoss20b": {
+   "observed": 0.2237,
+   "predicted": 0.5347,
+   "interval": [
+    0.3708,
+    0.5593
+   ]
+  },
+  "llama31_8b": {
+   "observed": 0.6441,
+   "predicted": 0.5602,
+   "interval": [
+    0.2437,
+    0.5873
+   ]
+  },
+  "mistral7b": {
+   "observed": 0.5341,
+   "predicted": 0.554,
+   "interval": [
+    0.2228,
+    0.5818
+   ]
+  },
+  "olmo3_7b": {
+   "observed": 0.4845,
+   "predicted": 0.5297,
+   "interval": [
+    0.2117,
+    0.5614
+   ]
+  },
+  "phi4mini": {
+   "observed": 0.4285,
+   "predicted": 0.5051,
+   "interval": [
+    0.2248,
+    0.5525
+   ]
+  },
+  "qwen25_7b": {
+   "observed": 0.638,
+   "predicted": 0.5453,
+   "interval": [
+    0.2458,
+    0.5788
+   ]
+  },
+  "qwen3_8b": {
+   "observed": 0.6254,
+   "predicted": 0.5154,
+   "interval": [
+    0.2305,
+    0.5694
+   ]
+  },
+  "mean_abs_error": 0.1144,
+  "inside_interval": 4
+ },
+ "E2_closed_within_open_own_range": true,
+ "endpoints": {
+  "V1_mae_lt_0.10": true,
+  "V2_inside_ge_6": true,
+  "E1_closed_lower_gt_0": true
+ }
+}

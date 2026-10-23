@@ -1,0 +1,59 @@
+{
+ "gemma4": {
+  "calls": 600,
+  "L1": -0.0748,
+  "L2": -0.05,
+  "L3": 0.3327,
+  "auroc_readout": 0.9938,
+  "auroc_probe": 0.9796,
+  "cells_template_x_class": 38
+ },
+ "gptoss20b": {
+  "calls": 599,
+  "L1": -0.0036,
+  "L2": 0.0785,
+  "L3": 0.1061,
+  "auroc_readout": 0.8224,
+  "auroc_probe": 0.7716,
+  "cells_template_x_class": 35
+ },
+ "qwen38": {
+  "calls": 373,
+  "L1": 0.0828,
+  "L2": -0.1123,
+  "L3": 0.1115,
+  "auroc_readout": 0.9513,
+  "auroc_probe": 0.8255,
+  "cells_template_x_class": 20
+ },
+ "museglimmer": {
+  "calls": 600,
+  "L1": 0.1714,
+  "L2": 0.0383,
+  "L3": 0.2618,
+  "auroc_readout": 0.9289,
+  "auroc_probe": 0.9413,
+  "cells_template_x_class": 29
+ },
+ "L1_pooled": [
+  0.0439,
+  -0.0083,
+  0.1149
+ ],
+ "L2_pooled": [
+  -0.0114,
+  -0.0577,
+  0.0266
+ ],
+ "L3_pooled": [
+  0.203,
+  0.1309,
+  0.2743
+ ],
+ "note": "L2's bootstrap uses every 10th replicate (200) to bound the cost",
+ "endpoints": {
+  "L1_lower_gt_0": false,
+  "L2_lower_gt_0": false,
+  "L3_lower_gt_0": true
+ }
+}

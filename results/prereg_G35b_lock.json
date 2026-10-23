@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T20:25:38-07:00",
+ "sha256": {
+  "docs/prereg_G35b_dither_reads_state.md": "28781908f1a303e99a34bdabc285c35bfba794250b6281d8a869c9f9ae19878e",
+  "scripts/208_g35b_dither_reads_state.py": "f7dc878431d88aca7c48a41884ae655bffe0ef7b7c265282e72e92ef66c1c97b"
+ }
+}
