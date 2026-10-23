@@ -115,7 +115,7 @@ def law_panel(ax, pts):
         else:
             ax.scatter([x], [y], s=24, marker="s" if kind == "g13" else "o", facecolor=c, edgecolor="white", linewidth=0.6, zorder=3)
         dx, dy, ha = off.get((name, kind), (0.03, 0.0, "left"))
-        tag = {"g12": "", "g13": " (AgentDojo)", "g11b": " (G11b)"}[kind]
+        tag = {"g12": "", "g13": " (AgentDojo)", "g11b": " (second test)"}[kind]
         ax.text(x + dx, y + dy, name + tag, fontsize=5.3, color=MUTE if kind == "g11b" else INK, ha=ha, va="center")
     ax.set_xlim(-0.05, 1.05)
     ax.set_ylim(-0.3, 1.0)
@@ -123,10 +123,10 @@ def law_panel(ax, pts):
     ax.set_ylabel("observed live reduction")
     ax.grid(color=GRID, lw=0.5)
     ax.set_axisbelow(True)
-    hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="G12, CAPE: preregistered, passed")]
+    hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="CAPE-Bench: preregistered, passed")]
     if any(p[6] == "g13" for p in pts):
-        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="G13, AgentDojo: preregistered"))
-    hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="G11b: registered, failed"))
+        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="AgentDojo: preregistered"))
+    hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="earlier law: registered, failed"))
     from matplotlib.patches import Patch
     hs.append(Patch(facecolor=GRID, alpha=0.7, label="tolerance: predicted $\\pm$ 0.15"))
     ax.legend(handles=hs, loc="upper left", handletextpad=0.3, fontsize=5.2, borderaxespad=0.3)

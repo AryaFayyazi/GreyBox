@@ -117,7 +117,7 @@ def panel_law(ax):
         ax.scatter([x], [y], s=40, marker="D", color=ORANGE, edgecolor="white", lw=0.8, zorder=4)
     e12 = np.mean([abs(y - x) for _, x, y, *_r, kind in pts if kind == "g12"])
     eall = np.mean([abs(y - x) for _, x, y, *_r in pts])
-    ax.text(0.03, 0.97, f"mean |error| {e12:.3f} (G12)", transform=ax.transAxes, fontsize=5.6, color=INK, fontweight="bold", va="top")
+    ax.text(0.03, 0.97, f"mean |error| {e12:.3f}", transform=ax.transAxes, fontsize=5.6, color=INK, fontweight="bold", va="top")
     ax.text(0.03, 0.89, f"all 7 points: {eall:.3f}", transform=ax.transAxes, fontsize=5.3, color=INK2, va="top")
     h = [ax.scatter([], [], s=34, marker="o", color=BLUE, edgecolor="white", lw=0.8, label="violations, 5 agents"),
          ax.scatter([], [], s=34, marker="s", color=BLUE, edgecolor="white", lw=0.8, label="injections, 2 agents"),

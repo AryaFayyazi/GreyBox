@@ -40,7 +40,7 @@ So a monitor needs the transcript and the call, not the weights; the question is
 \begin{proposition}[the forecast needs the agent]\label{prop:selfforecast}
 Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$. The Bayes forecast of $Y=g(A_t,V_t,W)$ from what is visible is $P(Y\mid V_t)=\sum_a\bar\pi(a\mid V_t)\,P(Y\mid a,V_t)$, with $\bar\pi$ the agent's own policy averaged over hidden states consistent with $V_t$. A reader that forecasts with another policy $\pi'$ has Bayes risk at least as large, with equality only where $\pi'=\bar\pi$ on the violating actions.
 \end{proposition}
-So at the call any capable reader can match the agent (\cref{cor:action}), but before it only the agent's own state carries $\bar\pi$; G44 tests this.
+So at the call any capable reader can match the agent (\cref{cor:action}), but before it only the agent's own state carries $\bar\pi$ (tested in \cref{sec:forecast}).
 
 \textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $K$ yes/no questions about the call in side branches (\cref{fig:method}). Their angles $\vartheta_t\in[0,\pi]^K$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
 \[ s_t=\tfrac1K\textstyle\sum_{j}\sigma_j\vartheta_{tj},\qquad \sigma_j=-1\ \text{for ``does it comply''},\ \ \sigma_j=+1\ \text{otherwise}. \]
@@ -52,7 +52,7 @@ $\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$; at $\math
 \begin{proof}[Proof sketch]
 With class gap $\Delta$ and within-class variance $\sigma_w^2\ge N$, $\mathrm{Var}(s_t)=\sigma_w^2+p(1-p)\Delta^2$, so $p(1-p)\Delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_w^2$; and $\mathrm{AUROC}=\Phi(\Delta/\sqrt2\sigma_w)$.
 \end{proof}
-In practice we use the nominal noise $\frac1{K^2}\sum_j(m_j+\frac12)^{-1}$ for $m_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, a high value supports it (G32). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73 (G31).
+In practice we use the nominal noise $\frac1{K^2}\sum_j(m_j+\frac12)^{-1}$ for $m_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, and a high value supports it (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
 
 \textbf{The state across steps.} Before each call we measure $y_t$, the angles of the agent's answers to $K$ questions about its \emph{next} action. By \cref{thm:geometry}, $y_t=z_t+v_t$: the observable state plus sampling noise whose variance the number of answers fixes ($\approx1/(n+\frac12)$ per question), independent across steps. We model $z_{t+1}=Fz_t+c+w_t$ and identify the model from unlabelled runs of the same agent.
 \begin{proposition}[identification through the noise]\label{prop:iv}
@@ -61,7 +61,7 @@ If $v_t$ is independent across steps and of $(z_s,w_s)$, and $\mathrm{Cov}(z_t,z
 \begin{proof}[Proof sketch]
 The noise at $t\pm1$ is independent of everything at other steps, so $\mathrm{Cov}(y_{t+1},y_{t-1})=F\,\mathrm{Cov}(z_t,z_{t-1})=F\,\mathrm{Cov}(y_t,y_{t-1})$ and $\mathrm{Cov}(y_{t+1},y_t)=F\Sigma_z$.
 \end{proof}
-A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it about threefold, G31c) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
+A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it about threefold) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
 
 \textbf{The cut.} The cut is set on the agent's own unlabelled traffic and then frozen.
 \begin{proposition}[a frozen cut]\label{prop:frozen}

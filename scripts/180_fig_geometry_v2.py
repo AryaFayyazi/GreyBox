@@ -94,7 +94,7 @@ def channels_figure():
     ax.axhline(0, color=MUTE, lw=0.6)
     ax.set_xticks(xx, labs, rotation=30, ha="right", rotation_mode="anchor")
     ax.set_ylabel("own-model excess"); ax.legend(loc="upper left", frameon=False, fontsize=5.2)
-    ax.set_title("(a) what each API channel reveals of the model's own state (G7)", loc="left", fontsize=6.4, fontweight="bold")
+    ax.set_title("(a) what each API channel reveals of the model's own state", loc="left", fontsize=6.4, fontweight="bold")
     pts = sorted((float(k[:-1]), v) for k, v in g3["by_N"].items())
     x = [p[0] for p in pts]
     e = [max(1 - p[1]["pearson_cos"] if np.isfinite(p[1]["pearson_cos"]) else 1, 1e-8) for p in pts]
@@ -104,7 +104,7 @@ def channels_figure():
     bx.set_yscale("log"); bx.set_ylim(3e-9, 60); bx.set_xlim(0.2, 2.05)
     bx.set_xlabel(r"contexts $N\,/\,\frac{d(d+1)}{2}$"); bx.set_ylabel("1 − Pearson (cosines)")
     bx.text(0.6, 1e-5, "under-\ndetermined", color=MUTE, fontsize=5.2, ha="center")
-    bx.set_title("(b) exact recovery from log-probabilities (G3)", loc="left", fontsize=6.4, fontweight="bold")
+    bx.set_title("(b) exact recovery from log-probabilities", loc="left", fontsize=6.4, fontweight="bold")
     save(fig, "geometry_channels")
 
 
