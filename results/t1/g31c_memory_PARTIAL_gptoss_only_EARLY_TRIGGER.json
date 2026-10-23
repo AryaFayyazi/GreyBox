@@ -1,0 +1,50 @@
+{
+ "gptoss20b": {
+  "rho_lag1": 0.1449,
+  "rho_lag2": 0.0563,
+  "rho_lag3": 0.0008,
+  "rho_lag4": 0.0017,
+  "rho_lag5": -0.0018,
+  "A2_rho1_minus_rho3": 0.1441,
+  "A3_var_over_nominal_noise": 0.481
+ },
+ "gemma4": {
+  "rho_lag1": 0.1831,
+  "rho_lag2": 0.1086,
+  "rho_lag3": 0.008,
+  "rho_lag4": 0.004,
+  "rho_lag5": 0.0193,
+  "A2_rho1_minus_rho3": 0.1751,
+  "A3_var_over_nominal_noise": 0.1982
+ },
+ "pooled_rho_lag1": [
+  0.1449,
+  0.1174,
+  0.1737
+ ],
+ "pooled_A2_rho1_minus_rho3": [
+  0.1441,
+  0.1008,
+  0.1889
+ ],
+ "pooled_A3_var_over_nominal_noise": [
+  0.481,
+  0.4535,
+  0.5082
+ ],
+ "pooled_agents": [
+  "gptoss20b"
+ ],
+ "pooled_rho_by_lag": [
+  0.1449,
+  0.0563,
+  0.0008,
+  0.0017,
+  -0.0018
+ ],
+ "endpoints": {
+  "A1_rho1_lower_gt_0": true,
+  "A2_decay_lower_gt_0": true,
+  "A3_ratio_upper_lt_1": true
+ }
+}

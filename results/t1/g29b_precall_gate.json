@@ -1,0 +1,70 @@
+{
+ "scenarios": 300,
+ "arms": {
+  "none": {
+   "violating_episodes": 0.1667,
+   "success": 0.4,
+   "reviews_per_episode": 0.0,
+   "reviewed_share_of_calls": 0.0,
+   "reviewed_calls_that_violate": null
+  },
+  "pre": {
+   "violating_episodes": 0.1733,
+   "success": 0.4233,
+   "reviews_per_episode": 0.54,
+   "reviewed_share_of_calls": 0.0583,
+   "reviewed_calls_that_violate": 0.0185
+  },
+  "position": {
+   "violating_episodes": 0.1333,
+   "success": 0.4333,
+   "reviews_per_episode": 3.0067,
+   "reviewed_share_of_calls": 0.3215,
+   "reviewed_calls_that_violate": 0.0211
+  },
+  "random": {
+   "violating_episodes": 0.1633,
+   "success": 0.4233,
+   "reviews_per_episode": 0.9433,
+   "reviewed_share_of_calls": 0.0984,
+   "reviewed_calls_that_violate": 0.0283
+  }
+ },
+ "P1_pre_relative_reduction": [
+  -0.04,
+  -0.2955,
+  0.1569
+ ],
+ "P3_pre_minus_position": [
+  -0.24,
+  -0.5,
+  -0.027
+ ],
+ "P2_pre_success_difference": [
+  0.0233,
+  -0.0067,
+  0.0533
+ ],
+ "reported": {
+  "position_reduction": [
+   0.2,
+   0.0,
+   0.3726
+  ],
+  "random_reduction": [
+   0.02,
+   -0.2105,
+   0.2
+  ],
+  "pre_minus_random": [
+   -0.06,
+   -0.2826,
+   0.1579
+  ]
+ },
+ "endpoints": {
+  "P1_lower_gt_0": false,
+  "P3_lower_gt_0": false,
+  "P2_lower_gt_-0.03": true
+ }
+}
