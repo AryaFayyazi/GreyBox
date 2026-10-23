@@ -293,6 +293,98 @@ questions. We ask the questions in side branches of the conversation, so the rea
 3D space shared with open models, the forecast "Claude Haiku 5.5 will refuse", and the alarm "a moderator says Unsafe and
 Claude Haiku 5.5 will not refuse". Each message uses 4 Claude Haiku 5.5 calls on the viewer's own account.
 
+## Full preregistration record (every test, including failures)
+
+We hash-locked every confirmatory test before its data existed. Each lock is a file `results/prereg_<name>_lock.json`
+with the SHA-256 of the preregistration and its code. From T20 on, we pushed each lock to GitHub before its test ran,
+so the commit history shows the order. We apply no correction for multiple tests. Each test answers its own registered
+question. The paper reports the tests behind its claims. This section lists every test.
+
+Tally (same rule as `paper/make_record.py`, on the current record):
+- Method tests (G): 49 tests. 18 passed every primary endpoint, 17 passed some endpoints and failed others, 9 failed,
+  2 stopped before any outcome, 1 reported without a pass/fail bar, 2 pending (G43, G45).
+- Trained-comparison tests (T): 32 tests. 15 passed every primary endpoint, 7 passed some endpoints and failed others,
+  7 failed, 0 stopped, 3 reported without a pass/fail bar (T8, T13, T18: not tested), 0 pending.
+
+The rule reads words in the outcome text. "No detectable difference" counts as a failure. The seven chat tests
+(L1–L3e) are not in the tally. The paper's appendix (`paper/appendix_record.tex`) was written before the G45 row, so it
+gives 48 G tests and 1 pending.
+
+### Tests that failed or were mixed
+
+One row per test with a failed endpoint, a stop, or no test (too few cases). Intervals are 95%.
+
+| Test | Question | What failed | What we learned |
+|---|---|---|---|
+| L3e | Does the Live tool's alarm forecast Claude Haiku 5.5's refusals, prospectively? | A2: grey box 0.873 vs graded Qwen3Guard 0.855, +0.018 [−0.023, 0.062]. A3: multi-turn 0.894 vs 0.906. | The grey box only ties a graded moderator; it adds precision in the alarm (A1: 0.535 vs 0.274). |
+| T1 | Do the agent's answers (Ψ) match a white-box probe? | F3: Ψ − WB −0.021 [−0.054, 0.009]. F5: R2+Ψ − R16 −0.023 [−0.053, 0.006]. | The answers to 64 general questions at the start of the turn do not match a probe; resampling does (F1, F2 pass). |
+| T3 | Can an LLM judge replace the oracle checker in resampling? | K1: judge-scored resampling 0.782 vs probe 0.846, −0.065 [−0.115, −0.019]. K3: resampling hurts the action judge, −0.049. | The label function is the bottleneck. |
+| T8 | Does a Gemma-trained reader monitor Claude Haiku 5.5's actions after a reveal? | Not tested: 0 unsafe units under the post-reveal rule. | Claude violates at or without the reveal; T8b (all actions) replaced it and passed. |
+| T9 | Does the reader beat TF-IDF trained on the same labels? | B1 (Claude): reader 0.991 vs TF-IDF 0.997, −0.006 [−0.027, +0.007]. | TF-IDF equals the reader in distribution; the reader is better on unseen families (B2 +0.019 [0.007, 0.032]). |
+| T12 | How many labels does a new policy need (GPT)? | H1: 40 − 0 labels: 0.0. With 0 labels the reader caught 18/18. | This policy needed no labels, so labels had nothing to fix. |
+| T13 | Reader vs judge for GPT-6-luna on AgentDojo with spotlighting | Not tested: attack success 2.1%, 4 injected calls (minimum 10). | The defense left too few attacks; T13b ran without it. |
+| T13b | The same, without a defense | K1b: reader 0.840 vs judge 0.787, +0.052 [−0.026, +0.130]. | Labels of open agents fix it (T14 passes: 0.922). |
+| T16c | Hold for review instead of block: is there a goal cost? | R2: goals 40.7% → 38.7%, −0.020 [−0.051, +0.007]; the lower bound misses the −0.03 margin. | Safety holds (R1: 6.7% → 0.0%); "no goal cost" is not shown. |
+| T18 | Claude Haiku 5.5 on τ²-bench airline | Not tested: 9 violations, below the minimum of 15. | Too few violations; T20 used two agents and a persistent customer. |
+| T19 | Do readers small enough for a browser or a CPU transfer? | F2: browser reader − 8B reader −0.097 [−0.115, −0.079], margin −0.05. | We offer the browser reader for new kinds of tasks only, and no CPU option. |
+| T20 | τ²-bench, two closed agents, a persistent customer | G1: reader − tool +0.238 [−0.053, 0.431] (reader 0.738). Reported: reader − TF-IDF −0.250 [−0.518, −0.077]. | The test tasks were also in training; see T21. |
+| T21 | τ²-bench, test tasks removed from training | H1: reader − TF-IDF +0.017 [−0.514, 0.539]. H2: reader − tool +0.035 [−0.230, 0.259]. | Neither monitor transfers to unseen tasks; T20's 0.987 was memorisation of the tasks. |
+| T22 | A zero-shot reasoning judge (Qwen3-32B) on τ²-bench | J1: judge − tool +0.304 [−0.084, 0.427]. J2: judge − reader +0.268 [−0.074, 0.511]. | Large point estimate (0.804), but only 7 tasks have a violation. |
+| T23 | The same judge on four frontier agents | K2: judge − reader +0.120 [−0.047, 0.274]. | The judge separates violating from allowed writes of one tool (K1 passes), but at 5% review it catches 11.7% vs the reader's 18.4%. |
+| T25 | An adaptive attacker who can query the score | B1: reader catch 96.3% → 29.1% [21.6%, 36.6%]. B2: reader − TF-IDF −0.052 [−0.149, +0.037]. | The monitor is not robust to adaptive rewording; do not show the score to the agent. |
+| T26 | A monitor that reads the canonical action | C1: 50.8% [42.5%, 59.0%] caught after attack. C2: −0.410 [−0.493, −0.311]. C3: −0.029 [−0.080, +0.010]. | The score cannot move, but clean catch falls; canonical mode is an option, not the default. |
+| T27 | Adversarial training against the attack | D1: 59.7% [51.5%, 67.9%] caught after a defense-aware attack. D2: −0.037 [−0.078, +0.016]. D3: +0.012 [−0.050, +0.071]. | Hardening added about 2 points; defense against score-querying rewording is an open problem. |
+| G8 | Does reading an agent's reasoning help a trained monitor? | C1: in-agent cot − act −0.005 [−0.018, +0.013], margin +0.01. C4 inconclusive: +0.025 [−0.033, +0.085]. | The reasoning gives no in-agent gain and hurts transfer (C2: −0.033 [−0.046, −0.017]). |
+| G9 | Can an open agent police itself live through its own API? | L2: resampling needed 0.404 reviews per episode, against the 0.40 limit. | The gate works (27.9% → 4.95%); resampling needs slightly too many reviews. |
+| G11 | Does an agent's offline self-audit predict its live self-policing? | Stopped: after 300 Qwen3.8 episodes neither arm had a violation. | Check base rates first; G11b replaced it. |
+| G11b | The same, on templates where each agent violates | P1: Muse-Glimmer 0.23 [0.13, 0.35] vs 0.722; Qwen3.8 −0.06 [−0.23, 0.09] vs 0.167. P3: Qwen3.8 success −0.016 [−0.048, +0.016]. | The miss came from the template mix of the offline sample; the composition-weighted law (G12) then passed. |
+| G13 | Does self-policing stop prompt injection on AgentDojo by the predicted amount? | A2 (Gemma-4): 0.843 vs predicted 1.00; miss 0.157 > 0.15. | Most remaining attacks ran calls that the audit flagged but the stand-in reviewer let run. |
+| G16 | Does the monitor need the agent's own answers? | O1 (two-sided): own − other +0.012 [−0.018, 0.040]. | Any capable model can answer the questionnaire about the call; the title drops "own". |
+| G19 | Does a closed agent's answer need its own conversation? | O1 (two-sided): own − outside reviewer +0.043 [−0.136, 0.226]. | The value is in the questions and the read-out, not in "own". |
+| G23 | Does the theory predict, without labels, which questions monitor (Gemma-4 answering)? | F2: SNR-weighted − equal +0.008 [−0.177, 0.032]. F3: − raw-variance weights +0.005 [−0.177, 0.023]. No detectable difference. | F1 passes (0.745), but raw P(yes) variance does as well as the SNR. |
+| G24 | Do the closed agent's own answers monitor it when it reasons? | E1: 0.568 [0.454, 0.771]. E2: on − off −0.051 [−0.246, 0.150]. | Reasoning does not help detectably; only 70% of answers parsed. |
+| G27 | Does the state from earlier steps (Kalman filter) forecast the next call's violation? | K1: forecast − prior +0.013 [−0.115, 0.155]. K2: filtered − raw −0.022 [−0.073, 0.030]. K3: model misspecified (NIS/K 0.52). | The linear dynamics are unstable, and the step index alone scores 0.860; earlier steps do not forecast the call. |
+| G27b | G27 replicated on three more open agents | K2: filtered − raw +0.018 [−0.021, 0.062]. | The forecast beats position (K1 +0.209 [0.080, 0.317]), but the filter adds nothing over raw answers. |
+| G29 | Live prevention by the estimated state, before the call exists | Stopped before any episode outcome (only the cut, 4.796, was printed). | G27 showed unstable dynamics and a position confound; G29b replaced it. |
+| G29b | A pre-call gate against a position gate and a random gate (Gemma-4) | P1: relative reduction −0.04 [−0.30, 0.16]. P3: pre − position −0.24 [−0.50, −0.03]. | Gemma-4's pre-call read-out ranks too weakly to prevent; the position gate reviewed 32% of calls. |
+| G30 | Does the state before a call carry its violation beyond position, on three more agents? | W2: same-step agreement with the true state 0.072 [−0.004, 0.144]. | W1 passes (0.669 [0.594, 0.764]); tracking of the true state within a step is not shown. |
+| G31 | Are the within-step effects limited by the measurement? | M2: D16 − R16 +0.006 [−0.064, 0.066]. M3: D16 − R4 +0.053 [−0.014, 0.129]. | More answers help (M1 passes); on open agents, dither adds nothing over repeats. |
+| G31b | Does the state before the first call warn of a later violation? | E1: early-warning AUROC 0.498 [0.405, 0.585]. | No early warning; the deciding information enters at the call's step (H1 +0.163 [0.029, 0.302]). |
+| G33 | The closed agent's own answers, dithered, on τ²-bench | Q1: D16 − G18's read-out +0.015 [−0.089, 0.104]. Q2: D16 − R16 +0.034 [−0.088, 0.157]. | Dither changed the measurement but not the ranking; a positive SNR does not imply a better ranking. |
+| G35 | Does the monitor come from the reconstructed state? | L1: 0.044 [−0.008, 0.115]. L2: −0.011 [−0.058, 0.027]. | 20% [13%, 27%] of the read-out's power runs through the hidden violation coordinate (L3 passes); within a cell the answers are nearly unanimous. |
+| G35b | The same with dithered answers | K1: −0.077 [−0.250, 0.195]. K2: D16 − R4 −0.041 [−0.274, 0.201]. | Not shown even with dither; the cells are small. |
+| G36 | Do an agent's own answers at its calls reconstruct its decision-state geometry? | V2: inside the predicted interval for 1 of 4 agents (bar: 3 of 4). | Eight policy questions measure a narrow slice of the decision state; V1 and E1 pass. |
+| G37 | The closed agent's state before its call, on τ²-bench | P1: 0.536 [0.434, 0.682]. P2: D4 − R4 +0.127 [−0.045, 0.253]. | Before its write exists, Claude Haiku 5.5's answers do not rank the coming violation. Run under a recorded deviation. |
+| G39 | A live pre-call gate on GPT-6-luna against a position gate | P3: pre − position +0.227 [−0.190, 0.625]. P2: success +0.012 [−0.083, 0.107]; lower bound below −0.05. | P1 passes (26.2% → 9.5%); the gates had unequal review rates, so G39b matched them and passed. |
+| G41 | Read the closed agent's state along the directions its call can violate | R1: relevant − full −0.014 [−0.059, 0.038]. R2: +0.008 [−0.021, 0.026]. | Answers from the agent's own seat stay near 0.70; the same model as an outside reviewer with reasoning reaches 0.918 (G26). |
+| G42 | Does the prevention law predict a live pre-call gate? | L2 (position gate): predicted 0.167, observed 0.438 [0.256, 0.605]; error 0.271. | The law predicts the pre-call gate exactly (L1: 0.750 vs 0.750), but not a gate on turn index. |
+| G44 | Does an agent's own state forecast its next violation better than another model? | F2 (three open agents): own − other −0.030 [−0.159, 0.082]. | It holds for GPT-6-luna (F1: +0.111 [0.041, 0.185]), not for the open agents pooled. |
+| G44b | Is the agent's advantage specific to forecasting? | D1: −0.045 [−0.178, 0.082]. | It holds for the closed agent and Qwen3.8, not for gpt-oss-20b or Muse-Glimmer. |
+
+44 rows (1 L, 17 T, 26 G). Two G tests count as mixed by the word rule, but every primary endpoint passed. G17's text
+reports server errors. G22's "no detectable difference" is a reported, not a primary, comparison. G20 counts as "no
+bar", but its J1 passed.
+
+Other items for the record:
+- A passed test with a limit: T10 passed both endpoints (0.912 vs 0.570), but at a 5% budget without labels of the
+  policy it caught 0 of 26 violations of the unseen family.
+- A design we dropped on development data, before any lock: for a hidden prompt change, eight sampled replies had more
+  power than eight sampled answers in every model and condition.
+- An early look at partial G45 Claude labels (53 of 328 episodes), while we drafted G46. G45's locked analysis is
+  unchanged; we dropped G46 before any lock: [docs/incident_g45_early_look_2026-10-23.md](docs/incident_g45_early_look_2026-10-23.md).
+- Analysis waiters fired before their data existed. G31c's analysis ran on one agent only; that file is kept as
+  partial and is not G31c's result: [docs/incident_waiters_2026-10-22.md](docs/incident_waiters_2026-10-22.md).
+- Deviations, each recorded before any result of its test:
+  [G25](docs/deviation_G25_2026-10-22.md) (a crash on an empty read-out slice; endpoints unchanged),
+  [G35](docs/deviation_G35_2026-10-22.md) (one gpt-oss-20b call without a valid state dropped),
+  [G37](docs/deviation_G37_2026-10-22.md) (fixed credit; the dither arm ran on fewer writes).
+  Other deviations, post-lock code edits and corrections are in the Notes of the record.
+- Design order: several tests were designed after earlier results (the later τ²-bench tests, the reasoning judge, the
+  canonical form, adversarial training). Each was locked before its own data existed, but their hypotheses were not
+  independent of what we had seen.
+
+The full table of all tests, passed and failed, with lock files: [docs/PREREGISTRATION_RECORD.md](docs/PREREGISTRATION_RECORD.md).
+
 ## Reproduce
 
 | Path | Content |

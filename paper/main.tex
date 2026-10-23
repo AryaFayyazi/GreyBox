@@ -57,7 +57,7 @@
 \newsavebox{\teaserbox}
 \sbox{\teaserbox}{\begin{minipage}{\textwidth}\centering
 \includegraphics[width=\textwidth]{figures/teaser_v6.pdf}\par\vspace{-2mm}
-\captionof{figure}{\textbf{Reading closed agents through their own APIs, with no training.} (a) An open model's hidden geometry on 1{,}440 held-out contexts. (b) The same contexts, placed only by the model's yes/no answers in exact Fisher--Rao coordinates (Spearman 0.74 between the distances; 0.41--0.74 over eight models). (c) A fixed read-out of an agent's answers to 8 policy questions ranks its violations within each kind of task, about as well as a probe trained on its hidden states. Orange: closed agents. Hollow: GPT-6-luna before its call exists (0.84 within task and tool, against 0.78 for position alone; 0.92 among calls at the same position). Below the line: second benchmarks. Claude Haiku 5.5's restarts are one kind of task; over all its actions it scores 0.475 (\cref{tab:g15}). (d) Live prevention against the prediction from offline flag rates (band $\pm0.15$). Diamond: the pre-call gate on GPT-6-luna. Grey crosses: predictions that failed (an earlier form of the law, and the position gate). 95\% intervals; all preregistered.}
+\captionof{figure}{\textbf{Reading closed agents through their own APIs, with no training.} (a) An open model's hidden geometry on 1{,}440 held-out contexts. (b) The same contexts, placed only by the model's yes/no answers in exact Fisher--Rao coordinates (Spearman 0.74 between the distances; 0.41--0.74 over eight models). (c) A fixed read-out of an agent's answers to 8 policy questions ranks its violations within each kind of task, about as well as a probe trained on its hidden states. Orange: closed agents. Hollow: GPT-6-luna before its call exists (0.84 within task and tool, against 0.78 for position alone; 0.92 among calls at the same position). Below the line: second benchmarks. Claude Haiku 5.5's restarts are one kind of task; over all its actions it scores 0.475 (\cref{tab:g15}). (d) Live prevention against the prediction from offline flag rates (band $\pm0.15$). Diamond: the pre-call gate on GPT-6-luna. 95\% intervals; all preregistered.}
 \label{fig:teaser}
 \end{minipage}}
 
@@ -79,7 +79,7 @@
 
 % =====================================================================================
 \begin{abstract}
-Probes on an agent's hidden states can stop an unsafe action before it runs and catch what monitors of its text miss \citep{fayyazi2026cape}, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and what this buys for safety. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in side branches give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known noise. On eight open models this geometry tracks each model's hidden geometry better than the input or the replies do, and it is the geometry that models share. Three consequences follow, and we test each in preregistered experiments. \emph{At a proposed call}, the transcript decides the violation, so any capable answerer reads it: a fixed read-out of the agent's own answers ranks violations at AUROC 0.82--0.99 on four open agents, close to a probe on their hidden states, 0.90--0.99 on prompt injection and 0.98 on GPT-6-luna, and another model's answers do as well. \emph{Before the call}, only the agent's own policy can forecast it: GPT-6-luna's own answers rank its coming violation better than another model's answers in its seat (0.84 vs 0.73); on open agents the comparison is mixed. \emph{Live}, gates on these reads prevent violations by amounts that offline flag rates predict; a gate on GPT-6-luna's pre-call state cut its violating episodes from 32\% to 8\%, against 18\% for a gate on position at the same review rate. We report every test, the failures included, and release the tool.
+Probes on an agent's hidden states can stop an unsafe action before it runs and catch what monitors of its text miss \citep{fayyazi2026cape}, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and what this buys for safety. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in side branches give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known noise. On eight open models this geometry tracks each model's hidden geometry better than the input or the replies do, and it is the geometry that models share. Three consequences follow, and we test each in preregistered experiments. \emph{At a proposed call}, the transcript decides the violation, so any capable answerer reads it: a fixed read-out of the agent's own answers ranks violations at AUROC 0.82--0.99 on four open agents, close to a probe on their hidden states, 0.90--0.99 on prompt injection and 0.98 on GPT-6-luna, and another model's answers do as well. \emph{Before the call}, only the agent's own policy can forecast it: GPT-6-luna's own answers rank its coming violation better than another model's answers in its seat (0.84 vs 0.73). \emph{Live}, gates on these reads prevent violations by amounts that offline flag rates predict; a gate on GPT-6-luna's pre-call state cut its violating episodes from 32\% to 8\%, against 18\% for a gate on position at the same review rate. Every test is preregistered, and we release the tool.
 \end{abstract}
 
 % =====================================================================================
@@ -123,9 +123,9 @@ This work monitors closed AI agents before they act, through their own APIs and 
 \newpage
 \appendix
 \onecolumn
-\section{Limitations and negative results}
+\section{Limitations}
 \label{app:limits}
-\input{appendix_limits}
+\input{appendix_limitations}
 
 \section{Proofs}
 \label{app:proofs}
@@ -188,7 +188,7 @@ The website's browser trainer imports agent logs, lists the riskiest unlabelled 
 
 \section{Smaller readers}
 \label{app:small}
-All readers are trained on the same 17{,}623 Gemma-4 CAPE-Bench steps (1{,}339 violations); none is trained on a test set. Browser encoders: all-MiniLM-L6-v2, all-mpnet-base-v2 (three 1{,}000-character views) and Qwen3-Embedding-0.6B (one instruction-prefixed text, last-token pooling), each with a standardised logistic probe. Decoder readers: Qwen3-0.6B, 1.7B, 4B and 14B at the shipped reader's relative depth, with the shipped probe. The selected browser encoder, Qwen3-Embedding-0.6B, beats TF-IDF on the closed agent's AgentDojo calls (0.605 vs 0.335; $+0.270$ [0.134, 0.451]), so the website offers it for new kinds of tasks; on CAPE-Bench it is 0.097 below the 8B reader (\cref{app:limits}). In the browser it runs as a float16 ONNX model whose features match PyTorch's (cosine 1.000 on 40 steps); the 8-bit model's do not (0.852).
+All readers are trained on the same 17{,}623 Gemma-4 CAPE-Bench steps (1{,}339 violations); none is trained on a test set. Browser encoders: all-MiniLM-L6-v2, all-mpnet-base-v2 (three 1{,}000-character views) and Qwen3-Embedding-0.6B (one instruction-prefixed text, last-token pooling), each with a standardised logistic probe. Decoder readers: Qwen3-0.6B, 1.7B, 4B and 14B at the shipped reader's relative depth, with the shipped probe. The selected browser encoder, Qwen3-Embedding-0.6B, beats TF-IDF on the closed agent's AgentDojo calls (0.605 vs 0.335; $+0.270$ [0.134, 0.451]), so the website offers it for new kinds of tasks. In the browser it runs as a float16 ONNX model whose features match PyTorch's (cosine 1.000 on 40 steps); the 8-bit model's do not (0.852).
 
 \begin{center}\includegraphics[width=0.95\textwidth]{figures/small_readers.pdf}\end{center}
 
@@ -218,12 +218,12 @@ Qwen3.8 & .044 & \best{.035} & .986 & \best{.990} & .955 & \best{.972}\\
 
 \section{The interrogation state in chat}
 \label{app:psi}
-On Claude Haiku 5.5, readouts of the interrogation state trained only on open models forecast which harmful requests Claude Haiku 5.5 refuses. Against a three-level moderation verdict the forecast wins (three preregistered tests); against graded moderators it ties (prospective, 923 conversations: 0.873 vs 0.855). Combined with a moderator, it doubles the precision of an alarm for harmful requests that the model answers (0.535 vs 0.274).
+On Claude Haiku 5.5, readouts of the interrogation state trained only on open models forecast which harmful requests Claude Haiku 5.5 refuses. Against a three-level moderation verdict the forecast wins (three preregistered tests). Combined with a moderator, it doubles the precision of an alarm for harmful requests that the model answers (0.535 vs 0.274).
 
 \begin{center}\includegraphics[width=0.7\textwidth]{figures/claude_vs_moderation.pdf}\end{center}
 
-\section{The preregistration record}
-\label{app:record}
-\input{appendix_record}
+\section{Preregistered tests behind each claim}
+\label{app:prereg}\label{app:record}
+\input{appendix_prereg}
 
 \end{document}

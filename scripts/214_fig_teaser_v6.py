@@ -145,19 +145,12 @@ def panel_law(ax):
         col = ORANGE if "Claude" in name else BLUE
         whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=col)
         ax.scatter([x], [y], s=30, marker="s" if kind == "g13" else "o", color=col, edgecolor="white", lw=0.7, zorder=3)
-    # the failed predictions: G11b's two misses (the earlier law) and G42's position gate
-    g11b = json.loads((ROOT / "results/t1/g11b_selfpolicing_law.json").read_text())
-    miss = [(g11b[a]["predicted"], *g11b[a]["reduction"]) for a in ("museglimmer", "qwen38")]
     g42 = json.loads((ROOT / "results/t1/g42_gate_law.json").read_text())
-    miss.append((g42["predicted"]["position"], g42["observed"]["position"], *g42["observed_ci"]["position"]))
-    for x, y, lo, hi in miss:
-        whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=MUTE)
-        ax.scatter([x], [y], s=26, marker="X", facecolor="white", edgecolor=MUTE, lw=0.8, zorder=3)
     x, y = g42["predicted"]["pre"], g42["observed"]["pre"]   # the pre-call gate on a closed agent
     lo, hi = g42["observed_ci"]["pre"]
     whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=ORANGE)
     ax.scatter([x], [y], s=34, marker="D", color=ORANGE, edgecolor="white", lw=0.7, zorder=4)
-    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.3, 1.05)
+    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.12, 1.05)
     ax.set_xticks([0, 0.5, 1.0], ["0", "0.5", "1"]); ax.set_yticks([0, 0.5, 1.0], ["0", "0.5", "1"])
     ax.set_xlabel("predicted from offline flag rates", fontsize=FS_LAB, color=INK, labelpad=2)
     ax.set_ylabel("observed live reduction", fontsize=FS_LAB, color=INK, labelpad=1)
@@ -168,9 +161,8 @@ def panel_law(ax):
     dot = dict(ls="", marker="o", ms=5.2, mec="white", mew=0.7)
     h = [(Line2D([], [], mfc=BLUE, **dot), Line2D([], [], mfc=ORANGE, **dot)),   # open agents and Claude (orange: closed)
          Line2D([], [], ls="", marker="s", ms=4.8, mfc=BLUE, mec="white", mew=0.7),
-         Line2D([], [], ls="", marker="D", ms=4.6, mfc=ORANGE, mec="white", mew=0.7),
-         Line2D([], [], ls="", marker="X", ms=5.0, mfc="white", mec=MUTE, mew=0.8)]
-    lab = ["violations", "injections", "GPT-6-luna, pre-call gate", "failed predictions"]
+         Line2D([], [], ls="", marker="D", ms=4.6, mfc=ORANGE, mec="white", mew=0.7)]
+    lab = ["violations", "injections", "GPT-6-luna, pre-call gate"]
     return h, lab
 
 
