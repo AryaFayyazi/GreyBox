@@ -1,0 +1,15 @@
+{
+ "position_alone_within_template_tool": 0.7631,
+ "AT_within_template_tool_position": [
+  0.9637,
+  0.8973,
+  1.0
+ ],
+ "PRE_within_template_tool_position": [
+  0.9273,
+  0.8283,
+  0.9885
+ ],
+ "strata_with_both_classes": 12,
+ "violations_in_them": 27
+}

@@ -1,0 +1,28 @@
+{
+ "calls": 560,
+ "violations": 66,
+ "scenarios": 216,
+ "unanimity": {
+  "AT": 0.8479,
+  "PRE": 0.7723
+ },
+ "A1_at_call": [
+  0.979,
+  0.9458,
+  0.9977
+ ],
+ "P1_pre_call": [
+  0.7649,
+  0.6503,
+  0.9093
+ ],
+ "pre_minus_at": [
+  -0.2141,
+  -0.3322,
+  -0.0577
+ ],
+ "endpoints": {
+  "A1_lower_gt_0.5": true,
+  "P1_lower_gt_0.5": true
+ }
+}
