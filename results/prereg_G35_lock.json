@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T20:17:12-07:00",
+ "sha256": {
+  "docs/prereg_G35_readout_reads_state.md": "98f4e29a9870f0d8c8ed9b867097fbdec26e95585b9016c0300e1c39387f8f47",
+  "scripts/207_g35_readout_reads_state.py": "29ced2ffae930948f741f1863d2787bdaa02e0a82dbda657ce854a34bb3d7480"
+ }
+}
