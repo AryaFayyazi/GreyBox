@@ -26,7 +26,7 @@
   const nPos = () => steps.filter(s => s.label === 1).length;
   const NOTES = {
     'GPT example': 'GPT-6-luna on CAPE-Bench, OpenAI format. Labels come from the benchmark\'s rule checker.',
-    'Closed-A example': 'Closed-A on CAPE-Bench, Anthropic format. Labels come from the benchmark\'s rule checker.',
+    'Claude Haiku 5.5 example': 'Claude Haiku 5.5 on CAPE-Bench, Anthropic format. Labels come from the benchmark\'s rule checker.',
     'CAPE-Bench example': 'Pre-rendered steps of an open agent: each context holds the instructions, the task and the earlier calls.',
     'AgentDojo example': 'A new kind of task: prompt injections. Trained and tested on AgentDojo\'s own labels, as here, word counts do well. ' +
       'Trained on another benchmark, they were at chance on AgentDojo (test T9). That is why each new type of policy needs its own labels.'
@@ -164,7 +164,7 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
   async function fetchText(u) { const r = await fetch(u); if (!r.ok) throw new Error(`could not load ${u}`); return r.text(); }
-  for (const [btn, file, label] of [['exGpt', 'data/example_gpt_openai.jsonl', 'GPT example'], ['exClosed-A', 'data/example_closed_a.jsonl', 'Closed-A example'],
+  for (const [btn, file, label] of [['exGpt', 'data/example_gpt_openai.jsonl', 'GPT example'], ['exClaude Haiku 5.5', 'data/example_closed_a.jsonl', 'Claude Haiku 5.5 example'],
     ['exCape', 'data/example_capebench.jsonl', 'CAPE-Bench example'], ['exAdojo', 'data/example_agentdojo_gpt.jsonl', 'AgentDojo example']]) {
     $(btn).onclick = async () => { $('dataInfo').textContent = 'downloading the example…'; try { load(await fetchText(file), label, { example: true }); } catch (e) { $('dataInfo').textContent = e.message; } };
   }

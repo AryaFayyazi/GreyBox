@@ -101,25 +101,25 @@ a new kind of task it needs new labels, and its review cut should be set on your
 </svg>
 </figure>
 
-<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v5.png" title="Open the full-size figure"><img src="figures/teaser_v5.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser_v5.png">Tap to open the full-size figure.</a> </span><b>Monitoring a closed agent by asking it yes/no questions, with no training.</b>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v6.png" title="Open the full-size figure"><img src="figures/teaser_v6.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_v6.png">Tap to open the full-size figure.</a> </span><b>Reconstruct, monitor and forecast, prevent: a closed agent through its own API, with no training.</b>
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
 but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
-probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Closed-A is closed, so it has no probe. Below the line, the
-second benchmarks: open agents' prompt injections on AgentDojo (G17) and Closed-A on &tau;&sup2;-bench (G18); both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
+probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude Haiku 5.5 is closed, so it has no probe. Below the line, the
+second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude Haiku 5.5 on &tau;&sup2;-bench (G18); both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
 the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
     logs stay in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
-  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Closed-A as an
+  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
     agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
   <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
     takes 0.18 ms for each action in a browser. The GPU reader monitor takes 41 ms.</p><a class="go" href="docs.html">Read the docs →</a></div>
 </div>
 
 <h2>What we found</h2>
-<div class="card" style="margin-bottom:14px"><h3>Answers to fixed yes/no questions, read with a fixed rule, monitor an agent's decisions</h3><p>At each proposed call the agent answers 8 yes/no questions about the call, through its own API, in side branches. A fixed read-out of the answers scores the call: no labels, nothing trained. On held-out calls of four open agents, all preregistered endpoints passed. On the closed model Closed-A, the read-out ranks its unapproved production restarts at 0.909 [0.86, 0.95]. A trained comparison that recreates the decision state from an open reader and the answers, then reads it with the probe on true states, differs from the true state by +0.063 on average (G14).</p><table class="tablewrap"><tr><th>Agent</th><th>its 8 answers (no training)</th><th>its 1 answer (self-audit)</th><th>probe trained on its hidden states</th></tr><tr><td>Gemma-4</td><td>0.994</td><td>0.966</td><td>0.980</td></tr><tr><td>gpt-oss</td><td>0.822</td><td>0.758</td><td>0.772</td></tr><tr><td>Qwen3.8</td><td>0.951</td><td>0.894</td><td>0.826</td></tr><tr><td>Muse-Glimmer</td><td>0.929</td><td>0.935</td><td>0.941</td></tr></table><p class="muted">Within-template AUROC. Mean difference, 8 answers − 1 answer: +0.036 [+0.006, +0.064]; 8 answers − trained probe: +0.045 [-0.017, +0.135]. Preregistered (G15). A probe tuned afterwards is 0.015 higher on average (exploratory).</p><p><b>A second benchmark for the closed agent</b> (G18, preregistered). On &tau;&sup2;-bench airline, with 8 questions written from its published policy before any answer, the same read-out ranks Closed-A's policy violations at 0.704 [0.54, 0.82] within tool (360 writes, 50 violations); its single answer scores 0.555 (difference +0.150 [-0.004, +0.331]). Within one task it is weaker (0.61, exploratory).</p><p><b>Whose answers?</b> (G16, preregistered). Another model answering the same 8 questions about each call ranks the violations as well as the agent's own answers: own &minus; other +0.012 [-0.018, +0.040] over four open agents; on Closed-A's restarts Gemma-4's answers score 1.000 against Closed-A's 0.909. The monitor is a fixed questionnaire that any capable model can answer.</p><p><b>Against a reasoning judge</b> (G20, preregistered). A reasoning model that reads the same conversation and gives one verdict ranks the open agents' violations worse than the questionnaire: read-out &minus; judge +0.073 [+0.021, +0.123].</p><p><b>Comparison: another model answering</b> (G21, preregistered; not the method). Gemma-4 (reasoning on) answered the same questions about Closed-A's &tau;&sup2;-bench writes: 0.989 [0.95, 1.00] within tool, against 0.704 from Closed-A's own answers (given with reasoning off). The method itself uses only the agent's own API.</p><p><b>Own seat or outside reviewer</b> (G19, preregistered). The same model, reading the same conversation as an outside reviewer, scores 0.656 against 0.699 in its own conversation (+0.043 [-0.136, +0.226]): no detectable difference. The value is in the questions and the read-out.</p><p><b>Prompt injection</b> (G17, preregistered). On AgentDojo, open agents' answers rank their injected calls at Gemma-4 0.985 [0.96, 1.00]; gpt-oss 0.904 [0.87, 0.93] within suite.</p></div>
+<div class="card" style="margin-bottom:14px"><h3>Answers to fixed yes/no questions, read with a fixed rule, monitor an agent's decisions</h3><p>At each proposed call the agent answers 8 yes/no questions about the call, through its own API, in side branches. A fixed read-out of the answers scores the call: no labels, nothing trained. On held-out calls of four open agents, all preregistered endpoints passed. On the closed model Claude Haiku 5.5, the read-out ranks its unapproved production restarts at 0.909 [0.86, 0.95]. A trained comparison that recreates the decision state from an open reader and the answers, then reads it with the probe on true states, differs from the true state by +0.063 on average (G14).</p><table class="tablewrap"><tr><th>Agent</th><th>its 8 answers (no training)</th><th>its 1 answer (self-audit)</th><th>probe trained on its hidden states</th></tr><tr><td>Gemma-4</td><td>0.994</td><td>0.966</td><td>0.980</td></tr><tr><td>gpt-oss</td><td>0.822</td><td>0.758</td><td>0.772</td></tr><tr><td>Qwen3.8</td><td>0.951</td><td>0.894</td><td>0.826</td></tr><tr><td>Muse-Glimmer</td><td>0.929</td><td>0.935</td><td>0.941</td></tr></table><p class="muted">Within-template AUROC. Mean difference, 8 answers − 1 answer: +0.036 [+0.006, +0.064]; 8 answers − trained probe: +0.045 [-0.017, +0.135]. Preregistered (G15). A probe tuned afterwards is 0.015 higher on average (exploratory).</p><p><b>A second benchmark for the closed agent</b> (G18, preregistered). On &tau;&sup2;-bench airline, with 8 questions written from its published policy before any answer, the same read-out ranks Claude Haiku 5.5's policy violations at 0.704 [0.54, 0.82] within tool (360 writes, 50 violations); its single answer scores 0.555 (difference +0.150 [-0.004, +0.331]). Within one task it is weaker (0.61, exploratory).</p><p><b>Whose answers?</b> (G16, preregistered). Another model answering the same 8 questions about each call ranks the violations as well as the agent's own answers: own &minus; other +0.012 [-0.018, +0.040] over four open agents; on Claude Haiku 5.5's restarts Gemma-4's answers score 1.000 against Claude Haiku 5.5's 0.909. The monitor is a fixed questionnaire that any capable model can answer.</p><p><b>Against a reasoning judge</b> (G20, preregistered). A reasoning model that reads the same conversation and gives one verdict ranks the open agents' violations worse than the questionnaire: read-out &minus; judge +0.073 [+0.021, +0.123].</p><p><b>Comparison: another model answering</b> (G21, preregistered; not the method). Gemma-4 (reasoning on) answered the same questions about Claude Haiku 5.5's &tau;&sup2;-bench writes: 0.989 [0.95, 1.00] within tool, against 0.704 from Claude Haiku 5.5's own answers (given with reasoning off). The method itself uses only the agent's own API.</p><p><b>Own seat or outside reviewer</b> (G19, preregistered). The same model, reading the same conversation as an outside reviewer, scores 0.656 against 0.699 in its own conversation (+0.043 [-0.136, +0.226]): no detectable difference. The value is in the questions and the read-out.</p><p><b>Prompt injection</b> (G17, preregistered). On AgentDojo, open agents' answers rank their injected calls at Gemma-4 0.985 [0.96, 1.00]; gpt-oss 0.904 [0.87, 0.93] within suite.</p></div>
 <div class="grid2">
 <div class="card"><h3>The grey box replicates part of the hidden state</h3><p>An agent's internal state is a function of the tokens that it read.
   So an open model that reads the same tokens can hold a replica of part of it. From the transcript alone, the replica reconstructs
@@ -129,14 +129,14 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   it also works on a replica from text features (0.983), because the information that decides a violation is in the tokens.</p></div>
 <div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of two closed agents, each scenario with and
   without the gate. A blocked action did not run, and the agent was told that a human would review it. Episodes with an executed violation
-  fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Closed-A. The agents did not route around a block. Each check
-  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Closed-A) points fewer task goals reached. When a reviewer decided on the flagged actions
+  fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Claude Haiku 5.5. The agents did not route around a block. Each check
+  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Claude Haiku 5.5) points fewer task goals reached. When a reviewer decided on the flagged actions
   instead (an oracle, as an upper bound on a human), violations fell to 0.0% and goals to 38.7% (no gate: 40.7%); the preregistered test
   that this costs at most 3 points failed (−2.0 points, 95% interval −5.1 to +0.7). The closed agents ran with reasoning off.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC 0.994 vs 0.979).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught 94%
-  (Closed-A) and 98% (GPT-6-luna) of the violations. A zero-shot 70B judge caught
+  (Claude Haiku 5.5) and 98% (GPT-6-luna) of the violations. A zero-shot 70B judge caught
   0% and 38%.</p></div>
 <div class="card"><h3>Why access does not help: a theorem</h3><p>An agent's internal state is a function of the tokens that it read.
   For the label "does this action break the policy?", a monitor that reads the transcript and the proposed action is
@@ -144,7 +144,7 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   monitors only because they read later (probe 0.979 after the reasoning, 0.841 before it).</p></div>
 <div class="card"><h3>The limit is policy coverage</h3><p>We removed a policy family from the training data. A credentials
   policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
-  service-restart policy without similar ones did not: the monitor ranked Closed-A's violations well (AUROC
+  service-restart policy without similar ones did not: the monitor ranked Claude Haiku 5.5's violations well (AUROC
   0.912) but escalated none at a 5% budget. With 20 labelled steps it caught
   85%; with 40, 94% (exploratory). On prompt injections (AgentDojo),
   labelled calls of open agents raised the catch rate on a closed agent from 28% to 58% at the label-free cut (AUROC 0.840 → 0.922),
@@ -155,15 +155,15 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   budget it caught fewer violations than the reader and than the tool alone (11.7% vs 18.4% and 13.0%). Label steps of
   each new type of policy and of each new task.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
-  the reader on the training benchmark (Closed-A: 0.997 vs 0.991).
+  the reader on the training benchmark (Claude Haiku 5.5: 0.997 vs 0.991).
   On a new benchmark of prompt injections it fell to chance (0.50). The reader stayed at
   0.78.</p></div>
 <div class="card"><h3>Set the review threshold from your own traffic</h3><p>A monitor's probabilities do not transfer between agents: a
-  0.5 cut caught 3% on Closed-A. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
+  0.5 cut caught 3% on Claude Haiku 5.5. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
   threshold. It caught 95% online. When half of a later burst was
   malicious, it still caught 94%. A rolling threshold caught
   36%.</p></div>
-<div class="card"><h3>An agent that knows it is monitored</h3><p>We told Closed-A that a monitor reviews its tool calls
+<div class="card"><h3>An agent that knows it is monitored</h3><p>We told Claude Haiku 5.5 that a monitor reviews its tool calls
   (preregistered, 990 scenarios). It violated as often as before, and the monitor caught 97% of its violations. The notice moved
   all of its scores up, so the old review cut sent 15–17% of actions to review. Live, a cut set again on the agent's new,
   unlabelled traffic sent 4.7% (the budget was 5%) and the gate blocked every violation: 6.5% of episodes → 0.0%.</p></div>
@@ -172,10 +172,10 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   51% and 60%. A theorem explains the ceiling: under rewording, no monitor beats the best monitor of the call's decisive fields,
   and the main attacked family was missing from training. Keep the score hidden from the agent.</p></div>
 <div class="card"><h3>Chat: forecast a refusal</h3><p>We ask a model about a conversation in a side branch. The answers forecast if the
-  model will refuse. On Closed-A this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
+  model will refuse. On Claude Haiku 5.5 this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
   precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Closed-A, GPT).
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude Haiku 5.5, GPT).
 On an external benchmark of prompt injections, the reader without labels of that policy was not significantly better than a zero-shot judge on
 a closed agent (AUROC 0.840 vs 0.787); with labelled calls from open agents it reached 0.922. A monitor needs labelled steps of each type of
 policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
