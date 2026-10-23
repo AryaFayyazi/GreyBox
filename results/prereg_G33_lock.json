@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T19:45:47-07:00",
+ "sha256": {
+  "docs/prereg_G33_closed_dither.md": "f84de80b9741a4053cfed95711e2685af233c27cdcd7b8265383825855bf8c71",
+  "scripts/205_g33_closed_dither.py": "9a61e4f601306dac4e63ef11e332af971dbf17dc8253831b340c90fabafd6943"
+ }
+}
