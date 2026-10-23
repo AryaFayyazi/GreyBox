@@ -53,8 +53,8 @@ def fig_claude():
     The printed difference is against the stronger graded moderator."""
     G = json.loads((R / "l3/graded_baseline_reanalysis.json").read_text())["claude"]
     rows = []
-    for name, f, key, gk, mk, tag in (("per-question battery (88×4 calls)", "l3/claude_livebench.json", "D2_harmful_only", "auroc", "baseline_auroc", "L3b"),
-                                      ("transcript readout (2 calls)", "l3/claude_transcript.json", "F1_harmful_refusal", "greybox_auroc", "moderation_auroc", "L3d")):
+    for name, f, key, gk, mk, tag in (("per-question battery\n(88×4 calls)", "l3/claude_livebench.json", "D2_harmful_only", "auroc", "baseline_auroc", "L3b"),
+                                      ("transcript readout\n(2 calls)", "l3/claude_transcript.json", "F1_harmful_refusal", "greybox_auroc", "moderation_auroc", "L3d")):
         e = json.loads((R / f).read_text())[key]
         qg, lg = G[f"{tag}_qg_p"], G[f"{tag}_lg_p"]
         best = max((qg, lg), key=lambda x: x["baseline"])
@@ -62,34 +62,35 @@ def fig_claude():
     c = json.loads((R / "l3/claude_batch.json").read_text())["E1_harmful_refusal"]
     cg = json.loads((R / "l3/l3c_graded_reanalysis.json").read_text())
     best = max((cg["qg_p"]["E1_refusal"], cg["lg_p"]["E1_refusal"]), key=lambda x: x["graded"])
-    rows.insert(1, ("in-conversation (n=4; 60% usable)", c["greybox_auroc"], c["moderation_auroc"], cg["qg_p"]["E1_refusal"]["graded"],
+    rows.insert(1, ("in-conversation\n(n=4; 60% usable)", c["greybox_auroc"], c["moderation_auroc"], cg["qg_p"]["E1_refusal"]["graded"],
                     cg["lg_p"]["E1_refusal"]["graded"], [best["diff"], best["ci95"]]))
     e = json.loads((R / "l3/l3e_tool.json").read_text())["primary_qwen3guard_judge"]["A2"]
     best = max((e["qg_p"], e["lg_p"]), key=lambda x: x["baseline_auroc"])
-    rows.append(("prospective, fresh conversations (2 calls)", e["qg_p"]["greybox_auroc"], None, e["qg_p"]["baseline_auroc"], e["lg_p"]["baseline_auroc"], [best["diff"], best["ci95"]]))
+    rows.append(("prospective, fresh\nconversations (2 calls)", e["qg_p"]["greybox_auroc"], None, e["qg_p"]["baseline_auroc"], e["lg_p"]["baseline_auroc"], [best["diff"], best["ci95"]]))
     import importlib.util as _iu                                # the paper's common style (scripts/118)
     _sp = _iu.spec_from_file_location("v2", Path(__file__).resolve().parent / "118_paper_figures_v2.py")
     v2 = _iu.module_from_spec(_sp); _sp.loader.exec_module(v2)
-    fig, ax = v2.plt.subplots(figsize=(4.8, 0.36 * len(rows) + 0.9))
+    # printed at 0.7 of the text width (4.72 in): the figure is drawn at that width so the fonts print at their nominal size
+    fig, ax = v2.plt.subplots(figsize=(3.3, 0.33 * len(rows) + 0.75))
     v2.grid(ax, "x")
     for i, (name, g, m3, qg, lg, d) in enumerate(rows[::-1]):
         lo = min(v for v in (g, m3, qg, lg) if v is not None)
         ax.plot([lo, max(g, qg, lg)], [i, i], color=v2.GRID, lw=2.4, zorder=1, solid_capstyle="round")
         if m3 is not None:
             ax.plot(m3, i, "o", mfc="white", mec=v2.MUTE, ms=5, mew=1.0, zorder=3)
-        ax.plot(qg, i, "s", color=v2.ORANGE, ms=4.6, mec="white", mew=0.6, zorder=3)
-        ax.plot(lg, i, "D", color=v2.YELLOW, ms=4.4, mec="white", mew=0.6, zorder=3)
+        ax.plot(qg, i + 0.13, "s", color=v2.ORANGE, ms=4.4, mec="white", mew=0.6, zorder=3)   # the two moderators drawn just above
+        ax.plot(lg, i - 0.13, "D", color=v2.AQUA, ms=4.4, mec="white", mew=0.6, zorder=3)     # and below the row, so ties stay visible
         ax.plot(g, i, "o", color=v2.BLUE, ms=5.6, mec="white", mew=0.8, zorder=4)
-        ax.text(1.005, i, f"{d[0]:+.2f} [{d[1][0]:+.2f}, {d[1][1]:+.2f}]", va="center", fontsize=5.8, color=v2.INK, transform=ax.get_yaxis_transform())
+        ax.text(1.005, i, f"{d[0]:+.2f} [{d[1][0]:+.2f}, {d[1][1]:+.2f}]", va="center", fontsize=6.2, color=v2.INK, transform=ax.get_yaxis_transform())
     ax.set_ylim(-0.6, len(rows) - 0.4)
-    ax.text(1.005, len(rows) - 0.55, "grey box − stronger\ngraded moderator", fontsize=5.4, color=v2.MUTE, va="bottom", transform=ax.get_yaxis_transform())
-    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=6, color=v2.INK)
+    ax.text(1.005, len(rows) - 0.55, "grey box − stronger\ngraded moderator", fontsize=6.0, color=v2.MUTE, va="bottom", transform=ax.get_yaxis_transform())
+    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows[::-1]], fontsize=6.4, color=v2.INK)
     ax.set_xlim(0.62, 0.92); ax.set_xlabel("AUROC: which harmful requests Claude Haiku 5.5 refuses")
     from matplotlib.lines import Line2D
-    h = [Line2D([], [], marker="o", ls="", color=v2.BLUE, label="grey box"), Line2D([], [], marker="s", ls="", color=v2.ORANGE, label="Qwen3Guard, graded"),
-         Line2D([], [], marker="D", ls="", color=v2.YELLOW, label="Llama Guard, graded"),
-         Line2D([], [], marker="o", ls="", mfc="white", mec=v2.MUTE, label="3-level verdict")]
-    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.4, -0.2), ncol=4, fontsize=5.6, frameon=False, handletextpad=0.2, columnspacing=0.9)
+    h = [Line2D([], [], marker="o", ls="", color=v2.BLUE, ms=5.6, mec="white", mew=0.8, label="grey box"), Line2D([], [], marker="s", ls="", color=v2.ORANGE, ms=4.4, mec="white", mew=0.6, label="Qwen3Guard, graded"),
+         Line2D([], [], marker="D", ls="", color=v2.AQUA, ms=4.4, mec="white", mew=0.6, label="Llama Guard, graded"),
+         Line2D([], [], marker="o", ls="", mfc="white", mec=v2.MUTE, ms=5, mew=1.0, label="3-level verdict")]
+    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.4, -0.25), ncol=2, fontsize=6.2, frameon=False, handletextpad=0.2, columnspacing=1.2)
     ax.set_title("Refusal forecast vs moderation")
     v2.save(fig, "claude_vs_moderation")
     return

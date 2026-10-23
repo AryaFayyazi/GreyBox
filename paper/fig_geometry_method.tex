@@ -1,84 +1,130 @@
 % The method figure: coordinates are gauge -> ask in side branches -> each answer law on a quarter circle (Fisher-Rao =
 % twice the arc; exact flat coordinates) -> at the decision: the angles, a fixed read-out, hold or run. No training.
+% Drawn at its final width (17.0 cm, under \textwidth = 6.75in): no resizing, so the type sizes below are true sizes
+% (titles 7.6 pt bold, all other text 6.1 pt).
 \begin{figure*}[t]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[font=\scriptsize, >={Stealth[length=4pt]},
-  box/.style={draw=gbmute, rounded corners=2pt, line width=0.4pt, inner sep=2.5pt, fill=white},
-  msg/.style={rounded corners=2pt, inner sep=2.2pt, fill=gbrow, text=gbink, font=\tiny, minimum height=0.30cm},
-  ttl/.style={font=\scriptsize\bfseries, text=gbink, anchor=west},
-  sub/.style={font=\tiny, text=gbmute, anchor=west},
-  arr/.style={->, line width=0.6pt, draw=gbmute}]
-% ---- panel 1: gauge
+\begin{tikzpicture}[x=1cm, y=1cm, >={Stealth[length=3.6pt, width=3pt]},
+  every node/.style={font=\fontsize{6.1}{7.1}\selectfont, text=gbink},
+  card/.style={draw=gbhead, line width=0.6pt, rounded corners=4pt, fill=white},
+  badge/.style={circle, fill=gbblue, text=white, inner sep=0pt, minimum size=0.36cm,
+    font=\fontsize{6.8}{7}\selectfont\bfseries},
+  ttl/.style={anchor=north west, inner sep=0pt, align=left, font=\fontsize{7.6}{8.6}\selectfont\bfseries, text=gbink},
+  line/.style={anchor=base west, inner sep=0pt},
+  note/.style={anchor=base west, inner sep=0pt, font=\fontsize{6.1}{7.1}\selectfont\itshape, text=gbmute},
+  msg/.style={rounded corners=2pt, inner sep=1.6pt, fill=gbrow, text=gbink, minimum height=0.32cm, anchor=west},
+  ask/.style={rounded corners=2pt, inner sep=1.6pt, draw=gbblue!55, line width=0.4pt, fill=white, minimum height=0.32cm, anchor=west},
+  chip/.style={rounded corners=1.5pt, inner sep=1.4pt, minimum height=0.3cm, minimum width=0.42cm, text=white,
+    font=\fontsize{6.1}{7.1}\selectfont\bfseries, anchor=west},
+  ax/.style={->, gbmute, line width=0.5pt, >={Stealth[length=2.6pt, width=2.2pt]}},
+  flow/.style={fill=gbhead!60!gbmute, draw=none}]
+\def\H{3.55}\def\La{0.42}\def\Lb{0.17}
+% ---------------------------------------------------------------- (1) gauge
 \begin{scope}[shift={(0,0)}]
-  \node[ttl] at (-0.1,1.95) {(1) Coordinates are gauge};
-  \node[sub] at (-0.1,1.68) {what an API cannot reveal};
-  \draw[->, gbmute] (0.2,0.1) -- (1.5,0.1); \draw[->, gbmute] (0.2,0.1) -- (0.2,1.4);
-  \begin{scope}[shift={(0.2,0.1)}, rotate=28]\draw[->, gbblue, line width=0.6pt] (0,0) -- (1.3,0); \draw[->, gbblue, line width=0.6pt] (0,0) -- (0,1.3);\end{scope}
-  \fill[gborange] (1.0,0.55) circle (1.6pt); \fill[gborange] (0.55,1.05) circle (1.6pt);
-  \draw[gborange, densely dotted, line width=0.7pt] (1.0,0.55) -- (0.55,1.05);
-  \node[anchor=west, text width=2.0cm, align=left, font=\tiny] at (1.65,0.75) {$h$ and $Gh$ give the same outputs; distances and angles survive};
+  \draw[card] (0,0) rectangle (2.45,\H);
+  \node[badge] at (0.27,\H-0.27) {1};
+  \node[ttl] at (0.52,\H-0.12) {Coordinates\\are gauge};
+  \coordinate (O) at (0.78,0.86);
+  \draw[ax] (O) -- ++(1.6,0); \draw[ax] (O) -- ++(0,1.62);
+  \begin{scope}[shift={(O)}, rotate=24]
+    \draw[->, gbblue, line width=0.7pt] (0,0) -- (1.5,0); \draw[->, gbblue, line width=0.7pt] (0,0) -- (0,1.45);
+  \end{scope}
+  \draw[->, gbblue, line width=0.45pt] ($(O)+(3:1.38)$) arc (3:21:1.38) node[pos=0.45, right=0.5pt, text=gbblue] {$G$};
+  \coordinate (P) at ($(O)+(1.08,0.86)$); \coordinate (Q) at ($(O)+(0.30,1.25)$);
+  \draw[gbink, line width=0.5pt] (O) -- (P); \draw[gbink, line width=0.5pt] (O) -- (Q);
+  \draw[gborange, line width=0.6pt] ($(O)+(38.5:0.4)$) arc (38.5:76.5:0.4);
+  \draw[gborange, line width=0.8pt, densely dotted] (P) -- (Q);
+  \fill[gborange] (P) circle (1.7pt); \fill[gborange] (Q) circle (1.7pt);
+  \node[line] at (0.14,\La) {$h$ and $Gh$: same outputs};
+  \node[note] at (0.14,\Lb) {distances, angles survive};
 \end{scope}
-% ---- panel 2: side branches
-\begin{scope}[shift={(4.35,0)}]
-  \node[ttl] at (-0.1,1.95) {(2) Ask in side branches};
-  \node[sub] at (-0.1,1.68) {its own API; its conversation never sees them};
-  \node[msg, anchor=west] (m1) at (0,1.25) {task};
-  \node[msg, anchor=west] (m2) at (0,0.82) {tool result};
-  \node[msg, anchor=west, fill=gborange!25] (m3) at (0,0.39) {proposed call};
-  \draw[gbmute, line width=0.5pt] (m1.south west) ++(0.1,0) -- ++(0,-0.13);
-  \draw[gbmute, line width=0.5pt] (m2.south west) ++(0.1,0) -- ++(0,-0.13);
-  \foreach \y/\q/\a/\c in {1.25/{complies with the policy?}/yes/gbmute, 0.82/{production, no approval?}/yes/gborange, 0.39/{breaks a task constraint?}/no/gbmute}{
-    \draw[arr, densely dashed] (m3.east) to[out=0, in=180] (1.75,\y);
-    \node[anchor=west, font=\tiny, text=gbink] at (1.78,\y) {\q};
-    \node[anchor=west, font=\tiny\bfseries, text=\c] at (4.25,\y) {\a};
+% ---------------------------------------------------------------- (2) side branches
+\begin{scope}[shift={(2.7,0)}]
+  \draw[card] (0,0) rectangle (4.85,\H);
+  \node[badge] at (0.27,\H-0.27) {2};
+  \node[ttl] at (0.52,\H-0.12) {Ask in side\\branches};
+  \node[msg] (m1) at (0.14,2.42) {task};
+  \node[msg] (m2) at (0.14,1.88) {tool result};
+  \node[msg, fill=gborange!22] (m3) at (0.14,1.34) {proposed call};
+  \draw[gbmute, line width=0.6pt] ([xshift=0.16cm]m1.south west) -- ([xshift=0.16cm]m2.north west);
+  \draw[gbmute, line width=0.6pt] ([xshift=0.16cm]m2.south west) -- ([xshift=0.16cm]m3.north west);
+  \foreach \y/\q/\a/\c [count=\i] in {2.42/{complies with the policy?}/yes/gbaqua,
+      1.88/{production, no approval?}/yes/gborange, 1.34/{breaks a task constraint?}/no/gbaqua}{
+    \node[ask] (q\i) at (1.86,\y) {\q};
+    \draw[->, gbblue, line width=0.5pt, densely dashed] (m3.east) to[out=0, in=180] (q\i.west);
+    \node[chip, fill=\c] at (4.30,\y) {\a};
   }
-  \node[anchor=west, font=\tiny, text=gbmute] at (1.78,0.02) {\ldots\ $K$ questions, $n$ answers each};
+  \node[line, text=gbmute] at (1.88,0.84) {\ldots\ $K$ questions, $n$ answers each};
+  \node[line, text=gbmute] at (0.14,\La) {one copy of the conversation per question};
+  \node[note] at (0.14,\Lb) {the agent never sees them};
 \end{scope}
-% ---- panel 3: quarter circle
-\begin{scope}[shift={(9.75,0)}]
-  \node[ttl] at (-0.1,1.95) {(3) Each answer law on a circle};
-  \node[sub] at (-0.1,1.68) {exact Fisher--Rao coordinates (Thm.~1)};
-  \draw[gbmute, line width=0.5pt] (1.25,0.05) arc (0:90:1.2);
-  \draw[->, gbmute] (0.05,0.05) -- (1.5,0.05) node[below, text=gbmute, font=\tiny] {$\sqrt{1-p}$};
-  \draw[->, gbmute] (0.05,0.05) -- (0.05,1.45) node[left, text=gbmute, font=\tiny] {$\sqrt{p}$};
-  \fill[gbblue] ({0.05+1.2*cos(70)},{0.05+1.2*sin(70)}) circle (1.7pt) node[above right=-1pt, font=\tiny] {$x$};
-  \fill[gborange] ({0.05+1.2*cos(25)},{0.05+1.2*sin(25)}) circle (1.7pt) node[right, font=\tiny] {$x'$};
-  \draw[gbink, line width=1.1pt] ({0.05+1.2*cos(25)},{0.05+1.2*sin(25)}) arc (25:70:1.2);
-  \node[anchor=west, text width=2.05cm, align=left, font=\tiny] at (1.65,0.75) {$\vartheta=2\arcsin\!\sqrt{p}$; Fisher--Rao distance $=|\vartheta-\vartheta'|$; questions add as squares: flat, exact, no fit};
+% ---------------------------------------------------------------- (3) circle
+\begin{scope}[shift={(7.8,0)}]
+  \draw[card] (0,0) rectangle (3.0,\H);
+  \node[badge] at (0.27,\H-0.27) {3};
+  \node[ttl] at (0.52,\H-0.12) {Each answer law\\on a circle};
+  \coordinate (C) at (0.42,0.80); \def\R{1.32}
+  \draw[ax] (C) -- ++(\R+0.16,0) node[right=0.5pt, text=gbmute] {$\sqrt{1-p}$};
+  \draw[ax] (C) -- ++(0,\R+0.22) node[left=0.5pt, anchor=north east, text=gbmute] {$\sqrt{p}$};
+  \draw[gbmute!60, line width=0.6pt] ($(C)+(\R,0)$) arc (0:90:\R);
+  \draw[gbblue!45, line width=0.4pt] (C) -- ($(C)+(68:\R)$); \draw[gbblue!45, line width=0.4pt] (C) -- ($(C)+(26:\R)$);
+  \draw[gbblue, line width=0.5pt] ($(C)+(0.42,0)$) arc (0:26:0.42);
+  \node[text=gbblue] at ($(C)+(12:0.68)$) {$\tfrac{\vartheta'}{2}$};
+  \draw[gborange, line width=1.6pt] ($(C)+(26:\R)$) arc (26:68:\R);
+  \fill[gbblue] ($(C)+(68:\R)$) circle (1.9pt) node[left=1pt] {$p$};
+  \fill[gbblue] ($(C)+(26:\R)$) circle (1.9pt) node[right=0.5pt] {$p'$};
+  \node[anchor=base east, inner sep=0pt] at (2.88,2.60) {$\vartheta=2\arcsin\!\sqrt{p}$};
+  \node[anchor=base east, inner sep=0pt, text=gborange] at (2.88,2.30) {$d_{\mathrm{FR}}=|\vartheta-\vartheta'|$};
+  \node[line] at (0.14,\La) {questions add as squares};
+  \node[note] at (0.14,\Lb) {exact flat coordinates; nothing fit};
 \end{scope}
-% ---- panel 4: at the decision
-\begin{scope}[shift={(14.1,0)}]
-  \node[ttl] at (-0.1,1.95) {(4) At the decision: read, then hold};
-  \node[sub] at (-0.1,1.68) {a fixed read-out; no labels, nothing trained};
-  \foreach \i/\h/\c in {0/0.18/gbmute, 1/0.12/gbmute, 2/0.10/gbmute, 3/0.14/gbmute, 4/0.95/gborange, 5/0.12/gbmute, 6/0.16/gbmute, 7/0.13/gbmute}{
-    \fill[\c] ({0.05+\i*0.2},0.15) rectangle ++(0.14,\h);
+% ---------------------------------------------------------------- (4) read, then hold
+\begin{scope}[shift={(11.05,0)}]
+  \draw[card] (0,0) rectangle (2.85,\H);
+  \node[badge] at (0.27,\H-0.27) {4};
+  \node[ttl] at (0.52,\H-0.12) {At the decision:\\read, then hold};
+  \def\B{0.86}
+  \foreach \h [count=\i] in {0.55,0.92,0.38,1.12,0.70,0.98,0.47}{
+    \fill[gbblue!70, rounded corners=0.6pt] ({0.18+(\i-1)*0.18},\B) rectangle ++(0.12,\h);
   }
-  \draw[gbmute, line width=0.3pt] (0,0.15) -- (1.7,0.15);
-  \node[font=\tiny, text=gbmute, anchor=north west] at (0,0.13) {$\sigma_j\vartheta_j$, $j=1..K$};
-  \draw[arr] (1.78,0.6) -- (2.15,0.6);
-  \node[anchor=west, font=\tiny] at (2.18,0.85) {$s=\tfrac1K\sum_j\sigma_j\vartheta_j$};
-  \node[anchor=west, font=\tiny\bfseries, text=white, fill=gbink, rounded corners=2pt, inner sep=2pt] at (2.18,0.38) {hold for review};
-  \node[anchor=west, font=\tiny, text=gbmute] at (2.18,0.08) {if $s$ passes a cut};
+  \draw[gbmute, line width=0.4pt] (0.12,\B) -- (1.42,\B);
+  \node[anchor=north, inner sep=1.5pt, text=gbmute] at (0.78,\B) {$\sigma_j\vartheta_j$};
+  \draw[gborange, line width=0.7pt, densely dashed] (0.12,\B+0.52) -- (1.42,\B+0.52) node[right=0.5pt, text=gborange] {cut};
+  \draw[gbink, line width=0.9pt] (0.12,\B+0.73) -- (1.42,\B+0.73) node[right=0.5pt] {$s$};
+  \node[anchor=base west, inner sep=0pt] at (0.14,2.42) {$s=\tfrac1K\sum_j\sigma_j\vartheta_j$};
+  \node[chip, fill=gbink, align=center, inner sep=2.2pt, anchor=north] (hold) at (2.28,1.42) {hold\\[-1pt]for\\[-1pt]review};
+  \draw[->, gbink, line width=0.6pt] (1.72,\B+0.73) to[out=0, in=90] (hold.north);
+  \node[line] at (0.14,\La) {if $s$ passes a cut};
+  \node[note] at (0.14,\Lb) {no labels; nothing trained};
 \end{scope}
-% ---- panel 5: across steps
-\begin{scope}[shift={(18.6,0)}]
-  \node[ttl] at (-0.1,1.95) {(5) Across steps: filter, forecast};
-  \node[sub] at (-0.1,1.68) {dynamics from unlabelled runs (Prop.~\ref{prop:iv})};
-  \draw[->, gbmute] (0.05,0.1) -- (2.55,0.1) node[below, font=\tiny, text=gbmute] {step $t$};
-  \draw[->, gbmute] (0.05,0.1) -- (0.05,1.45) node[left, font=\tiny, text=gbmute] {$s_t$};
-  \draw[gborange, densely dashed, line width=0.5pt] (0.05,1.05) -- (2.5,1.05);
-  \node[anchor=south west, font=\tiny, text=gborange, inner sep=1pt] at (0.08,1.06) {cut};
-  \foreach \x/\y in {0.35/0.30, 0.75/0.52, 1.15/0.44, 1.55/0.72}{
-    \draw[gbmute, line width=0.4pt] (\x,\y-0.17) -- (\x,\y+0.17);
-    \fill[gbblue!55] (\x,\y) circle (1.3pt);
+% ---------------------------------------------------------------- (5) across steps
+\begin{scope}[shift={(14.15,0)}]
+  \draw[card] (0,0) rectangle (2.85,\H);
+  \node[badge] at (0.27,\H-0.27) {5};
+  \node[ttl] at (0.52,\H-0.12) {Across steps:\\filter, forecast};
+  \coordinate (T) at (0.42,0.74);
+  \draw[ax] (T) -- ++(2.1,0) node[right=0.5pt, text=gbmute] {$t$};
+  \draw[ax] (T) -- ++(0,1.95); \node[anchor=east, inner sep=1pt, text=gbmute] at ($(T)+(0,1.0)$) {$s_t$};
+  \draw[gborange, line width=0.7pt, densely dashed] ($(T)+(0,1.52)$) -- ++(2.1,0);
+  \node[anchor=north east, inner sep=1pt, text=gborange] at ($(T)+(2.1,1.5)$) {cut};
+  \fill[gbblue!14] ($(T)+(0.22,0.10)$) .. controls ($(T)+(0.65,0.30)$) and ($(T)+(0.95,0.46)$) .. ($(T)+(1.32,0.70)$)
+    -- ($(T)+(1.32,1.08)$) .. controls ($(T)+(0.95,0.82)$) and ($(T)+(0.65,0.66)$) .. ($(T)+(0.22,0.46)$) -- cycle;
+  \draw[gbblue, line width=1.0pt] ($(T)+(0.22,0.28)$) .. controls ($(T)+(0.65,0.48)$) and ($(T)+(0.95,0.64)$) .. ($(T)+(1.32,0.89)$);
+  \foreach \x/\y in {0.22/0.22, 0.58/0.58, 0.95/0.50, 1.32/0.96}{
+    \draw[gbmute, line width=0.45pt] ($(T)+(\x,\y-0.2)$) -- ($(T)+(\x,\y+0.2)$);
+    \draw[gbmute, line width=0.45pt] ($(T)+(\x-0.045,\y-0.2)$) -- ++(0.09,0);
+    \draw[gbmute, line width=0.45pt] ($(T)+(\x-0.045,\y+0.2)$) -- ++(0.09,0);
+    \fill[white] ($(T)+(\x,\y)$) circle (1.5pt); \draw[gbmute, line width=0.5pt] ($(T)+(\x,\y)$) circle (1.5pt);
   }
-  \draw[gbblue, line width=0.9pt] (0.35,0.32) .. controls (0.9,0.45) and (1.2,0.55) .. (1.55,0.70);
-  \draw[gbink, ->, line width=0.7pt, densely dotted] (1.55,0.70) -- (1.98,1.12);
-  \fill[gbink] (1.98,1.12) circle (1.5pt);
-  \node[anchor=north west, font=\tiny, text width=1.0cm, align=left] at (2.12,1.0) {hold \emph{before} the call};
+  \draw[->, gborange, line width=0.8pt, densely dotted] ($(T)+(1.32,0.89)$) -- ($(T)+(1.72,1.62)$);
+  \fill[gborange] ($(T)+(1.76,1.69)$) circle (1.9pt);
+  \node[anchor=north west, inner sep=0pt, align=left, text=gborange, font=\fontsize{6.1}{7.1}\selectfont\bfseries] at ($(T)+(0.12,1.43)$) {hold before\\the call};
+  \node[line, text=gbmute] at (0.14,\La) {noise from the theory};
+  \node[note] at (0.14,\Lb) {dynamics from unlabelled runs};
 \end{scope}
-\end{tikzpicture}}
-\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. (5) Across an episode, the angles are noisy measurements (error bars: the theory's noise) of a state whose dynamics are identified from unlabelled runs; a Kalman filter gives the estimated state and a forecast of the next one, which can hold the agent before it proposes the call. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
+% ---------------------------------------------------------------- flow chevrons between panels
+\foreach \x in {2.575, 7.675, 10.925, 14.025}{ \fill[flow] (\x-0.06,1.62) -- (\x+0.07,1.75) -- (\x-0.06,1.88) -- cycle; }
+\end{tikzpicture}
+\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. (5) Across an episode, the angles are noisy measurements (error bars: the theory's noise) of a state whose dynamics are identified from unlabelled runs (\cref{prop:iv}); a Kalman filter gives the estimated state and a forecast of the next one, which can hold the agent before it proposes the call. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
 \label{fig:method}
 \end{figure*}

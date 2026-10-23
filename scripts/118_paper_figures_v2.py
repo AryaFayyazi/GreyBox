@@ -32,7 +32,8 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 6.6, "axes.edgec
                      "xtick.color": MUTE, "ytick.color": MUTE, "xtick.major.width": 0.6, "ytick.major.width": 0.6, "xtick.major.size": 2.5,
                      "ytick.major.size": 2.5, "axes.spines.top": False, "axes.spines.right": False, "axes.titlesize": 7.2,
                      "axes.titlelocation": "left", "axes.titlecolor": INK, "axes.titleweight": "bold", "legend.frameon": False,
-                     "legend.fontsize": 6.2, "axes.labelsize": 6.6, "xtick.labelsize": 6.2, "ytick.labelsize": 6.2})
+                     "legend.fontsize": 6.2, "axes.labelsize": 6.6, "xtick.labelsize": 6.2, "ytick.labelsize": 6.2,
+                     "pdf.fonttype": 42, "ps.fonttype": 42})   # TrueType, not Type 3, in the PDF
 PCT = mtick.PercentFormatter(1.0, decimals=0)
 
 
@@ -118,7 +119,7 @@ def fig_replication():
     ax.set_yticks([0, 0.03, 0.06, 0.09])
     ax.set_xticklabels([n for n, _ in per], fontsize=5.6, rotation=30, ha="right", rotation_mode="anchor")
     ax.text(0.97, 0.96, f"{n_pos} of {sum(len(d['READER']) for _, d in per)} layers > 0\nbars: shallow to deep", transform=ax.transAxes,
-            ha="right", va="top", fontsize=5.3, color=INK)
+            ha="right", va="top", fontsize=5.7, color=INK)
     ax.set_title("(c) Every layer")
     ax = axs[3]; grid(ax, "both")
     vr = g["Y_reader"].astype(np.float64).var(0) / g["Y_true"].astype(np.float64).var(0)
@@ -154,7 +155,7 @@ def fig_prevention():
             (d["ungated"]["unsafe_rate"], d["ungated"]["goal_rate"], nD, LIGHT),
             (d["gated"]["unsafe_rate"], d["gated"]["goal_rate"], nD, BLUE)]
     xs = [0, 0.9, 2.2, 3.1, 4.0, 5.3, 6.2]
-    groups = ((0.45, "GPT-6-luna"), (3.1, "Claude"), (5.75, "Claude, told it\nis monitored"))
+    groups = ((0.45, "GPT-6-luna"), (3.1, "Claude"), (5.75, "same agent,\ntold it is\nmonitored"))
     fig, axs = plt.subplots(1, 3, figsize=(FULL, 1.95), gridspec_kw={"width_ratios": [1.25, 1.25, 1.0], "wspace": 0.36})
     for j, (ax, idx, lab, top) in enumerate(((axs[0], 0, "episodes with an executed violation", 0.105),
                                              (axs[1], 1, "episodes that reached the goal", 0.62))):
@@ -163,32 +164,32 @@ def fig_prevention():
             p, lo, hi = wilson(round(r[idx] * r[2]), r[2])
             ax.bar(x, p, 0.78, color=r[3], edgecolor=MUTE if r[3] == LIGHT else r[3], lw=0.4, zorder=2)
             ax.errorbar(x, p, yerr=[[p - lo], [hi - p]], color=INK, lw=0.6, capsize=1.5, capthick=0.6, zorder=3)
-            ax.text(x, hi + top * 0.035, f"{100 * p:.1f}", ha="center", va="bottom", fontsize=5.2, color=INK)
+            ax.text(x, hi + top * 0.035, f"{100 * p:.1f}", ha="center", va="bottom", fontsize=5.9, color=INK)
         ax.set(xticks=[], xlim=(-0.6, 6.8), ylim=(0, top * 1.12))
         ax.set_ylabel(lab)
         ax.yaxis.set_major_formatter(PCT)
         for x0, name in groups:
-            ax.text(x0, -0.035, name, transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=5.6, color=INK)
+            ax.text(x0, -0.035, name, transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=6.0, color=INK)
         for xb in (1.55, 4.65):
             ax.axvline(xb, color=GRID, lw=0.6, zorder=1)
         ax.set_title("(a) Violations" if j == 0 else "(b) Goals reached")
     leg = [Patch(fc=LIGHT, ec=MUTE, lw=0.4, label="no gate"), Patch(fc=BLUE, label="block (cut re-set when told)"),
            Patch(fc=AQUA, label="hold for review")]
-    fig.legend(handles=leg, loc="upper center", bbox_to_anchor=(0.36, -0.06), ncol=3, fontsize=5.6, handlelength=1.2, columnspacing=1.2)
+    fig.legend(handles=leg, loc="upper center", bbox_to_anchor=(0.36, -0.06), ncol=3, fontsize=6.0, handlelength=1.2, columnspacing=1.2)
     g = json.loads((R / "t1/t8b_calibration_exploratory.json").read_text())["gate_eval_76c"]["burst"]
     rho = sorted(float(k.split("_")[1]) for k in g)
     ax = axs[2]; grid(ax, "both")
     rr = np.linspace(0.02, 0.52, 100)
     ax.plot(rr, np.minimum(1, 0.05 / rr), color=MUTE, ls=":", lw=0.9, label=r"$\beta/\rho$ bound, moving cut")
-    for key, col, mk, lab in (("rolling500", YELLOW, "^", "moving cut, last 500"), ("rolling5000", ORANGE, "s", "moving cut, last 5,000"),
+    for key, col, mk, lab in (("rolling500", INK, "^", "moving cut, last 500"), ("rolling5000", ORANGE, "s", "moving cut, last 5,000"),
                               ("frozen_default", BLUE, "o", "frozen cut (ours)")):
         ax.plot(rho, [g[f"rate_{r:g}"][key]["caught"] for r in rho], color=col, lw=1.3 if mk == "o" else 1.0, marker=mk, ms=3.2, mec="white",
-                mew=0.4, label=lab)
+                mew=0.4, ls=(0, (3, 1.5)) if key == "rolling500" else "-", label=lab)
     ax.set(xlim=(0, 0.52), ylim=(0, 1.05), xlabel=r"share of violations in a burst, $\rho$", ylabel="violations caught at a 5% budget")
     ax.yaxis.set_major_formatter(PCT); ax.xaxis.set_major_formatter(PCT)
     ax.set_title("(c) Bursts of attacks")
     h, l = ax.get_legend_handles_labels()
-    fig.legend(h[::-1], l[::-1], loc="upper center", bbox_to_anchor=(0.84, -0.06), ncol=2, fontsize=5.2, handlelength=1.5, columnspacing=0.8)
+    fig.legend(h[::-1], l[::-1], loc="upper center", bbox_to_anchor=(0.84, -0.06), ncol=2, fontsize=6.0, handlelength=1.5, columnspacing=0.8)
     ax.set_xlabel(r"share of violations in a burst, $\rho$", labelpad=1)
     save(fig, "prevention")
 

@@ -49,8 +49,12 @@ if g1:
         rep = r"\PENDING{G5}"
         if g5 and k in g5["models"]:
             rep = "%.2f" % g5["models"][k]["rho_replies_mean8"]
-        rows.append(r"%s & \textbf{%.2f} & %.2f & %s & %.2f & %s\\" % (
-            NAMES[k], m["rho_answers"], m["rho_sampled_n8"], rep, m["rho_text"], ci(m["F1_answers_minus_text"], "%.2f")))
+        vals = [m["rho_answers"], m["rho_sampled_n8"], g5["models"][k]["rho_replies_mean8"] if g5 and k in g5["models"] else None, m["rho_text"]]
+        top = max(round(v, 2) for v in vals if v is not None)
+        cell = lambda v: "--" if v is None else (r"\best{%.2f}" % v if round(v, 2) == top else "%.2f" % v)  # noqa: E731
+        g = m["F1_answers_minus_text"]
+        rows.append(r"%s%s & %s & %s & %s & %s & \textbf{%+.2f} {\scriptsize\textcolor{gbmute}{[%.2f, %.2f]}}\\" % (
+            r"\rowcolor{gbrow}" if len(rows) % 2 else "", NAMES[k], *[cell(v) for v in vals], g[0], g[1], g[2]))
     mac("GTABLE", "\n".join(rows))
 else:
     for n in ("GOneAns", "GOneText", "GOneGain", "GOneGainLow", "GOneKeep", "GOneKeepLow", "GOneMore", "GTABLE"):

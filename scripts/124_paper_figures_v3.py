@@ -50,8 +50,8 @@ def burst_panel(ax):
     rng = np.random.default_rng(1)
     lab = np.r_[np.zeros(1000, bool), rng.random(1000) < 0.5]
     sc = np.r_[rng.choice(r, 1000), np.where(lab[1000:], rng.choice(pos, 1000), rng.choice(neg, 1000))]
-    gates = {"frozen after 500 (ours)": (QuantileGate(0.05), INK, "-"), "rolling, 5,000": (QuantileGate(0.05, rolling=True, window=5000), AQUA, "-"),
-             "rolling, 500": (QuantileGate(0.05, rolling=True, window=500, warmup=500), "#eda100", "-")}
+    gates = {"frozen after 500 (ours)": (QuantileGate(0.05), BLUE, "-"), "rolling, 5,000": (QuantileGate(0.05, rolling=True, window=5000), AQUA, "-"),
+             "rolling, 500": (QuantileGate(0.05, rolling=True, window=500, warmup=500), INK, (0, (3, 1.5)))}
     lg = lambda v: np.log10(np.clip(v, 1e-6, 1))  # noqa: E731
     x = np.arange(len(sc))
     ax.axvspan(1000, 2000, color=ORANGE, alpha=0.07, lw=0)
@@ -68,13 +68,13 @@ def burst_panel(ax):
         ax.plot(x, lg(th), color=col, lw=1.1 if "ours" in name else 0.9, ls=ls, label=f"{name}: {caught[name]:.0%}")
     ax.axvline(500, color=MUTE, lw=0.5, ls=":")
     ax.axhline(0.05, color=GRID, lw=0.6)                       # the band above holds the labels; scores never exceed 0
-    ax.text(250, 0.55, "warm-up", fontsize=5.0, color=MUTE, ha="center", va="center")
-    ax.text(750, 0.55, "cut frozen", fontsize=5.0, color=MUTE, ha="center", va="center")
-    ax.text(1500, 0.55, "burst: half are violations", fontsize=5.0, color=ORANGE, ha="center", va="center")
+    ax.text(250, 0.55, "warm-up", fontsize=5.7, color=MUTE, ha="center", va="center")
+    ax.text(750, 0.55, "cut frozen", fontsize=5.7, color=MUTE, ha="center", va="center")
+    ax.text(1500, 0.55, "burst: 50% violations", fontsize=5.7, color=ORANGE, ha="center", va="center")
     ax.set(xlim=(0, 2000), ylim=(-6.2, 1.05), xlabel="actions, in order", ylabel="reader score, log$_{10}$ p")
     ax.set_yticks([-6, -4, -2, 0])
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.27), ncol=1, fontsize=5.0, title="cut  (violations caught in the burst)",
-              title_fontsize=5.0, handlelength=1.3, frameon=False, labelspacing=0.2)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.27), ncol=1, fontsize=5.7, title="cut  (violations caught in the burst)",
+              title_fontsize=5.7, handlelength=1.3, frameon=False, labelspacing=0.2)
     ax.set_title("(a) The cut under an attack burst")
     return caught
 
@@ -125,13 +125,13 @@ def fig_transfer():
     for k, (x, y, a) in enumerate(zip(xp, yc, au)):
         last = k == len(xp) - 1
         ax.annotate(f"{a:.2f}", (x, y), xytext=(-5, 5) if last else (6, -9), textcoords="offset points",
-                    ha="right" if last else "left", fontsize=5.6, color=BLUE)
+                    ha="right" if last else "left", fontsize=5.8, color=BLUE)
     ax.axhline(0.05, color=MUTE, lw=0.6, ls=":")
-    ax.text(xp[0], 0.085, "5% cut", fontsize=5.2, color=MUTE)
+    ax.text(xp[0], 0.085, "5% cut", fontsize=5.7, color=MUTE)
     ax.set_xscale("log"); ax.set_xticks(xp); ax.set_xticklabels([str(k) for k in ks]); ax.minorticks_off()
     ax.set(xlabel="labelled AgentDojo calls\nof open agents", ylabel="injections caught", ylim=(0, 1.13))
     ax.yaxis.set_major_formatter(PCT)
-    ax.text(0.03, 0.97, f"numbers: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.3, color=MUTE, va="top", ha="left")
+    ax.text(0.03, 0.97, f"numbers: AUROC\n(judge {t14['judge_auroc']:.2f})", transform=ax.transAxes, fontsize=5.7, color=MUTE, va="top", ha="left")
     ax.set_title("(b) Labels of a new policy")
     # (c) a closed agent told it is monitored
     ax = fig.add_subplot(gs[2]); v2.grid(ax, "y")
@@ -151,13 +151,13 @@ def fig_transfer():
         ax.scatter(v, np.full(len(v), y0) + jit, s=5, marker=mk, facecolor=ORANGE if arm == "aware" else "white", edgecolor=ORANGE, lw=0.5, zorder=5,
                    label=f"violations, {'told' if arm == 'aware' else 'not told'}")
     ax.axvline(cut, color=INK, lw=0.9, ls=(0, (3, 1.6)))
-    ax.text(cut + 0.15, 0.2, "frozen\ncut", fontsize=5.4, color=INK, va="top")
+    ax.text(cut + 0.2, 0.295, "frozen\ncut", fontsize=5.7, color=INK, va="top")
     p, a = t24["plain"], t24["aware"]
     ax.text(0.02, 0.98, f"caught {p['caught_frozen_cut']:.0%} → {a['caught_frozen_cut']:.0%}\nescalated {p['escalated_frozen_cut']:.1%} → {a['escalated_frozen_cut']:.1%}",
-            transform=ax.transAxes, fontsize=5.4, color=INK, va="top")
+            transform=ax.transAxes, fontsize=5.7, color=INK, va="top")
     ax.set(xlabel="reader score, log$_{10}$ p", ylabel="density", xlim=(-13, 0), ylim=(-0.08, 0.3))
     ax.set_yticks([0, 0.1, 0.2, 0.3])
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=2, fontsize=5.3, handlelength=1.2, columnspacing=0.8)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=2, fontsize=5.7, handlelength=1.2, columnspacing=0.8)
     ax.set_title("(c) Agent told it is monitored")
     v2.save(fig, "transfer")
 

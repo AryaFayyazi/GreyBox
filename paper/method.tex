@@ -20,7 +20,7 @@ Let $d_Q(x,x')$ be the Fisher--Rao geodesic distance between the answer laws $P_
 (c) \emph{Relation to the hidden state.} If $\Psi_j=\sigma(a_j(s))$ with smooth $a_j$, then for nearby states $d_Q^2=\Delta^{\top}G_Q(s)\,\Delta+O(|\Delta|^3)$, with the pulled-back Fisher metric $G_Q=\sum_j\Psi_j(1-\Psi_j)\nabla a_j\nabla a_j^{\top}$.
 (d) \emph{Estimation from sampled answers.} Let $\mu_n(p)=\E\,\hat\vartheta$ for the Anscombe angle $\hat\vartheta=2\arcsin\sqrt{(k+3/8)/(n+3/4)}$, $k\sim\mathrm{Bin}(n,p)$; $\mu_n$ is known, strictly increasing, and $\mu_n\to\vartheta$. For two independent halves $A,B$ of $n$ samples each, $\hat D^2(x,x')=\sum_j\big(\hat\vartheta^A_j(x)-\hat\vartheta^A_j(x')\big)\big(\hat\vartheta^B_j(x)-\hat\vartheta^B_j(x')\big)$ satisfies $\E\hat D^2=\sum_j\big(\mu_n(\Psi_j(x))-\mu_n(\Psi_j(x'))\big)^2$ exactly, for every $\Psi$, when every cell has the same $n$.
 \end{theorem}
-Part (a) is a change of variables: nothing is fit, and classical scaling of $d_Q$ gives coordinates that are exact up to a rigid motion. Part (b) says these are the only natural coordinates; \citet{picozzi2026information} study the same object for next-token laws. Part (c) ties them to the hidden state: agreement should rise as more questions give $G_Q$ more rank. Part (d) makes the geometry measurable on any chat API, at $m\cdot n$ one-token calls per context (exactness needs the same $n$ in every cell and answers that are yes or no; \cref{app:proofs}).
+Parts (a)--(c) are classical information geometry \citep{amari2016information}; part (d) is ours. Part (a) is a change of variables: nothing is fit, and classical scaling of $d_Q$ gives coordinates that are exact up to a rigid motion. Part (b) says these are the only natural coordinates; \citet{picozzi2026information} study the same object for next-token laws. Part (c) ties them to the hidden state: agreement should rise as more questions give $G_Q$ more rank. Part (d) makes the geometry measurable on any chat API, at $m\cdot n$ one-token calls per context (exactness needs the same $n$ in every cell and answers that are yes or no; \cref{app:proofs}).
 
 \textbf{Checking a closed model's reconstruction.} A closed model's hidden states cannot be seen, so how well its answer geometry matches its own hidden geometry cannot be measured directly. It can be estimated, because hidden geometries share a common part across models (\cref{sec:geom-results}).
 \begin{proposition}[triangulation]\label{prop:triang}
@@ -38,13 +38,18 @@ Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ 
 \end{corollary}
 So a monitor needs the transcript and the call, not the weights; the question is what to compute from them.
 \begin{proposition}[the forecast needs the agent]\label{prop:selfforecast}
-Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$. The Bayes forecast of $Y=g(A_t,V_t,W)$ from what is visible is $P(Y\mid V_t)=\sum_a\bar\pi(a\mid V_t)\,P(Y\mid a,V_t)$, with $\bar\pi$ the agent's own policy averaged over hidden states consistent with $V_t$. A reader that forecasts with another policy $\pi'$ has Bayes risk at least as large, with equality only where $\pi'=\bar\pi$ on the violating actions.
+Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$; let $\bar\pi(a\mid V_t)$ be this policy averaged over the hidden states consistent with $V_t$, and $r(a,V_t)=P(Y\mid a,V_t)$. The Bayes forecast is $f=\sum_a\bar\pi(a\mid V_t)\,r(a,V_t)$. A reader that forecasts with another policy $\pi'$, $f'=\sum_a\pi'(a\mid V_t)\,r(a,V_t)$, has squared-loss excess risk
+\[ \E(Y-f')^2-\E(Y-f)^2=\E\,\Delta^2\le\E\,\|\bar\pi-\pi'\|_1^2, \]
+with $\Delta=\sum_a(\bar\pi-\pi')(a\mid V_t)\,r(a,V_t)$. The excess is zero once the call $A_t$ is visible.
 \end{proposition}
-So at the call any capable reader can match the agent (\cref{cor:action}), but before it only the agent's own state carries $\bar\pi$ (tested in \cref{sec:forecast}).
+\begin{proof}[Proof sketch]
+$f=\E[Y\mid V_t]$, so $\E(Y-f')^2=\E(Y-f)^2+\E(f-f')^2$; and $|f-f'|\le\|\bar\pi-\pi'\|_1$ since $0\le r\le1$. Given $A_t$, both forecasts equal $r(A_t,V_t)$.
+\end{proof}
+So at the call any capable reader can match the agent (\cref{cor:action}); before it, a reader loses exactly as much as its policy differs from the agent's on violating actions. Another model's answers can forecast well only where it would act like the agent (tested in \cref{sec:forecast}).
 
 \textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $K$ yes/no questions about the call in side branches (\cref{fig:method}). Their angles $\vartheta_t\in[0,\pi]^K$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
-\[ s_t=\tfrac1K\textstyle\sum_{j}\sigma_j\vartheta_{tj},\qquad \sigma_j=-1\ \text{for ``does it comply''},\ \ \sigma_j=+1\ \text{otherwise}. \]
-No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
+\begin{equation}\label{eq:readout} s_t=\frac1K\sum_{j=1}^{K}\sigma_j\,\vartheta_{tj},\qquad \sigma_j\in\{-1,+1\}. \end{equation}
+Here $\sigma_j=-1$ for the question ``does it comply'' and $+1$ for the others. No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
 \begin{proposition}[a label-free ceiling]\label{prop:snrceil}
 Let $N$ be the sampling-noise variance of $s_t$ and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
 $\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$; at $\mathrm{SNR}\le0$ the read-out cannot rank violations.

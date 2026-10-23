@@ -76,18 +76,18 @@ def small_readers():
                 ks = sorted((k for k in SIZE if k in A and (k in ("minilm", "mpnet", "qemb06")) == (fam == "browser")), key=lambda k: SIZE[k])
                 ax.plot([SIZE[k] for k in ks], [A[k][s] for k in ks], marker=MK[lab], color=col, lw=1.1, ms=3.4, alpha=alpha, mec="white", mew=0.4)
         if "q8" in A:
-            ax.annotate("shipped 8B", (SIZE["q8"], A["q8"][sets[0][0]]), xytext=(-4, 7), textcoords="offset points", fontsize=5.2,
+            ax.annotate("shipped 8B", (SIZE["q8"], A["q8"][sets[0][0]]), xytext=(-4, 7), textcoords="offset points", fontsize=5.7,
                         color=INK, ha="right", arrowprops=dict(arrowstyle="-", color=MUTE, lw=0.5))
         tx = sorted(((A["TXT"][s], lab) for s, lab in sets), reverse=True)
         for n, (v, lab) in enumerate(tx):
             ax.axhline(v, color=MUTE, ls="--" if n == 0 else ":", lw=0.8)
-            ax.text(0.017, v + (0.004 if n == 0 else -0.004), f"TF-IDF, {lab}", fontsize=5.4, color=MUTE, ha="left", va="bottom" if n == 0 else "top")
+            ax.text(0.017, v + (0.004 if n == 0 else -0.004), f"TF-IDF, {lab}", fontsize=5.7, color=MUTE, ha="left", va="bottom" if n == 0 else "top")
         ax.set_xscale("log"); ax.set_xlim(0.015, 22); ax.set_ylim(*ylim)
         ax.set_xlabel("reader parameters (billions)"); ax.set_ylabel("AUROC")
         ax.set_title(title)
     h = [Line2D([], [], color=ORANGE, lw=1.1, label="browser encoders"), Line2D([], [], color=BLUE, lw=1.1, label="decoder readers (Qwen3)")] + \
-        [Line2D([], [], color=MUTE, marker=MK[k], lw=0, ms=3.4, label=k) for k in ("GPT", "Claude", "open agents")]
-    fig.legend(handles=h, fontsize=5.6, loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=5, handlelength=1.4, columnspacing=1.2)
+        [Line2D([], [], color=MUTE, marker=MK[k], lw=0, ms=3.4, label="Claude Haiku 5.5" if k == "Claude" else k) for k in ("GPT", "Claude", "open agents")]
+    fig.legend(handles=h, fontsize=5.8, loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=5, handlelength=1.4, columnspacing=1.2)
     v2.save(fig, "small_readers")
 
 

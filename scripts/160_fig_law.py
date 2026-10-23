@@ -22,7 +22,8 @@ INK, MUTE, GRID = "#1b2126", "#5d6873", "#e3e6e9"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 6.6, "axes.edgecolor": MUTE, "axes.labelcolor": INK, "axes.linewidth": 0.6,
                      "xtick.color": MUTE, "ytick.color": MUTE, "xtick.major.width": 0.6, "ytick.major.width": 0.6, "xtick.major.size": 2.5,
                      "ytick.major.size": 2.5, "axes.spines.top": False, "axes.spines.right": False, "legend.frameon": False,
-                     "legend.fontsize": 5.8, "axes.labelsize": 6.6, "xtick.labelsize": 6.2, "ytick.labelsize": 6.2})
+                     "legend.fontsize": 6.2, "axes.labelsize": 6.8, "xtick.labelsize": 6.4, "ytick.labelsize": 6.4,
+                     "pdf.fonttype": 42, "ps.fonttype": 42})
 SA, LS, CS = Path("/data/models/graybox_ws/outputs/self_audit"), Path("/data/models/graybox_ws/outputs/live_selfaudit"), Path("/data/models/graybox_ws/outputs/claude_selfaudit")
 T1 = ROOT / "results/t1"
 
@@ -91,7 +92,7 @@ def main():
     fig2.subplots_adjust(left=0.215, right=0.985, top=0.86, bottom=0.16)
     fig2.savefig(ROOT / "paper/figures/selfpolice.pdf")
     fig2.savefig(ROOT / "results/figures/selfpolice.png", dpi=220)
-    fig, ax = plt.subplots(figsize=(3.3, 1.95))
+    fig, ax = plt.subplots(figsize=(3.25, 2.25))       # printed at 3.25 in (one column): fonts print at their nominal size
     law_panel(ax, pts)
     fig.tight_layout(pad=0.3)
     (ROOT / "paper/figures").mkdir(parents=True, exist_ok=True)
@@ -104,8 +105,8 @@ def law_panel(ax, pts):
     xs = np.array([0, 1.05])
     ax.fill_between(xs, xs - 0.15, xs + 0.15, color=GRID, alpha=0.7, lw=0, zorder=0)
     ax.plot(xs, xs, color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
-    off = {("Gemma-4", "g12"): (0.03, -0.06, "left"), ("gpt-oss", "g12"): (0.03, -0.055, "left"), ("Qwen3.8", "g12"): (0.0, -0.17, "center"),
-           ("Muse-Glimmer", "g12"): (-0.03, 0.075, "right"), ("Claude Haiku 5.5", "g12"): (0.03, 0.05, "left"),
+    off = {("Gemma-4", "g12"): (0.03, -0.06, "left"), ("gpt-oss", "g12"): (0.03, -0.055, "left"), ("Qwen3.8", "g12"): (0.0, -0.215, "center"),
+           ("Muse-Glimmer", "g12"): (0.05, 0.16, "right"), ("Claude Haiku 5.5", "g12"): (0.03, 0.05, "left"),
            ("Muse-Glimmer", "g11b"): (0.0, -0.16, "center"), ("Qwen3.8", "g11b"): (0.03, -0.03, "left"),
            ("Gemma-4", "g13"): (-0.03, 0.0, "right"), ("gpt-oss", "g13"): (0.03, -0.04, "left")}
     for name, x, y, lo, hi, c, kind in pts:
@@ -116,20 +117,20 @@ def law_panel(ax, pts):
             ax.scatter([x], [y], s=24, marker="s" if kind == "g13" else "o", facecolor=c, edgecolor="white", linewidth=0.6, zorder=3)
         dx, dy, ha = off.get((name, kind), (0.03, 0.0, "left"))
         tag = {"g12": "", "g13": " (AgentDojo)", "g11b": " (second test)"}[kind]
-        ax.text(x + dx, y + dy, name + tag, fontsize=5.3, color=MUTE if kind == "g11b" else INK, ha=ha, va="center")
+        ax.text(x + dx, y + dy, name + tag, fontsize=6.0, color=MUTE if kind == "g11b" else INK, ha=ha, va="center")
     ax.set_xlim(-0.05, 1.05)
     ax.set_ylim(-0.3, 1.0)
     ax.set_xlabel("predicted: $\\sum_k w_k\\tau_k$ ($\\tau_k$: offline flag rates)")
     ax.set_ylabel("observed live reduction")
     ax.grid(color=GRID, lw=0.5)
     ax.set_axisbelow(True)
-    hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="CAPE-Bench: preregistered, passed")]
+    hs = [ax.scatter([], [], s=24, marker="o", facecolor=INK, edgecolor="white", label="CAPE-Bench, preregistered: passed")]
     if any(p[6] == "g13" for p in pts):
-        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="AgentDojo: preregistered"))
+        hs.append(ax.scatter([], [], s=24, marker="s", facecolor=INK, edgecolor="white", label="AgentDojo, preregistered"))
     hs.append(ax.scatter([], [], s=22, marker="x", color=MUTE, linewidth=1.1, label="earlier law: registered, failed"))
     from matplotlib.patches import Patch
     hs.append(Patch(facecolor=GRID, alpha=0.7, label="tolerance: predicted $\\pm$ 0.15"))
-    ax.legend(handles=hs, loc="upper left", handletextpad=0.3, fontsize=5.2, borderaxespad=0.3)
+    ax.legend(handles=hs, loc="upper left", handletextpad=0.3, fontsize=6.0, borderaxespad=0.2, labelspacing=0.3)
 
 
 if __name__ == "__main__":

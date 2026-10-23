@@ -78,8 +78,8 @@ Chen, Y., Benton, J., Radhakrishnan, A., Uesato, J., Denison, C., Schulman, J., 
 \newblock Reasoning models don't always say what they think.
 \newblock \emph{arXiv preprint arXiv:2505.05410}, 2025.
 
-\bibitem[{conti} et~al.(2026){conti}, {ShivamR}, Sharf, {jain18ayush}, and {johnyan}]{conti2026hermeneutics}
-{conti}, {ShivamR}, Sharf, J., {jain18ayush}, and {johnyan}.
+\bibitem[Conti et~al.(2026)Conti, Sharf, et~al.]{conti2026hermeneutics}
+Conti, Sharf, J., et~al.
 \newblock Model hermeneutics: Monitoring closed-weight models with open-weight internals.
 \newblock LessWrong, 30 September 2026, 2026.
 \newblock URL \url{https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open}.

@@ -1,16 +1,23 @@
 #!/usr/bin/env python
-"""First-page figure (v6: the chain; panel c adds the second closed agent at its call and before it, G38). Based on v5.
-v5: panel c adds the second benchmarks. (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no
-answers (scripts/134's computation, unchanged). (c) Monitoring a decision (G15, held-out): per agent, the fixed read-out
-of its own 8 answers vs a probe trained on its hidden states. (d) Prevention, predicted (G12, G13): observed vs predicted
-live reduction. Palette: the dataviz skill's validated reference slots.
+"""First-page figure (v6: the chain; panel c adds the second closed agent at its call and before it). Based on v5.
+(a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (scripts/134's
+computation, unchanged). (c) Monitoring a decision (held-out): per agent, the fixed read-out of its own 8 answers vs a
+probe trained on its hidden states; the closed agent before the call exists is the preregistered confirmation (G40,
+within template and tool). (d) Prevention, predicted: observed vs predicted live reduction, with the failed
+predictions (G11b's two misses and the position gate of G42) shown as well.
+Layout: drawn at print size (6.75 in = ICML text width), so every font size is a true point size; axes are placed in
+inches, and the three legends share one strip at the bottom.
   python scripts/214_fig_teaser_v6.py  -> paper/figures/teaser_v6.pdf, results/figures/teaser_v6.png
 """
 import importlib.util
+import logging
 import json
 from pathlib import Path
 
 import numpy as np
+from matplotlib.colors import to_rgb
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -25,20 +32,43 @@ def _mod(name, file):
 T = _mod("t173", "scripts/173_fig_teaser_greybox.py")           # geometry() from scripts/134
 L160 = _mod("t160", "scripts/160_fig_law.py")
 plt = T.plt
-BLUE, ORANGE, INK, INK2, MUTE, GRID = "#2a78d6", "#eb6834", "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)   # the condensed face reports weight 380
+plt.rcParams.update({"font.family": "DejaVu Sans Condensed", "pdf.fonttype": 42, "axes.linewidth": 0.6})  # the papers's
+# figure family (DejaVu Sans), condensed: the four panels fit 6.75 in at true 6-7.5 pt
+BLUE, ORANGE, AQUA, INK, MUTE = "#2A78D6", "#EB6834", "#1BAF7A", "#1B2126", "#5D6873"
+GRID, BAND, FRAME = "#E4E7EA", "#F1F3F5", "#C9CED3"
+W, H = 6.75, 2.55                                               # inches: print size
+FS_TITLE, FS_SUB, FS_LAB, FS_TICK, FS_LEG = 7.5, 6.1, 6.5, 6.0, 6.0
+LAB_W = 1.12                                                    # (c): the label column, inches
+
+
+def tint(c, a):
+    """Solid colour: `a` of c over white (crisp whiskers without transparency)."""
+    r = np.array(to_rgb(c))
+    return tuple(1 - a * (1 - r))
+
+
+def box(x0, y0, w, h):
+    return [x0 / W, y0 / H, w / W, h / H]
 
 
 def style(ax):
-    ax.grid(color=GRID, lw=0.5); ax.set_axisbelow(True)
+    ax.grid(color=GRID, lw=0.45); ax.set_axisbelow(True)
     for s_ in ("top", "right"):
         ax.spines[s_].set_visible(False)
-    ax.spines["left"].set_color(MUTE); ax.spines["bottom"].set_color(MUTE)
-    ax.tick_params(labelsize=5.9, colors=INK2, length=2.2, width=0.6)
+    for s_ in ("left", "bottom"):
+        ax.spines[s_].set_color(MUTE); ax.spines[s_].set_linewidth(0.6)
+    ax.tick_params(labelsize=FS_TICK, colors=MUTE, labelcolor=INK, length=2.2, width=0.6, pad=1.5)
+
+
+def whisker(ax, x, y, xerr=None, yerr=None, col=BLUE, z=2):
+    ax.errorbar(x, y, xerr=xerr, yerr=yerr, fmt="none", ecolor=tint(col, 0.55), elinewidth=1.1, capsize=1.1,
+                capthick=0.8, zorder=z)
 
 
 def panel_decision(ax):
-    """G15 rows (CAPE-Bench, held-out) and, below a divider, the second benchmarks: G18 (Claude, tau2-bench) and, when
-    its result exists, G17 (open agents, AgentDojo)."""
+    """CAPE-Bench rows (held-out) and, in the shaded block below the line, the second benchmarks: tau2-bench (Claude)
+    and, when its result exists, AgentDojo (open agents)."""
     R = json.loads((ROOT / "results/t1/g15_training_free.json").read_text())
     CI = json.loads((ROOT / "results/t1/g15_per_agent_ci_exploratory.json").read_text())
     rows = [(N, R[a]["within"]["mean8"], CI[a][1:], R[a]["within"]["white"], BLUE) for a, N in
@@ -48,7 +78,9 @@ def panel_decision(ax):
     if f38.exists():
         g38 = json.loads(f38.read_text())
         rows.append(("GPT-6-luna (closed)", g38["A1_at_call"][0], g38["A1_at_call"][1:], None, ORANGE))
-        rows.append(("GPT-6-luna, before call", g38["P1_pre_call"][0], g38["P1_pre_call"][1:], None, "hollow"))
+        # before the call exists: the PREREGISTERED confirmation (G40), within template and tool (not G38's exploratory 0.765)
+        g40 = json.loads((ROOT / "results/t1/g40_gpt_precall_confirm.json").read_text())["C2_within_template_tool"]
+        rows.append(("GPT-6-luna, before call", g40[0], g40[1:], None, "hollow"))
     second = []
     f17 = ROOT / "results/t1/g17_agentdojo_readout.json"
     if f17.exists():
@@ -57,97 +89,135 @@ def panel_decision(ax):
                    for a, N in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss")) if a in g]
     g = json.loads((ROOT / "results/t1/g18_tau2_claude_readout.json").read_text())
     second.append(("Claude Haiku 5.5, τ²-bench", g["R1_within_tool_read_out_8"][0], g["R1_within_tool_read_out_8"][1:], None, ORANGE))
-    # (G21, another model answering, is a comparison outside the method: not shown)
+    # (another model answering is a comparison outside the method: not shown)
     style(ax)
     ax.grid(axis="y", visible=False)
     X0 = 0.5
     ys, y = [], 0.0
     for k in range(len(second)):                      # bottom block first
         ys.append(y); y += 1
-    ydiv = y - 0.35; y += 0.3
+    ydiv = y - 0.5 + 0.15; y += 0.3
     ys2 = []
     for k in range(len(rows)):
         ys2.append(y); y += 1
+    ylo, yhi = -0.6, y - 0.4
+    # the second benchmarks: a shaded block (through the label column) under a thin line
+    lab_w = LAB_W / (ax.get_position().width * W)      # label column, in axes fractions
+    from matplotlib.transforms import blended_transform_factory
+    tr = blended_transform_factory(ax.transAxes, ax.transData)
+    ax.add_patch(Rectangle((-lab_w, ylo), 1 + lab_w, ydiv - ylo, transform=tr, facecolor=BAND, edgecolor="none",
+                           zorder=0, clip_on=False))
+    ax.plot([-lab_w, 1], [ydiv, ydiv], transform=tr, color=MUTE, lw=0.5, zorder=1, clip_on=False)
+    ax.text(X0 + 0.007, ys[-1], "second benchmarks", fontsize=FS_TICK, color=MUTE, style="italic", va="center", ha="left")
     allrows = list(zip(second[::-1], ys)) + list(zip(rows[::-1], ys2))
     for (name, eight, ci_, wb, col), yy in allrows:
-        if wb is not None:
-            ax.scatter([wb], [yy], s=30, marker="D", facecolor="white", edgecolor=INK, lw=1.0, zorder=3)
         c_ = ORANGE if col == "hollow" else col
-        ax.plot(list(ci_), [yy, yy], color=c_, lw=1.0, alpha=0.55, zorder=2, solid_capstyle="round")
+        whisker(ax, [eight], [yy], xerr=[[eight - ci_[0]], [ci_[1] - eight]], col=c_)
+        if wb is not None:
+            ax.scatter([wb], [yy], s=24, marker="D", facecolor="white", edgecolor=INK, lw=0.9, zorder=3)
         if col == "hollow":
-            ax.scatter([eight], [yy], s=40, facecolor="white", edgecolor=ORANGE, lw=1.4, zorder=4)
+            ax.scatter([eight], [yy], s=30, facecolor="white", edgecolor=ORANGE, lw=1.3, zorder=4)
         else:
-            ax.scatter([eight], [yy], s=46, color=c_, edgecolor="white", lw=0.9, zorder=4)
-        ax.text(X0 - 0.006, yy, name, fontsize=6.2, color=INK, ha="right", va="center")
-    ax.axhline(ydiv, color=MUTE, lw=0.6, ls=(0, (2, 2)))
-    ax.text(X0 + 0.006, ydiv - 0.45, "second benchmarks", fontsize=5.3, color=INK2, va="center", ha="left")
-    ax.axvline(0.5, color=GRID, lw=0.8)
-    ax.set_xlim(X0, 1.005); ax.set_ylim(-0.6, y - 0.4); ax.set_yticks([])
-    ax.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+            ax.scatter([eight], [yy], s=34, color=c_, edgecolor="white", lw=0.7, zorder=4)
+        ax.text(-0.025, yy, name, transform=tr, fontsize=FS_LAB - 0.3, color=INK, ha="right", va="center")
+    for a_ in ax.collections + ax.lines:
+        a_.set_clip_on(False)                             # markers at 0.99 stay whole at the axis end
+    ax.set_xlim(X0, 1.0); ax.set_ylim(ylo, yhi); ax.set_yticks([])
+    ax.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0], ["0.5", "0.6", "0.7", "0.8", "0.9", "1.0"])
     ax.spines["left"].set_visible(False)
-    ax.set_xlabel("violations ranked above allowed calls (AUROC)", fontsize=6.2, color=INK, labelpad=2)
-    h = [ax.scatter([], [], s=46, color=BLUE, edgecolor="white", lw=0.9, label="open agent: its answers (95% CI)"),
-         ax.scatter([], [], s=46, color=ORANGE, edgecolor="white", lw=0.9, label="closed agent, API only: its answers"),
-         ax.scatter([], [], s=40, facecolor="white", edgecolor=ORANGE, lw=1.4, label="closed agent, before the call exists"),
-         ax.scatter([], [], s=30, marker="D", facecolor="white", edgecolor=INK, lw=1.0, label="probe trained on its hidden states")]
-    ax.legend(handles=h, loc="lower left", bbox_to_anchor=(-0.02, 1.0), ncol=1, frameon=False, fontsize=5.5, handletextpad=0.3,
-              borderaxespad=0.2, labelspacing=0.25)
+    ax.set_xlabel("violations ranked above allowed calls (AUROC)", fontsize=FS_LAB, color=INK, labelpad=2)
+    lb, lo = tint(BLUE, 0.55), tint(ORANGE, 0.55)
+    h = [(Line2D([], [], color=lb, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.6, mfc=BLUE, mec="white", mew=0.7)),
+         (Line2D([], [], color=lo, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.6, mfc=ORANGE, mec="white", mew=0.7)),
+         (Line2D([], [], color=lo, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.0, mfc="white", mec=ORANGE, mew=1.3)),
+         Line2D([], [], ls="", marker="D", ms=4.4, mfc="white", mec=INK, mew=0.9)]
+    lab = ["open agent: its answers", "closed agent, API only", "before the call exists", "probe trained on hidden states"]
+    return h, lab
 
 
 def panel_law(ax):
     style(ax)
     pts = [p for p in L160.points() if p[6] in ("g12", "g13")]
     xs = np.array([-0.05, 1.05])
-    ax.fill_between(xs, xs - 0.15, xs + 0.15, color="#efeeea", lw=0, zorder=0)
-    ax.plot(xs, xs, color=MUTE, lw=0.8, ls=(0, (3, 2)), zorder=1)
+    ax.fill_between(xs, xs - 0.15, xs + 0.15, color=BAND, lw=0, zorder=0)
+    ax.plot(xs, xs, color=MUTE, lw=0.7, ls=(0, (3, 2)), zorder=1)
     for name, x, y, lo, hi, c, kind in pts:
         col = ORANGE if "Claude" in name else BLUE
-        ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=col, elinewidth=0.8, capsize=0, alpha=0.55, zorder=2)
-        ax.scatter([x], [y], s=34, marker="s" if kind == "g13" else "o", color=col, edgecolor="white", lw=0.8, zorder=3)
-    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.2, 1.05)
-    ax.set_xticks([0, 0.5, 1.0]); ax.set_yticks([0, 0.5, 1.0])
-    ax.set_xlabel("predicted from offline flag rates", fontsize=6.2, color=INK, labelpad=2)
-    ax.set_ylabel("observed live reduction", fontsize=6.2, color=INK, labelpad=1)
-    f42 = ROOT / "results/t1/g42_gate_law.json"
-    if f42.exists():                                  # G39b/G42: the pre-call gate on a closed agent, predicted vs observed
-        g42 = json.loads(f42.read_text())
-        x, y = g42["predicted"]["pre"], g42["observed"]["pre"]
-        lo, hi = g42["observed_ci"]["pre"]
-        ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=ORANGE, elinewidth=0.8, capsize=0, alpha=0.55, zorder=2)
-        ax.scatter([x], [y], s=40, marker="D", color=ORANGE, edgecolor="white", lw=0.8, zorder=4)
+        whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=col)
+        ax.scatter([x], [y], s=30, marker="s" if kind == "g13" else "o", color=col, edgecolor="white", lw=0.7, zorder=3)
+    # the failed predictions: G11b's two misses (the earlier law) and G42's position gate
+    g11b = json.loads((ROOT / "results/t1/g11b_selfpolicing_law.json").read_text())
+    miss = [(g11b[a]["predicted"], *g11b[a]["reduction"]) for a in ("museglimmer", "qwen38")]
+    g42 = json.loads((ROOT / "results/t1/g42_gate_law.json").read_text())
+    miss.append((g42["predicted"]["position"], g42["observed"]["position"], *g42["observed_ci"]["position"]))
+    for x, y, lo, hi in miss:
+        whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=MUTE)
+        ax.scatter([x], [y], s=26, marker="X", facecolor="white", edgecolor=MUTE, lw=0.8, zorder=3)
+    x, y = g42["predicted"]["pre"], g42["observed"]["pre"]   # the pre-call gate on a closed agent
+    lo, hi = g42["observed_ci"]["pre"]
+    whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=ORANGE)
+    ax.scatter([x], [y], s=34, marker="D", color=ORANGE, edgecolor="white", lw=0.7, zorder=4)
+    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.3, 1.05)
+    ax.set_xticks([0, 0.5, 1.0], ["0", "0.5", "1"]); ax.set_yticks([0, 0.5, 1.0], ["0", "0.5", "1"])
+    ax.set_xlabel("predicted from offline flag rates", fontsize=FS_LAB, color=INK, labelpad=2)
+    ax.set_ylabel("observed live reduction", fontsize=FS_LAB, color=INK, labelpad=1)
     e12 = np.mean([abs(y - x) for _, x, y, *_r, kind in pts if kind == "g12"])
     eall = np.mean([abs(y - x) for _, x, y, *_r in pts])
-    ax.text(0.03, 0.97, f"mean |error| {e12:.3f}", transform=ax.transAxes, fontsize=5.6, color=INK, fontweight="bold", va="top")
-    ax.text(0.03, 0.89, f"all 7 points: {eall:.3f}", transform=ax.transAxes, fontsize=5.3, color=INK2, va="top")
-    h = [ax.scatter([], [], s=34, marker="o", color=BLUE, edgecolor="white", lw=0.8, label="violations, 5 agents"),
-         ax.scatter([], [], s=34, marker="s", color=BLUE, edgecolor="white", lw=0.8, label="injections, 2 agents"),
-         ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Claude Haiku 5.5 (closed)"),
-         ax.scatter([], [], s=40, marker="D", color=ORANGE, edgecolor="white", lw=0.8, label="GPT-6-luna, pre-call gate")]
-    ax.legend(handles=h, loc="lower right", bbox_to_anchor=(1.03, -0.02), ncol=1, frameon=True, framealpha=0.95, edgecolor="none", fontsize=5.2, handletextpad=0.2, borderaxespad=0.2, labelspacing=0.3)
+    ax.text(0.03, 0.99, f"law: mean |error| {e12:.3f}", transform=ax.transAxes, fontsize=FS_TICK, color=INK, va="top")
+    ax.text(0.03, 0.91, f"with injections: {eall:.3f}", transform=ax.transAxes, fontsize=FS_TICK, color=MUTE, va="top")
+    dot = dict(ls="", marker="o", ms=5.2, mec="white", mew=0.7)
+    h = [(Line2D([], [], mfc=BLUE, **dot), Line2D([], [], mfc=ORANGE, **dot)),   # open agents and Claude (orange: closed)
+         Line2D([], [], ls="", marker="s", ms=4.8, mfc=BLUE, mec="white", mew=0.7),
+         Line2D([], [], ls="", marker="D", ms=4.6, mfc=ORANGE, mec="white", mew=0.7),
+         Line2D([], [], ls="", marker="X", ms=5.0, mfc="white", mec=MUTE, mew=0.8)]
+    lab = ["violations", "injections", "GPT-6-luna, pre-call gate", "failed predictions"]
+    return h, lab
 
 
 def main():
     Xh, Xa, src = T.geometry()
-    fig = plt.figure(figsize=(7.0, 2.35), facecolor="white")
-    gs = fig.add_gridspec(1, 6, width_ratios=[0.84, 0.84, 0.22, 1.2, 0.10, 0.86], wspace=0.30, left=0.005, right=0.995, top=0.66, bottom=0.16)
-    ax = [fig.add_subplot(gs[0, i]) for i in (0, 1, 3, 5)]
-    T.T.scatter(ax[0], Xh, src)
-    T.T.scatter(ax[1], Xa, src)
-    panel_decision(ax[2]); panel_law(ax[3])
-    heads = [("a", "Hidden geometry", f"{T.T.NAME}, hidden states"), ("b", "From its answers", "API only, no training; ρ = 0.74"),
-             ("c", "Monitor and forecast", "held-out calls; preregistered"), ("d", "Prevent, predicted", "live; preregistered")]
-    fig.canvas.draw()
-    ytitle = max(a_.get_position().y1 for a_ in ax) + 0.255
-    for a_, (k, title, sub) in zip(ax, heads):
-        pos = a_.get_position()
-        x0 = pos.x0 - (0.085 if k == "c" else (0.04 if k == "d" else 0.0))
-        fig.text(x0, ytitle, f"({k}) {title}", fontsize=7.9, fontweight="bold", color=INK, va="bottom")
-        fig.text(x0, ytitle - 0.058, sub, fontsize=5.6, color=INK2, va="bottom")
-    h, l = ax[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower left", ncol=3, frameon=False, fontsize=5.9, markerscale=3, handletextpad=0.1, columnspacing=0.9, bbox_to_anchor=(0.005, -0.09))
+    fig = plt.figure(figsize=(W, H), facecolor="white")
+    TOP = H - 0.35                                    # all axes: top
+    BOT, BOT_AB = 0.53, 0.33                          # (c, d) axes bottom; (a, b) frames bottom
+    LEG_TOP, XLAB_TOP = 0.255, 0.385                  # the legend strip; the x-axis titles (inches from the bottom)
+    xa, xb, wab = 0.03, 1.22, 1.10                    # (a), (b) frames
+    xc0 = 2.52; xc, wc = xc0 + LAB_W, 1.34            # (c): label column from xc0, axis from xc
+    xd0 = 5.14; xd, wd = 5.41, 1.31                   # (d): block from xd0, axis from xd
+    ax = [fig.add_axes(box(xa, BOT_AB, wab, TOP - BOT_AB)), fig.add_axes(box(xb, BOT_AB, wab, TOP - BOT_AB)),
+          fig.add_axes(box(xc, BOT, wc, TOP - BOT)), fig.add_axes(box(xd, BOT, wd, TOP - BOT))]
+    for a_, X in zip(ax[:2], (Xh, Xa)):
+        T.T.scatter(a_, X, src, s=2.4)
+        a_.margins(0.035)
+        for sp_ in a_.spines.values():
+            sp_.set_color(FRAME); sp_.set_linewidth(0.5)
+    hc, lc = panel_decision(ax[2])
+    hd, ld = panel_law(ax[3])
+    for a_, xmid in ((ax[2], (xc0 + xc + wc) / 2), (ax[3], (xd0 + W) / 2 - 0.03)):   # x-axis titles at one height, in inches
+        a_.xaxis.set_label_coords((xmid - a_.get_position().x0 * W) / (a_.get_position().width * W),
+                                  -(BOT - XLAB_TOP) / (TOP - BOT))
+        a_.xaxis.label.set_va("top")
+    heads = [(xa, "a", "Hidden geometry", f"{T.T.NAME}, hidden states"),
+             (xb, "b", "From its answers", "API only, no training; ρ = 0.74"),
+             (xc0, "c", "Monitor and forecast", "held-out calls; 95% CI; preregistered"),
+             (xd0, "d", "Prevent, predicted", "live; 95% CI; preregistered")]
+    for x0, k, title, sub in heads:
+        fig.text(x0 / W, (H - 0.03) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
+        fig.text(x0 / W, (H - 0.175) / H, sub, fontsize=FS_SUB, color=MUTE, va="top")
+    # one legend strip: context type under (a, b), the markers of (c), the markers of (d)
+    cat = [Line2D([], [], ls="", marker="o", ms=3.6, mfc=col, mec="none", alpha=0.9) for lab, col in T.T.SRC.values()]
+    catl = [lab for lab, _ in T.T.SRC.values()]
+    kw = dict(frameon=False, fontsize=FS_LEG, handletextpad=0.35, labelspacing=0.3, borderaxespad=0, borderpad=0,
+              handlelength=1.3, columnspacing=0.9, labelcolor=INK)
+    from matplotlib.legend_handler import HandlerTuple
+    l1 = fig.legend(cat, catl, loc="upper left", bbox_to_anchor=(xa / W, LEG_TOP / H), ncol=3, **{**kw, "handlelength": 0.7})
+    l2 = fig.legend(hc, lc, loc="upper left", bbox_to_anchor=(xc0 / W, LEG_TOP / H), ncol=2,
+                    handler_map={tuple: HandlerTuple(ndivide=1)}, **kw)
+    l3 = fig.legend(hd, ld, loc="upper right", bbox_to_anchor=((W - 0.02) / W, LEG_TOP / H), ncol=2,
+                    handler_map={tuple: HandlerTuple(ndivide=None, pad=0.1)}, **{**kw, "handlelength": 1.4})
     for out in (ROOT / "paper/figures/teaser_v6.pdf", ROOT / "results/figures/teaser_v6.png"):
-        fig.savefig(out, dpi=300, bbox_inches="tight", pad_inches=0.03)
-    print("saved")
+        fig.savefig(out, dpi=300)
+    print("saved", fig.get_size_inches())
+    return fig
 
 
 if __name__ == "__main__":
