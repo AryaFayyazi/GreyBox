@@ -22,6 +22,12 @@ Let $d_Q(x,x')$ be the Fisher--Rao geodesic distance between the answer laws $P_
 \end{theorem}
 Part (a) is a change of variables: nothing is fit, and classical scaling of $d_Q$ gives coordinates that are exact up to a rigid motion. Part (b) says these are the only natural coordinates; \citet{picozzi2026information} study the same object for next-token laws. Part (c) ties them to the hidden state: agreement should rise as more questions give $G_Q$ more rank. Part (d) makes the geometry measurable on any chat API, at $m\cdot n$ one-token calls per context (exactness needs the same $n$ in every cell and answers that are yes or no; \cref{app:proofs}).
 
+\textbf{Checking a closed model's reconstruction.} A closed model's hidden states cannot be seen, so how well its answer geometry matches its own hidden geometry cannot be measured directly. It can be estimated, because hidden geometries share a common part across models (\cref{sec:geom-results}).
+\begin{proposition}[triangulation]\label{prop:triang}
+On the vector of all context-pair distances, let the hidden geometry of model $m$ be $H_m=\lambda_mC+e_m$ and the answer geometry of answerer $a$ be $A_a=\kappa_aC+f_a$ (standardized; the parts $e_m$, $f_a$ uncorrelated with $C$ and across models). Then $\rho(H_a,H_b)=\lambda_a\lambda_b$ and $\rho(A_a,H_b)=\kappa_a\lambda_b$ for $a\neq b$, and the unseen agreement is $\rho(A_c,H_c)=\kappa_c\lambda_c+\rho(f_c,e_c)$. Open models identify the $\lambda_b$; a closed model's answers against them identify $\kappa_c$.
+\end{proposition}
+With no own-model excess ($\rho(f_c,e_c)=0$; tested in \cref{sec:geom-results}) and $\lambda_c$ in the range of open models, $\kappa_c\cdot\mathrm{median}(\lambda)$ estimates the closed model's own agreement. Leaving each open model out, as if closed, tests the estimator against the truth.
+
 Where an API returns full log-probabilities, the final state's geometry is recovered exactly, not estimated (\cref{thm:exact}, \cref{app:exact}, after \citet[App.~H]{carlini2024stealing}); closed APIs do not return them, so the grey box does not use this.
 
 \subsection{From the geometry to monitoring agents}
