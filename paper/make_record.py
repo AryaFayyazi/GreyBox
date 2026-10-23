@@ -152,7 +152,29 @@ def main():
         rows.append((names(endpoints(anon(cells[0]), lid), lead=True), names(endpoints(anon(cells[-1]), lid))))
     body = "\n".join(f"{tex(t)} & {tex(o)}\\\\[2pt]".replace("\x00", "\\textbf{").replace("\x01", "}\\newline ")
                       .replace("\x02", "``").replace("\x03", "''") for t, o in rows)
+    def _cls(line):
+        u = line.rstrip().rstrip("|").split(" | ")[-1].upper()
+        if "PENDING" in u:
+            return "pending"
+        if "STOPPED" in u:
+            return "stopped"
+        hp, hf = "PASS" in u, ("FAIL" in u or "NO DETECTABLE" in u)
+        return "mixed" if hp and hf else "pass" if hp else "fail" if hf else "reported"
+    rec = [l for l in (ROOT / "docs/PREREGISTRATION_RECORD.md").read_text().split("\n") if re.match(r"\| [GT]\d", l)]
+    tally = []
+    for pre, name in (("G", "method (G)"), ("T", "trained comparisons (T)")):
+        c = {}
+        for l in rec:
+            if l.startswith("| " + pre):
+                k = _cls(l)
+                c[k] = c.get(k, 0) + 1
+        tally.append(f"{name}: {sum(c.values())} tests; {c.get('pass', 0)} passed every primary endpoint, {c.get('mixed', 0)} passed "
+                     f"some endpoints and failed others, {c.get('fail', 0)} failed, {c.get('stopped', 0)} were stopped before any "
+                     f"outcome, {c.get('reported', 0)} were reported without a pass/fail bar, {c.get('pending', 0)} are pending")
+    tally_txt = ("Tally, as recorded: " + "; ".join(tally) + ". No correction for multiple tests is applied; each test answers its own "
+                 "registered question, and every outcome, failed or passed, is listed below.\n\n")
     (ROOT / "paper/appendix_record.tex").write_text(
+        tally_txt +
         "Every confirmatory test, as in the released record (generated from it by a script; file paths and commit ids are "
         "replaced for review). Locks (SHA-256 of the preregistration and its code) and outcomes are in the released record; lock "
         "times are self-reported. Endpoints are numbered (i), (ii), ... in the order of each preregistration. Later tests changed two "

@@ -134,7 +134,7 @@ def main():
     T.T.scatter(ax[0], Xh, src)
     T.T.scatter(ax[1], Xa, src)
     panel_decision(ax[2]); panel_law(ax[3])
-    heads = [("a", "Hidden geometry", f"{T.T.NAME}, hidden states"), ("b", "Reconstructed", "from its answers; ρ = 0.74"),
+    heads = [("a", "Hidden geometry", f"{T.T.NAME}, hidden states"), ("b", "From its answers", "API only, no training; ρ = 0.74"),
              ("c", "Monitor and forecast", "held-out calls; preregistered"), ("d", "Prevent, predicted", "live; preregistered")]
     fig.canvas.draw()
     ytitle = max(a_.get_position().y1 for a_ in ax) + 0.255
