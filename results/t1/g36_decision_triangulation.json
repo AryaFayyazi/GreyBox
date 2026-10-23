@@ -1,0 +1,126 @@
+{
+ "calls": {
+  "gemma4": 600,
+  "gptoss20b": 599,
+  "qwen38": 373,
+  "museglimmer": 600,
+  "closed": 495
+ },
+ "leave_one_agent_out": {
+  "gemma4": {
+   "observed": 0.0098,
+   "predicted": 0.0464,
+   "interval": [
+    0.0135,
+    0.0536
+   ],
+   "lambda_own": 0.5141,
+   "kappa": 0.1269
+  },
+  "gptoss20b": {
+   "observed": 0.0386,
+   "predicted": 0.0506,
+   "interval": [
+    0.0127,
+    0.0615
+   ],
+   "lambda_own": 0.3656,
+   "kappa": 0.1197
+  },
+  "qwen38": {
+   "observed": 0.0543,
+   "predicted": 0.0274,
+   "interval": [
+    0.008,
+    0.0385
+   ],
+   "lambda_own": 0.4229,
+   "kappa": 0.0748
+  },
+  "museglimmer": {
+   "observed": 0.161,
+   "predicted": 0.0553,
+   "interval": [
+    0.0478,
+    0.0672
+   ],
+   "lambda_own": 0.1064,
+   "kappa": 0.1308
+  }
+ },
+ "V1_mean_abs_error": [
+  0.0453,
+  0.0309,
+  0.0647
+ ],
+ "V2_inside_interval": 1,
+ "E_closed": {
+  "predicted": [
+   0.1028,
+   0.0854,
+   0.1216
+  ],
+  "interval": [
+   0.0277,
+   0.134
+  ],
+  "kappa": 0.2607
+ },
+ "rho_answers_vs_readers": {
+  "gemma4": [
+   0.149,
+   0.028,
+   0.1104,
+   0.0402,
+   0.0259,
+   0.1513,
+   0.0395,
+   0.0899
+  ],
+  "gptoss20b": [
+   0.0694,
+   0.0641,
+   0.0457,
+   0.1434,
+   0.0344,
+   0.1022,
+   0.0673,
+   0.1094
+  ],
+  "qwen38": [
+   0.0655,
+   0.0721,
+   0.0025,
+   0.0424,
+   0.0541,
+   0.0838,
+   0.0187,
+   0.0512
+  ],
+  "museglimmer": [
+   0.1738,
+   -0.0387,
+   0.1133,
+   -0.0347,
+   0.1415,
+   0.122,
+   0.0484,
+   0.1027
+  ],
+  "closed": [
+   0.1548,
+   0.132,
+   0.2483,
+   0.2103,
+   0.1655,
+   0.1839,
+   0.255,
+   0.244
+  ]
+ },
+ "endpoints": {
+  "V1_mae_lt_0.10": true,
+  "V2_inside_ge_3_of_4": false,
+  "E1_closed_lower_gt_0": true
+ }
+}
