@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-23T13:20:47-07:00",
+ "sha256": {
+  "docs/prereg_G45_closed_self_forecast.md": "85fd06d128adeaeeffb08965aac5bb0866a530e5fdc2d02cfb14bcd95f6dabb6",
+  "scripts/222_g45_closed_self_forecast.py": "8208ceaded15bce243e7569c510b64a553c3504049b50e03d32e3ba7e1498e70"
+ }
+}
