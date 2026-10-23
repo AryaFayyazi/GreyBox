@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T21:24:39-07:00",
+ "sha256": {
+  "docs/prereg_G39_gpt_live_gate.md": "25c286a832bb9874e06d1ef9615a7c4d473de9c2495077280478870afebf44b7",
+  "scripts/212_g39_gpt_live_gate.py": "9feab6ce029ab7a9166bdf7b58a493986fa466191d09b79b98fb30c770fe76c9"
+ }
+}
