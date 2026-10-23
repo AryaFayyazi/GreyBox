@@ -47,7 +47,7 @@ def panel_decision(ax):
     f38 = ROOT / "results/t1/g38_gpt_readout.json"
     if f38.exists():
         g38 = json.loads(f38.read_text())
-        rows.append(("GPT-6-luna", g38["A1_at_call"][0], g38["A1_at_call"][1:], None, ORANGE))
+        rows.append(("GPT-6-luna (closed)", g38["A1_at_call"][0], g38["A1_at_call"][1:], None, ORANGE))
         rows.append(("GPT-6-luna, before call", g38["P1_pre_call"][0], g38["P1_pre_call"][1:], None, "hollow"))
     second = []
     f17 = ROOT / "results/t1/g17_agentdojo_readout.json"
@@ -86,8 +86,9 @@ def panel_decision(ax):
     ax.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
     ax.spines["left"].set_visible(False)
     ax.set_xlabel("violations ranked above allowed calls (AUROC)", fontsize=6.2, color=INK, labelpad=2)
-    h = [ax.scatter([], [], s=46, color=BLUE, edgecolor="white", lw=0.9, label="its answers, no training (95% CI)"),
-         ax.scatter([], [], s=40, facecolor="white", edgecolor=ORANGE, lw=1.4, label="before the call exists"),
+    h = [ax.scatter([], [], s=46, color=BLUE, edgecolor="white", lw=0.9, label="open agent: its answers (95% CI)"),
+         ax.scatter([], [], s=46, color=ORANGE, edgecolor="white", lw=0.9, label="closed agent, API only: its answers"),
+         ax.scatter([], [], s=40, facecolor="white", edgecolor=ORANGE, lw=1.4, label="closed agent, before the call exists"),
          ax.scatter([], [], s=30, marker="D", facecolor="white", edgecolor=INK, lw=1.0, label="probe trained on its hidden states")]
     ax.legend(handles=h, loc="lower left", bbox_to_anchor=(-0.02, 1.0), ncol=1, frameon=False, fontsize=5.5, handletextpad=0.3,
               borderaxespad=0.2, labelspacing=0.25)
