@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T20:52:35-07:00",
+ "sha256": {
+  "docs/prereg_G38_gpt_readout.md": "acadbe9b0dc383b8d06fde072732b4d4836ab6482ab505e6dcfbe3b572a1b4bc",
+  "scripts/211_g38_gpt_readout.py": "b652e93434b1e6d0c9d4912de37a267ac76283ca9b5fc8a011b9e4aa136999f4"
+ }
+}
