@@ -25,17 +25,17 @@ def tex(s: str) -> str:
 
 
 NAMES = {  # descriptive names for the paper (the released record keeps its ids)
-    "L1": "Interrogation state, Othello", "L2": "Interrogation state, open chat models", "L3": "Closed-A chat readouts",
-    "L3b": "Closed-A refusals vs moderation", "L3c": "Closed-A, one-call grey box", "L3d": "Closed-A, transcript readout",
-    "L3e": "Closed-A vs graded moderators",
+    "L1": "Interrogation state, Othello", "L2": "Interrogation state, open chat models", "L3": "Claude Haiku 5.5 chat readouts",
+    "L3b": "Claude Haiku 5.5 refusals vs moderation", "L3c": "Claude Haiku 5.5, one-call grey box", "L3d": "Claude Haiku 5.5, transcript readout",
+    "L3e": "Claude Haiku 5.5 vs graded moderators",
     "T1": "Resampling vs a probe", "T2": "When the internals are read", "T3": "Resampling with a deployable judge",
     "T4": "Reader vs the agent's internals", "T5": "Unseen task families", "T6": "Another open agent",
-    "T7": "AgentDojo, no labels", "T8": "Closed-A, after a reveal", "T8b": "Closed agent: Closed-A",
+    "T7": "AgentDojo, no labels", "T8": "Claude Haiku 5.5, after a reveal", "T8b": "Closed agent: Claude Haiku 5.5",
     "T9": "Reader vs TF-IDF", "T10": "A policy removed from training", "T11": "Closed agent: GPT-6-luna",
     "T12": "Labels for a new policy", "T13": "AgentDojo with a defense", "T13b": "AgentDojo, closed agent",
     "T14": "Open-agent labels for a closed agent", "T15": "Replication (Gemma-4)", "T16": "Live prevention (GPT)",
-    "T16b": "Live prevention (Closed-A)", "T16c": "Hold for review", "T17": "Replication, three architectures",
-    "T18": "tau2-bench, Closed-A", "T19": "Browser-size readers", "T20": "tau2-bench, two closed agents",
+    "T16b": "Live prevention (Claude Haiku 5.5)", "T16c": "Hold for review", "T17": "Replication, three architectures",
+    "T18": "tau2-bench, Claude Haiku 5.5", "T19": "Browser-size readers", "T20": "tau2-bench, two closed agents",
     "T21": "tau2-bench, unseen tasks", "T22": "tau2-bench, reasoning judge", "T23": "Reasoning judge, frontier agents",
     "T24": "Monitor-aware agent", "T25": "Adaptive attacker", "T26": "Canonical-action monitor",
     "T27": "Training against the attack", "T28": "Cut set again after a prompt change"}
@@ -52,7 +52,7 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G15": "The agent's own answers, training-free (G15)",
           "G16": "Own answers or another model's (G16)",
           "G17": "Training-free read-out, prompt injection (G17)",
-          "G18": "Training-free read-out, a second benchmark for Closed-A (G18)",
+          "G18": "Training-free read-out, a second benchmark for Claude Haiku 5.5 (G18)",
           "G19": "Own conversation or outside reviewer, same closed model (G19)",
           "G20": "Questionnaire or reasoning judge (G20)",
           "G21": "An open model answers about a closed agent (G21)",
@@ -118,8 +118,7 @@ def anon(s: str) -> str:
     """Double-blind: no repository paths, job ids or commit hashes in the paper (the released record keeps them)."""
     s = PATH.sub("[released file]", s)
     s = JOB.sub("a GPU job", s)
-    for x, y in (("Claude Haiku 5.5", "Closed-A"), ("Claude Haiku 4.5", "an older model of Closed-A's family"), ("Claude's", "Closed-A's"),
-                 ("Claude", "Closed-A"), ("claude", "closed-A")):        # the closed model is not named in publications
+    for x, y in (("Claude Haiku 5.5's", "Claude Haiku 5.5's"), ("Claude Haiku 5.5", "Claude Haiku 5.5")):   # the closed model is named (user, 2026-10-22)
         s = s.replace(x, y)
     return COMMIT.sub(lambda m: "[a public commit]" if m.group(0).strip()[:6] != "commit" else "[a public commit]", s)
 

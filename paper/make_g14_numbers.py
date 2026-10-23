@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 R = json.loads((ROOT / "results/t1/g14_decision_grey_box.json").read_text())
-N = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss", "qwen38": "Qwen3.8", "museglimmer": "Muse-Glimmer", "claude": "Closed-A"}
+N = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss", "qwen38": "Qwen3.8", "museglimmer": "Muse-Glimmer", "claude": "Claude Haiku 5.5"}
 OPEN = [a for a in ("gemma4", "gptoss20b", "qwen38", "museglimmer") if a in R]
 
 

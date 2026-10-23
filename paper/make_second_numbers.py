@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Write paper/second_numbers.tex from the second-benchmark results (the paper quotes them only through these macros):
-G18 results/t1/g18_tau2_claude_readout.json (tau2-bench, Closed-A) and, when present, G17
+G18 results/t1/g18_tau2_claude_readout.json (tau2-bench, Claude Haiku 5.5) and, when present, G17
 results/t1/g17_agentdojo_readout.json (AgentDojo, open agents).
 python paper/make_second_numbers.py"""
 import json

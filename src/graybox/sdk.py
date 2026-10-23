@@ -10,7 +10,7 @@
     d = await guard.check(messages)       # d.escalate, d.risk, d.samples
 
 Reader uses the one-call TRANSCRIPT format (src/graybox/batch.py), validated on six open models and preregistered on
-Closed-A (L3d). The adapter needs one async method, `_ask(messages, max_tokens) -> str` (graybox.adapters.Anthropic
+Claude Haiku 5.5 (L3d). The adapter needs one async method, `_ask(messages, max_tokens) -> str` (graybox.adapters.Anthropic
 has it; any provider can be wrapped in five lines). AgentGuard is the untrained resampling guard, and it is only as good as
 `is_unsafe`. With the environment's exact rule checker it caught 81% of violations at 4% escalation (scripts/59, 61).
 With an LLM judge as `is_unsafe` it caught 12%, worse than judging the actual action (41%), and far worse than a

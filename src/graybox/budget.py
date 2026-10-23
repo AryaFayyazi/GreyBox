@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 CAP_USD = float(os.environ.get("GB_SPEND_CAP", "4.95"))   # user, 2026-10-16 09:00: "the api was 5$, use all of it"
-HAIKU55 = (0.10 / 1e6, 0.50 / 1e6)                          # $ per input / output token, the closed model (Closed-A)
+HAIKU55 = (0.10 / 1e6, 0.50 / 1e6)                          # $ per input / output token, the closed model (Claude Haiku 5.5)
 
 
 class BudgetExceeded(RuntimeError):

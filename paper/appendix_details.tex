@@ -24,10 +24,10 @@
   The episodes of the three additional open agents come from the released CAPE-Bench rollouts.
 \item Closed agents use their public tool-use APIs:
   \begin{itemize}
-  \item Closed-A: thinking disabled, effort ``low'', at most 1{,}024 tokens per turn.
+  \item Claude Haiku 5.5: thinking disabled, effort ``low'', at most 1{,}024 tokens per turn.
   \item GPT-6-luna: reasoning effort ``none'', no parallel tool calls, at most 2{,}048 tokens per turn.
   \end{itemize}
-  The shared spend ledgers record \$24.78 of API use in total (Closed-A's provider \$19.86, GPT-6-luna's provider \$4.92), including tests of the released tool and a 40-episode pilot (\$0.10) of Closed-A on AgentDojo that was not analysed.
+  The shared spend ledgers record \$24.78 of API use in total (Claude Haiku 5.5's provider \$19.86, GPT-6-luna's provider \$4.92), including tests of the released tool and a 40-episode pilot (\$0.10) of Claude Haiku 5.5 on AgentDojo that was not analysed.
 \end{itemize}
 
 \textbf{Units.} A unit is one proposed action that is not a read, after the step that reveals the deciding fact. Each
@@ -80,6 +80,6 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \textbf{Contexts and battery.} 4{,}800 single-message contexts, 800 from each of six sources (harmful and benign requests, SST-2 reviews, BoolQ questions, GSM8K problems, Wikipedia text), split at random into 3{,}360 development and 1{,}440 confirmation contexts before any analysis. The battery has 88 yes/no questions about the message (topic, intent, tone, demands, risk), each appended after a fixed preamble that asks for a one-word answer; $P(\textsc{yes})=p_{\textsc{yes}}/(p_{\textsc{yes}}+p_{\textsc{no}})$ from the top-20 log-probabilities of the first answer token (cells where both are $0$, 2 of 38{,}400 per model, get $\tfrac12$).
 \textbf{Models.} Gemma-3 4B, gpt-oss 20B, Llama-3.1 8B, Mistral 7B v0.3, OLMo-3 7B, Phi-4 mini, Qwen2.5 7B and Qwen3 8B, instruction-tuned, with their own chat templates (vLLM for answers and replies, Hugging Face transformers for hidden states). Hidden states: the residual stream at the last prompt token at six depths (25, 50, 62, 75, 90 and 100\% of the layers). The layer of each model is the one whose cosine geometry best matches the exact answer geometry on 1{,}000 development contexts; the confirmation contexts are not used to choose anything.
 \textbf{Sampling.} Sampled answers are drawn from the model's own probabilities (8 per question for G1; one per question, as yes, no or other, for G5). Text and reply embeddings: all-MiniLM-L6-v2, masked mean, $L_2$ normalised; replies are 8 samples at temperature 1, at most 128 tokens.
-\textbf{Closed-A (G2).} Closed-A answered the 24 questions of our earlier closed-model tests, 8 times each, on 192 confirmation contexts (thinking off, at most 3 tokens). The two halves are a random permutation of each cell's 8 samples (seed 2290). The bound of C1 (0.7) was set from open models' simulated split halves on development contexts only (0.76--0.96).
+\textbf{Claude Haiku 5.5 (G2).} Claude Haiku 5.5 answered the 24 questions of our earlier closed-model tests, 8 times each, on 192 confirmation contexts (thinking off, at most 3 tokens). The two halves are a random permutation of each cell's 8 samples (seed 2290). The bound of C1 (0.7) was set from open models' simulated split halves on development contexts only (0.76--0.96).
 \textbf{Exact recovery (G3).} Qwen3-0.6B in float32 (TF32 off). 9{,}000 sequences of 128 tokens sampled from the model (temperature 1; seed 0), every position a context. The basis $Q_d$ is from the first 3{,}000 contexts ($\sigma_d/\sigma_{d+1}=1{,}005$). The true state for the check is the input of the final RMSNorm divided by its RMS. A pilot with another seed (100) gave the same result to the fourth digit.
 \textbf{Bootstrap.} 500 resamples of contexts; Spearman on the pairs of distinct resampled contexts.

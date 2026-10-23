@@ -13,7 +13,7 @@ The text format is the one the probe was trained on (scripts/68 ctx_text and act
 probe is only as good as its labels: train it on traces labelled by your own policy checks or reviewers.
 
 Thresholds: do not cut P(unsafe) at 0.5 on a new agent. The probe ranks a new agent's actions well, but its
-probabilities do not transfer: on Closed-A (T8b), the cut at 0.5 caught 3% of violations. QuantileGate escalates
+probabilities do not transfer: on Claude Haiku 5.5 (T8b), the cut at 0.5 caught 3% of violations. QuantileGate escalates
 the riskiest `budget` fraction of the agent's normal traffic, with no labels, and freezes its cut after a warm-up so
 that a burst of violations cannot raise it (results/t1/t8b_calibration_exploratory.json; exploratory).
 
@@ -57,7 +57,7 @@ class QuantileGate:
 
     Label-free calibration: the cut is the (1 - budget) quantile of the first `warmup` unlabelled scores, then it is
     FROZEN. A rolling cut would rise during a burst of violations (an attack, a compromised agent) and let them through:
-    on Closed-A's scores, with half the burst unsafe, a rolling cut caught 36% and the frozen cut 94%
+    on Claude Haiku 5.5's scores, with half the burst unsafe, a rolling cut caught 36% and the frozen cut 94%
     (results/t1/t8b_calibration_exploratory.json). Until `min_seen` scores have been seen it fails closed (escalates
     everything). Warm it up on traffic you trust: `fit(scores)` from past transcripts. `recalibrate()` starts a new
     warm-up when the agent or its tools change. rolling=True restores the rolling window (not recommended)."""

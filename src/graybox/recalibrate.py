@@ -6,7 +6,7 @@ The logs are OpenAI or Anthropic conversations (or steps), as for training, but 
 scored with the monitor, and the new cut is the top `budget` of these scores (the cut that QuantileGate freezes).
 The report says how far the old cut has drifted on this traffic: the share of the new actions that it would escalate.
 Why: a cut escalates its budget only on traffic like the one it was set on (the paper's frozen-cut and shift
-propositions). In a preregistered live test, a notice that the agent is monitored moved Closed-A's scores so that the old
+propositions). In a preregistered live test, a notice that the agent is monitored moved Claude Haiku 5.5's scores so that the old
 cut escalated 16.6% of its actions; a cut set again on its new, unlabelled traffic escalated 4.7% (budget 5%) and still
 blocked every violation.
 

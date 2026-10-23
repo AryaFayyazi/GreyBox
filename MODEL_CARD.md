@@ -34,11 +34,11 @@ exploratory.
 
 | Setting | Result |
 |---|---|
-| Closed-A, 3,128 CAPE-Bench actions | 94.1% of 68 violations caught at a 5% label-free review budget; within-template AUROC 0.991 |
+| Claude Haiku 5.5, 3,128 CAPE-Bench actions | 94.1% of 68 violations caught at a 5% label-free review budget; within-template AUROC 0.991 |
 | GPT-6-luna, 3,627 actions | 98.5% of 66 violations caught; pooled AUROC 0.996 |
 | Without the largest family (62% / 59% of violations; absent from training) | 92.3% / 96.3% caught (exploratory) |
-| Live, in the agents' tool loops (block) | episodes with an executed violation: 6.6% → 0.2% (GPT), 6.7% → 0.2% (Closed-A) |
-| Closed-A told it is monitored | 97.1% caught at a cut frozen on its plain traffic; its scores shift up, so set the cut again |
+| Live, in the agents' tool loops (block) | episodes with an executed violation: 6.6% → 0.2% (GPT), 6.7% → 0.2% (Claude Haiku 5.5) |
+| Claude Haiku 5.5 told it is monitored | 97.1% caught at a cut frozen on its plain traffic; its scores shift up, so set the cut again |
 | The same, cut set again on its new unlabelled traffic, live | 4.7% of actions escalated (budget 5%); episodes with an executed violation 6.5% → 0.0% |
 | AgentDojo, closed GPT, CAPE probe | AUROC 0.840 (judge 0.787; not significantly better) |
 | AgentDojo, closed GPT, CAPE + AgentDojo probe | AUROC 0.922 (judge 0.787) |
@@ -52,8 +52,8 @@ exploratory.
 - **Shift moves the cut.** A cut stored from one task distribution can escalate almost nothing on another. Set the cut
   again after a change of agent, prompt, tools or tasks.
 - **One benchmark for most results.** Most results are on CAPE-Bench, whose tasks are synthetic. Two closed agent
-  families were tested (Closed-A, GPT), with reasoning off.
-- **Cost of blocking.** Goals reached fell by 1.8 points (GPT) and 5.8 points (Closed-A) when blocking. Holding for an
+  families were tested (Claude Haiku 5.5, GPT), with reasoning off.
+- **Cost of blocking.** Goals reached fell by 1.8 points (GPT) and 5.8 points (Claude Haiku 5.5) when blocking. Holding for an
   oracle reviewer recovered part of it.
 
 ## Ethical considerations

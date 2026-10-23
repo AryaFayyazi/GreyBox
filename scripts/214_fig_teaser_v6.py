@@ -43,7 +43,7 @@ def panel_decision(ax):
     CI = json.loads((ROOT / "results/t1/g15_per_agent_ci_exploratory.json").read_text())
     rows = [(N, R[a]["within"]["mean8"], CI[a][1:], R[a]["within"]["white"], BLUE) for a, N in
             (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss"), ("qwen38", "Qwen3.8"), ("museglimmer", "Muse-Glimmer"))]
-    rows.append(("Closed-A, restarts", R["claude"]["restart_mean8"], R["claude"]["restart_mean8_ci"], None, ORANGE))
+    rows.append(("Claude Haiku 5.5, restarts", R["claude"]["restart_mean8"], R["claude"]["restart_mean8_ci"], None, ORANGE))
     f38 = ROOT / "results/t1/g38_gpt_readout.json"
     if f38.exists():
         g38 = json.loads(f38.read_text())
@@ -56,7 +56,7 @@ def panel_decision(ax):
         second += [(f"{N}, AgentDojo", g[a]["within_suite"]["read_out_8"], g[a]["read_out_8_ci"], None, BLUE)
                    for a, N in (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss")) if a in g]
     g = json.loads((ROOT / "results/t1/g18_tau2_claude_readout.json").read_text())
-    second.append(("Closed-A, τ²-bench", g["R1_within_tool_read_out_8"][0], g["R1_within_tool_read_out_8"][1:], None, ORANGE))
+    second.append(("Claude Haiku 5.5, τ²-bench", g["R1_within_tool_read_out_8"][0], g["R1_within_tool_read_out_8"][1:], None, ORANGE))
     # (G21, another model answering, is a comparison outside the method: not shown)
     style(ax)
     ax.grid(axis="y", visible=False)
@@ -114,7 +114,7 @@ def panel_law(ax):
     ax.text(0.03, 0.89, f"all 7 points: {eall:.3f}", transform=ax.transAxes, fontsize=5.3, color=INK2, va="top")
     h = [ax.scatter([], [], s=34, marker="o", color=BLUE, edgecolor="white", lw=0.8, label="violations, 5 agents"),
          ax.scatter([], [], s=34, marker="s", color=BLUE, edgecolor="white", lw=0.8, label="injections, 2 agents"),
-         ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Closed-A (closed)")]
+         ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Claude Haiku 5.5 (closed)")]
     ax.legend(handles=h, loc="lower right", bbox_to_anchor=(1.03, -0.02), ncol=1, frameon=True, framealpha=0.95, edgecolor="none", fontsize=5.2, handletextpad=0.2, borderaxespad=0.2, labelspacing=0.3)
 
 

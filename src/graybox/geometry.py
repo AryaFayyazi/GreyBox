@@ -204,7 +204,7 @@ def cosines(G) -> np.ndarray:
 
 # ---------------------------------------------------------------- command line: measure a model's observable geometry
 CLOSED_24 = ("T02", "T03", "T04", "T05", "T06", "T09", "T10", "T11", "T12", "A01", "A08", "I01", "I02", "I05", "E02",
-             "E03", "P01", "P03", "P04", "P06", "S01", "U01", "U09", "U11")   # the 24 questions of the Closed-A tests (L3, G2)
+             "E03", "P01", "P03", "P04", "P06", "S01", "U01", "U09", "U11")   # the 24 questions of the Claude Haiku 5.5 tests (L3, G2)
 
 
 def _load_contexts(path):
