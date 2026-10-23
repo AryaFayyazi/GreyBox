@@ -1,0 +1,43 @@
+{
+ "gptoss20b": {
+  "steps": 2042,
+  "parsed_share": 0.7486,
+  "within_template_tool_step": 0.6816,
+  "strata_with_both_classes": 23,
+  "violations_in_them": 82,
+  "same_step_rsa_with_truth": 0.0418,
+  "steps_with_true_state": 356
+ },
+ "qwen38": {
+  "steps": 750,
+  "parsed_share": 0.9966,
+  "within_template_tool_step": 0.8571,
+  "strata_with_both_classes": 10,
+  "violations_in_them": 23,
+  "same_step_rsa_with_truth": 0.1803,
+  "steps_with_true_state": 83
+ },
+ "museglimmer": {
+  "steps": 2384,
+  "parsed_share": 0.6822,
+  "within_template_tool_step": 0.4688,
+  "strata_with_both_classes": 29,
+  "violations_in_them": 93,
+  "same_step_rsa_with_truth": -0.0052,
+  "steps_with_true_state": 245
+ },
+ "W1_pooled_within_step_auroc": [
+  0.6692,
+  0.5938,
+  0.764
+ ],
+ "W2_pooled_same_step_rsa_with_truth": [
+  0.0723,
+  -0.0039,
+  0.1444
+ ],
+ "endpoints": {
+  "W1_lower_gt_0.5": true,
+  "W2_lower_gt_0": false
+ }
+}

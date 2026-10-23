@@ -1,0 +1,85 @@
+{
+ "gptoss20b": {
+  "E1_early_warning_auroc": 0.4747,
+  "E1_episodes": 300,
+  "E1_episodes_violating_later": 150,
+  "E1_median_step_of_later_violation": 5.0,
+  "auroc_lag0_own_set": 0.6816,
+  "auroc_lag0_common_set_t_ge_3": 0.6743,
+  "auroc_lag1_own_set": 0.7263,
+  "auroc_lag1_common_set_t_ge_3": 0.7429,
+  "auroc_lag2_own_set": 0.5922,
+  "auroc_lag2_common_set_t_ge_3": 0.5943,
+  "auroc_lag3_own_set": 0.5143,
+  "auroc_lag3_common_set_t_ge_3": 0.5143,
+  "H1_lag0_minus_lag1_t_ge_1": -0.0447,
+  "persistent_share_dprime2_lag1_over_lag0": 1.6236
+ },
+ "qwen38": {
+  "E1_early_warning_auroc": 0.5104,
+  "E1_episodes": 86,
+  "E1_episodes_violating_later": 43,
+  "E1_median_step_of_later_violation": 9.0,
+  "auroc_lag0_own_set": 0.8571,
+  "auroc_lag0_common_set_t_ge_3": 0.8571,
+  "auroc_lag1_own_set": 0.3429,
+  "auroc_lag1_common_set_t_ge_3": 0.3429,
+  "auroc_lag2_own_set": 0.5571,
+  "auroc_lag2_common_set_t_ge_3": 0.5571,
+  "auroc_lag3_own_set": 0.3571,
+  "auroc_lag3_common_set_t_ge_3": 0.3571,
+  "H1_lag0_minus_lag1_t_ge_1": 0.5143,
+  "persistent_share_dprime2_lag1_over_lag0": 0.0
+ },
+ "museglimmer": {
+  "E1_early_warning_auroc": 0.5087,
+  "E1_episodes": 248,
+  "E1_episodes_violating_later": 124,
+  "E1_median_step_of_later_violation": 9.0,
+  "auroc_lag0_own_set": 0.4688,
+  "auroc_lag0_common_set_t_ge_3": 0.4688,
+  "auroc_lag1_own_set": 0.4509,
+  "auroc_lag1_common_set_t_ge_3": 0.4509,
+  "auroc_lag2_own_set": 0.5324,
+  "auroc_lag2_common_set_t_ge_3": 0.5324,
+  "auroc_lag3_own_set": 0.5257,
+  "auroc_lag3_common_set_t_ge_3": 0.5257,
+  "H1_lag0_minus_lag1_t_ge_1": 0.0179,
+  "persistent_share_dprime2_lag1_over_lag0": 0.0
+ },
+ "gemma4": {
+  "E1_early_warning_auroc": 0.4534,
+  "E1_episodes": 300,
+  "E1_episodes_violating_later": 150,
+  "E1_median_step_of_later_violation": 6.0,
+  "auroc_lag0_own_set": 0.6741,
+  "auroc_lag0_common_set_t_ge_3": 0.6704,
+  "auroc_lag1_own_set": 0.6611,
+  "auroc_lag1_common_set_t_ge_3": 0.661,
+  "auroc_lag2_own_set": 0.5955,
+  "auroc_lag2_common_set_t_ge_3": 0.5955,
+  "auroc_lag3_own_set": 0.5637,
+  "auroc_lag3_common_set_t_ge_3": 0.5637,
+  "H1_lag0_minus_lag1_t_ge_1": 0.013,
+  "persistent_share_dprime2_lag1_over_lag0": 0.848
+ },
+ "pooled_agents": [
+  "gptoss20b",
+  "qwen38",
+  "museglimmer"
+ ],
+ "E1_pooled_early_warning_auroc": [
+  0.4979,
+  0.4053,
+  0.5854
+ ],
+ "H1_pooled_lag0_minus_lag1": [
+  0.1625,
+  0.0293,
+  0.3023
+ ],
+ "endpoints": {
+  "E1_lower_gt_0.5": false,
+  "H1_lower_gt_0": true
+ }
+}
