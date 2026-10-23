@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T19:32:58-07:00",
+ "sha256": {
+  "docs/prereg_G32_where_it_works.md": "b8247d825aa8648f2bd1fa3ee4e05b6fca7dc2d09fa41afd174d3999ba66d573",
+  "scripts/202_g32_where_it_works.py": "097c16df3605ea60e66a382c7ceb0cd30b066cd0c633966a1c129e659e81b86b"
+ }
+}
