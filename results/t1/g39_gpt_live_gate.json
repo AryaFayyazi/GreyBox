@@ -1,0 +1,126 @@
+{
+ "cuts": {
+  "cut_pre": 8.291638996540183,
+  "t_star": 9,
+  "share": 0.09107142857142857
+ },
+ "decidable": {
+  "scenarios": 84,
+  "violating_episodes": {
+   "none": 0.2619,
+   "pre": 0.0952,
+   "position": 0.1548
+  },
+  "success": {
+   "none": 0.1905,
+   "pre": 0.2024,
+   "position": 0.25
+  },
+  "reviews_per_episode": {
+   "none": 0.0,
+   "pre": 1.357,
+   "position": 0.917
+  },
+  "P1_pre_relative_reduction": [
+   0.6364,
+   0.25,
+   0.875
+  ],
+  "position_relative_reduction": [
+   0.4091,
+   0.0,
+   0.6875
+  ],
+  "P3_pre_minus_position": [
+   0.2273,
+   -0.1905,
+   0.6252
+  ],
+  "P2_success_pre_minus_none": [
+   0.0119,
+   -0.0833,
+   0.1071
+  ]
+ },
+ "unchecked_fact": {
+  "scenarios": 42,
+  "violating_episodes": {
+   "none": 0.9524,
+   "pre": 0.9762,
+   "position": 1.0
+  },
+  "success": {
+   "none": 0.0238,
+   "pre": 0.0238,
+   "position": 0.0
+  },
+  "reviews_per_episode": {
+   "none": 0.0,
+   "pre": 0.143,
+   "position": 0.0
+  },
+  "P1_pre_relative_reduction": [
+   -0.025,
+   -0.1111,
+   0.0488
+  ],
+  "position_relative_reduction": [
+   -0.05,
+   -0.1351,
+   0.0
+  ],
+  "P3_pre_minus_position": [
+   0.025,
+   0.0,
+   0.0769
+  ],
+  "P2_success_pre_minus_none": [
+   0.0,
+   -0.0714,
+   0.0714
+  ]
+ },
+ "all": {
+  "scenarios": 126,
+  "violating_episodes": {
+   "none": 0.4921,
+   "pre": 0.3889,
+   "position": 0.4365
+  },
+  "success": {
+   "none": 0.1349,
+   "pre": 0.1429,
+   "position": 0.1667
+  },
+  "reviews_per_episode": {
+   "none": 0.0,
+   "pre": 0.952,
+   "position": 0.611
+  },
+  "P1_pre_relative_reduction": [
+   0.2097,
+   0.0357,
+   0.3684
+  ],
+  "position_relative_reduction": [
+   0.1129,
+   -0.0462,
+   0.2535
+  ],
+  "P3_pre_minus_position": [
+   0.0968,
+   -0.0462,
+   0.2414
+  ],
+  "P2_success_pre_minus_none": [
+   0.0079,
+   -0.0635,
+   0.0794
+  ]
+ },
+ "endpoints": {
+  "P1_lower_gt_0": true,
+  "P3_lower_gt_0": false,
+  "P2_lower_gt_-0.05": false
+ }
+}
