@@ -2,43 +2,37 @@
 
 [![ci](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml/badge.svg)](https://github.com/AryaFayyazi/GreyBox/actions/workflows/ci.yml)
 
-**Read and monitor closed AI agents through their own APIs alone: no other model, no training.**
+**Reconstruct a closed AI agent's hidden-state geometry through its own API, then monitor, forecast and prevent its
+violations from that reconstruction: no other model, no training.**
 
+Probes on an agent's hidden states catch unsafe actions that monitors of its text and chain of thought miss, but they
+need the weights. Grey Box measures the state through the API instead. In side branches that the agent never sees, it
+asks the agent a few fixed yes/no questions and samples each answer a few times. The questions are measurement
+directions, as in state tomography; the model only answers yes or no. In the angles θ = 2 arcsin √P(yes), the
+Fisher–Rao distance between answer laws is Euclidean distance, with a sampling noise that the theory fixes. The
+distances are the reconstructed geometry of the hidden state; a fixed read-out of them, with no labels and nothing
+trained, scores a call before it runs.
 
-Before a tool call runs, ask the agent itself, in side branches that its conversation never sees, a few yes/no
-questions about the call. Their answers are its *observable state* at the decision, in exact coordinates: in the
-angles θ = 2 arcsin √P(yes), Fisher–Rao distance between answer laws is Euclidean distance. A fixed read-out of these
-answers, with no labels and nothing trained, scores the call; a gate holds the riskiest calls for a person. The closed
-model is reached only through its API.
-
-Preregistered results (hash-locked, locks published; held-out data; failures reported):
-- **Self-policing** (the agent's own answer to "does this call comply?" as a gate): an open agent's episodes with a
-  violation fell from 27.9% to 5.0% (G9); Closed-A prevented 69% of the violating episodes its transcript
-  decides, 31% of all (G10).
-- **Predicted before deploying**: a law predicted the share each of five agents prevents, within 0.15 (mean error
-  0.035; G12). On a second benchmark it cut successful prompt injections by 84% and 50% (G13).
-- **The full observable state at the decision** (8 questions, fixed read-out, no training; G15): on held-out calls of
-  four open agents it ranked violations about as well as a probe trained on the agent's own hidden states
-  (within-template AUROC 0.82–0.99; mean difference to the preregistered probe +0.045 [−0.017, +0.135]; a probe tuned
-  afterwards is 0.015 higher, exploratory) and better than the single answer; on Closed-A it ranked unapproved
-  restarts at 0.909 [0.858, 0.952], where Closed-A's single answer scored 0.32.
-- **Prompt injection, a second benchmark** (G17, AgentDojo, questions written from its policy before any answer): the
-  read-out ranked open agents' injected calls at within-suite AUROC 0.985 [0.964, 0.998] (Gemma-4) and 0.904
-  [0.872, 0.932] (gpt-oss-20b) on held-out tasks; the single answer was nearly as good (0.975, 0.900).
-- **A second benchmark for the closed agent** (G18, τ²-bench airline, questions written from its policy before any
-  answer): the same read-out ranked Closed-A's policy violations at within-tool AUROC 0.704 [0.536, 0.822]
-  (360 writes, 50 violations), where its single answer scored 0.555. Within one task it is weaker (0.61, exploratory).
-- **Against a reasoning judge** (G20): the questionnaire ranked the open agents' violations better than a reasoning
-  model asked for one verdict on the same conversation (+0.073 [0.021, 0.123]).
-- **Comparison, not the method: another model answering** (G21): Gemma-4, with reasoning on, answered the same
-  questions about Closed-A's τ²-bench writes at 0.989 [0.954, 1.000], against 0.704 from Closed-A's own answers given with
-  reasoning off. The method uses only the agent's own API; G24 tests Closed-A's own answers with its reasoning on.
-- **Whose answers?** Not the agent's own seat: another model answering the same questions did as well on four open
-  agents (G16: own − other +0.012 [−0.018, 0.040]), and so did the same model reading the conversation as an outside
-  reviewer (G19: +0.043 [−0.136, 0.226]). The value is in the questions and the read-out, so an open model can answer
-  about a closed agent's calls.
-- **What the answers reveal of a hidden state**: on eight open models the answers' geometry tracks hidden geometry, and
-  it is the geometry that models share, Closed-A's included (G1–G7).
+Preregistered results (hash-locked, locks published before the data; held-out data; failures reported in the record):
+- **Reconstruct.** On eight open models, the answer geometry tracks each model's hidden geometry (G1). Part of that
+  geometry is shared across models, and a triangulation through it, checked by leaving each open model out (mean error
+  0.061; 7 of 8 inside the interval), estimates that Closed-A's own answers reconstruct its own unseen hidden geometry
+  at 0.495 [0.437, 0.554], as well as an open model's do (G34).
+- **Monitor.** At a proposed call, a fixed read-out of the agent's answers to 8 policy questions ranks violations
+  within template at AUROC 0.82–0.99 on four open agents, close to a probe trained on their hidden states (G15), and
+  better than a reasoning judge on open agents (G20). It carries to prompt injection (AgentDojo, 0.90–0.99; G17) and to
+  two closed models: Closed-A (0.909 on unapproved restarts, where its single answer scores 0.32; 0.704 on τ²-bench
+  airline, G18) and GPT-6-luna (0.979 [0.946, 0.998], where its single answer scores 0.795; G38). With no label, the
+  read-out's variance beyond its sampling noise tells where it works (Spearman 0.71 over 29 settings; G32).
+- **Forecast.** Before its call exists, GPT-6-luna's answers about its next action rank the coming violation at 0.765
+  [0.650, 0.909] (G38), and at 0.927 among calls at the same position (exploratory; G40 confirms it on fresh episodes).
+- **Prevent.** As a gate, the agent's own answer prevented 82% of an open agent's violating episodes (G9) and 69% of
+  those that Closed-A's transcript decides (G10), by amounts a law predicted in advance for five agents (mean error
+  0.035; G12); against prompt injection it cut attack success by 84% and 50% (G13). G39 tests a live gate on a closed
+  agent's pre-call state against a gate on position.
+- **Comparisons, not the method.** Another model answering the same questions does about as well on open agents
+  (G16), and with reasoning on it reaches 0.989 on Closed-A's τ²-bench writes (G21): the questions read the geometry
+  that models share. The method itself uses only the agent's own API.
 
 Trained monitors (an open reader with a probe trained on labelled steps) are also in the package, as an option and as
 the comparison in the paper; they need labels and do not transfer to new kinds of task without them.
