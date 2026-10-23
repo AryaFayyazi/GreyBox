@@ -1,0 +1,44 @@
+{
+ "units": 252,
+ "scenarios": 84,
+ "violating_episodes": {
+  "none": 0.3175,
+  "pre": 0.0794,
+  "position": 0.1786
+ },
+ "success": {
+  "none": 0.1865,
+  "pre": 0.1865,
+  "position": 0.2778
+ },
+ "reviews_per_episode": {
+  "none": 0.0,
+  "pre": 1.476,
+  "position": 1.516
+ },
+ "P1_pre_relative_reduction": [
+  0.75,
+  0.6049,
+  0.8632
+ ],
+ "position_relative_reduction": [
+  0.4375,
+  0.256,
+  0.6053
+ ],
+ "P3_pre_minus_position": [
+  0.3125,
+  0.0617,
+  0.5429
+ ],
+ "P2_success_pre_minus_none": [
+  0.0,
+  -0.0476,
+  0.0476
+ ],
+ "endpoints": {
+  "P3_lower_gt_0": true,
+  "P1_lower_gt_0": true,
+  "P2_lower_gt_-0.05": true
+ }
+}

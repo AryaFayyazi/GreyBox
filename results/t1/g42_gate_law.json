@@ -1,0 +1,28 @@
+{
+ "predicted": {
+  "pre": 0.75,
+  "position": 0.1667
+ },
+ "observed": {
+  "pre": 0.75,
+  "position": 0.4375
+ },
+ "abs_error": {
+  "pre": 0.0,
+  "position": 0.2708
+ },
+ "observed_ci": {
+  "pre": [
+   0.6049,
+   0.8632
+  ],
+  "position": [
+   0.256,
+   0.6053
+  ]
+ },
+ "endpoints": {
+  "L1_pre_within_0.15": true,
+  "L2_position_within_0.15": false
+ }
+}

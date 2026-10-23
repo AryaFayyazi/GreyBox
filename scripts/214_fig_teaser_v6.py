@@ -108,13 +108,21 @@ def panel_law(ax):
     ax.set_xticks([0, 0.5, 1.0]); ax.set_yticks([0, 0.5, 1.0])
     ax.set_xlabel("predicted from offline flag rates", fontsize=6.2, color=INK, labelpad=2)
     ax.set_ylabel("observed live reduction", fontsize=6.2, color=INK, labelpad=1)
+    f42 = ROOT / "results/t1/g42_gate_law.json"
+    if f42.exists():                                  # G39b/G42: the pre-call gate on a closed agent, predicted vs observed
+        g42 = json.loads(f42.read_text())
+        x, y = g42["predicted"]["pre"], g42["observed"]["pre"]
+        lo, hi = g42["observed_ci"]["pre"]
+        ax.errorbar(x, y, yerr=[[y - lo], [hi - y]], fmt="none", ecolor=ORANGE, elinewidth=0.8, capsize=0, alpha=0.55, zorder=2)
+        ax.scatter([x], [y], s=40, marker="D", color=ORANGE, edgecolor="white", lw=0.8, zorder=4)
     e12 = np.mean([abs(y - x) for _, x, y, *_r, kind in pts if kind == "g12"])
     eall = np.mean([abs(y - x) for _, x, y, *_r in pts])
     ax.text(0.03, 0.97, f"mean |error| {e12:.3f} (G12)", transform=ax.transAxes, fontsize=5.6, color=INK, fontweight="bold", va="top")
     ax.text(0.03, 0.89, f"all 7 points: {eall:.3f}", transform=ax.transAxes, fontsize=5.3, color=INK2, va="top")
     h = [ax.scatter([], [], s=34, marker="o", color=BLUE, edgecolor="white", lw=0.8, label="violations, 5 agents"),
          ax.scatter([], [], s=34, marker="s", color=BLUE, edgecolor="white", lw=0.8, label="injections, 2 agents"),
-         ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Claude Haiku 5.5 (closed)")]
+         ax.scatter([], [], s=34, marker="o", color=ORANGE, edgecolor="white", lw=0.8, label="Claude Haiku 5.5 (closed)"),
+         ax.scatter([], [], s=40, marker="D", color=ORANGE, edgecolor="white", lw=0.8, label="GPT-6-luna, pre-call gate")]
     ax.legend(handles=h, loc="lower right", bbox_to_anchor=(1.03, -0.02), ncol=1, frameon=True, framealpha=0.95, edgecolor="none", fontsize=5.2, handletextpad=0.2, borderaxespad=0.2, labelspacing=0.3)
 
 
