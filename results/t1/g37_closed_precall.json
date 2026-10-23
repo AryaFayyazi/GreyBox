@@ -1,0 +1,45 @@
+{
+ "deviation": "docs/deviation_G37_2026-10-22.md",
+ "writes_R": 360,
+ "writes_both_arms": 288,
+ "P1_R4_all_writes": [
+  0.5363,
+  0.4335,
+  0.682
+ ],
+ "precall_R4_minus_at_call_all_writes": [
+  -0.1685,
+  -0.2893,
+  -0.0267
+ ],
+ "unanimity_all_writes": {
+  "R4": 0.96,
+  "at_call_G18": 0.9582
+ },
+ "within_tool_auroc_all_writes": {
+  "R4": 0.5363,
+  "D4": 0.664,
+  "at_call_G18": 0.7048
+ },
+ "P2_D4_minus_R4_both_arms": [
+  0.127,
+  -0.0445,
+  0.253
+ ],
+ "D4_both_arms": [
+  0.6518,
+  0.4636,
+  0.777
+ ],
+ "R4_both_arms": [
+  0.5248,
+  0.3915,
+  0.7012
+ ],
+ "violations_both_arms": 33,
+ "violations_all": 50,
+ "endpoints": {
+  "P1_lower_gt_0.5": false,
+  "P2_lower_gt_0": false
+ }
+}
