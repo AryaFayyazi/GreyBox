@@ -69,7 +69,9 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G30": "The state before a call, beyond position, on three agents (G30)",
           "G31": "Repeats against dither: is the within-step effect measurement-limited? (G31)",
           "G31b": "Early warning and the horizon of the state (G31b)",
-          "G32": "A label-free signal says where the read-out works (G32)"}
+          "G31c": "The memory of the state and the filter's noise (G31c)",
+          "G32": "A label-free signal says where the read-out works (G32)",
+          "G33": "The closed agent's answers, dithered (G33)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -126,7 +128,7 @@ def main():
         if gm and gm.group(1) in GNAMES:
             if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
                 cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
-            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K", "G28": "T", "G27b": "K", "G29": "P", "G29b": "P", "G30": "W", "G31": "M", "G31b": "E", "G32": "C"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
+            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K", "G28": "T", "G27b": "K", "G29": "P", "G29b": "P", "G30": "W", "G31": "M", "G31b": "E", "G31c": "A", "G32": "C", "G33": "Q"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
             if ep:
                 cells = [re.sub(rf"\b{ep}([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids

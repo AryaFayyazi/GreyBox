@@ -36,13 +36,13 @@ So a monitor needs the transcript and the call, not the weights; the question is
 \[ s_t=\tfrac1K\textstyle\sum_{j}\sigma_j\vartheta_{tj},\qquad \sigma_j=-1\ \text{for ``does it comply''},\ \ \sigma_j=+1\ \text{otherwise}. \]
 No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
 \begin{proposition}[a label-free ceiling]\label{prop:snrceil}
-Let $N=\mathbb{E}\,\frac1{K^2}\sum_j(m_j+\frac12)^{-1}$ be the sampling-noise variance of $s_t$ for $m_j$ parsed answers, and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
+Let $N$ be the sampling-noise variance of $s_t$ and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
 $\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$; at $\mathrm{SNR}\le0$ the read-out cannot rank violations.
 \end{proposition}
 \begin{proof}[Proof sketch]
 With class gap $\Delta$ and within-class variance $\sigma_w^2\ge N$, $\mathrm{Var}(s_t)=\sigma_w^2+p(1-p)\Delta^2$, so $p(1-p)\Delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_w^2$; and $\mathrm{AUROC}=\Phi(\Delta/\sqrt2\sigma_w)$.
 \end{proof}
-So the answers alone show where the read-out can work (G32). More answers lower $N$ and raise the ceiling. For an answerer that is nearly deterministic, more repeats do not help; varied wordings of a question act as dither and recover the size of what a single wording only signs (G31).
+In practice we use the nominal noise $\frac1{K^2}\sum_j(m_j+\frac12)^{-1}$ for $m_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, a high value supports it (G32). More answers lower $N$ and raise the ceiling. For a nearly deterministic answerer, repeats add little; varied wordings of a question could act as dither, which G31 and G33 test.
 
 \textbf{The state across steps.} Before each call we measure $y_t$, the angles of the agent's answers to $K$ questions about its \emph{next} action. By \cref{thm:geometry}, $y_t=z_t+v_t$: the observable state plus sampling noise whose variance the number of answers fixes ($\approx1/(n+\frac12)$ per question), independent across steps. We model $z_{t+1}=Fz_t+c+w_t$ and identify the model from unlabelled runs of the same agent.
 \begin{proposition}[identification through the noise]\label{prop:iv}
