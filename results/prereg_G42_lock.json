@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T23:10:30-07:00",
+ "sha256": {
+  "docs/prereg_G42_gate_law.md": "2e5d068a6e6910ba846d40aa4a36d9601f16fa35f9d45360d9555578aad1f160",
+  "scripts/218_g42_gate_law.py": "346d6ba7521ab2328feb53a55a935a0cde40fa9a0270b89a13579cba6265d2e2"
+ }
+}

@@ -81,7 +81,8 @@ GNAMES = {"G": "Observable geometry (G1--G3)", "G5": "Answers vs replies (G5)", 
           "G39": "Live prevention on a closed agent before the call (G39)",
           "G40": "A closed agent's pre-call state beyond position, confirmed (G40)",
           "G39b": "The pre-call gate against a matched position gate (G39b)",
-          "G41": "The relevant directions of the call (G41)"}
+          "G41": "The relevant directions of the call (G41)",
+          "G42": "The prevention law for pre-call gates (G42)"}
 TID = re.compile(r"\b(T\d+[a-z]?|L\d[a-z]?)\b('s)?")
 
 
@@ -137,7 +138,7 @@ def main():
         if gm and gm.group(1) in GNAMES:
             if gm.group(1) == "G15":                              # G15's endpoints are named T1-T3, like test ids
                 cells = [re.sub(r"\bT([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
-            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K", "G28": "T", "G27b": "K", "G29": "P", "G29b": "P", "G30": "W", "G31": "M", "G31b": "E", "G31c": "A", "G32": "C", "G33": "Q", "G34": "V", "G35": "L", "G35b": "K", "G36": "V", "G37": "P", "G38": "A", "G39": "P", "G40": "C", "G39b": "P", "G41": "R"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
+            ep = {"G16": "O", "G17": "V", "G18": "R", "G19": "O", "G20": "J", "G21": "A", "G22": "U", "G23": "F", "G24": "E", "G25": "F", "G26": "R", "G27": "K", "G28": "T", "G27b": "K", "G29": "P", "G29b": "P", "G30": "W", "G31": "M", "G31b": "E", "G31c": "A", "G32": "C", "G33": "Q", "G34": "V", "G35": "L", "G35b": "K", "G36": "V", "G37": "P", "G38": "A", "G39": "P", "G40": "C", "G39b": "P", "G41": "R", "G42": "L"}.get(gm.group(1))   # their endpoints are named O1/V1/R1 ...
             if ep:
                 cells = [re.sub(rf"\b{ep}([1-3])\b", lambda m: "(" + ROMAN[m.group(1)] + ")", c) for c in cells]
             if gm.group(1) == "G9":                               # G9's endpoints are named L1-L3, like test ids
