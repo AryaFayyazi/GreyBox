@@ -16,8 +16,10 @@ trained, scores a call before it runs.
 Preregistered results (hash-locked, locks published before the data; held-out data; failures reported in the record):
 - **Reconstruct.** On eight open models, the answer geometry tracks each model's hidden geometry (G1). Part of that
   geometry is shared across models, and a triangulation through it, checked by leaving each open model out (mean error
-  0.061; 7 of 8 inside the interval), estimates that Claude Haiku 5.5's own answers reconstruct its own unseen hidden geometry
-  at 0.495 [0.437, 0.554], as well as an open model's do (G34).
+  0.061; 7 of 8 inside the interval), estimates that Claude Haiku 5.5's own answers agree with its own unseen hidden geometry at
+  0.495 [0.437, 0.554], the level of its agreement with open models' hidden geometries (G34; it assumes no own-model
+  excess; over the open loadings' range, [0.32, 0.53]). At an agent's decision, 8 policy answers capture only a narrow
+  slice of the decision state (G36).
 - **Monitor.** At a proposed call, a fixed read-out of the agent's answers to 8 policy questions ranks violations
   within template at AUROC 0.82–0.99 on four open agents, close to a probe trained on their hidden states (G15), and
   better than a reasoning judge on open agents (G20). It carries to prompt injection (AgentDojo, 0.90–0.99; G17) and to
@@ -27,8 +29,8 @@ Preregistered results (hash-locked, locks published before the data; held-out da
 - **Forecast.** Before its call exists, GPT-6-luna's answers about its next action rank the coming violation at 0.765
   [0.650, 0.909] (G38), and at 0.923 [0.811, 0.992] among calls at the same position, where position cannot help (G40: preregistered, 252 fresh episodes). Live, at an equal review rate, a gate on that state cut its violating episodes from 31.8% to 7.9% (a 75% reduction, against 44% for a gate on position; difference +0.31 [0.06, 0.54]; success unchanged; G39b), and the offline share of violating calls it holds predicted the 75% exactly (G42). On Gemma-4, whose pre-call read-out ranks weakly, such a gate did not prevent (G29b). Before its τ²-bench writes, Claude Haiku 5.5's pre-call answers did not rank the coming violation (0.536; G37). On three open agents, the pre-call answers rank the coming call among calls at the same step at 0.669 [0.594, 0.764] (G30); the state has a short memory (G31c) and the deciding fact enters at the call's step (G31b), and a forecast from earlier steps beats position on them (+0.21 [0.08, 0.32]; G27b).
 - **Prevent.** As a gate, the agent's own answer prevented 82% of an open agent's violating episodes (G9) and 69% of
-  those that Claude Haiku 5.5's transcript decides (G10), by amounts a law predicted in advance for five agents (mean error
-  0.035; G12); against prompt injection it cut attack success by 84% and 50% (G13). G39 tests a live gate on a closed
+  those that Claude Haiku 5.5's transcript decides (G10; 31% of all); in a later test, a law fixed in advance predicted
+  the prevention of five agents (mean error 0.035; G12); against prompt injection it cut attack success by 84% and 50% (G13). G39 tests a live gate on a closed
   agent's pre-call state against a gate on position.
 - **Comparisons, not the method.** Another model answering the same questions does about as well on open agents
   (G16), and with reasoning on it reaches 0.989 on Claude Haiku 5.5's τ²-bench writes (G21): the questions read the geometry
