@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T19:43:10-07:00",
+ "sha256": {
+  "docs/prereg_G31c_memory.md": "e4458d789ab053925463a5c8414b22bc14b149bdcdaa3008fb98e739e8d458d5",
+  "scripts/204_g31c_memory.py": "9fd380d486ba11a4872267c2e5743a24d2c49ab877c491f9bd23da39e5cca41c"
+ }
+}
