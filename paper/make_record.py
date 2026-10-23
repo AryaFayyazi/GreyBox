@@ -169,8 +169,8 @@ def main():
                 k = _cls(l)
                 c[k] = c.get(k, 0) + 1
         tally.append(f"{name}: {sum(c.values())} tests; {c.get('pass', 0)} passed every primary endpoint, {c.get('mixed', 0)} passed "
-                     f"some endpoints and failed others, {c.get('fail', 0)} failed, {c.get('stopped', 0)} were stopped before any "
-                     f"outcome, {c.get('reported', 0)} were reported without a pass/fail bar, {c.get('pending', 0)} are pending")
+                     f"some endpoints and failed others, {c.get('fail', 0)} failed, {c.get('stopped', 0)} stopped before any "
+                     f"outcome, {c.get('reported', 0)} reported without a pass/fail bar, {c.get('pending', 0)} pending")
     tally_txt = ("Tally, as recorded: " + "; ".join(tally) + ". No correction for multiple tests is applied; each test answers its own "
                  "registered question, and every outcome, failed or passed, is listed below.\n\n")
     (ROOT / "paper/appendix_record.tex").write_text(
