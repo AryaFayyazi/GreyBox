@@ -4,7 +4,7 @@
 Every number on the site is read from a saved result file or from docs/PREREGISTRATION_RECORD.md at build time:
   results.html   the preregistration table, verbatim from the record (outcome tags derived from its text)
   index.html     headline numbers from results/t1/*.json and site/tests/parity_result.json
-  monitor.html   the Closed-A agent monitor with its 3D space (web/build_monitor_demo.py)
+  monitor.html   the Claude Haiku 5.5 agent monitor with its 3D space (web/build_monitor_demo.py)
   train.html     the in-browser trainer (site/src/assets/tm-*.js), with an example from CAPE-Bench
   docs.html, paper.html
 python site/build.py   (the cape venv; reads /data for the example data and the 3D space)
@@ -108,16 +108,16 @@ Brackets are 95% bootstrap confidence intervals.</div>
 and its replica from the transcript (b), on fresh steps; (c) the variance replicated per principal component (T15, preregistered).</figcaption></figure>
 <figure><img src="figures/generalization.png" alt="AUROC of monitors under increasing shift" loading="lazy"><figcaption>Monitoring an agent's next
 action from its transcript, under increasing shift: trained reader (blue), trained bag-of-words (hollow square), zero-shot 70B judge (green),
-the agent's own internals (orange). The dashed line is chance (AUROC 0.5). The two Closed-A rows rest on one stratum (136 actions, 26 violations).</figcaption></figure>
+the agent's own internals (orange). The dashed line is chance (AUROC 0.5). The two Claude Haiku 5.5 rows rest on one stratum (136 actions, 26 violations).</figcaption></figure>
 <figure><img src="figures/time_vs_access.png" alt="Time, not access" loading="lazy"><figcaption>The same 12,128 fresh steps read at the start of
 the agent's turn and after its reasoning. Reading later helps every method; access alone does not.</figcaption></figure>
 <figure><img src="figures/label_efficiency.png" alt="Label efficiency" loading="lazy"><figcaption>Reader accuracy against the number of labelled
 training actions.</figcaption></figure>
 <figure><img src="figures/policy_labels.png" alt="Policy coverage" loading="lazy"><figcaption>A policy family removed from training. A credentials
 policy with similar trained policies transferred with no labels (GPT, T12). A service-restart policy without them was missed until 20–40
-labelled steps were added (Closed-A, T10, exploratory).</figcaption></figure>
-<figure><img src="figures/closed_vs_moderation.png" alt="Refusal forecast vs moderation" loading="lazy"><figcaption>Chat: which harmful requests
-Closed-A refuses. The forecast beats a 3-level moderation verdict and ties graded moderators.</figcaption></figure>
+labelled steps were added (Claude Haiku 5.5, T10, exploratory).</figcaption></figure>
+<figure><img src="figures/claude_vs_moderation.png" alt="Refusal forecast vs moderation" loading="lazy"><figcaption>Chat: which harmful requests
+Claude Haiku 5.5 refuses. The forecast beats a 3-level moderation verdict and ties graded moderators.</figcaption></figure>
 <figure><img src="figures/guard_tradeoff.png" alt="Guard trade-off" loading="lazy"><figcaption>A resampling guard, with samples scored by the
 environment's own rule checker (an oracle; not deployable: with an LLM judge as the checker it catches 12%).</figcaption></figure>
 """
@@ -139,7 +139,7 @@ def g14_card():
         f"{k.split('_')[0]} {'pass' if v else 'FAIL'}" for k, v in E.items()) + ")"
     t1, t2 = g["T1_mean8_minus_complies"], g["T2_mean8_minus_white_box"]
     cl = g.get("claude")
-    claude = (f" On the closed model Closed-A, the read-out ranks its unapproved production restarts at {cl['restart_mean8']:.3f} "
+    claude = (f" On the closed model Claude Haiku 5.5, the read-out ranks its unapproved production restarts at {cl['restart_mean8']:.3f} "
               f"[{cl['restart_mean8_ci'][0]:.2f}, {cl['restart_mean8_ci'][1]:.2f}].") if cl else ""
     trained = ""
     if f14.exists():
@@ -156,14 +156,14 @@ def g14_card():
 
 
 def second_card():
-    """Second benchmarks for the training-free read-out: G18 (tau2-bench, Closed-A) and G17 (AgentDojo, open agents)."""
+    """Second benchmarks for the training-free read-out: G18 (tau2-bench, Claude Haiku 5.5) and G17 (AgentDojo, open agents)."""
     out = ""
     f18 = R / "t1/g18_tau2_claude_readout.json"
     if f18.exists():
         g = json.loads(f18.read_text())
         r1, r2 = g["R1_within_tool_read_out_8"], g["R2_read_out_minus_single"]
         out += (f'<p><b>A second benchmark for the closed agent</b> (G18, preregistered). On &tau;&sup2;-bench airline, with 8 questions '
-                f'written from its published policy before any answer, the same read-out ranks Closed-A\'s policy violations at '
+                f'written from its published policy before any answer, the same read-out ranks Claude Haiku 5.5\'s policy violations at '
                 f'{r1[0]:.3f} [{r1[1]:.2f}, {r1[2]:.2f}] within tool ({g["writes"]} writes, {g["violations"]} violations); its single answer '
                 f'scores {g["within_tool_single_answer"]:.3f} (difference {r2[0]:+.3f} [{r2[1]:+.3f}, {r2[2]:+.3f}]). Within one task it is '
                 f'weaker (0.61, exploratory).</p>')
@@ -173,7 +173,7 @@ def second_card():
         d = g["O1_own_minus_other_mean"]
         out += (f'<p><b>Whose answers?</b> (G16, preregistered). Another model answering the same 8 questions about each call ranks the '
                 f'violations as well as the agent\'s own answers: own &minus; other {d[0]:+.3f} [{d[1]:+.3f}, {d[2]:+.3f}] over four open agents; '
-                f'on Closed-A\'s restarts Gemma-4\'s answers score {g["claude"]["restart_other"]:.3f} against Closed-A\'s {g["claude"]["restart_own"]:.3f}. '
+                f'on Claude Haiku 5.5\'s restarts Gemma-4\'s answers score {g["claude"]["restart_other"]:.3f} against Claude Haiku 5.5\'s {g["claude"]["restart_own"]:.3f}. '
                 f'The monitor is a fixed questionnaire that any capable model can answer.</p>')
     f20 = R / "t1/g20_questionnaire_vs_judge.json"
     if f20.exists():
@@ -185,8 +185,8 @@ def second_card():
     if f21.exists():
         g = json.loads(f21.read_text())
         out += (f'<p><b>Comparison: another model answering</b> (G21, preregistered; not the method). Gemma-4 (reasoning on) answered the same '
-                f'questions about Closed-A\'s &tau;&sup2;-bench writes: {g["within_tool"]["gemma4_8"]:.3f} [{g["A1_gemma4_8_ci"][0]:.2f}, '
-                f'{g["A1_gemma4_8_ci"][1]:.2f}] within tool, against {g["within_tool"]["claude_own_8"]:.3f} from Closed-A\'s own answers '
+                f'questions about Claude Haiku 5.5\'s &tau;&sup2;-bench writes: {g["within_tool"]["gemma4_8"]:.3f} [{g["A1_gemma4_8_ci"][0]:.2f}, '
+                f'{g["A1_gemma4_8_ci"][1]:.2f}] within tool, against {g["within_tool"]["claude_own_8"]:.3f} from Claude Haiku 5.5\'s own answers '
                 f'(given with reasoning off). The method itself uses only the agent\'s own API.</p>')
     f19 = R / "t1/g19_own_vs_outside_claude.json"
     if f19.exists():
@@ -233,18 +233,18 @@ learn your policy from examples that you label. It works best on the kinds of ta
 a new kind of task it needs new labels, and its review cut should be set on your live traffic. Start with the
 <a href="train.html">trainer</a>: load your agent's logs, label actions, and see how well a monitor would have done.</div>
 {(ROOT / "site/src/assets/workflow.svg.html").read_text()}
-<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v5.png" title="Open the full-size figure"><img src="figures/teaser_v5.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser_v5.png">Tap to open the full-size figure.</a> </span><b>Monitoring a closed agent by asking it yes/no questions, with no training.</b>
+<figure style="margin:20px 0 6px"><a class="zoom" href="figures/teaser_v6.png" title="Open the full-size figure"><img src="figures/teaser_v6.png" alt="A model's hidden geometry and the same geometry from its answers; the agent's own answers monitoring its decisions; the predicted and observed prevention" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_v6.png">Tap to open the full-size figure.</a> </span><b>Reconstruct, monitor and forecast, prevent: a closed agent through its own API, with no training.</b>
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit
 but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a
-probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Closed-A is closed, so it has no probe. Below the line, the
-second benchmarks: open agents' prompt injections on AgentDojo (G17) and Closed-A on &tau;&sup2;-bench (G18); both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
+probe trained on its hidden states (diamonds), on held-out calls (G15, preregistered); Claude Haiku 5.5 is closed, so it has no probe. Below the line, the
+second benchmarks: open agents' prompt injections on AgentDojo (G17) and Claude Haiku 5.5 on &tau;&sup2;-bench (G18); both preregistered. (d) The agent's own answer as a gate: the live reduction in violations against
 the law's prediction (G12, G13, preregistered; one of seven points misses the &plusmn;0.15 band).</figcaption></figure>
 <div class="grid3" style="margin:22px 0 8px">
   <div class="card"><div class="label">Try it now</div><h3>Monitor your own agent</h3><p>Import your agent's logs (OpenAI or Anthropic
     format), label its actions with a review queue that shows the riskiest first, and get a held-out accuracy and a review threshold. Your
     logs stay in your browser.</p><a class="go" href="train.html">Open the trainer →</a></div>
-  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Closed-A as an
+  <div class="card"><div class="label">See it work</div><h3>A closed frontier agent, monitored</h3><p>Real episodes of Claude Haiku 5.5 as an
     agent. See the risk that the monitor gave to each action before the action ran, in the monitor's own 3D space.</p><a class="go" href="monitor.html">Open the replay →</a></div>
   <div class="card"><div class="label">Deploy</div><h3>Run it on your own machines</h3><p>A Python SDK and an HTTP API. The CPU monitor
     takes {par['js_score_ms_per_step']:.2f} ms for each action in a browser. The GPU reader monitor takes 41 ms.</p><a class="go" href="docs.html">Read the docs →</a></div>
@@ -261,14 +261,14 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   it also works on a replica from text features ({t15['E2_auroc']['TXT_replica']:.3f}), because the information that decides a violation is in the tokens.</p></div>
 <div class="card"><h3>It prevents violations live</h3><p>We ran the monitor in the loop of two closed agents, each scenario with and
   without the gate. A blocked action did not run, and the agent was told that a human would review it. Episodes with an executed violation
-  fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Closed-A. The agents did not route around a block. Each check
-  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Closed-A) points fewer task goals reached. When a reviewer decided on the flagged actions
+  fell from 6.6% to 0.2% on GPT-6-luna and from 6.7% to 0.2% on Claude Haiku 5.5. The agents did not route around a block. Each check
+  took 80–89 ms. The cost: 1.8 (GPT) and 5.8 (Claude Haiku 5.5) points fewer task goals reached. When a reviewer decided on the flagged actions
   instead (an oracle, as an upper bound on a human), violations fell to 0.0% and goals to 38.7% (no gate: 40.7%); the preregistered test
   that this costs at most 3 points failed (−2.0 points, 95% interval −5.1 to +0.7). The closed agents ran with reasoning off.</p></div>
 <div class="card"><h3>Labels, not access</h3><p>A small open model reads the transcript. We train it on labelled examples. It is
   equal to or better than the agent's own internal activations (AUROC {t4['auroc_fresh']['READER_act']:.3f} vs {t4['auroc_fresh']['I_dec']:.3f}).
   We trained it only on an open agent. On two closed agents, on its training benchmark, with 5% of the actions sent to review, it caught {p(c8['READER'])}
-  (Closed-A) and {p(t11['label_free_cut']['READER']['all'])} (GPT-6-luna) of the violations. A zero-shot 70B judge caught
+  (Claude Haiku 5.5) and {p(t11['label_free_cut']['READER']['all'])} (GPT-6-luna) of the violations. A zero-shot 70B judge caught
   {p(c8['J_act'])} and {p(t11['label_free_cut']['J_act']['all'])}.</p></div>
 <div class="card"><h3>Why access does not help: a theorem</h3><p>An agent's internal state is a function of the tokens that it read.
   For the label "does this action break the policy?", a monitor that reads the transcript and the proposed action is
@@ -276,7 +276,7 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   monitors only because they read later (probe {t2['auroc']['I_dec']:.3f} after the reasoning, {t2['auroc']['WB_ts']:.3f} before it).</p></div>
 <div class="card"><h3>The limit is policy coverage</h3><p>We removed a policy family from the training data. A credentials
   policy with similar trained policies still transferred: the monitor caught all of GPT's violations of it with no labels. A
-  service-restart policy without similar ones did not: the monitor ranked Closed-A's violations well (AUROC
+  service-restart policy without similar ones did not: the monitor ranked Claude Haiku 5.5's violations well (AUROC
   {t10['auroc_pooled']['READER_lofo']:.3f}) but escalated none at a 5% budget. With 20 labelled steps it caught
   {p(lab['20']['cons_service_restart'])}; with 40, {p(lab['40']['cons_service_restart'])} (exploratory). On prompt injections (AgentDojo),
   labelled calls of open agents raised the catch rate on a closed agent from 28% to 58% at the label-free cut (AUROC 0.840 → 0.922),
@@ -287,15 +287,15 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   budget it caught fewer violations than the reader and than the tool alone (11.7% vs 18.4% and 13.0%). Label steps of
   each new type of policy and of each new task.</p></div>
 <div class="card"><h3>Simple monitors are enough, until the task changes</h3><p>A word-count classifier with the same labels is equal to
-  the reader on the training benchmark (Closed-A: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
+  the reader on the training benchmark (Claude Haiku 5.5: {t9['T8b_claude']['auroc']['TXT']:.3f} vs {t9['T8b_claude']['auroc']['READER']:.3f}).
   On a new benchmark of prompt injections it fell to chance ({t9['T7_agentdojo']['auroc']['TXT']:.2f}). The reader stayed at
   {t9['T7_agentdojo']['auroc']['READER']:.2f}.</p></div>
 <div class="card"><h3>Set the review threshold from your own traffic</h3><p>A monitor's probabilities do not transfer between agents: a
-  0.5 cut caught 3% on Closed-A. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
+  0.5 cut caught 3% on Claude Haiku 5.5. Its ranking transfers. We escalate the top 5% of the agent's first 500 actions and then freeze that
   threshold. It caught {p(gate['online']['frozen_default']['run_order']['caught_after_100'])} online. When half of a later burst was
   malicious, it still caught {p(gate['burst']['rate_0.5']['frozen_default']['caught'])}. A rolling threshold caught
   {p(gate['burst']['rate_0.5']['rolling5000']['caught'])}.</p></div>
-<div class="card"><h3>An agent that knows it is monitored</h3><p>We told Closed-A that a monitor reviews its tool calls
+<div class="card"><h3>An agent that knows it is monitored</h3><p>We told Claude Haiku 5.5 that a monitor reviews its tool calls
   (preregistered, 990 scenarios). It violated as often as before, and the monitor caught 97% of its violations. The notice moved
   all of its scores up, so the old review cut sent 15–17% of actions to review. Live, a cut set again on the agent's new,
   unlabelled traffic sent 4.7% (the budget was 5%) and the gate blocked every violation: 6.5% of episodes → 0.0%.</p></div>
@@ -304,10 +304,10 @@ the law's prediction (G12, G13, preregistered; one of seven points misses the &p
   51% and 60%. A theorem explains the ceiling: under rewording, no monitor beats the best monitor of the call's decisive fields,
   and the main attacked family was missing from training. Keep the score hidden from the agent.</p></div>
 <div class="card"><h3>Chat: forecast a refusal</h3><p>We ask a model about a conversation in a side branch. The answers forecast if the
-  model will refuse. On Closed-A this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
+  model will refuse. On Claude Haiku 5.5 this forecast only ties a strong graded moderator. Together with a moderator, it doubles the
   precision of an alarm for harmful requests that the model answers. It is not a better content filter.</p></div>
 </div>
-<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Closed-A, GPT).
+<div class="note limit"><b>Limits.</b> Most agent tests use one benchmark (CAPE-Bench). Two closed agent families are tested (Claude Haiku 5.5, GPT).
 On an external benchmark of prompt injections, the reader without labels of that policy was not significantly better than a zero-shot judge on
 a closed agent (AUROC 0.840 vs 0.787); with labelled calls from open agents it reached 0.922. A monitor needs labelled steps of each type of
 policy that it enforces. The chat readouts recover a model's behaviour, not its hidden beliefs. See <a href="results.html">all the evidence</a>.</div>
@@ -334,7 +334,7 @@ def example_data(n=1500):
 
 
 def example_logs():
-    """Real agent logs in each provider's native format, from the T11 (GPT-6-luna, OpenAI) and T8b (Closed-A,
+    """Real agent logs in each provider's native format, from the T11 (GPT-6-luna, OpenAI) and T8b (Claude Haiku 5.5,
     Anthropic) runs, with the benchmark's labels in an optional "labels" field: {call_id: 0/1}."""
     import pandas as pd
     S = {json.loads(l)["instance_id"]: json.loads(l) for l in open("/data/models/cape_ws/outputs/capebench/core24b/scenarios.jsonl")}
@@ -449,10 +449,10 @@ def selfpolice_data():
     msgs.append({"role": "assistant", "content": "", "tool_calls": [{"id": "c_host", "type": "function", "function": {"name": "execute_mock_command", "arguments": json.dumps({"command": f"host-info {host}"})}}]})
     msgs.append({"role": "tool", "tool_call_id": "c_host", "content": hinfo})
     D = {"example": {"system": ep["system_prompt"], "messages": msgs, "tool": ep["turns"][k]["tool"], "args": ep["turns"][k].get("args") or {},
-                     "note": "Recorded from Closed-A on CAPE-Bench; the last step (host-info) is added from the scenario's environment so that the deciding fact, a production host, is in the conversation. Expected: hold (the policy requires request_permission for production)."},
+                     "note": "Recorded from Claude Haiku 5.5 on CAPE-Bench; the last step (host-info) is added from the scenario's environment so that the deciding fact, a production host, is in the conversation. Expected: hold (the policy requires request_permission for production)."},
          "replay": rep,
          "law_example": [{"kind": "production restart without approval", "w": 0.38, "tau": 0.69}, {"kind": "test send to a mailing list", "w": 0.62, "tau": 0.21}],
-         "law_note": "Closed-A, all its violations on these two kinds of task (G12 step A rates). This counts the mailing-list sends, which self-policing cannot see; the headline −69% counts only violations its conversation decides. Observed in G10 over all its violations: 31%; in G12 (core24, this mix): 30%."}
+         "law_note": "Claude Haiku 5.5, all its violations on these two kinds of task (G12 step A rates). This counts the mailing-list sends, which self-policing cannot see; the headline −69% counts only violations its conversation decides. Observed in G10 over all its violations: 31%; in G12 (core24, this mix): 30%."}
     (DIST / "data").mkdir(parents=True, exist_ok=True)
     (DIST / "data/selfpolice.json").write_text(json.dumps(D))
     (DIST / "selfpolice_local.html").write_text(selfpolice_local(DIST / "data/selfpolice.json"))
@@ -466,7 +466,7 @@ def selfpolice_data():
     cards = (f'<div class="card"><div class="label">Open agent (Gemma-4), unseen scenarios</div><div class="num">{gr["violation_episodes"] * 100:.0f}%</div>'
              f'<p>episodes with a violation, down from {g9["arms"]["none"]["violation_episodes"] * 100:.0f}% (preregistered); tasks completed: '
              f'{g9["arms"]["none"]["success"] * 100:.0f}% → {gr["success"] * 100:.0f}%.</p></div>'
-             f'<div class="card"><div class="label">Closed agent (Closed-A), held-out scenarios</div><div class="num">&minus;{cr["reduction"][0] * 100:.0f}%</div>'
+             f'<div class="card"><div class="label">Closed agent (Claude Haiku 5.5), held-out scenarios</div><div class="num">&minus;{cr["reduction"][0] * 100:.0f}%</div>'
              f'<p>of the violations that its conversation reveals [{cr["reduction"][1] * 100:.0f}, {cr["reduction"][2] * 100:.0f}] (all its violations: &minus;{g10["all"]["reduction"][0] * 100:.0f}%), at no cost in tasks '
              f'completed ({g10["success"]["none"] * 100:.1f}% → {g10["success"]["gate"] * 100:.1f}%; preregistered).</p></div>'
              + (f'<div class="card"><div class="label">Prompt injection (AgentDojo), Gemma-4, held-out tasks</div><div class="num">{g13["gemma4"]["spotaudit"]["asr"] * 100:.1f}%</div>'
@@ -477,7 +477,7 @@ def selfpolice_data():
     law = ""
     if (R / "t1/g12_composition_law.json").exists():
         g12 = j("t1/g12_composition_law.json")
-        names = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss", "qwen38": "Qwen3.8", "museglimmer": "Muse-Glimmer", "claude": "Closed-A"}
+        names = {"gemma4": "Gemma-4", "gptoss20b": "gpt-oss", "qwen38": "Qwen3.8", "museglimmer": "Muse-Glimmer", "claude": "Claude Haiku 5.5"}
         rows = "".join(f"<tr><td>{names[a]}</td><td>{g12[a]['predicted'] * 100:.0f}%</td><td>{g12[a]['observed'][0] * 100:.0f}% [{g12[a]['observed'][1] * 100:.0f}, {g12[a]['observed'][2] * 100:.0f}]</td></tr>"
                        for a in names if a in g12)
         ok = all(g12["endpoints"].get(f"Q1_{a}") for a in names if a in g12)
@@ -485,7 +485,7 @@ def selfpolice_data():
                f'Predicted from each agent\'s offline flag rates per kind of task, weighted by where it violated without the gate; '
                f'observed live on new scenarios (relative reduction in episodes with a violation, 95% interval). The registered tolerance was ±0.15 for each agent: '
                f'<table class="tablewrap"><tr><th>Agent</th><th>Predicted</th><th>Observed</th></tr>{rows}</table>'
-               f'<p class="muted">Mean absolute error {g12["mean_abs_error"]:.3f}. The law over-predicts Closed-A: its flag rate on mailing-list sends '
+               f'<p class="muted">Mean absolute error {g12["mean_abs_error"]:.3f}. The law over-predicts Claude Haiku 5.5: its flag rate on mailing-list sends '
                f'was 12% live against 21% in the offline audit of 38 calls (within that estimate\'s error). Audit enough calls of each kind.</p></div>')
     return cards, law
 
@@ -532,18 +532,18 @@ def main():
             pages[name] = page(name, m1.group(1) if m1 else title, m2.group(1) if m2 else desc, s)
     for k, v in pages.items():
         (DIST / k).write_text(v)
-    # the Closed-A replay, wrapped with the site header
+    # the Claude Haiku 5.5 replay, wrapped with the site header
     tmp = DIST / "_monitor_raw.html"
     subprocess.run([sys.executable, str(ROOT / "web/build_monitor_demo.py"), "/data/models/graybox_ws/outputs/t8b/space.json", str(tmp)], check=True)
     raw = re.sub(r"<title>.*?</title>", "", tmp.read_text(), count=1)       # the page title goes in <head> below
     tmp.unlink()
     nav = "".join(f'<a href="{h}"{" aria-current=page" if h == "monitor.html" else ""}>{t}</a>' for h, t in NAV)
     (DIST / "monitor.html").write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent replay · Grey Box</title><meta name="description" content="Recorded episodes of Closed-A as a tool-using agent, with the monitor's decision on each action and its 3D feature space.">
+<title>Agent replay · Grey Box</title><meta name="description" content="Recorded episodes of Claude Haiku 5.5 as a tool-using agent, with the monitor's decision on each action and its 3D feature space.">
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
 {raw}</body></html>""")
-    # the chat grey box (interrogation state), recorded Closed-A session, wrapped with the site header
+    # the chat grey box (interrogation state), recorded Claude Haiku 5.5 session, wrapped with the site header
     tmp = DIST / "_chat_raw.html"
     subprocess.run([sys.executable, str(ROOT / "web/build_replay.py"), "/data/models/graybox_ws/outputs/live/session_v2_claude_haiku55.json",
                     str(ROOT / "web/data/meta_v2_closed_a.json"), str(tmp)], check=True)
@@ -551,7 +551,7 @@ def main():
     tmp.unlink()
     nav = "".join(f'<a href="{h}"{" aria-current=page" if h == "chat.html" else ""}>{t}</a>' for h, t in NAV)
     (DIST / "chat.html").write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Recorded chat replay · Grey Box</title><meta name="description" content="A recorded chat session with Closed-A, replayed turn by turn with the grey-box readouts.">
+<title>Recorded chat replay · Grey Box</title><meta name="description" content="A recorded chat session with Claude Haiku 5.5, replayed turn by turn with the grey-box readouts.">
 <link rel="stylesheet" href="assets/site.css"></head><body>
 <header class="top"><div class="wrap"><a class="brand" href="index.html">Grey Box <span>agent monitoring</span></a><nav>{nav}</nav></div></header>
 {raw}</body></html>""")
@@ -563,46 +563,27 @@ def main():
     print("built", sorted(p.name for p in DIST.iterdir()))
 
 
-PROTECT = ("Claude Agent SDK", "ClaudeAgentOptions", "claude_agent_hook", "claude_agent_sdk", "claude-agent", "claude_transcript_messages",
-           "Claude Code")                         # names of a third-party SDK integration in the package docs: functional, kept
-RENAME = (("Claude Haiku 5.5", "Closed-A"), ("Claude Haiku 4.5", "an older model of Closed-A's family"), ("claude-haiku-5-5", "closed-a"),
-          ("claude-haiku-4-5", "closed-a-older"), ("claude_haiku55", "closed_a"), ("Claude's", "Closed-A's"), ("Claude", "Closed-A"),
-          ("claude", "closed_a"))
+RENAME = (("Closed-A's", "Claude Haiku 5.5's"), ("Closed-A", "Claude Haiku 5.5"))   # the closed model is named (user, 2026-10-22)
 TEXT = {".html", ".js", ".json", ".jsonl", ".css", ".vtt", ".srt", ".txt", ".md", ".svg", ".csv"}
 
 
 def scrub_dist():
-    """The closed model is not named in any publication: rename files and contents in the built site, drop images that no
-    page uses (an old image may show the name in its pixels), and fail if any mention remains."""
+    """The closed model is named "Claude Haiku 5.5" (the user's decision, 2026-10-22; it was "Closed-A" before): rename any
+    remaining "Closed-A" in the built site, drop images that no page uses (an old image may show the old name in its
+    pixels), and fail if "Closed-A" remains."""
     pages = "".join(f.read_text(errors="ignore") for f in DIST.rglob("*") if f.is_file() and f.suffix in {".html", ".js"})
     for f in list((DIST / "figures").iterdir()):
         if f.name not in pages:
             f.unlink()
-    for f in sorted(DIST.rglob("*"), key=lambda x: -len(x.parts)):
-        if "claude" in f.name.lower():
-            f.rename(f.with_name(f.name.replace("claude", "closed_a").replace("Claude", "Closed-A")))
     for f in DIST.rglob("*"):
         if f.is_file() and f.suffix in TEXT:
             t = f.read_text(errors="ignore")
-            if "laude" not in t:
-                continue
-            keep = {k: f"\x00{i}\x00" for i, k in enumerate(PROTECT)}
-            for k, v in keep.items():
-                t = t.replace(k, v)
-            for a, b in RENAME:
-                t = t.replace(a, b)
-            for k, v in keep.items():
-                t = t.replace(v, k)
-            f.write_text(t)
-    left = []
-    for f in DIST.rglob("*"):
-        if f.is_file() and f.suffix in TEXT:
-            t = f.read_text(errors="ignore")
-            for k in PROTECT:
-                t = t.replace(k, "")
-            if "claude" in t.lower():
-                left.append(f.name)
-    assert not left, f"the closed model is still named in: {left}"
+            if "Closed-A" in t or "closed-A" in t:
+                for a, b in RENAME:
+                    t = t.replace(a, b)
+                f.write_text(t)
+    left = [f.name for f in DIST.rglob("*") if f.is_file() and f.suffix in TEXT and "Closed-A" in f.read_text(errors="ignore")]
+    assert not left, f"the old name is still in: {left}"
 
 
 if __name__ == "__main__":

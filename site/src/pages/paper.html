@@ -3,8 +3,8 @@
 <h1>Grey Box</h1>
 <p class="lede"><b>Grey Box: Reading Closed Agents Through Their APIs Alone.</b> A closed model's yes/no answers reveal the geometry of its hidden states, a geometry that models share, with no training. At an agent's proposed call, a fixed read-out of answers to 8 questions about the call monitors it nearly as well as a probe trained on the agent's hidden states, whether the agent or another model answers; the agent's own answer, used as a gate, prevents violations by an amount a law predicts.</p>
 <p class="muted">Arya Fayyazi · preprint in preparation. The full preregistration record is on the <a href="results.html">evidence</a> page.</p>
-<figure><a class="zoom" href="figures/teaser_v5.png" title="Open the full-size figure"><img src="figures/teaser_v5.png" alt="A model's hidden geometry and the same geometry from its answers; monitoring decisions through the agent's own answers; predicted and observed prevention" loading="eager"></a>
-<figcaption><span class="zoomhint"><a href="figures/teaser_v5.png">Tap to open the full-size figure.</a> </span>(a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a probe trained on its hidden states (diamonds), on held-out calls; below the line, second benchmarks. (d) The agent's own answer as a gate: live reduction in violations against the prediction from offline flag rates. All preregistered.</figcaption></figure>
+<figure><a class="zoom" href="figures/teaser_v6.png" title="Open the full-size figure"><img src="figures/teaser_v6.png" alt="A model's hidden geometry and the same geometry from its answers; monitoring decisions through the agent's own answers; predicted and observed prevention" loading="eager"></a>
+<figcaption><span class="zoomhint"><a href="figures/teaser_v6.png">Tap to open the full-size figure.</a> </span>(a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (exact Fisher&ndash;Rao coordinates; nothing fit but a display rotation). (c) At an agent's proposed call, a fixed read-out of its own 8 answers about the call (dots, 95% intervals) against a probe trained on its hidden states (diamonds), on held-out calls; below the line, second benchmarks. (d) The agent's own answer as a gate: live reduction in violations against the prediction from offline flag rates. All preregistered.</figcaption></figure>
 
 <h2>Summary</h2>
 <p>The hidden coordinates of a closed model cannot be read from its outputs: a rotation of the hidden space changes no output. We ask which
@@ -15,7 +15,7 @@ geometry of its states its outputs do reveal, and what that means for monitoring
   <li><b>What it shows.</b> On eight open models, this geometry tracks the hidden geometry (Spearman 0.41–0.74), far better than the input
     text (0.22–0.30) or the model's own replies (0.22–0.44). But it is the geometry that models <em>share</em>: on 1,000 fresh contexts, a
     model's answers match other models' hidden geometries as well as its own, and another open model's hidden state is the better stand-in
-    (G1–G6, all preregistered). Closed-A reveals the same shared geometry. A model's own final geometry needs full log-probabilities.</li>
+    (G1–G6, all preregistered). Claude Haiku 5.5 reveals the same shared geometry. A model's own final geometry needs full log-probabilities.</li>
   <li><b>What it is good for.</b> It is a measured reason why an open model can stand in for a closed one. For a policy check on a proposed
     action, the transcript and the action are Bayes-sufficient. A monitor that reads them through an open model, trained only on open agents,
     catches most violations of two closed agents (T8b, T11) and blocks them in the loop (T16). Its limit is policy coverage.</li>
@@ -24,7 +24,7 @@ geometry of its states its outputs do reveal, and what that means for monitoring
 <h2>How the evidence was produced</h2>
 <ul>
   <li>Every confirmatory test was written down and hash-locked before its data was collected or scored; deviations and failures are reported.</li>
-  <li>Agents: Gemma-4 and gpt-oss (open), Closed-A and GPT-6-luna (closed, through their public APIs) on CAPE-Bench; AgentDojo for
+  <li>Agents: Gemma-4 and gpt-oss (open), Claude Haiku 5.5 and GPT-6-luna (closed, through their public APIs) on CAPE-Bench; AgentDojo for
     prompt injection.</li>
   <li>Uncertainty: cluster bootstrap over scenarios (agents) or conversations (chat), 1,000–2,000 resamples.</li>
 </ul>

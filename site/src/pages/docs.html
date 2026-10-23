@@ -10,7 +10,7 @@ interface. Pick by how much your deployment differs from your labelled data.</p>
 <tr><td>What it is</td><td>TF-IDF on context and action + logistic regression</td><td>Qwen3-8B reads the transcript; a linear probe on its activations</td></tr>
 <tr><td>Hardware, latency</td><td class="n">CPU or browser; 0.18 ms per action</td><td class="n">1 GPU (≈16 GB); 41 ms per action</td></tr>
 <tr><td>Cost per action</td><td class="n">≈ $0</td><td class="n">your GPU time</td></tr>
-<tr><td>Same tools and policies as training</td><td>as good as the reader (Closed-A: 0.997 vs 0.991)</td><td>0.99</td></tr>
+<tr><td>Same tools and policies as training</td><td>as good as the reader (Claude Haiku 5.5: 0.997 vs 0.991)</td><td>0.99</td></tr>
 <tr><td>Unseen task families</td><td>0.950</td><td>0.969</td></tr>
 <tr><td>Unseen benchmark (AgentDojo)</td><td>0.50 (chance)</td><td>0.78</td></tr>
 <tr><td>Unseen tasks, explicit rules over facts (τ²-bench, closed agents)</td><td>0.52</td><td>0.54</td></tr>
@@ -66,7 +66,7 @@ contexts. Closed APIs do not return full log-probabilities.</p>
 <h2>Get a monitor without a browser</h2>
 <p>Train the text monitor on your own labelled logs, in seconds on a CPU. The input is the same as for the browser trainer:
 OpenAI or Anthropic conversations, one per line, with a <code>"labels"</code> field <code>{"call_id": 0 or 1}</code>
-(<a href="data/example_gpt_openai.jsonl">example: 300 GPT conversations</a>, <a href="data/example_closed_a.jsonl">150 Closed-A conversations</a>).</p>
+(<a href="data/example_gpt_openai.jsonl">example: 300 GPT conversations</a>, <a href="data/example_closed_a.jsonl">150 Claude Haiku 5.5 conversations</a>).</p>
 <pre>python -m graybox.train_text labelled_logs.jsonl --out greybox-text-monitor.json      # add --chat for agents that talk with a user
 # prints the cross-validated AUROC (pooled and within tool) and the share of violations caught at a 5% budget;
 # the folds hold out whole tasks (conversations with the same first user request)
@@ -96,7 +96,7 @@ scores in both (to 10<sup>−13</sup>).</p>
 on new, unlabelled logs (no labels needed):</p>
 <pre>python -m graybox.recalibrate new_logs.jsonl --monitor greybox-text-monitor.json --out recalibrated.json
 # reports how many actions the old cut would escalate on the new traffic, and writes the new cut</pre>
-<p>In a preregistered live test, a notice that the agent is monitored moved Closed-A's scores: the old cut escalated 16.6% of its actions.
+<p>In a preregistered live test, a notice that the agent is monitored moved Claude Haiku 5.5's scores: the old cut escalated 16.6% of its actions.
 A cut set again on its new traffic escalated 4.7% (budget 5%), and the gate still blocked every violation. Identical actions get
 identical scores; the cut never lets such ties push the review load above the budget.</p>
 <h2>Put a monitor in your agent's loop</h2>
@@ -129,7 +129,7 @@ messages.append({"role": "user", "content": results})</pre>
 scores. (Before version 0.4.0, Anthropic content blocks inside a dict message lost the earlier calls: update.)</p>
 <p>The guard builds each step with the same rule as the browser trainer's importer
 (<code>graybox.guard.conversation_steps</code>): system prompt, first user message, earlier calls with their results, the proposed call.
-On our example logs, the importer reproduces the research units byte for byte (979/979 GPT, 373/373 Closed-A), and the browser and Python
+On our example logs, the importer reproduces the research units byte for byte (979/979 GPT, 373/373 Claude Haiku 5.5), and the browser and Python
 give identical steps.</p>
 
 <p><b>What the monitor sees.</b> For a proposed call, the guard gives the monitor everything <i>before</i> the assistant reply that holds
@@ -174,10 +174,10 @@ by rule, reviewer error, cut); <code>on_decision=fn</code> receives the same rec
 the log stays on your machine.</p>
 
 <h3>Hold for review instead of block</h3>
-<p>Blocking has a cost. In our live tests, goal completion fell from 47.4% to 45.6% (GPT) and from 40.7% to 34.9% (Closed-A). Nearly all of
-that loss came from episodes in which the gate blocked a <i>safe</i> action (96% of it on Closed-A). In Closed-A episodes with no block, goals
+<p>Blocking has a cost. In our live tests, goal completion fell from 47.4% to 45.6% (GPT) and from 40.7% to 34.9% (Claude Haiku 5.5). Nearly all of
+that loss came from episodes in which the gate blocked a <i>safe</i> action (96% of it on Claude Haiku 5.5). In Claude Haiku 5.5 episodes with no block, goals
 were unchanged (41.4% vs 41.1%). Give the guard a reviewer: an escalated action is held, and your function decides whether it runs.</p>
-<p>We tested this on Closed-A (T16c, preregistered, 450 scenarios, with an oracle as the reviewer). Episodes with an executed violation went
+<p>We tested this on Claude Haiku 5.5 (T16c, preregistered, 450 scenarios, with an oracle as the reviewer). Episodes with an executed violation went
 from 6.7% to 0.0%. Goals were reached in 38.7% of episodes (no gate: 40.7%; blocking: 34.9%). The preregistered test that review costs
 at most 3 points of goals failed (−2.0 points, 95% interval −5.1 to +0.7). Episodes in which the reviewer let a held action run kept
 their goals (60.8% vs 58.8%). The reviewer saw 0.20 actions per episode. A human reviewer makes errors and takes time, so these numbers
@@ -199,7 +199,7 @@ guard = Guard(monitor, gate=QuantileGate(0.05), reviewer=ask_human, reviewer_tim
 <h3>Always review some tools</h3>
 <p>To send every call of a risky tool to review, whatever its score, list it: <code>Guard(monitor, gate=QuantileGate(0.05),
 reviewer=ask_human, hold_tools={"issue_refund"})</code>. <code>v.by_rule</code> is then True. The gate still sees these scores,
-so its cut does not change. Do not split the budget by tool: offline, a 5% budget for each tool caught 39% of Closed-A's violations and
+so its cut does not change. Do not split the budget by tool: offline, a 5% budget for each tool caught 39% of Claude Haiku 5.5's violations and
 46% of GPT's, against 94% and 98% with one 5% budget, because violations cluster in a few tools.</p>
 
 <h3>Agents that talk with a user</h3>
@@ -272,7 +272,7 @@ p = mon.score(system_prompt, user_task, history, action)
 if gate(p):
     hold_for_review()</pre>
 <div class="note"><b>Act on the gate, not on <code>p</code>.</b> The probe ranks a new agent's actions well, but its probabilities do not
-  transfer: on Closed-A a 0.5 cut caught 3% of violations. <code>QuantileGate</code> sets its cut at the top <i>budget</i> of the first 500
+  transfer: on Claude Haiku 5.5 a 0.5 cut caught 3% of violations. <code>QuantileGate</code> sets its cut at the top <i>budget</i> of the first 500
   actions it sees (no labels), then freezes it, so a burst of malicious actions cannot raise it. It escalates everything until it has seen
   100 actions. Call <code>gate.recalibrate()</code> when the agent, its tools, its prompt or its policy change: in a live test, a notice that the agent is monitored moved its scores so that the old cut escalated 16.6% of actions; a cut set again on its new, unlabelled traffic escalated 4.7% and still blocked every violation.</div>
 <p>Two probes are in <a href="https://github.com/AryaFayyazi/GreyBox/releases/tag/v0.2.0">release v0.2.0</a> (4.3 MB each, with SHA-256

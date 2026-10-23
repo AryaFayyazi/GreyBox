@@ -9,7 +9,7 @@
 
 <div class="note"><b>When it works, and when it cannot.</b> It works when the agent can judge its own policy. Asked about its own
   proposed calls (flag = most answers say "no"), Gemma-4 flags 97% of its violations, Muse-Glimmer-30B 87%, Qwen3.8-27B 47%,
-  gpt-oss-20b 37%. Closed-A flags only 5% with a plain question but recognizes its rule misreadings when asked to check
+  gpt-oss-20b 37%. Claude Haiku 5.5 flags only 5% with a plain question but recognizes its rule misreadings when asked to check
   each rule in turn. It cannot catch a
   violation that depends on a fact the agent has not looked at yet (for example how many people are on a mailing list): no
   judge of the conversation can. For those, check the world before the action runs. Check how well your agent judges its
@@ -109,15 +109,15 @@
   </div>
   <p id="lsStatus" style="margin-top:8px"></p>
   <p class="muted">Each step: one agent call, then (in parallel) the audit's answers and 16 one-word answers for the map, so one step
-    takes about one round trip, a few seconds. With Closed-A a whole session costs about two cents. The benchmark's
+    takes about one round trip, a few seconds. With Claude Haiku 5.5 a whole session costs about two cents. The benchmark's
     checker is shown only to let you judge the audit; a real deployment has no such oracle.</p>
 </div>
 
 <h2>3. Watch it on recorded test episodes</h2>
-<p>Recorded episodes of Closed-A from the preregistered test (G10): the same scenario without and with self-policing.
-  Each row is one proposed tool call: the share of Closed-A's own answers that said "no", whether the call was held, and what
+<p>Recorded episodes of Claude Haiku 5.5 from the preregistered test (G10): the same scenario without and with self-policing.
+  Each row is one proposed tool call: the share of Claude Haiku 5.5's own answers that said "no", whether the call was held, and what
   the environment's checker says about it. A held call goes to a reviewer; in the test the benchmark's checker played the
-  human reviewer: it ran an allowed call and blocked a violation, telling Closed-A it was not executed.</p>
+  human reviewer: it ran an allowed call and blocked a violation, telling Claude Haiku 5.5 it was not executed.</p>
 <div class="card">
   <div class="row"><label>Episode <select id="ep"></select></label><span id="epNote" class="muted"></span></div>
   <div class="grid2 sp-cols" style="margin-top:10px">
@@ -135,7 +135,7 @@
   <div class="scrollx"><table id="lawTable" class="tablewrap"><thead><tr><th>Kind of violation</th><th>Share of violations w</th><th>Flag rate τ (0–1)</th><th></th></tr></thead><tbody></tbody></table></div>
   <p class="muted">Shares w are normalized, so counts work too.</p>
   <div class="row" style="margin-top:8px"><button id="addRow" class="secondary">Add a kind</button>
-    <button id="exLaw" class="secondary">Example: Closed-A (G12 step A)</button></div>
+    <button id="exLaw" class="secondary">Example: Claude Haiku 5.5 (G12 step A)</button></div>
   <p style="margin-top:10px">Predicted share of violations prevented: <span id="lawOut" class="num">–</span></p>
   <p id="lawWarn" class="tag" hidden></p>
   <p id="lawNote" class="muted"></p>
