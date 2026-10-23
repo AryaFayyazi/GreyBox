@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-23T08:53:01-07:00",
+ "sha256": {
+  "docs/prereg_G44_self_vs_other_forecast.md": "f41bf8d47922cb095ff8eb0e480350f7e7ce5a5c15126856592e40f2b84898c1",
+  "scripts/220_g44_self_vs_other_forecast.py": "f7378ad3b383ad938dec68947fcbbd2928d6975f1d319a8ec94f9ed7d2619318"
+ }
+}
