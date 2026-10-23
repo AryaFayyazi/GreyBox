@@ -159,7 +159,7 @@ if p.exists():
 p = ROOT / "results/t1/g39b_matched_gate.json"
 if p.exists():
     R = json.loads(p.read_text())
-    m["GLbNone"] = f"{100 * R['violating_episodes']['none']:.1f}\\%"
+    m["GLbNone"] = f"{100 * round(R['violating_episodes']['none'] * R['units']) / R['units']:.1f}\\%"
     m["GLbPre"] = f"{100 * R['violating_episodes']['pre']:.1f}\\%"
     m["GLbPos"] = f"{100 * R['violating_episodes']['position']:.1f}\\%"
     m["GLbRed"] = ci(R["P1_pre_relative_reduction"], sign=False)
