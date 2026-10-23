@@ -1,0 +1,47 @@
+{
+ "closed_gpt": {
+  "units": 402,
+  "violations": 27,
+  "own_within_template_tool": 0.8399,
+  "other_within_template_tool": 0.7284,
+  "own_within_position": 0.9228,
+  "other_within_position": 0.8473
+ },
+ "F1_gpt_own_minus_other_template_tool": [
+  0.1115,
+  0.0409,
+  0.1848
+ ],
+ "F1b_gpt_own_minus_other_position": [
+  0.0756,
+  -0.0167,
+  0.2299
+ ],
+ "gptoss20b": {
+  "steps": 136,
+  "violations": 82,
+  "own": 0.6816,
+  "other": 0.8408
+ },
+ "qwen38": {
+  "steps": 41,
+  "violations": 23,
+  "own": 0.8571,
+  "other": 0.6429
+ },
+ "museglimmer": {
+  "steps": 226,
+  "violations": 93,
+  "own": 0.4676,
+  "other": 0.6127
+ },
+ "F2_open_pooled_own_minus_other": [
+  -0.03,
+  -0.1592,
+  0.0819
+ ],
+ "endpoints": {
+  "F1_lower_gt_0": true,
+  "F2_lower_gt_0": false
+ }
+}

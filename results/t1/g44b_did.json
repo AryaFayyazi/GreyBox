@@ -1,0 +1,25 @@
+{
+ "gptoss20b": {
+  "own_minus_other_at_call": 0.0232,
+  "own_minus_other_before_call": -0.1592,
+  "did": -0.1824
+ },
+ "qwen38": {
+  "own_minus_other_at_call": 0.0621,
+  "own_minus_other_before_call": 0.2143,
+  "did": 0.1522
+ },
+ "museglimmer": {
+  "own_minus_other_at_call": -0.0396,
+  "own_minus_other_before_call": -0.1451,
+  "did": -0.1055
+ },
+ "D1_pooled_did": [
+  -0.0452,
+  -0.1783,
+  0.0819
+ ],
+ "endpoints": {
+  "D1_lower_gt_0": false
+ }
+}

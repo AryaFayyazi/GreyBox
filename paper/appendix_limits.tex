@@ -116,3 +116,7 @@ the unseen-task test, the canonical form after the adaptive attack, and adversar
 existed, and the later locks were published first, but their hypotheses were not independent of what we had seen.
 
 \textbf{Where answers lose.} For detecting \emph{that} a model's state moved (a hidden system prompt), sampled replies had more power than sampled answers at equal calls in every model and condition on development data, so we did not run that test.
+
+\textbf{What crosses the API boundary} (G7, preregistered; \cref{app:channels}). Yes/no answers carry little or no model-specific geometry; next-token probabilities carry some, and full log-probability vectors single out a model's own final-layer geometry (\cref{thm:exact}). So yes/no answers reveal the part of a model's hidden geometry that it shares with other models. That shared part is what lets us check a closed model's reconstruction.
+
+\textbf{The answers beat the input embedding on new kinds of context.} On the 400 contexts of the four new kinds, they do so for \GSixSThree\ models (\GSixAnsNew\ vs \GSixTextNew; preregistered; for Gemma and gpt-oss the interval includes 0).
