@@ -1,0 +1,59 @@
+{
+ "gptoss20b": {
+  "steps": 136,
+  "steps_with_state": 100,
+  "L1_R4": -0.1186,
+  "L1_D16": -0.1776,
+  "L3_R4": -0.0741,
+  "L3_D16": -0.0606
+ },
+ "qwen38": {
+  "steps": 41,
+  "steps_with_state": 28,
+  "L1_R4": 0.0748,
+  "L1_D16": -0.1615,
+  "L3_R4": 0.3333,
+  "L3_D16": 0.0
+ },
+ "museglimmer": {
+  "steps": 226,
+  "steps_with_state": 100,
+  "L1_R4": -0.0339,
+  "L1_D16": 0.1709,
+  "L3_R4": NaN,
+  "L3_D16": NaN
+ },
+ "gemma4": {
+  "steps": 289,
+  "steps_with_state": 217,
+  "L1_R4": -0.0651,
+  "L1_D16": -0.1403,
+  "L3_R4": 0.1831,
+  "L3_D16": 0.1825
+ },
+ "K1_L1_D16": [
+  -0.0771,
+  -0.2503,
+  0.1951
+ ],
+ "K2_L1_D16_minus_R4": [
+  -0.0414,
+  -0.2735,
+  0.2006
+ ],
+ "L3_D16_minus_R4": [
+  -0.1068,
+  -1.4803,
+  1.5382
+ ],
+ "pooled_agents": [
+  "gptoss20b",
+  "qwen38",
+  "museglimmer",
+  "gemma4"
+ ],
+ "endpoints": {
+  "K1_lower_gt_0": false,
+  "K2_lower_gt_0": false
+ }
+}
