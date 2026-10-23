@@ -22,7 +22,7 @@ We first test the reconstruction where the truth is visible: on open models, who
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/geometry_main.pdf}
-\caption{\textbf{What yes/no answers reveal of a hidden state} (preregistered). (a) Agreement of each open model's answer geometry with its own hidden geometry, exact and from 8 sampled answers, against the geometry of the input text (Spearman over all pairs of 1{,}440 held-out contexts; nothing fit). (b) Answers of model A against the hidden geometry of model B on 1{,}000 fresh contexts: the own-model diagonal (outlined) is not special.}
+\caption{\textbf{What yes/no answers reveal of a hidden state.} (a) Agreement of each open model's answer geometry with its own hidden geometry, exact and from 8 sampled answers, against the geometry of the input text (Spearman over all pairs of 1{,}440 held-out contexts; nothing fit). (b) Answers of model A against the hidden geometry of model B on 1{,}000 fresh contexts: the own-model diagonal (outlined) is not special.}
 \label{fig:geometry}
 \end{figure}
 
@@ -37,11 +37,13 @@ We first test the reconstruction where the truth is visible: on open models, who
 % =====================================================================================
 \section{Monitoring, forecasting and preventing violations}
 \label{sec:results}
+This section tests the three consequences: at the call, a fixed read-out monitors as well as a probe and carries to new benchmarks and closed agents (\cref{sec:monitor,sec:carry}); before the call, the forecast needs the agent's own policy (\cref{sec:forecast}); and gates on these reads prevent violations by a predictable amount (\cref{sec:prevent-live}).
+
 \textbf{Agents and benchmarks.} CAPE-Bench \citep{fayyazi2026cape} gives matched tool-use tasks in which one fact decides whether an action is authorised. An environment checker labels each action. We use four open agents, whose decision states we store: Gemma-4 (26B), gpt-oss-20b, Qwen3.8-27B and Muse-Glimmer-30B. We use two closed agents through their public APIs, with reasoning off: Claude Haiku 5.5 (Anthropic) and GPT-6-luna (OpenAI). The second benchmarks are AgentDojo (prompt injection) and $\tau^2$-bench airline.
 
 \subsection{Monitoring at the call}
 \label{sec:monitor}
-\textbf{The read-out.} At each proposed call, the agent answers 8 yes/no questions about the call through its own API, 4 times each. The fixed read-out of \cref{sec:method} scores the answers. Nothing is fit and no label is used: we fixed the questions and the read-out on development data.
+\textbf{The read-out.} At each proposed call, the agent answers 8 yes/no questions about the call through its own API, 4 times each (\cref{app:questions}). The fixed read-out of \cref{sec:method} scores the answers. Nothing is fit and no label is used: we fixed the questions and the read-out on development data.
 
 \textbf{It ranks violations about as well as a probe on the hidden states.} On held-out calls, the within-template AUROC is \GFtFixed\ (\cref{tab:g15}). A probe trained on the agent's true decision states, a comparison that needs the weights and labels, scores \GFtTrainedWB; the mean difference is \GFtTtwo. The read-out beats the agent's single self-audit answer by \GFtTone. It does not need the full decision state: the geometry of the 8 answers agrees with that state at only 0.01--0.16, and on open agents about 20\% [13, 27] of its ranking power runs through the hidden violation direction. The rest comes from the transcript, which every reader sees.
 
@@ -50,7 +52,7 @@ We first test the reconstruction where the truth is visible: on open models, who
 \begin{table}[t]
 \centering\footnotesize
 \setlength{\tabcolsep}{3pt}
-\caption{\textbf{Monitoring a decision through the agent's own answers} (preregistered; held-out calls). AUROC within strata; best per row in blue; Claude = Claude Haiku 5.5. The read-out of 8 answers is fixed (nothing fit to labels). The trained probe reads the agent's true hidden states (32 principal components, fit on development calls); it is a comparison, not part of the method.}
+\caption{\textbf{Monitoring a decision through the agent's own answers} (held-out calls). AUROC within strata; best per row in blue; Claude = Claude Haiku 5.5. The read-out of 8 answers is fixed (nothing fit to labels). The trained probe reads the agent's true hidden states (32 principal components, fit on development calls); it is a comparison, not part of the method.}
 \label{tab:g15}
 \resizebox{\columnwidth}{!}{\begin{tabular}{@{}l r >{\columncolor{gbrow}}c cccc@{}}
 \toprule
@@ -75,7 +77,7 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}Closed: no trained probe exists; a trained reader of the call text scores 1.000 here. \textsuperscript{b}Pooled; its mailing-list sends are decided by a fact that it never checked, and they are not flagged. \textsuperscript{c}Exploratory: a probe on the true states, with its components and regularisation chosen afterwards by cross-validation on the development calls. \textsuperscript{d}Gemma-4 with reasoning on reads the same conversation and gives one holistic violation probability (mean of 4). \textsuperscript{e}New task families.}
 \end{table}
 
-\textbf{With no label, the read-out tells where it works.} Its variance beyond its known sampling noise is its SNR (\cref{prop:snrceil}). Over \GCwCells\ agent--benchmark--stratum cells, the SNR predicts the AUROC (Spearman \GCwCone): cells with SNR $>0$ score \GCwPos, and cells with SNR $\le0$ score \GCwNeg. The same holds for each question: over eight agent--benchmark pairs, a question's label-free spread beyond its noise predicts how well it ranks violations (mean Spearman \GTfFone). Claude Haiku 5.5's settings have the lowest SNR: its four answers agree on 96--97\% of questions.
+\textbf{With no label, the read-out tells where it works.} Its variance beyond its known sampling noise is its SNR (\cref{prop:snrceil}). Over 29 cells (agent, benchmark and stratum), the SNR predicts the AUROC (Spearman 0.71): cells with SNR $>0$ score 0.96 on average, cells with SNR $\le0$ score 0.68. The same holds question by question (mean Spearman 0.58). Claude Haiku 5.5 has the lowest SNR: its four answers agree on 96--97\% of questions.
 
 \textbf{At the call, another answerer does as well, as the theory implies.} The transcript and the call decide the violation (\cref{cor:action}), and the answers read a geometry that models share. So another model that answers the same questions about the same call should match the agent. It does on open agents (own $-$ other +0.012 [$-$0.018, 0.040]), and it does better on Claude Haiku 5.5 ($-$0.09 on restarts; $-$0.29 on $\tau^2$ with reasoning on). Claude Haiku 5.5 itself, reviewing its own calls with reasoning on, reaches 0.918 on $\tau^2$. Monitoring at the call thus works through the agent's own API, but it does not need the agent; forecasting does (\cref{sec:forecast}).
 
@@ -93,7 +95,7 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \label{sec:forecast}
 \textbf{The pre-call state.} Before each step's call, the agent answers 8 questions about its next action; the call does not exist yet.
 
-\textbf{GPT-6-luna's state forecasts the coming violation.} In a first run (exploratory), among calls at the same position, where position cannot help, its pre-call answers ranked the coming violation at \GGlPrePos. A preregistered replication on \GCfN\ confirms both: within template and tool \GCfTT\ (position alone 0.777), and among calls at the same position \GCfPos\ (9 strata holding 27 violations).
+\textbf{GPT-6-luna's state forecasts the coming violation.} On 252 fresh episodes (1{,}047 calls, 68 violations), its pre-call answers ranked the coming violation at 0.84 within template and tool, where position alone scores 0.78. Among calls at the same position, where position cannot help, they ranked it at 0.92 (9 strata, 27 violations; interval in \cref{app:prereg}); an exploratory run had found 0.93.
 
 \textbf{Whose forecast is it?} Gemma-4 answered the same questions in GPT-6-luna's seat, on the same conversations. Within each kind of task and tool it forecast worse: 0.728, against 0.840 for GPT-6-luna's own answers (+0.111 [0.041, 0.185]). At the same position the difference, +0.08 [$-$0.02, 0.23], does not separate. \PENDING{fresh episodes of both closed agents: own $-$ other, within template and tool and within position}
 
@@ -110,7 +112,7 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \centering\footnotesize
 \renewcommand{\arraystretch}{1.12}
 \setlength{\tabcolsep}{2.4pt}
-\caption{\textbf{Self-policing through the agent's own API} (preregistered; held-out scenarios; no other model, no labels). Reduction $=1-$gate/plain; better arm in blue.}
+\caption{\textbf{Self-policing through the agent's own API} (held-out scenarios; no other model, no labels). Reduction $=1-$gate/plain; better arm in blue.}
 \label{tab:selfpolice}
 \resizebox{\columnwidth}{!}{\begin{tabular}{@{}l cc >{\columncolor{gbrow}}c cc@{}}
 \toprule
@@ -118,12 +120,12 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \rowcolor{gbhead}\textbf{Agent, set} & plain & gate & \textbf{(95\% CI)} & plain & gate\\
 \midrule
 \multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{CAPE-Bench}: episodes with an executed violation; reached the goal}\\
-Gemma-4, all\textsuperscript{a} & 27.9 & \best{5.0} & \textbf{.82} {\scriptsize[.76, .88]} & 33.5 & \best{43.7}\\
-Claude Haiku 5.5, decidable\textsuperscript{b} & 2.8 & \best{0.9} & \textbf{.69} {\scriptsize[.51, .88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
-Claude Haiku 5.5, unchecked\textsuperscript{c} & 100 & 92.9 & .07 {\scriptsize[.00, .17]} & & \\
+Gemma-4, all\textsuperscript{a} & 27.9 & \best{5.0} & \textbf{0.82} {\scriptsize[0.76, 0.88]} & 33.5 & \best{43.7}\\
+Claude Haiku 5.5, decidable\textsuperscript{b} & 2.8 & \best{0.9} & \textbf{0.69} {\scriptsize[0.51, 0.88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
+Claude Haiku 5.5, unchecked\textsuperscript{c} & 100 & 92.9 & 0.07 {\scriptsize[0.00, 0.17]} & & \\
 \multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{AgentDojo}: attacks that succeeded; utility}\\
-Gemma-4\textsuperscript{d} & 11.5 & \best{1.8} & \textbf{.84} {\scriptsize[.76, .91]} & 84.5 & \best{86.8}\\
-gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{.50} {\scriptsize[.42, .58]} & 50.5 & 50.8\\
+Gemma-4\textsuperscript{d} & 11.5 & \best{1.8} & \textbf{0.84} {\scriptsize[0.76, 0.91]} & 84.5 & \best{86.8}\\
+gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{0.50} {\scriptsize[0.42, 0.58]} & 50.5 & 50.8\\
 \bottomrule
 \end{tabular}}\\[2pt]
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}666 episodes per arm; a call was held when all four answers said that it does not comply (1.01 reviews per episode; reviewer: CAPE's checker). A second gate, which replaces a flagged call by a fresh draw (up to four), also gave $-84\%$, with success 38.7 and 0.40 reviews per episode. \textsuperscript{b}470 scenarios $\times$ 2; a call was held when all three answers said that it breaks a rule; 0.31 reviews per episode. \textsuperscript{c}21 mailing-list scenarios $\times$ 2, decided by a fact the agent never checks; predicted not to fall. \textsuperscript{d}Held-out tasks, 2 trials, about 1{,}300 attacks per arm; spotlighting in both arms; predicted 1.00 and 0.58.}
@@ -133,7 +135,7 @@ gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{.50} {\scriptsize[
 
 \textbf{The effect is predictable.} Offline flag rates, weighted by where each agent violates, predicted the live reduction of five agents within the registered 0.15 (reductions from 0.01 to 0.63; mean absolute error 0.035; \cref{fig:teaser}d).
 
-\textbf{A gate on the pre-call state.} We ran GPT-6-luna live on fresh seeds, with gates at an equal review rate (\GLbRev\ reviews per episode). A gate on the pre-call read-out cut the episodes with a violation from \GLbNone\ to \GLbPre\ (relative reduction \GLbRed); a gate on position cut them to \GLbPos\ (difference \GLbPmP). Success did not change (\GLbSucc). The offline share of violating calls that the gate holds, fixed before the run, predicted its effect (\GLwPred; observed \GLwObs). In all live tests, CAPE's checker stands in for the human reviewer.
+\textbf{A gate on the pre-call state.} Live, on fresh GPT-6-luna episodes, we compared two gates at an equal review rate (about 1.5 reviews per episode). A gate on the pre-call read-out cut the episodes with a violation from 31.7\% to 7.9\%; a gate on the call's step alone cut them to 17.9\% (relative reductions 0.75 and 0.44; difference \GLbPmP). Success did not change. The offline share of violating calls that the gate holds, fixed before the run, predicted its effect (predicted 0.75, observed 0.75). In all live tests, CAPE's checker stands in for the human reviewer.
 
 \textbf{Prevention with no reviewer.} In the tests above, a held call went to a reviewer. Here nothing judges in the loop: when the agent's own read-out flags a call, the call is held once and the agent is told to re-check its policy and the facts; an identical re-proposal runs. On Claude Haiku 5.5, against random holds at the same rate: \PENDING{violating episodes, none vs self vs random; success}
 

@@ -26,6 +26,7 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 6.6, "axes.edgec
                      "pdf.fonttype": 42, "ps.fonttype": 42})
 SA, LS, CS = Path("/data/models/graybox_ws/outputs/self_audit"), Path("/data/models/graybox_ws/outputs/live_selfaudit"), Path("/data/models/graybox_ws/outputs/claude_selfaudit")
 T1 = ROOT / "results/t1"
+LAW_W, LAW_H, LAW_PAGE_W = 3.25, 2.25, 6.75   # law.pdf: plot size; page width = the appendix \columnwidth (one column)
 
 
 def boot_red(none, gate, groups, nb=2000, seed=0):
@@ -92,12 +93,13 @@ def main():
     fig2.subplots_adjust(left=0.215, right=0.985, top=0.86, bottom=0.16)
     fig2.savefig(ROOT / "paper/figures/selfpolice.pdf")
     fig2.savefig(ROOT / "results/figures/selfpolice.png", dpi=220)
-    fig, ax = plt.subplots(figsize=(3.25, 2.25))       # printed at 3.25 in (one column): fonts print at their nominal size
+    fig, ax = plt.subplots(figsize=(LAW_W, LAW_H))     # drawn at 3.25 x 2.25 in: fonts are true 6-6.8 pt at print scale 1.0
     law_panel(ax, [p for p in pts if p[6] != "g11b"])   # the paper's appendix shows the law's preregistered tests
     fig.tight_layout(pad=0.3)
+    fig.savefig(ROOT / "results/figures/law.png", dpi=220)
+    # saved at its print size, 3.25 x 2.25 in; the appendix includes it at width=3.25in (print scale 1.0)
     (ROOT / "paper/figures").mkdir(parents=True, exist_ok=True)
     fig.savefig(ROOT / "paper/figures/law.pdf")
-    fig.savefig(ROOT / "results/figures/law.png", dpi=220)
     print(json.dumps([(p[0], p[6], round(float(p[1]), 3), [round(float(v), 3) for v in p[2:5]]) for p in pts], indent=0))
 
 

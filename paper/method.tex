@@ -4,7 +4,7 @@
 
 \subsection{Setting}
 \label{sec:setting}
-A language model reads a context $x$ (tokens) and reaches an internal state $s(x)$, a deterministic function of the tokens. An outside observer sees only outputs: sampled text and, on some APIs, the log-probabilities of the next token. A \emph{battery} $Q=(q_1,\dots,q_m)$ of yes/no questions is asked in side branches: each question is appended to $x$ in its own call, so the model's real conversation never sees it, and the answers are independent given $x$. The \emph{interrogation state} is $\Psi_Q(x)=\big(P(\textsc{yes}\mid x\oplus q_j)\big)_j$, and the answers follow the product law $P_x=\bigotimes_j\mathrm{Bernoulli}(\Psi_{q_j}(x))$. Where a model is open, its hidden state $h(x)\in\mathbb{R}^d$ at a layer is the ground truth that we test against.
+A language model reads a context $x$ (tokens) and reaches an internal state $s(x)$, a deterministic function of the tokens. An outside observer sees only outputs: sampled text and, on some APIs, the log-probabilities of the next token. A \emph{battery} $Q=(q_1,\dots,q_m)$ of yes/no questions is asked in \emph{side branches} (\cref{fig:method}): each question is appended to a copy of $x$ in its own call, the copy is then discarded, so the model's real conversation never sees it, and the answers are independent given $x$. The \emph{observable state} is $\Psi_Q(x)=\big(P(\textsc{yes}\mid x\oplus q_j)\big)_j$, and the answers follow the product law $P_x=\bigotimes_j\mathrm{Bernoulli}(\Psi_{q_j}(x))$. Where a model is open, its hidden state $h(x)\in\mathbb{R}^d$ at a layer is the ground truth that we test against.
 
 \subsection{What cannot be read: a gauge symmetry}
 \begin{proposition}[gauge]\label{prop:gauge}
@@ -45,33 +45,33 @@ with $\Delta=\sum_a(\bar\pi-\pi')(a\mid V_t)\,r(a,V_t)$. The excess is zero once
 \begin{proof}[Proof sketch]
 $f=\E[Y\mid V_t]$, so $\E(Y-f')^2=\E(Y-f)^2+\E(f-f')^2$; and $|f-f'|\le\|\bar\pi-\pi'\|_1$ since $0\le r\le1$. Given $A_t$, both forecasts equal $r(A_t,V_t)$.
 \end{proof}
+\begin{corollary}[reading the policy by sampling]\label{cor:rollout}
+Let $a_1,\dots,a_M$ be next actions drawn from the agent in side branches, so $a_k\sim\bar\pi(\cdot\mid V_t)$ i.i.d., and $\hat f=\frac1M\sum_k r(a_k,V_t)$. Then $\E(Y-\hat f)^2-\E(Y-f)^2=\E\,\Var_{\bar\pi}[r(a,V_t)]/M\le 1/(4M)$.
+\end{corollary}
+So sampling the agent reads its own policy, and with it the Bayes forecast; a self-report or another model's draws are readers with another policy and pay the excess of \cref{prop:selfforecast}. In practice $r$ is not known: we replace it by the read-out of each drawn call, the agent's own answers at that call.
 So at the call any capable reader can match the agent (\cref{cor:action}); before it, a reader loses exactly as much as its policy differs from the agent's on violating actions. Another model's answers can forecast well only where it would act like the agent (tested in \cref{sec:forecast}).
 
-\textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $K$ yes/no questions about the call in side branches (\cref{fig:method}). Their angles $\vartheta_t\in[0,\pi]^K$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
-\begin{equation}\label{eq:readout} s_t=\frac1K\sum_{j=1}^{K}\sigma_j\,\vartheta_{tj},\qquad \sigma_j\in\{-1,+1\}. \end{equation}
+\textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $m$ yes/no questions about the call in side branches. Their angles $\vartheta_t\in[0,\pi]^m$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
+\begin{equation}\label{eq:readout} s_t=\frac1m\sum_{j=1}^{m}\sigma_j\,\vartheta_{tj},\qquad \sigma_j\in\{-1,+1\}. \end{equation}
 Here $\sigma_j=-1$ for the question ``does it comply'' and $+1$ for the others. No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
 \begin{proposition}[a label-free ceiling]\label{prop:snrceil}
 Let $N$ be the sampling-noise variance of $s_t$ and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
-$\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$; at $\mathrm{SNR}\le0$ the read-out cannot rank violations.
+$\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$, with $\mathrm{SNR}^+=\max(\mathrm{SNR},0)$; at $\mathrm{SNR}\le0$ the read-out cannot rank violations.
 \end{proposition}
 \begin{proof}[Proof sketch]
-With class gap $\Delta$ and within-class variance $\sigma_w^2\ge N$, $\mathrm{Var}(s_t)=\sigma_w^2+p(1-p)\Delta^2$, so $p(1-p)\Delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_w^2$; and $\mathrm{AUROC}=\Phi(\Delta/\sqrt2\sigma_w)$.
+With class gap $\delta$ and within-class variance $\sigma_{\mathrm{in}}^2\ge N$, $\mathrm{Var}(s_t)=\sigma_{\mathrm{in}}^2+p(1-p)\delta^2$, so $p(1-p)\delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_{\mathrm{in}}^2$; and $\mathrm{AUROC}=\Phi(\delta/\sqrt2\sigma_{\mathrm{in}})$.
 \end{proof}
-In practice we use the nominal noise $\frac1{K^2}\sum_j(m_j+\frac12)^{-1}$ for $m_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, and a high value supports it (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
+In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, and a high value supports it (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
 
-\textbf{The state across steps.} Before each call we measure $y_t$, the angles of the agent's answers to $K$ questions about its \emph{next} action. By \cref{thm:geometry}, $y_t=z_t+v_t$: the observable state plus sampling noise whose variance the number of answers fixes ($\approx1/(n+\frac12)$ per question), independent across steps. We model $z_{t+1}=Fz_t+c+w_t$ and identify the model from unlabelled runs of the same agent.
+\textbf{The state across steps.} Before each call we measure $y_t$, the angles of the agent's answers to $m$ questions about its \emph{next} action. By \cref{thm:geometry}, $y_t=z_t+v_t$: the observable state plus sampling noise whose variance the number of answers fixes ($\approx1/(n+\frac12)$ per question), independent across steps. We model $z_{t+1}=Fz_t+b+\eta_t$ and identify the model from unlabelled runs of the same agent.
 \begin{proposition}[identification through the noise]\label{prop:iv}
-If $v_t$ is independent across steps and of $(z_s,w_s)$, and $\mathrm{Cov}(z_t,z_{t-1})$ is invertible, then $F=\mathrm{Cov}(y_{t+1},y_{t-1})\,\mathrm{Cov}(y_t,y_{t-1})^{-1}$ and $\Sigma_z=F^{-1}\mathrm{Cov}(y_{t+1},y_t)$, whatever the law of $v_t$. Regressing $y_{t+1}$ on $y_t$ instead shrinks $F$ by the noise.
+If $v_t$ is independent across steps and of $(z_s,\eta_s)$, and $\mathrm{Cov}(z_t,z_{t-1})$ is invertible, then $F=\mathrm{Cov}(y_{t+1},y_{t-1})\,\mathrm{Cov}(y_t,y_{t-1})^{-1}$ and $\Sigma_z=F^{-1}\mathrm{Cov}(y_{t+1},y_t)$, whatever the law of $v_t$. Regressing $y_{t+1}$ on $y_t$ instead shrinks $F$ by the noise.
 \end{proposition}
 \begin{proof}[Proof sketch]
 The noise at $t\pm1$ is independent of everything at other steps, so $\mathrm{Cov}(y_{t+1},y_{t-1})=F\,\mathrm{Cov}(z_t,z_{t-1})=F\,\mathrm{Cov}(y_t,y_{t-1})$ and $\mathrm{Cov}(y_{t+1},y_t)=F\Sigma_z$.
 \end{proof}
 A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it about threefold) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
 
-\textbf{The cut.} The cut is set on the agent's own unlabelled traffic and then frozen.
-\begin{proposition}[a frozen cut]\label{prop:frozen}
-Let the scores of $n$ unlabelled warm-up calls and of a new call be exchangeable with no ties, and let $\hat c$ be the $k$-th smallest warm-up score. Then $P(S_{n+1}>\hat c)=(n+1-k)/(n+1)$, which for $k=\lceil(1-\beta)(n+1)\rceil$ lies in $\big(\beta-\tfrac1{n+1},\beta\big]$.
-\end{proposition}
-A cut that follows recent traffic fails exactly when an attack arrives (it catches at most $\beta/\rho$ of a burst in which a share $\rho>\beta$ violate), while a frozen cut keeps its rate; after a shift of the safe traffic it is set again (\cref{prop:shift}, \cref{app:agents}).
+\textbf{The cut.} A cut on the read-out is set on the agent's own unlabelled traffic and then frozen; its escalation rate is exact and robust to bursts (\cref{prop:frozen}, \cref{app:agents}).
 
-\textbf{Metrics.} For geometries: Spearman correlation between two distance matrices over all pairs of contexts (no fitted parameter). For monitors: the AUROC within strata (template, tool or suite), and the share of violations caught when exactly $\beta$ of the actions are escalated. Intervals are 95\% percentile intervals from a bootstrap over contexts, scenarios or episodes. Proofs are in \cref{app:proofs}.
+\textbf{Metrics.} For geometries: Spearman correlation between two distance matrices over all pairs of contexts (no fitted parameter). For monitors: the \emph{within-stratum AUROC}, the AUROC over pairs of a violating and a safe call from the same stratum, where a stratum is a template (a CAPE-Bench task family), a tool, or an AgentDojo suite, and, where stated, the call's \emph{position} (its ordinal among the episode's calls); and the share of violations caught when exactly $\beta$ of the actions are escalated. Intervals are 95\% percentile intervals from a bootstrap over contexts, scenarios or episodes. Proofs are in \cref{app:proofs}.

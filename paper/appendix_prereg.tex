@@ -1,4 +1,4 @@
-Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock; for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code.
+This appendix lists the preregistered test behind each claim. Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock; for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code.
 
 \begin{center}
 \footnotesize
@@ -9,13 +9,13 @@ Each claim below rests on a registered endpoint of a test whose document and cod
 \rowcolor{gbhead}\textbf{Claim} & \textbf{Registered endpoint (bar)} & \textbf{Result} & \textbf{Lock}\\
 \midrule
 \endhead
-\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{reconstructing the geometry} (\cref{sec:geom-results})}\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{reconstructing the geometry} (\cref{sec:geom-results})}\\*
 Answers track the hidden geometry better than the input & answers $-$ text, every model (lower bound $>0$) & 8 of 8; gains \GOneGain & \texttt{ebb89b1}\\
 Answers beat the replies & exact answers $-$ replies (lower bound $>0$, $\ge7$ of 8) & 8 of 8 & \texttt{0163682}\\
 The geometry is shared across models & own-model excess inside $\pm0.02$ & \GSixExcess & \texttt{85ed1bb}\\
 A closed model's answer geometry is stable & split-half Spearman ($>0.7$) & \GTwoSplit & \texttt{ebb89b1}\\
 Triangulation predicts own agreement & leave-one-out error ($<0.10$) & \GVtMae & \texttt{a1556ea}\\
-\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{monitoring at the call} (\cref{sec:monitor,sec:carry})}\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{monitoring at the call} (\cref{sec:monitor,sec:carry})}\\*
 The read-out adds to the single answer & 8 answers $-$ 1 answer (lower bound $>0$) & \GFtTone & \texttt{4ac0466}\\
 \quad as good as a probe on the hidden states & 8 answers $-$ probe (lower bound $>-0.05$) & \GFtTtwo & \texttt{4ac0466}\\
 \quad on Claude Haiku 5.5's restarts & AUROC $\ge0.80$, lower bound $\ge0.65$ & \GFtClosedAFixed & \texttt{4ac0466}\\
@@ -26,17 +26,17 @@ A question's spread predicts its value & mean Spearman (lower bound $>0$) & \GTf
 Prompt injection (AgentDojo) & within-suite AUROC, each agent (lower bound $>0.60$) & 0.904, 0.985 & \texttt{e5ad171}\\
 GPT-6-luna at its call & within-stratum AUROC (lower bound $>0.5$) & \GGlAt & \texttt{5a44807}\\
 Claude Haiku 5.5 on $\tau^2$-bench & within-tool AUROC (lower bound $>0.5$) & \GEeRone & \texttt{101fab0}\\
-\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{forecasting before the call} (\cref{sec:forecast})}\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{forecasting before the call} (\cref{sec:forecast})}\\*
 GPT-6-luna, beyond position & within-position AUROC (lower bound $>0.50$) & \GCfPos & \texttt{0a3db28}\\
 \quad own answers beat another model's & own $-$ other (lower bound $>0$) & +0.111 [0.041, 0.185] & \texttt{fa82fad}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \texttt{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \texttt{98ceb4e}\\
 A Kalman forecast beats position & forecast $-$ position prior (lower bound $>0$) & +0.21 [0.08, 0.32] & \texttt{f531a75}\\
-\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{preventing violations} (\cref{sec:prevent-live})}\\
-Self-policing, Gemma-4 & relative reduction (lower bound $\ge0.50$) & .82 [.76, .88] & \texttt{00da0b9}\\
-Self-policing, Claude Haiku 5.5 & relative reduction, decidable (lower bound $\ge0.40$) & .69 [.51, .88] & \texttt{09caf58}\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{preventing violations} (\cref{sec:prevent-live})}\\*
+Self-policing, Gemma-4 & relative reduction (lower bound $\ge0.50$) & 0.82 [0.76, 0.88] & \texttt{00da0b9}\\
+Self-policing, Claude Haiku 5.5 & relative reduction, decidable (lower bound $\ge0.40$) & 0.69 [0.51, 0.88] & \texttt{09caf58}\\
 The prevention law & each $|$error$|\le0.15$; mean $\le0.10$ & 5 of 5; mean 0.035 & \texttt{47297e1}\\
-Self-policing against injection & Gemma-4 reduction (lower bound $\ge0.50$) & .84 [.76, .91] & \texttt{4000e47}\\
+Self-policing against injection & Gemma-4 reduction (lower bound $\ge0.50$) & 0.84 [0.76, 0.91] & \texttt{4000e47}\\
 Pre-call gate on GPT-6-luna & pre $-$ position at matched rate (lower bound $>0$) & \GLbPmP & \texttt{e34b337}\\
 \quad its effect predicted & $|$predicted $-$ observed$|\le0.15$ & \GLwPred\ vs \GLwObs & \texttt{ce78acd}\\
 \bottomrule

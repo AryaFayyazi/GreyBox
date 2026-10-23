@@ -1,52 +1,49 @@
 \label{app:agents}
-This appendix holds the theory that the agent results use. The main text states \cref{cor:action}, a short form of \cref{prop:frozen}, and the shift and burst bounds.
+This appendix states and proves the theory behind the agent results. Each proof follows its statement.
 
-\textbf{The reader replicates the agent's state.} A \emph{reader} is an open model $R$ that reads the same visible tokens and the proposed action; $\psi_t=R(V_t,A_t)$ is its hidden state at a fixed layer, and $\phi_t$ is the agent's state at the decision token.
-\begin{proposition}[access and replica]\label{prop:replica}
-(a) $\sigma(Z_t,\phi_t)=\sigma(Z_t)$. For every label $Y$, the best monitor that reads $(Z_t,\phi_t)$ is no better than the best that reads $Z_t$, under every strictly proper score and at every point of the ROC curve. Under log loss, the best monitor that reads $Z_t$ beats the best that reads $V_t$ by exactly $I(Y;H_t\mid V_t)$.
-(b) The $L^2$-optimal replica $\hat\phi=\E[\phi\mid\psi]$ satisfies $\Cov(\hat\phi)\preceq\Cov(\phi)$ and, for every component $k$, $\Var(\hat\phi_k)=R^2_k\,\Var(\phi_k)$, with $R^2_k=1-\E(\phi_k-\hat\phi_k)^2/\Var(\phi_k)$. The same identity holds for the best linear replica, in sample.
-(c) For every linear readout $w$, $\E[w^\top\phi\mid\psi]=w^\top\hat\phi$: a probe applied to the replica is the conditional expectation of the same probe on the true state.
+\subsection{The cut}
+\label{app:cut}
+The cut is set on the agent's own unlabelled traffic and then frozen (\cref{alg:monitor}).
+\begin{proposition}[a frozen cut]\label{prop:frozen}
+Let the scores of $n$ unlabelled warm-up calls and of a new call be exchangeable with no ties, and let $\hat c$ be the $k$-th smallest warm-up score. Then $P(S_{n+1}>\hat c)=(n+1-k)/(n+1)$, which for $k=\lceil(1-\beta)(n+1)\rceil$ lies in $\big(\beta-\tfrac1{n+1},\beta\big]$.
 \end{proposition}
-Part (a) says why a replica is possible: with reasoning off, $\phi_t$ is a function of tokens that an outside model can also read. Part (b) predicts the shape of the replica, and part (c) says what a white-box readout computes on it.
-\begin{proposition}[the replica Rao--Blackwellises a probe]\label{prop:rb}
-Let $s=w^\top\phi$ be a probe on the agent's state and $\hat s=\E[s\mid\psi]$ its readout on the $L^2$-optimal replica. If $Y\indep\phi\mid\psi$, then $\E\,\ell(\hat s,Y)\le\E\,\ell(s,Y)$ for every loss $\ell(s,y)$ that is convex in $s$. The same holds for every convex pairwise loss $\E\,\ell(s_i-s_j)$ of independent violating and safe actions $i,j$, the convex surrogates of the AUROC.
-\end{proposition}
-We estimate $\hat\phi=M\psi+b$ by ridge regression on paired steps of an open agent, on the top principal components of its state; the proposition applies to this estimate only as far as the linear map approximates the conditional mean.
+The proof also gives the long-run escalation rate: for i.i.d.\ scores with continuous distribution function $F$, $1-F(\hat c)$ follows $\mathrm{Beta}(n+1-k,k)$ over warm-up draws, and the interpolated empirical $(1-\beta)$-quantile has escalation probability within $\tfrac{2}{n+1}$ of $\beta$. With $n=500$ and $\beta=0.05$ the escalation rate has mean $0.050$ and standard deviation $0.0097$.
+\begin{proof}
+For exchangeable scores without ties, the rank of $S_{n+1}$ among
+$S_1,\dots,S_{n+1}$ is uniform on $\{1,\dots,n+1\}$. $S_{n+1}>S_{(k)}$ holds iff its rank exceeds $k$, which has probability
+$(n+1-k)/(n+1)$; with $k=\lceil(1-\beta)(n+1)\rceil$ this lies in $(\beta-\frac{1}{n+1},\beta]$. For i.i.d.\ scores with a continuous
+distribution function $F$, a new score exceeds $\hat c$ with probability $1-F(\hat c)$ given the warm-up; $F(S_{(k)})$ is the $k$-th
+order statistic of $n$ uniforms, $\mathrm{Beta}(k,n+1-k)$, so over warm-up draws $1-F(\hat c)\sim\mathrm{Beta}(n+1-k,k)$, with mean
+$(n+1-k)/(n+1)$ and variance $k(n+1-k)/\big((n+1)^2(n+2)\big)$; for $n=500$, $\beta=0.05$: $k=476$, mean $0.0499$, sd $0.0097$.
+The shipped cut is the linearly interpolated empirical quantile at $1-\beta$, which lies in $[S_{(m)},S_{(m+1)}]$ with
+$m=\lfloor 1+(n-1)(1-\beta)\rfloor$. Its escalation probability is therefore in $\big[\tfrac{n-m}{n+1},\tfrac{n+1-m}{n+1}\big]$, and
+$(n-1)(1-\beta)\le m\le 1+(n-1)(1-\beta)$ puts it in $\big[\beta-\tfrac{2\beta}{n+1},\,\beta+\tfrac{2(1-\beta)}{n+1}\big]$, within
+$\tfrac2{n+1}$ of $\beta$ (for $n=500$: between $0.0499$ and $0.0519$).
+\end{proof}
 
-\textbf{Robustness to rewording.} Let $\kappa(A)$ be the decisive part of an action (its tool and targets) and let the free text be the rest.
-\begin{proposition}[a ceiling under rewording]\label{prop:ceiling}
-Suppose that for every violating action an attacker can reach a still-violating action with the same $\kappa(A)$ and any free text that safe actions with the same $(V,\kappa(A))$ use, and that the attacker picks, among these, the text with the lowest score of the monitor. Then for every monitor $s$ and cut $c$ there is a monitor $m$ of $(V,\kappa(A))$ alone that escalates no more safe actions than $s$ and, on clean traffic, catches at least the share of violations that $s$ catches under the attack.
-\end{proposition}
-Under rewording, no monitor's operating point beats the clean ROC curve of the best monitor of the decisive fields.
-
-\textbf{Self-policing: a prevention law.} The agent is asked in a side branch whether its proposed call complies; a flagged call is replaced by a fresh draw, at most $M$ draws, and after $M$ flags goes to review ($M=1$ is the gate).
-\begin{proposition}[shift and bursts]\label{prop:shift}\label{prop:burst}
-If deployment scores follow $Q$ and warm-up scores follow $P$, a frozen cut escalates within $K(P,Q)+\tfrac2{n+1}$ of $\beta$, with $K$ the Kolmogorov distance. A cut set at the top $\beta$ of a window in which a share $\rho>\beta$ of the actions are violations catches at most $\beta/\rho$ of them; a frozen cut catches each violation with probability $P(S\ge\hat c\mid Y=1)$, whatever $\rho$ is.
-\end{proposition}
-The full statements of the monitor's algorithm and a ceiling on robustness to rewording (\cref{prop:ceiling}) follow.
-\begin{proposition}[prevention law]\label{prop:prevention}
-At a state let $R$ be the agent's probability of proposing a violating call, and let the audit flag a violating call with probability $\tau$ and a safe one with probability $\varphi$, independently across draws. With $f=R\tau+(1-R)\varphi$, a violation runs without review with probability $R(1-\tau)\,(1-f^M)/(1-f)$, and the step goes to review with probability $f^M$.
+\begin{proposition}[shift]\label{prop:shift}
+If deployment scores follow $Q$ and warm-up scores follow $P$, a frozen cut escalates within $d_K(P,Q)+\tfrac2{n+1}$ of $\beta$, with $d_K(P,Q)=\sup_c|F_P(c)-F_Q(c)|$ the Kolmogorov distance.
 \end{proposition}
 \begin{proof}
-Draw $j$ is the first unflagged draw with probability $f^{j-1}(1-f)$; given that it is unflagged, it violates with probability $R(1-\tau)/(1-f)$. Summing over $j\le M$ gives the first claim; all $M$ draws are flagged with probability $f^M$.
+For every $c$, $Q(S>c)-P(S>c)=F_P(c)-F_Q(c)$, whose absolute value is at most
+$d_K(P,Q)$. Apply it at $c=\hat c$ and combine with \cref{prop:frozen}; apply it to the laws of the violations' scores for the
+share caught.
 \end{proof}
-Every term is measurable through the agent's API: $R$ by resampling it, $\tau$ and $\varphi$ by auditing it. For a gate whose reviewer blocks flagged violations, the share of violations prevented at one state is $\tau$ when a blocked violation is not retried. Over states of kinds $k$ with violation shares $w_k$ and flag rates $\tau_k$, it is $\sum_k w_k\tau_k$. Gemma-4's development audit flagged $\tau=0.883$ of its violating calls when all four answers said no (the gate's cut; 0.966 when a majority did); the live gate prevented 0.82 [0.76, 0.88] of its violating episodes.
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\columnwidth]{figures/law.pdf}
-\caption{\textbf{The prevention law predicts live self-policing.} Live reduction in violating episodes (95\% interval) vs the prediction from offline flag rates per kind of task, weighted by where the agent violates. Dots: the composition-weighted law (preregistered; all five within $\pm0.15$). Squares: prompt injection on AgentDojo (preregistered).}
-\label{fig:law}
-\end{figure}
-
-\textbf{The frozen cut, in full.} \Cref{prop:frozen} also gives the long-run escalation rate: for i.i.d.\ scores with continuous distribution function $F$, $1-F(\hat c)$ follows $\mathrm{Beta}(n+1-k,k)$ over warm-up draws, and the interpolated empirical $(1-\beta)$-quantile has escalation probability within $\tfrac{2}{n+1}$ of $\beta$. With $n=500$ and $\beta=0.05$ the escalation rate has mean $0.050$ and standard deviation $0.0097$.
-
-\textbf{Battery design.} In our earlier tests of the interrogation state (an Othello-playing transformer; preregistered, \cref{app:prereg}), the battery was designed from black-box answers alone: from a pool of candidate questions, add the one that splits the most classes of contexts with equal answers, and stop when no candidate splits a class.
-\begin{proposition}[battery design]\label{prop:battery}
-This greedy rule stops with the partition of the contexts that the whole pool induces and asks at most (number of its classes $-\,1$) questions. If the model's answers come from a finite automaton and the pool holds a distinguishing suffix for every pair of its states, this partition is the minimal (Myhill--Nerode) state, and no black-box method can identify more.
+\begin{proposition}[bursts]\label{prop:burst}
+A cut set at the top $\beta$ of a window in which a share $\rho>\beta$ of the actions are violations catches at most $\beta/\rho$ of them. A frozen cut $\hat c$ catches each violation with probability $P(S\ge\hat c\mid Y=1)$, whatever $\rho$ is.
 \end{proposition}
+\begin{proof}
+A cut at the top $\beta$ of a window of $N$ actions escalates $\lceil\beta N\rceil$ of them;
+the window holds $\rho N$ violations, so at most $\beta N/(\rho N)=\beta/\rho$ of them are escalated (up to rounding). A frozen
+cut $\hat c$ escalates a violation with probability $P(S\ge\hat c\mid Y{=}1)$, the monitor's true-positive rate at $\hat c$,
+which does not depend on how many violations the traffic holds when the score laws do not depend on $\rho$. A rolling
+window that holds only part of a burst has a smaller effective share than the burst, so it can catch more than $\beta/\rho$
+of the burst's violations; the bound is on the window.
+\end{proof}
+So a cut that follows recent traffic fails exactly when an attack arrives, while a frozen cut keeps its rate. After a shift of the safe traffic, the cut is set again (\cref{prop:shift}).
 
-\begin{algorithm}[h]
+\begin{algorithm}[t]
 \caption{The grey-box monitor}
 \label{alg:monitor}
 \small
@@ -65,22 +62,126 @@ This greedy rule stops with the partition of the contexts that the whole pool in
 \end{algorithmic}
 \end{algorithm}
 
+\subsection{Replicating the agent's state}
+\label{app:replica-theory}
+A \emph{replica reader} is an open model $R$ that reads the same visible tokens and the proposed action; $\psi_t=R(V_t,A_t)$ is its hidden state at a fixed layer, and $\phi_t$ is the agent's state at the decision token.
+\begin{proposition}[access and replica]\label{prop:replica}
+(a) $\sigma(Z_t,\phi_t)=\sigma(Z_t)$. For every label $Y$, the best monitor that reads $(Z_t,\phi_t)$ is no better than the best that reads $Z_t$, under every strictly proper score and at every point of the ROC curve. Under log loss, the best monitor that reads $Z_t$ beats the best that reads $V_t$ by exactly $I(Y;H_t\mid V_t)$.
+(b) The $L^2$-optimal replica $\hat\phi=\E[\phi\mid\psi]$ satisfies $\Cov(\hat\phi)\preceq\Cov(\phi)$ and, for every component $k$, $\Var(\hat\phi_k)=R^2_k\,\Var(\phi_k)$, with $R^2_k=1-\E(\phi_k-\hat\phi_k)^2/\Var(\phi_k)$. The same identity holds for the best linear replica, in sample.
+(c) For every linear readout $w$, $\E[w^\top\phi\mid\psi]=w^\top\hat\phi$: a probe applied to the replica is the conditional expectation of the same probe on the true state.
+\end{proposition}
+Part (a) says why a replica is possible: with reasoning off, $\phi_t$ is a function of tokens that an outside model can also read. Part (b) predicts the shape of the replica, and part (c) says what a white-box readout computes on it.
+\begin{proof}
+(a) $\phi_t=\Phi_\theta(Z_t)$ is $\sigma(Z_t)$-measurable, so $\sigma(Z_t,\phi_t)=\sigma(Z_t)$ (for every label), and \cref{prop:behaviour} applied with
+$X=Z_t$ gives the first claim. Under log loss the Bayes risk given a $\sigma$-field $\mathcal G$ is the conditional entropy
+$H(Y\mid\mathcal G)$, and $H(Y\mid V_t)-H(Y\mid V_t,H_t)=I(Y;H_t\mid V_t)$.
+(b) By the law of total covariance, $\Cov(\phi)=\E\,\Cov(\phi\mid\psi)+\Cov\big(\E[\phi\mid\psi]\big)$, and the first term is positive
+semidefinite. For component $k$, $\Var(\phi_k)=\E(\phi_k-\hat\phi_k)^2+\Var(\hat\phi_k)$, so $\Var(\hat\phi_k)=R^2_k\Var(\phi_k)$. For the
+best linear predictor $\hat\phi_k=a_k^\top\psi+b_k$ the residual is uncorrelated with $\hat\phi_k$ (the normal equations), and
+the same decomposition holds in sample.
+(c) Conditional expectation is linear: $\E[w^\top\phi\mid\psi]=w^\top\E[\phi\mid\psi]$.
+\end{proof}
+On fresh steps the identity of part (b) is not exact: \cref{fig:replication}d shows the ratio
+closely tracking $R^2_k$ on 128 components (correlation 0.99, slope 0.89), above $R^2_k$ on 80 of them.
+
+\begin{proposition}[the replica Rao--Blackwellises a probe]\label{prop:rb}
+Let $s=w^\top\phi$ be a probe on the agent's state and $\hat s=\E[s\mid\psi]$ its readout on the $L^2$-optimal replica. If $Y\indep\phi\mid\psi$, then $\E\,\ell(\hat s,Y)\le\E\,\ell(s,Y)$ for every loss $\ell(s,y)$ that is convex in $s$. The same holds for every convex pairwise loss $\E\,\ell(s_i-s_j)$ of independent violating and safe actions $i,j$, the convex surrogates of the AUROC.
+\end{proposition}
+\begin{proof}
+$s=w^\top\phi$ is a function of $\phi$, so $Y\indep\phi\mid\psi$
+gives $Y\indep s\mid\psi$ and hence $\E[s\mid\psi,Y]=\E[s\mid\psi]=\hat s$. For $\ell$ convex in its first argument, conditional
+Jensen gives $\E[\ell(s,Y)\mid\psi,Y]\ge\ell(\E[s\mid\psi,Y],Y)=\ell(\hat s,Y)$; take expectations. For a pair of independent
+draws $(\phi_i,\psi_i,Y_i=1)$ and $(\phi_j,\psi_j,Y_j=0)$, $\E[s_i-s_j\mid\psi_i,\psi_j,Y_i,Y_j]=\hat s_i-\hat s_j$ by the same
+conditional independence and the independence of the draws, and Jensen applies to $\ell(s_i-s_j)$. The AUROC is the expectation
+of the non-convex step $\mathbf 1\{s_i>s_j\}$, so the result covers its convex surrogates (logistic, exponential, hinge), not the
+AUROC itself.
+\end{proof}
+We estimate $\hat\phi=M\psi+b$ by ridge regression on paired steps of an open agent, on the top principal components of its state; the proposition applies to this estimate only as far as the linear map approximates the conditional mean. \Cref{app:rb} gives the numbers.
+
+\subsection{Robustness to rewording}
+\label{app:rewording}
+Let $\kappa(A)$ be the decisive part of an action (its tool and targets) and let the free text be the rest.
+\begin{proposition}[a ceiling under rewording]\label{prop:ceiling}
+Suppose that for every violating action an attacker can reach a still-violating action with the same $\kappa(A)$ and any free text that safe actions with the same $(V,\kappa(A))$ use, and that the attacker picks, among these, the text with the lowest score of the monitor. Then for every monitor $s$ and cut $c$ there is a monitor $m$ of $(V,\kappa(A))$ alone that escalates no more safe actions than $s$ and, on clean traffic, catches at least the share of violations that $s$ catches under the attack.
+\end{proposition}
+\begin{proof}
+Write an action as $(\kappa,t)$, with $t$ its free text, and let
+$T_0(V,\kappa)$ be the set of texts that safe actions with context $V$ and decisive part $\kappa$ use. Define
+$m(V,\kappa)=\inf_{t\in T_0(V,\kappa)}s(V,\kappa,t)$, and $m=+\infty$ where $T_0$ is empty. On a safe action $t\in T_0(V,\kappa)$, so
+$m\le s$ and $m\ge c$ implies $s\ge c$: $m$ escalates no more safe actions than $s$. Under the attack, a violation with $(V,\kappa)$
+is rewritten to the text in $T_0(V,\kappa)$ with the lowest score (allowed by the assumption; take a sequence if the infimum
+is not attained), so its attacked score is $m(V,\kappa)$, and it is escalated iff $m(V,\kappa)\ge c$. As $m$ depends only on
+$(V,\kappa)$, the attack does not change it, and its share of violations caught on clean traffic equals the share that $s$
+catches under the attack. Where $T_0$ is empty the attacker cannot imitate a safe action, and $m=+\infty$ escalates.
+\end{proof}
+Under rewording, no monitor's operating point beats the clean ROC curve of the best monitor of the decisive fields.
+
+\subsection{Self-policing: a prevention law}
+\label{app:law}
+The agent is asked in a side branch whether its proposed call complies. A flagged call is replaced by a fresh draw, at most $M$ draws, and after $M$ flags the step goes to review ($M=1$ is the gate).
+\begin{proposition}[prevention law]\label{prop:prevention}
+At a state let $R$ be the agent's probability of proposing a violating call, and let the audit flag a violating call with probability $\tau$ and a safe one with probability $\varphi$, independently across draws. With $f=R\tau+(1-R)\varphi$, a violation runs without review with probability $R(1-\tau)\,(1-f^M)/(1-f)$, and the step goes to review with probability $f^M$.
+\end{proposition}
+\begin{proof}
+Draw $j$ is the first unflagged draw with probability $f^{j-1}(1-f)$; given that it is unflagged, it violates with probability $R(1-\tau)/(1-f)$. Summing over $j\le M$ gives the first claim; all $M$ draws are flagged with probability $f^M$.
+\end{proof}
+Every term is measurable through the agent's API: $R$ by resampling it, $\tau$ and $\varphi$ by auditing it. For a gate whose reviewer blocks flagged violations, the share of violations prevented at one state is $\tau$ when a blocked violation is not retried. Over states of kinds $k$ with violation shares $w_k$ and flag rates $\tau_k$, it is $\sum_k w_k\tau_k$. On Gemma-4's development steps, the audit flagged $\tau=0.883$ of the violating calls when all four answers said no (the gate's cut), and 0.966 when a majority said no. The live gate prevented 0.82 [0.76, 0.88] of Gemma-4's violating episodes. \Cref{fig:law} compares the law with the live tests.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=3.25in]{figures/law.pdf}
+\caption{\textbf{The prevention law predicts live self-policing.} Live reduction in violating episodes (95\% interval) vs the prediction from offline flag rates per kind of task, weighted by where the agent violates. Dots: the composition-weighted law (preregistered; all five within $\pm0.15$). Squares: prompt injection on AgentDojo (preregistered).}
+\label{fig:law}
+\end{figure}
+
+\subsection{Battery design}
+\label{app:battery}
+A battery of questions can be designed from black-box answers alone (\cref{alg:battery}): from a pool of candidate questions, add the one that splits the most classes of contexts with equal answers, and stop when no candidate splits a class.
+\begin{proposition}[battery design]\label{prop:battery}
+This greedy rule stops with the partition of the contexts that the whole pool induces and asks at most (number of its classes $-\,1$) questions. If the model's answers come from a finite automaton and the pool holds a distinguishing suffix for every pair of its states, this partition is the minimal (Myhill--Nerode) state, and no black-box method can identify more.
+\end{proposition}
+\begin{proof}
+Each chosen question splits at least one class, so the number of classes grows
+by at least one per question and starts at one; the loop stops when no question in the pool splits a class. At that point two
+contexts in the same class agree on every pool question (otherwise that question would split their class), and two contexts
+in different classes disagree on a chosen question; so the final partition is the one that the whole pool induces, reached
+with at most (number of its classes $-\,1$) questions. If the answers come from a finite automaton with minimal automaton $M$,
+two prefixes give the same answer to every suffix iff they reach the same state of $M$ (Myhill--Nerode); when the pool holds a
+distinguishing suffix for every pair of states, the pool partition is the partition by minimal state. States that never change
+an output are behaviourally inert, so no black-box method identifies more.
+\end{proof}
+On a program compiled into a transformer (a bracket-balance automaton: 21 reachable states plus a dead state), the algorithm chose 21 questions from a pool of 2{,}101 and separates all 22 classes.
+
+\begin{algorithm}[t]
+\caption{Battery design from black-box answers}
+\label{alg:battery}
+\small
+\begin{algorithmic}[1]
+\REQUIRE contexts $x_1..x_N$; pool of questions $\mathcal Q$; answers $a(x,q)\in\{0,1\}$ from the model's outputs only
+\STATE $C\gets$ one class holding all contexts; $Q\gets()$
+\LOOP
+  \STATE $q^\star\gets\arg\max_{q\in\mathcal Q}$ $\#$classes of $C$ refined by $a(\cdot,q)$
+  \STATE \textbf{if} $q^\star$ splits no class \textbf{then return} $Q$ \COMMENT{\cref{prop:battery}}
+  \STATE append $q^\star$ to $Q$; $C\gets C$ refined by $a(\cdot,q^\star)$
+\ENDLOOP
+\end{algorithmic}
+\end{algorithm}
 
 \section{Trained comparisons: the reader monitor in full}
 \label{app:trained}
-\textbf{Trained comparisons.} This appendix reports monitors that are \emph{trained}, as comparisons for the training-free method. With labels, an open reader of the transcript is a monitor: a logistic probe on its state, trained only on 17{,}623 Gemma-4 steps, scores every agent's actions (\cref{tab:main}); baselines are the agent's own internals (where open), TF-IDF with the same labels, a zero-shot 70B judge, a reasoning judge given the policy, and the action's tool alone. \textbf{The transcript is enough.} \Cref{cor:action} says that the agent's internals cannot beat a monitor of the transcript and the action. A probe on Gemma-4's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning; the reader probe, trained on the same labels, scores 0.994 ($+0.015$ [0.007, 0.026] over the internals) and is non-inferior on unseen task families (\cref{tab:main}). Given the action, adding the agent's hidden reasoning changes Gemma-4's AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]. On three other reasoning agents (preregistered), the reasoning lowered transfer from Gemma-4 by \GEightTransfer{}. Fit on the agent's own steps, the reader's state replicates 46--66\% of the variance of the agent's top 128 decision-state components on four architectures (\cref{app:agents,app:rb}). Over word counts it adds robustness to shift: TF-IDF ties it in distribution but is at chance on AgentDojo (0.503 vs 0.781).
+This appendix reports monitors that are \emph{trained}, as comparisons for the training-free method. With labels, an open reader of the transcript is a monitor: a logistic probe on its state, trained only on 17{,}623 Gemma-4 steps, scores every agent's actions (\cref{tab:main}); baselines are the agent's own internals (where open), TF-IDF with the same labels, a zero-shot 70B judge, a reasoning judge given the policy, and the action's tool alone.
 
-\textbf{Two closed agents.} Nothing was fit on the closed agents. At a cut set at the top 5\% of the agent's own unlabelled traffic, the monitor catches 94.1\% [85.8, 97.7] of Claude Haiku 5.5's 68 violations (zero-shot judge: 0\%; TF-IDF: 63.8\%) and 98.5\% [91.9, 99.7] of GPT-6-luna's (judge 37.9\%; TF-IDF 49.0\%; Wilson intervals). Claude Haiku 5.5's violations are two behaviours: 42 test sends to a mailing list with thousands of external members it never checked, and 26 production restarts without approval. A prior that knows only each template's and tool's violation rate, fit out of fold, catches 91.6\% [82.1, 95.9] (AUROC 0.992; reader 0.989), so on Claude Haiku 5.5 the result shows that the monitor flags these two behaviours, not that it reads the deciding facts. GPT-6-luna's 66 violations span six templates, each with safe calls, and there the monitor beats that prior (98.5\% vs 86.4\% [76.1, 92.7]), as on Gemma-4. Score scales do not transfer between agents (a cut at 0.5 catches 3\% on Claude Haiku 5.5), rankings do: the cut must come from the agent's own traffic. Frozen after 500 actions, it keeps catching 94\% under bursts in which half the actions violate; a cut that moves over 5{,}000 actions falls to 36\% (\cref{prop:burst}, \cref{fig:transfer}a).
+\textbf{The transcript is enough.} \Cref{cor:action} says that the agent's internals cannot beat a monitor of the transcript and the action. A probe on Gemma-4's own internals scores 0.841 at the start of the turn and 0.979 after its reasoning; the reader probe, trained on the same labels, scores 0.994 ($+0.015$ [0.007, 0.026] over the internals) and is non-inferior on unseen task families (\cref{tab:main}). Given the action, adding the agent's hidden reasoning changes Gemma-4's AUROC by $-0.0014$ [$-0.0046$, $+0.0014$]. On three other reasoning agents (preregistered), the reasoning lowered transfer from Gemma-4 by \GEightTransfer{}. Fit on the agent's own steps, the replica reader's state replicates 46--66\% of the variance of the agent's top 128 decision-state components on four architectures (\cref{app:replica-theory,app:rb}). Over word counts it adds robustness to shift: TF-IDF ties it in distribution but is at chance on AgentDojo (0.503 vs 0.781).
+
+\textbf{Two closed agents.} Nothing was fit on the closed agents. At a cut set at the top 5\% of the agent's own unlabelled traffic, the monitor catches 94.1\% [85.8, 97.7] of Claude Haiku 5.5's 68 violations (zero-shot judge: 0\%; TF-IDF: 63.8\%) and 98.5\% [91.9, 99.7] of GPT-6-luna's (judge 37.9\%; TF-IDF 49.0\%; Wilson intervals). Claude Haiku 5.5's violations are two behaviours: 42 test sends to a mailing list with thousands of external members it never checked, and 26 production restarts without approval. A prior that knows only each template's and tool's violation rate, fit out of fold, catches 91.6\% [82.1, 95.9] (AUROC 0.992; reader 0.989), so on Claude Haiku 5.5 the result shows that the monitor flags these two behaviours, not that it reads the deciding facts. GPT-6-luna's 66 violations span six templates, each with safe calls, and there the monitor beats that prior (98.5\% vs 86.4\% [76.1, 92.7]), as on Gemma-4. Score scales do not transfer between agents (a cut at 0.5 catches 3\% on Claude Haiku 5.5), rankings do: the cut must come from the agent's own traffic. Frozen after 500 actions, it keeps catching 94\% under bursts in which half the actions violate; a cut that moves over 5{,}000 actions falls to 36\% (means of 50 bursts; \cref{prop:burst}, \cref{fig:transfer}a).
 
 \textbf{Live prevention.} We ran the monitor as a server in each closed agent's tool loop, on the same scenarios with and without the gate. In all four preregistered live tests the gate removed nearly all executed violations (\cref{tab:live,fig:prevention}), and no agent executed a violation after a block. Holding an escalated action for a reviewer kept the safety gain. The round trip was \LATENCY.
-
-
 
 \textbf{An agent that knows it is monitored, and an attacker who queries the score.} Told that a monitor reviews every call, Claude Haiku 5.5 violated as often; the monitor caught 97.1\% at the frozen cut, which then escalated 15.2\% of actions (88.6\% at a 5\% budget; preregistered); a cut set again on its unlabelled traffic removed every executed violation live (\cref{tab:live}). An attacker who queries the score and rewrites a violating call's free text lowered the catch from 96\% to 29\% (\cref{app:limits}): the score must stay hidden from the agent.
 
 \textbf{Labels of a new policy transfer from open agents.} Prompt injection on AgentDojo is absent from our training data; its labels from two open agents transfer to the closed GPT-6-luna (AUROC 0.922 vs the judge's 0.787; \cref{tab:main}).
 
-\begin{table*}[h]
+\begin{table*}[t]
 \centering\small
 \renewcommand{\arraystretch}{1.15}
 \setlength{\tabcolsep}{2.2pt}
@@ -111,7 +212,7 @@ Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & -- &
 \end{tabular}}
 \end{table*}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering\footnotesize
 \renewcommand{\arraystretch}{1.15}
 \setlength{\tabcolsep}{2.6pt}
@@ -123,10 +224,10 @@ Labels of open agents only & GPT-6-luna & 3{,}925 & -- & \snd{0.787} & -- & -- &
 \cmidrule(lr){2-3}\cmidrule(lr){5-6}
 \textbf{Agent, gate} & none & gate & $\Delta$ [95\% CI] & none & gate\\
 \midrule
-GPT-6-luna, block & 6.6 & \textbf{0.2} & $-.064$ {\scriptsize[$-.088$, $-.044$]} & 47.4 & 45.6\\
-Claude Haiku 5.5, block & 6.7 & \textbf{0.2} & $-.064$ {\scriptsize[$-.087$, $-.044$]} & 40.7 & 34.9\\
-\quad hold for review\textsuperscript{a} & 6.7 & \textbf{0.0} & $-.067$ {\scriptsize[$-.091$, $-.044$]} & 40.7 & 38.7\\
-\quad told, cut re-set\textsuperscript{b} & 6.5 & \textbf{0.0} & $-.065$ {\scriptsize[$-.090$, $-.043$]} & 38.5 & 35.5\\
+GPT-6-luna, block & 6.6 & \textbf{0.2} & $-0.064$ {\scriptsize[$-0.088$, $-0.044$]} & 47.4 & 45.6\\
+Claude Haiku 5.5, block & 6.7 & \textbf{0.2} & $-0.064$ {\scriptsize[$-0.087$, $-0.044$]} & 40.7 & 34.9\\
+\quad hold for review\textsuperscript{a} & 6.7 & \textbf{0.0} & $-0.067$ {\scriptsize[$-0.091$, $-0.044$]} & 40.7 & 38.7\\
+\quad told, cut re-set\textsuperscript{b} & 6.5 & \textbf{0.0} & $-0.065$ {\scriptsize[$-0.090$, $-0.043$]} & 38.5 & 35.5\\
 \bottomrule
 \end{tabular}\\[2pt]
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}An oracle reviewer; same scenarios as the row above, run separately. \textsuperscript{b}Block, with the cut set again on the told agent's unlabelled traffic: it escalated 4.7\% [3.5, 6.1] of actions (budget 5\%; the old cut 16.6\%).}

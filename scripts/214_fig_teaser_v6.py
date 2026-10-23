@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """First-page figure (v6: the chain; panel c adds the second closed agent at its call and before it). Based on v5.
 (a) An open model's hidden geometry and (b) the same contexts placed only by its yes/no answers (scripts/134's
-computation, unchanged). (c) Monitoring a decision (held-out): per agent, the fixed read-out of its own 8 answers vs a
-probe trained on its hidden states; the closed agent before the call exists is the preregistered confirmation (G40,
+computation, unchanged: classical MDS (graybox.geometry.mds) of chord distances between hidden states, and of exact
+Fisher-Rao distances between answer distributions, then Procrustes-rotated onto (a) for display).
+(c) Monitoring a decision (held-out): per agent, the fixed read-out of its own 8 answers vs a probe trained on its hidden states; the closed agent before the call exists is the preregistered confirmation (G40,
 within template and tool). (d) Prevention, predicted: observed vs predicted live reduction, with the failed
 predictions (G11b's two misses and the position gate of G42) shown as well.
 Layout: drawn at print size (6.75 in = ICML text width), so every font size is a true point size; axes are placed in
@@ -40,6 +41,7 @@ GRID, BAND, FRAME = "#E4E7EA", "#F1F3F5", "#C9CED3"
 W, H = 6.75, 2.55                                               # inches: print size
 FS_TITLE, FS_SUB, FS_LAB, FS_TICK, FS_LEG = 7.5, 6.1, 6.5, 6.0, 6.0
 LAB_W = 1.12                                                    # (c): the label column, inches
+PROBE_DY = 0.36                                                 # (c): probe diamonds sit this share of a row above their row
 
 
 def tint(c, a):
@@ -113,8 +115,8 @@ def panel_decision(ax):
     for (name, eight, ci_, wb, col), yy in allrows:
         c_ = ORANGE if col == "hollow" else col
         whisker(ax, [eight], [yy], xerr=[[eight - ci_[0]], [ci_[1] - eight]], col=c_)
-        if wb is not None:
-            ax.scatter([wb], [yy], s=24, marker="D", facecolor="white", edgecolor=INK, lw=0.9, zorder=3)
+        if wb is not None:                            # the probe: x exact, drawn PROBE_DY of a row above (never hidden by the dot)
+            ax.scatter([wb], [yy + PROBE_DY], s=18, marker="D", facecolor="white", edgecolor=INK, lw=0.8, zorder=3)
         if col == "hollow":
             ax.scatter([eight], [yy], s=30, facecolor="white", edgecolor=ORANGE, lw=1.3, zorder=4)
         else:
@@ -130,9 +132,17 @@ def panel_decision(ax):
     h = [(Line2D([], [], color=lb, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.6, mfc=BLUE, mec="white", mew=0.7)),
          (Line2D([], [], color=lo, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.6, mfc=ORANGE, mec="white", mew=0.7)),
          (Line2D([], [], color=lo, lw=1.25), Line2D([], [], ls="", marker="o", ms=5.0, mfc="white", mec=ORANGE, mew=1.3)),
-         Line2D([], [], ls="", marker="D", ms=4.4, mfc="white", mec=INK, mew=0.9)]
+         Line2D([], [], ls="", marker="D", ms=4.0, mfc="white", mec=INK, mew=0.8)]
     lab = ["open agent: its answers", "closed agent, API only", "before the call exists", "probe trained on hidden states"]
     return h, lab
+
+
+FS_TAG = 6.0                                                    # (d): point tags
+TAG_D = {  # (d): (agent, test) -> tag position (data units), alignment, tag; placed clear of points, whiskers and text
+    ("Qwen3.8", "g12"): (0.075, -0.04, "left", "Qwen3.8"), ("gpt-oss", "g12"): (0.19, 0.12, "left", "gpt-oss"),
+    ("Muse-Glimmer", "g12"): (0.215, 0.36, "right", "Muse"), ("Claude Haiku 5.5", "g12"): (0.425, 0.27, "left", "Claude"),
+    ("Gemma-4", "g12"): (0.62, 0.66, "right", "Gemma-4"), ("gpt-oss", "g13"): (0.625, 0.425, "left", "gpt-oss\n(AD)"),
+    ("Gemma-4", "g13"): (1.06, 0.565, "right", "Gemma-4\n(AD)"), "g42": (0.69, 0.81, "right", "GPT-6-luna,\npre-call")}
 
 
 def panel_law(ax):
@@ -145,11 +155,15 @@ def panel_law(ax):
         col = ORANGE if "Claude" in name else BLUE
         whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=col)
         ax.scatter([x], [y], s=30, marker="s" if kind == "g13" else "o", color=col, edgecolor="white", lw=0.7, zorder=3)
+        tx, ty, ha, tag = TAG_D[(name, kind)]
+        ax.text(tx, ty, tag, fontsize=FS_TAG, color=INK, ha=ha, va="center", linespacing=0.95, zorder=5)
     g42 = json.loads((ROOT / "results/t1/g42_gate_law.json").read_text())
     x, y = g42["predicted"]["pre"], g42["observed"]["pre"]   # the pre-call gate on a closed agent
     lo, hi = g42["observed_ci"]["pre"]
     whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=ORANGE)
     ax.scatter([x], [y], s=34, marker="D", color=ORANGE, edgecolor="white", lw=0.7, zorder=4)
+    tx, ty, ha, tag = TAG_D["g42"]
+    ax.text(tx, ty, tag, fontsize=FS_TAG, color=INK, ha=ha, va="center", linespacing=0.95, zorder=5)
     ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.12, 1.05)
     ax.set_xticks([0, 0.5, 1.0], ["0", "0.5", "1"]); ax.set_yticks([0, 0.5, 1.0], ["0", "0.5", "1"])
     ax.set_xlabel("predicted from offline flag rates", fontsize=FS_LAB, color=INK, labelpad=2)
@@ -175,7 +189,8 @@ def main():
     xa, xb, wab = 0.03, 1.22, 1.10                    # (a), (b) frames
     xc0 = 2.52; xc, wc = xc0 + LAB_W, 1.34            # (c): label column from xc0, axis from xc
     xd0 = 5.14; xd, wd = 5.41, 1.31                   # (d): block from xd0, axis from xd
-    ax = [fig.add_axes(box(xa, BOT_AB, wab, TOP - BOT_AB)), fig.add_axes(box(xb, BOT_AB, wab, TOP - BOT_AB)),
+    TOP_AB = TOP - 0.10                               # (a, b) frames: top, under the two-line subtitles
+    ax = [fig.add_axes(box(xa, BOT_AB, wab, TOP_AB - BOT_AB)), fig.add_axes(box(xb, BOT_AB, wab, TOP_AB - BOT_AB)),
           fig.add_axes(box(xc, BOT, wc, TOP - BOT)), fig.add_axes(box(xd, BOT, wd, TOP - BOT))]
     for a_, X in zip(ax[:2], (Xh, Xa)):
         T.T.scatter(a_, X, src, s=2.4)
@@ -188,13 +203,13 @@ def main():
         a_.xaxis.set_label_coords((xmid - a_.get_position().x0 * W) / (a_.get_position().width * W),
                                   -(BOT - XLAB_TOP) / (TOP - BOT))
         a_.xaxis.label.set_va("top")
-    heads = [(xa, "a", "Hidden geometry", f"{T.T.NAME}, hidden states"),
-             (xb, "b", "From its answers", "API only, no training; ρ = 0.74"),
+    heads = [(xa, "a", "Hidden geometry", f"{T.T.NAME} hidden states,\nclassical MDS"),       # graybox.geometry.mds
+             (xb, "b", "From its answers", "its answers, exact Fisher–Rao,\nclassical MDS; ρ = 0.74"),   # then rotated onto (a)
              (xc0, "c", "Monitor and forecast", "held-out calls; 95% CI; preregistered"),
              (xd0, "d", "Prevent, predicted", "live; 95% CI; preregistered")]
     for x0, k, title, sub in heads:
         fig.text(x0 / W, (H - 0.03) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
-        fig.text(x0 / W, (H - 0.175) / H, sub, fontsize=FS_SUB, color=MUTE, va="top")
+        fig.text(x0 / W, (H - 0.175) / H, sub, fontsize=FS_SUB, color=MUTE, va="top", linespacing=1.1)
     # one legend strip: context type under (a, b), the markers of (c), the markers of (d)
     cat = [Line2D([], [], ls="", marker="o", ms=3.6, mfc=col, mec="none", alpha=0.9) for lab, col in T.T.SRC.values()]
     catl = [lab for lab, _ in T.T.SRC.values()]
