@@ -1,0 +1,69 @@
+{
+ "writes": 360,
+ "violations": 50,
+ "map": {
+  "cancel_reservation": [
+   1,
+   3,
+   5
+  ],
+  "update_reservation_flights": [
+   2,
+   3,
+   4
+  ],
+  "book_reservation": [
+   4,
+   5
+  ],
+  "update_reservation_baggages": [
+   3,
+   4,
+   6
+  ],
+  "update_reservation_passengers": [
+   3,
+   6
+  ]
+ },
+ "general": [
+  0,
+  7
+ ],
+ "within_tool_auroc": {
+  "G18_R4_full": [
+   0.7044,
+   0.5413,
+   0.8265
+  ],
+  "G18_R4_relevant": [
+   0.7126,
+   0.5587,
+   0.8286
+  ],
+  "D16_full": [
+   0.7201,
+   0.5777,
+   0.8294
+  ],
+  "D16_relevant": [
+   0.7063,
+   0.5854,
+   0.8411
+  ]
+ },
+ "R1_D16_relevant_minus_full": [
+  -0.0138,
+  -0.0592,
+  0.0383
+ ],
+ "R2_G18_relevant_minus_full": [
+  0.0082,
+  -0.0207,
+  0.0257
+ ],
+ "endpoints": {
+  "R1_lower_gt_0": false,
+  "R2_lower_gt_0": false
+ }
+}
