@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-23T15:19:58-07:00",
+ "sha256": {
+  "docs/prereg_G47_selfgate.md": "7b294a83dfa92a1aee048544968927250ea978353c21fcd3495e7be3704dedca",
+  "scripts/227_g47_selfgate.py": "a68c5d3f293e986f0613118db204aa5ef9a9aec304ae4da2733d6abe73602fa0",
+  "scripts/225_selfgate_pilot_exploratory.py": "80cce0743ff2d7096c6fb33caba0cd3cc75e5d42ecf39b9c359aabdaaaa5929c"
+ }
+}
