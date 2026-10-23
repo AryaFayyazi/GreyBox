@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T20:32:40-07:00",
+ "sha256": {
+  "docs/prereg_G36_decision_triangulation.md": "b12f9d1c2f4096142017cfea60d57efeea2bdf721a10dd45ebac755abacf3284",
+  "scripts/209_g36_decision_triangulation.py": "492455d1eff6fc355e315419f43dd12ca2225b67836d6c37f833120d7236f8e6"
+ }
+}
