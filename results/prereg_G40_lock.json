@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T21:26:57-07:00",
+ "sha256": {
+  "docs/prereg_G40_gpt_precall_confirm.md": "1fd78e6e08c4c192041c4a7401608231a5050ef1a9bfe3ed8c4fdf6424f1ccac",
+  "scripts/213_g40_gpt_precall_confirm.py": "03e41e8a630427fd86708839dd333bf4cfacc5814444f10517de3f2d9ee4565a"
+ }
+}
