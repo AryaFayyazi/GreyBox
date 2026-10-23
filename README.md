@@ -25,7 +25,7 @@ Preregistered results (hash-locked, locks published before the data; held-out da
   airline, G18) and GPT-6-luna (0.979 [0.946, 0.998], where its single answer scores 0.795; G38). With no label, the
   read-out's variance beyond its sampling noise tells where it works (Spearman 0.71 over 29 settings; G32).
 - **Forecast.** Before its call exists, GPT-6-luna's answers about its next action rank the coming violation at 0.765
-  [0.650, 0.909] (G38), and at 0.923 [0.811, 0.992] among calls at the same position, where position cannot help (G40: preregistered, 252 fresh episodes). A live gate on that state cut its violating episodes from 26.2% to 9.5% (G39).
+  [0.650, 0.909] (G38), and at 0.923 [0.811, 0.992] among calls at the same position, where position cannot help (G40: preregistered, 252 fresh episodes). A live gate on that state cut its violating episodes from 26.2% to 9.5% (G39), though not detectably more than a gate on position. Before its τ²-bench writes, Claude Haiku 5.5's pre-call answers did not rank the coming violation (0.536; G37).
 - **Prevent.** As a gate, the agent's own answer prevented 82% of an open agent's violating episodes (G9) and 69% of
   those that Claude Haiku 5.5's transcript decides (G10), by amounts a law predicted in advance for five agents (mean error
   0.035; G12); against prompt injection it cut attack success by 84% and 50% (G13). G39 tests a live gate on a closed
