@@ -142,7 +142,7 @@ The method reads a model only through its answers. This section tests what those
 
 \textbf{A closed model's own hidden geometry} (G2, G34, preregistered). Claude Haiku 5.5 answered 24 questions, 8 times each, on 192 held-out contexts. Two independent halves of its answers give the same geometry (Spearman \GTwoSplit, above the bound of 0.7 fixed in advance), which carries \GTwoText\ beyond the input embedding. Its hidden states are not visible, so we triangulate (\cref{prop:triang}). On the same contexts and questions, with each open model's answers sampled to the closed design, leaving each open model out as if it were closed predicts how well its answers match its own hidden geometry to within \GVtMae\ on average (\GVtInside\ of 8 inside the predicted interval). For Claude Haiku 5.5 the estimate is \GVtClosed, at the level of its direct agreement with open models' hidden geometries (0.45--0.51) and at the bottom of the open range (\GVtOpenRange). It assumes no own-model excess and an open-model loading; over the open loadings' range the interval is [0.32, 0.53]. At an agent's decision, its 8 policy answers measure only a narrow, violation-relevant slice of the decision state (agreement 0.01--0.16 over all pairs; G36).
 
-\textbf{Where answers lose.} For detecting \emph{that} a model's state moved (a hidden system prompt), sampled replies had more power than sampled answers at equal calls in every model and condition on development data, so we did not run that test (\cref{app:limits}).
+
 
 % =====================================================================================
 \section{The grey box at work: monitoring and policing agents through their APIs}

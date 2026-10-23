@@ -37,6 +37,10 @@ Where an API returns full log-probabilities, the final state's geometry is recov
 Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ and $Z^-_t$ are all tokens before the call, hidden ones included. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$: no monitor of the agent's internals has a lower Bayes risk than the best monitor of $(V_t,A_t)$.
 \end{corollary}
 So a monitor needs the transcript and the call, not the weights; the question is what to compute from them.
+\begin{proposition}[the forecast needs the agent]\label{prop:selfforecast}
+Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$. The Bayes forecast of $Y=g(A_t,V_t,W)$ from what is visible is $P(Y\mid V_t)=\sum_a\bar\pi(a\mid V_t)\,P(Y\mid a,V_t)$, with $\bar\pi$ the agent's own policy averaged over hidden states consistent with $V_t$. A reader that forecasts with another policy $\pi'$ has Bayes risk at least as large, with equality only where $\pi'=\bar\pi$ on the violating actions.
+\end{proposition}
+So at the call any capable reader can match the agent (\cref{cor:action}), but before it only the agent's own state carries $\bar\pi$; G44 tests this.
 
 \textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $K$ yes/no questions about the call in side branches (\cref{fig:method}). Their angles $\vartheta_t\in[0,\pi]^K$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
 \[ s_t=\tfrac1K\textstyle\sum_{j}\sigma_j\vartheta_{tj},\qquad \sigma_j=-1\ \text{for ``does it comply''},\ \ \sigma_j=+1\ \text{otherwise}. \]
