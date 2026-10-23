@@ -45,7 +45,7 @@ We first test the reconstruction where the truth is visible: on open models, who
 
 \textbf{It ranks violations about as well as a probe on the hidden states.} On held-out calls, the within-template AUROC is \GFtFixed\ (\cref{tab:g15}). A probe trained on the agent's true decision states, a comparison that needs the weights and labels, scores \GFtTrainedWB; the mean difference is \GFtTtwo. The read-out beats the agent's single self-audit answer by \GFtTone. It does not need the full decision state: the geometry of the 8 answers agrees with that state at only 0.01--0.16, and on open agents about 20\% [13, 27] of its ranking power runs through the hidden violation direction. The rest comes from the transcript, which every reader sees.
 
-\textbf{It beats a reasoning judge on open agents.} Gemma-4, with reasoning on, read each conversation and gave one holistic violation probability. It ranked the open agents' violations worse than the read-out (read-out $-$ judge \GTwJone; two-sided test). Fixed questions and averaged angles beat one verdict. On Claude Haiku 5.5's actions, which it answered with its reasoning off, the judge is better (\cref{tab:g15}).
+\textbf{It beats a reasoning judge on open agents.} Gemma-4, with reasoning on, read each conversation and gave one holistic violation probability. It ranked the open agents' violations worse than the read-out (read-out $-$ judge \GTwJone; two-sided test). On Claude Haiku 5.5's actions, which it answered with its reasoning off, the judge is better (\cref{tab:g15}).
 
 \begin{table}[t]
 \centering\footnotesize
@@ -81,21 +81,23 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 
 \subsection{Carrying to new benchmarks and closed agents}
 \label{sec:carry}
-\textbf{Prompt injection.} On AgentDojo \citep{debenedetti2024agentdojo}, the violation is a call that carries out an instruction hidden in a tool output. We wrote 8 questions from that policy before any answer existed. The same read-out ranks the open agents' injected calls within suite, on held-out tasks with no defense, at \GSvGemma\ (Gemma-4, \GSvGemmaN) and \GSvGpt\ (gpt-oss-20b, \GSvGptN); the bar was a lower bound above 0.60. Here the single overall question is nearly as good (difference \GSvVtwo). Claude Haiku 5.5 almost never carried out these injections (none in 271 development episodes), so this benchmark has no closed-agent arm.
+\textbf{Prompt injection.} On AgentDojo \citep{debenedetti2024agentdojo}, the violation is a call that carries out an instruction hidden in a tool output. We wrote 8 questions from that policy before any answer existed. The same read-out ranks the open agents' injected calls within suite, on held-out tasks with no defense, at \GSvGemma\ (Gemma-4, \GSvGemmaN) and \GSvGpt\ (gpt-oss-20b, \GSvGptN); the bar was a lower bound above 0.60.
 
 \textbf{GPT-6-luna.} Through its own API, its answers to the same 8 questions rank its CAPE-Bench violations within template and tool at \GGlAt\ (\GGlN). Its single answer scores 0.795.
 
 \textbf{Claude Haiku 5.5 on CAPE-Bench.} The read-out ranks its unapproved restarts at \GFtClosedAFixed, where its single self-audit answer scores 0.32. Pooled over all its actions, the read-out scores 0.475: a fact that the agent never checked decides its mailing-list sends, so its state holds no warning about them.
 
-\textbf{Claude Haiku 5.5 on $\tau^2$-bench.} On $\tau^2$-bench airline \citep{barres2025tau2}, Claude Haiku 5.5 breaks the published policy at some of its writes; for example, it cancels a booking that meets none of the conditions. We wrote 8 questions from the airline policy before any answer existed. The within-tool AUROC is \GEeRone\ (\GEeN, in 7 tasks; bar: lower bound above 0.5), and its single answer to whether the call complies scores \GEeSingle. With 5\% of writes reviewed, the read-out catches \GEeCaught. Per task (exploratory), it ranks the violations of 5 of the 7 tasks (33 of 50) at 0.77--1.00. In the other two tasks, the agent made an honest mistake: its own reply called the write eligible (it missed a flown date; it reversed a trip). Its state held no warning to read.
+\textbf{Claude Haiku 5.5 on $\tau^2$-bench.} On $\tau^2$-bench airline \citep{barres2025tau2}, Claude Haiku 5.5 breaks the published policy at some of its writes. We wrote 8 questions from the airline policy before any answer existed. The within-tool AUROC is \GEeRone\ (\GEeN, in 7 tasks; bar: lower bound above 0.5), and its single answer to whether the call complies scores \GEeSingle. Per task (exploratory), it ranks the violations of 5 of the 7 tasks (33 of 50) at 0.77--1.00. In the other two, the agent misread the booking, so its state held no warning.
 
 \subsection{Forecasting before the call}
 \label{sec:forecast}
-\textbf{The pre-call state.} Before each step's call, the agent answers 8 questions about its next action. The call is not shown, because it does not exist yet.
+\textbf{The pre-call state.} Before each step's call, the agent answers 8 questions about its next action; the call does not exist yet.
 
 \textbf{GPT-6-luna's state forecasts the coming violation.} In a first run (exploratory), among calls at the same position, where position cannot help, its pre-call answers ranked the coming violation at \GGlPrePos. A preregistered replication on \GCfN\ confirms both: within template and tool \GCfTT\ (position alone 0.777), and among calls at the same position \GCfPos\ (9 strata holding 27 violations).
 
 \textbf{Whose forecast is it?} Gemma-4 answered the same questions in GPT-6-luna's seat, on the same conversations. Within each kind of task and tool it forecast worse: 0.728, against 0.840 for GPT-6-luna's own answers (+0.111 [0.041, 0.185]). At the same position the difference, +0.08 [$-$0.02, 0.23], does not separate. \PENDING{fresh episodes of both closed agents: own $-$ other, within template and tool and within position}
+
+\textbf{The forecast lives in the policy, not the self-report.} \Cref{prop:selfforecast} says the forecast is the agent's own policy, so it can also be read by sampling: draw the agent's next action a few times in side branches and read each drawn call with its own answers. On Claude Haiku 5.5, whose answers about its next action do not rank the coming violation, we test this on fresh episodes: its own draws, read by its own answers, against its self-report and against Gemma-4 sampling in its seat. \PENDING{own draws vs self-report vs another model, within position}
 
 \textbf{Open agents.} Among calls at the same step of the same kind of task, the pre-call answers rank the violating calls at 0.67 on Gemma-4 (exploratory) and at 0.669 [0.594, 0.764] pooled over three more agents. On the same steps, 16 answers per question instead of 4 raise the pooled value from 0.65 to 0.73. The deciding fact enters at the call's own step: the answers then rank the call better than one step earlier (+0.16 [0.03, 0.30]). A Kalman forecast from earlier steps, with dynamics identified from unlabelled runs (\cref{prop:iv}), beat position on three agents (+0.21 [0.08, 0.32]).
 
@@ -132,5 +134,7 @@ gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{.50} {\scriptsize[
 \textbf{The effect is predictable.} Offline flag rates, weighted by where each agent violates, predicted the live reduction of five agents within the registered 0.15 (reductions from 0.01 to 0.63; mean absolute error 0.035; \cref{fig:teaser}d).
 
 \textbf{A gate on the pre-call state.} We ran GPT-6-luna live on fresh seeds, with gates at an equal review rate (\GLbRev\ reviews per episode). A gate on the pre-call read-out cut the episodes with a violation from \GLbNone\ to \GLbPre\ (relative reduction \GLbRed); a gate on position cut them to \GLbPos\ (difference \GLbPmP). Success did not change (\GLbSucc). The offline share of violating calls that the gate holds, fixed before the run, predicted its effect (\GLwPred; observed \GLwObs). In all live tests, CAPE's checker stands in for the human reviewer.
+
+\textbf{Prevention with no reviewer.} In the tests above, a held call went to a reviewer. Here nothing judges in the loop: when the agent's own read-out flags a call, the call is held once and the agent is told to re-check its policy and the facts; an identical re-proposal runs. On Claude Haiku 5.5, against random holds at the same rate: \PENDING{violating episodes, none vs self vs random; success}
 
 \textbf{Trained comparisons} (\cref{app:trained}). With labels, a probe on an open reader of the transcript is stronger (0.98--0.99 on held-out actions of open and closed agents). But it needs labels for each policy, and it fell to 0.54 on unseen $\tau^2$ tasks. The training-free read-out needs neither, so the two are complementary.
