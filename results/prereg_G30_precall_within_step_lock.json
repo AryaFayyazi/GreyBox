@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T18:08:54-07:00",
+ "sha256": {
+  "docs/prereg_G30_precall_within_step.md": "74fce1db715baabee03a34fbd4a80fa6b585da3d0d087b05e2c1258d979ae8e6",
+  "scripts/200_g30_precall_within_step.py": "ff4d35702705673bb9f3f2894ffcd1a503b6999df7a958f840072963c2ab35ba"
+ }
+}
