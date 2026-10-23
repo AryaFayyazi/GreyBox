@@ -1,0 +1,22 @@
+{
+ "episodes": 252,
+ "units": 1047,
+ "violations": 68,
+ "C1_within_template_tool_position": [
+  0.9228,
+  0.8106,
+  0.9916
+ ],
+ "C2_within_template_tool": [
+  0.8399,
+  0.7324,
+  0.9463
+ ],
+ "strata_with_both_classes": 9,
+ "violations_in_them": 27,
+ "position_alone_within_template_tool": 0.7765,
+ "endpoints": {
+  "C1_lower_gt_0.5": true,
+  "C2_lower_gt_0.5": true
+ }
+}
