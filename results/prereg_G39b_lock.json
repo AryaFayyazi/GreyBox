@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T22:28:58-07:00",
+ "sha256": {
+  "docs/prereg_G39b_matched_gate.md": "192fed5e7a3c1a08a04b382395c65de091ffcba414f144452daef2bcdbf8ce12",
+  "scripts/215_g39b_matched_gate.py": "76fcb1aef0ae3f46a3a9bb9f104364379b9266cfc5efe65c1f5e2c27fc3d6e25"
+ }
+}
