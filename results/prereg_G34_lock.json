@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T20:13:18-07:00",
+ "sha256": {
+  "docs/prereg_G34_triangulation.md": "c865c307575c318106fd6cbf93d2f198a1e100e893a2d0c74438d67d10ec4d78",
+  "scripts/206_g34_triangulation.py": "5c3bf86b8b40a48c1916de0bdfce3d356c520bd7077cf5d011eb9a9dc8da196a"
+ }
+}
