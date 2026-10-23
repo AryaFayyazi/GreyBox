@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-22T22:38:49-07:00",
+ "sha256": {
+  "docs/prereg_G41_relevant_readout.md": "8185df0fe97211e03634c98f7fdaecb3bda931f2d066eb85250d5d81bd434b6f",
+  "scripts/216_g41_relevant_readout.py": "c9c36a4f34572016cf69c423742e920e61f3a7289c5d11641115b7d143817a12"
+ }
+}
