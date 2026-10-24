@@ -1,0 +1,23 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "judge_unparsed": 0,
+ "own_within_position": [
+  0.8906,
+  0.8533,
+  0.9287
+ ],
+ "gpt_judge_within_position": [
+  0.5958,
+  0.5267,
+  0.6653
+ ],
+ "J1_own_minus_gpt_judge_position": [
+  0.2948,
+  0.2126,
+  0.38
+ ],
+ "endpoints": {
+  "J1_lower_gt_0": true
+ }
+}

@@ -183,18 +183,20 @@ def panel_forecast(ax):
     gpt = g45["own_within_position"]["gpt"]
     judge, does = g52["judge_within_position"], g52["own_within_position"]   # exact contexts (G46c units)
     style(ax)
-    gj = g54["judge_within_position"]
-    rows = [(4.6, "says", *gpt, True, ORANGE), (3.6, "text judge", *gj, True, MUTE), (2.0, "says", *CLAUDE_SAYS, True, ORANGE),
-            (1.0, "text judge", *judge, True, MUTE), (0.0, "does", *does, False, ORANGE)]
+    gj, gdo = g54["judge_within_position"], g54["own_within_position"]
+    xj = J("g55_gpt_judges_claude.json")["gpt_judge_within_position"]
+    rows = [(6.6, "says", *gpt, True, ORANGE), (5.6, "text judge", *gj, True, MUTE), (4.6, "does", *gdo, False, ORANGE),
+            (3.0, "says", *CLAUDE_SAYS, True, ORANGE), (2.0, "text judge", *judge, True, MUTE),
+            (1.0, "GPT judge", *xj, True, MUTE), (0.0, "does", *does, False, ORANGE)]
     for yy, lab, m, lo, hi, hollow, col in rows:
         dot_row(ax, yy, m, lo, hi, col, hollow=hollow, val_dx=0.07)
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
-    set_rows(ax, 5.55)
-    header(ax, 5.55, "GPT-6-luna", dx=-0.45)
-    header(ax, 2.95, "Claude Haiku 5.5", dx=-0.45)
+    set_rows(ax, 7.55)
+    header(ax, 7.55, "GPT-6-luna", dx=-0.45)
+    header(ax, 3.95, "Claude Haiku 5.5", dx=-0.45)
     auroc_axis(ax, "AUROC among calls at one position", chance_label=True)
     ax.set_xlim(0.33, 1.0)
-    return {"GPT says": gpt, "GPT text judge": gj, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude does": does}
+    return {"GPT says": gpt, "GPT text judge": gj, "GPT does": gdo, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude GPT judge": xj, "Claude does": does}
 
 
 # ---------------------------------------------------------------- (d)

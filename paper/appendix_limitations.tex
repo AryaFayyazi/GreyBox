@@ -8,6 +8,6 @@ This appendix lists the limits of the method and of the evidence.
 \item \textbf{A closed model's own geometry is estimated, not measured.} The triangulation assumes that the closed model, like the open ones, has no own-model excess, and that its hidden states load on the shared geometry like an open model's.
 \item \textbf{The reviewer.} In the live tests, CAPE's checker stands in for the human who reviews a held call. A human reviewer is slower and makes mistakes, so live prevention with people can be lower.
 \item \textbf{Adversaries.} An agent that knows the questions, or an attacker who can query the score, may learn to answer falsely. Self-policing is untrusted monitoring without an adversary; it is no defense against a model that colludes with itself. The questions and scores should stay hidden from the agent.
-\item \textbf{Cost.} The read-out asks 32 one-word questions per call (8 questions, 4 answers each). With prompt caching this cost \$0.0058 per call on Claude Haiku 5.5, and it adds one round of parallel calls of latency.
+\item \textbf{Cost.} The read-out asks 32 one-word questions per call (8 questions, 4 answers each). With prompt caching this cost \$0.0014 per decision on Claude Haiku 5.5 (median latency 2.7\,s, measured on 100 decisions).
 \item \textbf{Many tests.} We ran many preregistered tests and apply no correction for multiple tests. Each claim rests on the primary endpoint of its own test (\cref{app:prereg}).
 \end{itemize}
