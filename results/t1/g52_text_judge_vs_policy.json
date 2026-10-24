@@ -1,0 +1,56 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "judge_unparsed": 0,
+ "own_within_position": [
+  0.8906,
+  0.8539,
+  0.927
+ ],
+ "judge_within_position": [
+  0.4478,
+  0.3793,
+  0.5153
+ ],
+ "J1_own_minus_judge_position": [
+  0.4429,
+  0.3682,
+  0.5228
+ ],
+ "own_within_template_tool": 0.8011,
+ "judge_within_template_tool": 0.6302,
+ "endpoints": {
+  "J1_lower_gt_0": true
+ },
+ "cost_per_decision": {
+  "readout": {
+   "usd_mean": 0.00144,
+   "sec_median": 2.71,
+   "out_tokens_mean": 401.5,
+   "requests_mean": 32.0
+  },
+  "self_report": {
+   "usd_mean": 0.00105,
+   "sec_median": 2.61,
+   "out_tokens_mean": 339.2,
+   "requests_mean": 32.0
+  },
+  "policy_forecast": {
+   "usd_mean": 0.00196,
+   "sec_median": 9.35,
+   "out_tokens_mean": NaN,
+   "requests_mean": 43.8
+  },
+  "judge": {
+   "usd_mean": 0.00038,
+   "sec_median": 3.46,
+   "out_tokens_mean": 578.9,
+   "requests_mean": 1.0
+  }
+ },
+ "judge_tokens_all_units": {
+  "in_mean": 901.5,
+  "out_mean": 576.3,
+  "sec_median": 3.48
+ }
+}

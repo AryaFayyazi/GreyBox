@@ -178,25 +178,22 @@ CLAUDE_SAYS = (0.4746, 0.4323, 0.5109)          # g46 within_position.report; in
 
 
 def panel_forecast(ax):
-    g45, g46 = J("g45_per_agent_ci.json"), J("g46_rollout_forecast.json")
+    g45, g46, g52 = J("g45_per_agent_ci.json"), J("g46_rollout_forecast.json"), J("g52_text_judge_vs_policy.json")
     assert abs(g46["within_position"]["report"] - CLAUDE_SAYS[0]) < 1e-4
     gpt = g45["own_within_position"]["gpt"]
-    does = g46["R1_own_within_position"]
+    judge, does = g52["judge_within_position"], g52["own_within_position"]   # exact contexts (G46c units)
     style(ax)
-    rows = [(3.35, "says", *gpt, True), (1.0, "says", *CLAUDE_SAYS, True), (0.0, "does", *does, False)]
-    for yy, lab, m, lo, hi, hollow in rows:
-        dot_row(ax, yy, m, lo, hi, ORANGE, hollow=hollow, val_dx=0.07)
+    rows = [(3.6, "says", *gpt, True, ORANGE), (2.0, "says", *CLAUDE_SAYS, True, ORANGE),
+            (1.0, "text judge", *judge, True, MUTE), (0.0, "does", *does, False, ORANGE)]
+    for yy, lab, m, lo, hi, hollow, col in rows:
+        dot_row(ax, yy, m, lo, hi, col, hollow=hollow, val_dx=0.07)
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
-    gap = g46["R3_own_minus_report_position"]              # does - says, same calls, 95% CI
-    ax.annotate("", xy=(does[0] - 0.012, 0.16), xytext=(CLAUDE_SAYS[0] + 0.012, 0.84),
-                arrowprops=dict(arrowstyle="-|>", color=MUTE, lw=0.6, mutation_scale=5, shrinkA=0, shrinkB=0))
-    ax.text((does[0] + CLAUDE_SAYS[0]) / 2 + 0.035, 0.55, f"+{gap[0]:.2f}", fontsize=FS_TICK, color=INK, ha="left",
-            va="center")
-    set_rows(ax, 4.3)
-    header(ax, 4.3, "GPT-6-luna", dx=-0.30)
-    header(ax, 1.95, "Claude Haiku 5.5", dx=-0.30)
+    set_rows(ax, 4.55)
+    header(ax, 4.55, "GPT-6-luna", dx=-0.45)
+    header(ax, 2.95, "Claude Haiku 5.5", dx=-0.45)
     auroc_axis(ax, "AUROC among calls at one position", chance_label=True)
-    return {"GPT says": gpt, "Claude says": CLAUDE_SAYS, "Claude does": does, "Claude does - says": gap}
+    ax.set_xlim(0.33, 1.0)
+    return {"GPT says": gpt, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude does": does}
 
 
 # ---------------------------------------------------------------- (d)
@@ -243,7 +240,7 @@ def main():
     fig = plt.figure(figsize=(W, H), facecolor="white")
     xa, wa_map, wa_col = 0.03, 0.99, 0.60
     xb0, lab_b = 1.76, 0.70; xb, wb = xb0 + lab_b, 0.78
-    xc0, lab_c = 3.60, 0.30; xc, wc = xc0 + lab_c, 0.78
+    xc0, lab_c = 3.55, 0.48; xc, wc = xc0 + lab_c, 0.62
     xd0, lab_d = 5.20, 0.60; xd, wd = xd0 + lab_d, 0.90
     panel_geometry(fig, xa, wa_map, wa_col)
     axb = fig.add_axes(box(xb, BOT, wb, TOP - BOT))
