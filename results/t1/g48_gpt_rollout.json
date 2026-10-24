@@ -1,0 +1,40 @@
+{
+ "units": 1134,
+ "violations": 131,
+ "within_template_tool": {
+  "own": 0.6814,
+  "report": 0.7618,
+  "ceiling": 0.8446
+ },
+ "within_position": {
+  "own": 0.7286,
+  "report": 0.8362,
+  "ceiling": 0.8567
+ },
+ "Q1_own_template_tool": [
+  0.6814,
+  0.5749,
+  0.778
+ ],
+ "Q2_own_position": [
+  0.7286,
+  0.6147,
+  0.8244
+ ],
+ "Q3_own_minus_report_template_tool": [
+  -0.0804,
+  -0.2395,
+  0.0558
+ ],
+ "endpoints": {
+  "Q1_lower_gt_0.5": true,
+  "Q2_lower_gt_0.5": true,
+  "Q3_two_sided_reported": true,
+  "C0_interval_inside_pm0.05": true
+ },
+ "C0_mean_y_minus_mean_f_own": [
+  0.0151,
+  0.0076,
+  0.0229
+ ]
+}

@@ -141,6 +141,12 @@ This work monitors closed AI agents before they act, through their own APIs and 
 \section{Agent results: more figures and the closed-agent table}
 \label{app:agentfigs}
 \label{sec:replica}\label{sec:closed}\label{sec:prevent}\label{sec:robust}\label{sec:coverage}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/says_does.pdf}
+\caption{\textbf{What a closed agent says vs what it does}, before the call exists, on new episodes (AUROC among calls at the same position, 95\% intervals). GPT-6-luna's answers about its next action forecast its coming violation, and Gemma-4 answering in its seat does as well. Claude Haiku 5.5's answers about its next action do not; its own sampled next actions, read by its own answers, do; Gemma-4 sampling in its seat does not. Ceiling: Claude's sampled actions judged by the environment.}
+\label{fig:saysdoes}
+\end{figure}
 \suppressfloats[t]
 This appendix shows live prevention (\cref{fig:prevention}), the replica of the hidden state (\cref{fig:replication}), robustness and transfer (\cref{fig:transfer}), and the closed agents at a 5\% review budget (\cref{tab:closed}).
 \begin{figure*}[htbp]
