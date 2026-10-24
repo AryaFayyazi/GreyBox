@@ -13,7 +13,7 @@
       g46_rollout_forecast.json within_position.report = 0.4746, interval [0.4323, 0.5109] from scripts/228's
       cluster bootstrap (not stored in a results file); Claude does: g46 R1_own_within_position.
   (d) Prevent, with no human: violating episodes (%), live. Claude: g47_selfgate.json violating_episodes;
-      GPT-6-luna: g39b_matched_gate.json violating_episodes (a checker reviews the held calls).
+      GPT-6-luna: g51_gpt_selfgate.json violating_episodes (the same reviewer-free hold, six templates).
 Drawn at print size (6.75 in = ICML text width; no tight bbox), so every font size is a true point size.
   python scripts/236_fig_teaser_v7.py  -> paper/figures/teaser_v7.pdf, results/figures/teaser_v7.png
 """
@@ -180,13 +180,14 @@ CLAUDE_SAYS = (0.4746, 0.4323, 0.5109)          # g46 within_position.report; in
 def panel_forecast(ax):
     g45, g46, g52, g54 = J("g45_per_agent_ci.json"), J("g46_rollout_forecast.json"), J("g52_text_judge_vs_policy.json"), J("g54_gpt_text_judge.json")
     assert abs(g46["within_position"]["report"] - CLAUDE_SAYS[0]) < 1e-4
+    says = J("g59_selfreport_exact.json")["self_report_within_position"]   # same units as judge/does (G46c), G59
     gpt = g45["own_within_position"]["gpt"]
     judge, does = g52["judge_within_position"], g52["own_within_position"]   # exact contexts (G46c units)
     style(ax)
     gj, gdo = g54["judge_within_position"], g54["own_within_position"]
     xj = J("g55_gpt_judges_claude.json")["gpt_judge_within_position"]
     rows = [(6.6, "says", *gpt, True, ORANGE), (5.6, "text judge", *gj, True, MUTE), (4.6, "does", *gdo, False, ORANGE),
-            (3.0, "says", *CLAUDE_SAYS, True, ORANGE), (2.0, "text judge", *judge, True, MUTE),
+            (3.0, "says", *says, True, ORANGE), (2.0, "text judge", *judge, True, MUTE),
             (1.0, "GPT judge", *xj, True, MUTE), (0.0, "does", *does, False, ORANGE)]
     for yy, lab, m, lo, hi, hollow, col in rows:
         dot_row(ax, yy, m, lo, hi, col, hollow=hollow, val_dx=0.07)
@@ -196,25 +197,25 @@ def panel_forecast(ax):
     header(ax, 3.95, "Claude Haiku 5.5", dx=-0.45)
     auroc_axis(ax, "AUROC among calls at one position", chance_label=True)
     ax.set_xlim(0.33, 1.0)
-    return {"GPT says": gpt, "GPT text judge": gj, "GPT does": gdo, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude GPT judge": xj, "Claude does": does}
+    return {"GPT says": gpt, "GPT text judge": gj, "GPT does": gdo, "Claude says": says, "Claude text judge": judge, "Claude GPT judge": xj, "Claude does": does}
 
 
 # ---------------------------------------------------------------- (d)
 def panel_prevent(ax, lab_w):
-    s, b = J("g47_selfgate.json")["violating_episodes"], J("g39b_matched_gate.json")["violating_episodes"]
+    s, b = J("g47_selfgate.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
     style(ax)
     grey = tint(MUTE, 0.35)
     rows = [(6.0, "no gate", s["none"], grey), (5.0, "random holds", s["random"], grey),
             (4.0, "own read-out", s["self"], ORANGE),
-            (2.0, "no gate", b["none"], grey), (1.0, "step gate", b["position"], grey),
-            (0.0, "pre-call gate", b["pre"], ORANGE)]
+            (2.0, "no gate", b["none"], grey), (1.0, "random holds", b["random"], grey),
+            (0.0, "own read-out", b["self"], ORANGE)]
     for yy, lab, v, col in rows:
         ax.barh([yy], [100 * v], height=0.62, color=col, lw=0, zorder=2)
         ax.text(100 * v + 1.5, yy, f"{100 * v:.0f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
     set_rows(ax, 7.05)
     header(ax, 7.05, "Claude Haiku 5.5", dx=-lab_w)
-    header(ax, 3.0, "GPT-6-luna (checker reviews held calls)", dx=-lab_w)
+    header(ax, 3.0, "GPT-6-luna", dx=-lab_w)
     ax.set_xlim(0, 80)
     ax.set_xticks([0, 25, 50, 75], ["0", "25", "50", "75%"])
     ax.set_xlabel("violating episodes, live", fontsize=FS_LAB, color=INK, labelpad=1.5)

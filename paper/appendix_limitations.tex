@@ -1,10 +1,10 @@
 This appendix lists the limits of the method and of the evidence.
 \begin{itemize}
 \item \textbf{Benchmarks.} Most agent results use CAPE-Bench, whose tasks are synthetic and matched so that one fact decides each action. AgentDojo and $\tau^2$-bench airline test the read-out on other policies, but on fewer agents.
-\item \textbf{One task family for Claude Haiku 5.5's forecasts.} Claude Haiku 5.5 violates on 2 of CAPE-Bench's 24 templates, and on one of them in nearly every episode. All its forecasting and reviewer-free prevention results therefore come from one template (unapproved production restarts, 41 scenarios); on $\tau^2$-bench airline its policy forecast did not separate from chance (7 tasks). GPT-6-luna's results cover six templates.
+\item \textbf{One task family for Claude Haiku 5.5's forecasts.} Claude Haiku 5.5 rarely violates: on 2 of CAPE-Bench's 24 templates (on one of them in nearly every episode), in 1.6\% of AgentDojo injection attempts (9 of 565, development and pilots), and in 1.5\% of $\tau^2$-bench airline episodes. All its forecasting and reviewer-free prevention results therefore come from one template (unapproved production restarts, 41 scenarios); on $\tau^2$-bench airline its policy forecast did not separate from chance (7 tasks). GPT-6-luna's results cover six templates.
 \item \textbf{At the call, the read-out acts as a fixed checklist.} The 8 answers agree with the agent's full decision state at only 0.01--0.16, and about 20\% of their ranking power on open agents runs through the hidden violation direction. At the call, this is what the theory predicts (the transcript decides the label), and other models' answers do as well or better; the agent itself is needed only before the call.
 \item \textbf{Sampled calls.} The geometric monitor is measured on the calls that the agents drew in side branches, labelled by CAPE's checker, not on the calls they executed; on GPT-6-luna its interval is wide.
-\item \textbf{The theory is mostly elementary.} Its parts are classical or short (marked in \cref{sec:method}). Its use is the predictions it makes before the data, which we test: two passed (the regimes at and before the call; the label-free SNR), and one failed (the size of another reader's loss), with retests pending.
+\item \textbf{The theory is mostly elementary.} Its parts are classical or short (marked in \cref{sec:method}). Its use is the predictions it makes before the data, which we test. It predicted the loss of three text monitors to within 0.02 on both closed agents, the regimes at and before the call, and where the read-out works (the label-free SNR). It failed to predict another reader's loss on contexts rebuilt from logs, and its label-free gap did not separate the two regimes in Brier terms.
 \item \textbf{Questions follow the policy.} The 8 questions (\cref{app:questions}) were written from CAPE-Bench's kinds of violation. Another policy needs its own questions, written before any answer exists, as we did for AgentDojo and $\tau^2$-bench.
 \item \textbf{A fact that the agent never checked.} If a violation depends on a fact that is not in the transcript and that the agent never looked up, the agent's state holds no warning, and the read-out cannot flag it (Claude Haiku 5.5's mailing-list sends; two of seven $\tau^2$ tasks, where the agent misread the booking). Such violations need a check of the world.
 \item \textbf{Nearly deterministic answers.} When an agent gives the same answer to almost every question every time, the read-out has little variance beyond its noise. The label-free SNR (\cref{prop:snrceil}) flags these settings before any label exists; Claude Haiku 5.5's settings have the lowest SNR.
@@ -13,5 +13,34 @@ This appendix lists the limits of the method and of the evidence.
 \item \textbf{The reviewer.} In the live tests, CAPE's checker stands in for the human who reviews a held call. A human reviewer is slower and makes mistakes, so live prevention with people can be lower.
 \item \textbf{Adversaries.} An agent that knows the questions, or an attacker who can query the score, may learn to answer falsely. Self-policing is untrusted monitoring without an adversary; it is no defense against a model that colludes with itself. The questions and scores should stay hidden from the agent.
 \item \textbf{Cost.} The read-out asks 32 one-word questions per call (8 questions, 4 answers each). With prompt caching this cost \$0.0014 per decision on Claude Haiku 5.5 (median latency 2.7\,s, measured on 100 decisions).
-\item \textbf{Many tests.} We ran many preregistered tests, and some headline tests redesign earlier ones that failed (the prevention law, the pre-call gate, and Claude's forecast with exact contexts). The 15 endpoints behind the abstract's closed-agent claims survive a Holm correction (\cref{app:prereg}); the other tests are not corrected.
+\item \textbf{Many tests.} We ran many preregistered tests, and some headline tests redesign earlier ones that failed (the prevention law, the pre-call gate, and Claude's forecast with exact contexts). Over all 26 registered endpoints of the closed-agent tests that the abstract cites, passed or failed, 17 survive a Holm correction (exploratory; \cref{app:prereg}); the other tests are not corrected.
 \end{itemize}
+
+\subsection*{Every forecaster on the same calls, across and within steps}
+\label{app:bothstrata}
+Tests before the call registered one of two strata: within template and tool, across the call's step, or within template, tool and step. Across steps, a forecast mixes \emph{when} an agent violates with \emph{which} call violates: the step alone ranks Claude Haiku 5.5's violations at 0.82. Within a step, only the second remains. \Cref{tab:bothstrata} scores every forecaster on the same calls under both (exploratory). On Claude Haiku 5.5, the text judges track the step (GPT-6-luna's judge 0.90 across steps) but are near or below chance within a step, where only its sampled actions forecast. On GPT-6-luna, its self-report and its text judge forecast within a step as well as or better than its sampled actions.
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{\textbf{Forecasters before the call, on the same calls.} AUROC within template and tool (across steps) and within template, tool and step. Exploratory. Best per column and agent in blue.}
+\label{tab:bothstrata}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\rowcolor{gbhead}\textbf{Forecaster} & \textbf{across steps} & \textbf{within a step}\\
+\midrule
+\multicolumn{3}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{Claude Haiku 5.5 (restarts; 1{,}587 calls, 316 violations; exact contexts)}}\\
+position alone & 0.821 & --\\
+self-report & 0.354 & 0.473\\
+Claude text judge & 0.630 & 0.448\\
+GPT-6-luna text judge & 0.904 & 0.596\\
+own draws, own read & 0.801 & 0.891\\
+own draws, GPT-6-luna read & \best{0.914} & \best{0.930}\\
+own draws, geometry & 0.713 & 0.892\\
+\multicolumn{3}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{GPT-6-luna (six templates; 1{,}134 calls, 131 violations)}}\\
+position alone & \best{0.782} & --\\
+self-report & 0.762 & \best{0.836}\\
+GPT-6-luna text judge & 0.776 & 0.777\\
+own draws, own read & 0.681 & 0.729\\
+own draws, geometry & 0.748 & 0.642\\
+\bottomrule
+\end{tabular}
+\end{table}

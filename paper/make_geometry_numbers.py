@@ -107,7 +107,9 @@ else:
     for n in ("WKCells", "WKAns", "WKText", "WKRep"):
         mac(n, r"\PENDING{}")
 if g6:
-    mac("GSixExcess", "%+.3f" % g6["S1_point"] + r" {\scriptsize[%+.3f, %+.3f]}" % tuple(g6["S1_diagonal_excess"][1:]))
+    from decimal import Decimal, ROUND_HALF_UP
+    h = lambda v: "%+.3f" % float(Decimal(str(v)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))  # noqa: E731
+    mac("GSixExcess", h(g6["S1_point"]) + r" {\scriptsize[%s, %s]}" % tuple(h(v) for v in g6["S1_diagonal_excess"][1:]))
     mac("GSixSOne", "passes" if g6["S1_pass"] else "fails")
     s2 = g6["S2_reader_hidden_minus_own_answers"]
     mac("GSixSTwo", "%d of %d" % (sum(v[1] > 0 for v in s2.values()), len(s2)))

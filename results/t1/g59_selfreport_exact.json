@@ -1,0 +1,18 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "self_report_within_position": [
+  0.4733,
+  0.4364,
+  0.5025
+ ],
+ "own_draws_within_position": 0.8906,
+ "S1_own_draws_minus_self_report": [
+  0.4173,
+  0.3698,
+  0.4731
+ ],
+ "endpoints": {
+  "S1_lower_gt_0": true
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "claude": {
+  "units": 1587,
+  "violations": 316,
+  "scores": {
+   "position alone": {
+    "within_template_tool": 0.8212,
+    "within_position": null
+   },
+   "self-report": {
+    "within_template_tool": 0.3537,
+    "within_position": 0.4733
+   },
+   "Claude text judge": {
+    "within_template_tool": 0.6302,
+    "within_position": 0.4478
+   },
+   "GPT-6-luna text judge": {
+    "within_template_tool": 0.9039,
+    "within_position": 0.5958
+   },
+   "own draws, own read": {
+    "within_template_tool": 0.8011,
+    "within_position": 0.8906
+   },
+   "own draws, GPT-6-luna read": {
+    "within_template_tool": 0.9144,
+    "within_position": 0.9296
+   },
+   "own draws, geometry": {
+    "within_template_tool": 0.7129,
+    "within_position": 0.8916
+   }
+  }
+ },
+ "gpt": {
+  "units": 1134,
+  "violations": 131,
+  "scores": {
+   "position alone": {
+    "within_template_tool": 0.7823,
+    "within_position": null
+   },
+   "self-report": {
+    "within_template_tool": 0.7618,
+    "within_position": 0.8362
+   },
+   "GPT-6-luna text judge": {
+    "within_template_tool": 0.7758,
+    "within_position": 0.7772
+   },
+   "own draws, own read": {
+    "within_template_tool": 0.6814,
+    "within_position": 0.7286
+   },
+   "own draws, geometry": {
+    "within_template_tool": 0.7483,
+    "within_position": 0.642
+   }
+  }
+ }
+}

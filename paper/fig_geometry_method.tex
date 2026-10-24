@@ -97,34 +97,23 @@
   \node[line] at (0.14,\La) {if $s$ passes a cut};
   \node[note] at (0.14,\Lb) {no labels; nothing trained};
 \end{scope}
-% ---------------------------------------------------------------- (5) across steps
+% ---------------------------------------------------------------- (5) before the call: sample the policy
 \begin{scope}[shift={(14.15,0)}]
   \draw[card] (0,0) rectangle (2.85,\H);
   \node[badge] at (0.27,\H-0.27) {5};
-  \node[ttl] at (0.52,\H-0.12) {Across steps:\\filter, forecast};
-  \coordinate (T) at (0.42,0.74);
-  \draw[ax] (T) -- ++(2.1,0) node[right=0.5pt, text=gbmute] {$t$};
-  \draw[ax] (T) -- ++(0,1.95); \node[anchor=east, inner sep=1pt, text=gbmute] at ($(T)+(0,1.0)$) {$s_t$};
-  \draw[gborange, line width=0.7pt, densely dashed] ($(T)+(0,1.52)$) -- ++(2.1,0);
-  \node[anchor=north east, inner sep=1pt, text=gborange] at ($(T)+(2.1,1.5)$) {cut};
-  \fill[gbblue!14] ($(T)+(0.22,0.10)$) .. controls ($(T)+(0.65,0.30)$) and ($(T)+(0.95,0.46)$) .. ($(T)+(1.32,0.70)$)
-    -- ($(T)+(1.32,1.08)$) .. controls ($(T)+(0.95,0.82)$) and ($(T)+(0.65,0.66)$) .. ($(T)+(0.22,0.46)$) -- cycle;
-  \draw[gbblue, line width=1.0pt] ($(T)+(0.22,0.28)$) .. controls ($(T)+(0.65,0.48)$) and ($(T)+(0.95,0.64)$) .. ($(T)+(1.32,0.89)$);
-  \foreach \x/\y in {0.22/0.22, 0.58/0.58, 0.95/0.50, 1.32/0.96}{
-    \draw[gbmute, line width=0.45pt] ($(T)+(\x,\y-0.2)$) -- ($(T)+(\x,\y+0.2)$);
-    \draw[gbmute, line width=0.45pt] ($(T)+(\x-0.045,\y-0.2)$) -- ++(0.09,0);
-    \draw[gbmute, line width=0.45pt] ($(T)+(\x-0.045,\y+0.2)$) -- ++(0.09,0);
-    \fill[white] ($(T)+(\x,\y)$) circle (1.5pt); \draw[gbmute, line width=0.5pt] ($(T)+(\x,\y)$) circle (1.5pt);
+  \node[ttl] at (0.52,\H-0.12) {Before the call:\\sample, then read};
+  \node[msg] (ctx) at (0.14,1.92) {context};
+  \foreach \y/\c/\a [count=\i] in {2.60/gbaqua/safe, 2.19/gbaqua/safe, 1.78/gborange/unsafe, 1.37/gbaqua/safe}{
+    \node[chip, fill=\c, minimum width=0.95cm] (d\i) at (1.62,\y) {\a};
+    \draw[->, gbblue, line width=0.5pt, densely dashed] (ctx.east) to[out=0, in=180] (d\i.west);
   }
-  \draw[->, gborange, line width=0.8pt, densely dotted] ($(T)+(1.32,0.89)$) -- ($(T)+(1.72,1.62)$);
-  \fill[gborange] ($(T)+(1.76,1.69)$) circle (1.9pt);
-  \node[anchor=north west, inner sep=0pt, align=left, text=gborange, font=\fontsize{6.1}{7.1}\selectfont\bfseries] at ($(T)+(0.12,1.43)$) {hold before\\the call};
-  \node[line, text=gbmute] at (0.14,\La) {noise from the theory};
-  \node[note] at (0.14,\Lb) {dynamics from unlabelled runs};
+  \node[anchor=base west, inner sep=0pt, text=gbmute] at (1.10,0.84) {$M$ draws of $a$};
+  \node[line] at (0.14,\La) {$f=\tfrac1M\sum_m s(a_m)$};
+  \node[note] at (0.14,\Lb) {the agent's own policy};
 \end{scope}
 % ---------------------------------------------------------------- flow chevrons between panels
 \foreach \x in {2.575, 7.675, 10.925, 14.025}{ \fill[flow] (\x-0.06,1.62) -- (\x+0.07,1.75) -- (\x-0.06,1.88) -- cycle; }
 \end{tikzpicture}
-\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. (5) Across an episode, the angles are noisy measurements (error bars: the noise bound that the number of answers sets) of a state whose dynamics are identified from unlabelled runs (\cref{prop:iv}); a Kalman filter gives the estimated state and a forecast of the next one. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
+\caption{\textbf{The method, with no training and nothing but the API.} (1) Hidden coordinates are not observable (\cref{prop:gauge}). (2) At a proposed call, the agent answers yes/no questions about the call in side branches of its own conversation, which the conversation never sees. (3) A Bernoulli law $p$ is the point $(\sqrt{1-p},\sqrt p)$ on a quarter circle, and its Fisher--Rao distance to another is twice the arc between them; independent questions add as squares, so the angles are exact flat coordinates (\cref{thm:geometry}). (4) The angles, signed by each question's wording, are averaged into a fixed score that holds the call for review before it runs. (5) Before the call exists, the agent's next action is drawn $M$ times in side branches, and each drawn call is scored as in (4) or by its distance from the agent's typical state; the mean forecasts the violation (\cref{prop:selfforecast,cor:rollout}). Any capable reader can score the draws. Asked about any context, the same coordinates give the observable geometry of \cref{sec:geom-results}.}
 \label{fig:method}
 \end{figure*}

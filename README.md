@@ -368,8 +368,9 @@ One row per test with a failed endpoint, a stop, or no test (too few cases). Int
 | G54 | On GPT-6-luna, does its sampled policy forecast better than itself as a reasoning text monitor? | J1: −0.049 [−0.178, 0.071] (judge 0.777, policy 0.729, self-report 0.836). | GPT-6-luna's words track its actions, so text suffices for it; on Claude Haiku 5.5 they do not (G52: judge 0.448, policy 0.891). |
 | G44b | Is the agent's advantage specific to forecasting? | D1: −0.045 [−0.178, 0.082]. | It holds for the closed agent and Qwen3.8, not for gpt-oss-20b or Muse-Glimmer. |
 | G58 | When GPT-6-luna reads Claude Haiku 5.5's sampled next actions, does the reader not matter (GPT read − Claude read inside ±0.05)? | D2: +0.039 [0.005, 0.072]; the upper bound passes +0.05. D1 passed: GPT-6-luna reading the draws 0.930 vs reading the transcript 0.596, +0.334 [0.235, 0.421]. | The reader matters only at the margin, and in the other direction: GPT-6-luna reasons, Claude's own reads ran with reasoning off. Sampling the agent's policy is what forecasts. |
+| G60 | Does the label-free policy gap separate the two regimes (Claude's text judge loses more than GPT-6-luna's, in Brier)? | E2: −0.008 [−0.036, 0.020]. E1 passed: the predicted loss of each of three text monitors matched the observed within ±0.02 (largest bound 0.015). | Brier mixes ranking with calibration: GPT-6-luna's judge ranks well (0.78) but is poorly calibrated, so its Brier loss is as large as Claude's judge's. |
 
-45 rows (1 L, 17 T, 27 G). Two G tests count as mixed by the word rule, but every primary endpoint passed. G17's text
+46 rows (1 L, 17 T, 28 G). Two G tests count as mixed by the word rule, but every primary endpoint passed. G17's text
 reports server errors. G22's "no detectable difference" is a reported, not a primary, comparison. G20 counts as "no
 bar", but its J1 passed.
 

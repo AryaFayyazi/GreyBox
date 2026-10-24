@@ -1,0 +1,105 @@
+{
+ "pairs": {
+  "claude_self": {
+   "units": 1587,
+   "violations": 316,
+   "observed_excess": [
+    0.1413,
+    0.1291,
+    0.1547
+   ],
+   "predicted_excess": [
+    0.1382,
+    0.1257,
+    0.1512
+   ],
+   "observed_minus_predicted": [
+    0.0031,
+    -0.0033,
+    0.009
+   ],
+   "label_free_policy_gap": [
+    0.1408,
+    0.1285,
+    0.1534
+   ],
+   "calibration_y_minus_f": [
+    0.0038,
+    -0.0051,
+    0.0126
+   ]
+  },
+  "claude_gpt": {
+   "units": 1587,
+   "violations": 316,
+   "observed_excess": [
+    0.0873,
+    0.074,
+    0.1006
+   ],
+   "predicted_excess": [
+    0.0873,
+    0.0772,
+    0.0985
+   ],
+   "observed_minus_predicted": [
+    -0.0001,
+    -0.0068,
+    0.0065
+   ],
+   "label_free_policy_gap": [
+    0.0899,
+    0.0798,
+    0.1009
+   ],
+   "calibration_y_minus_f": [
+    0.0038,
+    -0.005,
+    0.0126
+   ]
+  },
+  "gpt_self": {
+   "units": 1113,
+   "violations": 127,
+   "observed_excess": [
+    0.14,
+    0.1164,
+    0.1659
+   ],
+   "predicted_excess": [
+    0.147,
+    0.1233,
+    0.1724
+   ],
+   "observed_minus_predicted": [
+    -0.007,
+    -0.0152,
+    0.0
+   ],
+   "label_free_policy_gap": [
+    0.1485,
+    0.1246,
+    0.1737
+   ],
+   "calibration_y_minus_f": [
+    0.0151,
+    0.0075,
+    0.0227
+   ]
+  }
+ },
+ "E2_claude_self_gap_minus_gpt_self_gap": [
+  -0.0077,
+  -0.036,
+  0.0195
+ ],
+ "endpoints": {
+  "E1_each_pair_inside_pm0.02": true,
+  "E1_by_pair": {
+   "claude_self": true,
+   "claude_gpt": true,
+   "gpt_self": true
+  },
+  "E2_lower_gt_0": false
+ }
+}

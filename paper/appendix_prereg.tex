@@ -31,10 +31,13 @@ GPT-6-luna, beyond position & within-position AUROC (lower bound $>0.50$) & \GCf
 \quad second fresh set (pooled with Claude Haiku 5.5) & within-position AUROC, pooled (lower bound $>0.50$) & 0.649 [0.570, 0.705] & \lockref{f5c8202}\\
 Claude Haiku 5.5's own sampled policy & within-position AUROC (lower bound $>0.50$) & \GRoOwn & \lockref{ed80043}\\
 \quad better than its self-report & own $-$ self-report (lower bound $>0$) & \GRoOwnMinusReport & \lockref{ed80043}\\
+\quad\quad on the same calls, exact contexts & own $-$ self-report (lower bound $>0$) & \GSeDiff & \lockref{39886bc}\\
 \quad better than a reasoning text monitor & own $-$ judge, within position (lower bound $>0$) & \GJdDiff & \lockref{ea8c84e}\\
 \quad better than another provider's text monitor & own $-$ GPT-6-luna judge, within position (lower bound $>0$) & \GXjDiff & \lockref{bd6e082}\\
 \quad sampling is what matters & GPT-6-luna reading the draws $-$ reading the transcript (lower bound $>0$) & \GOrDone & \lockref{7477d14}\\
 \quad\quad the reader does not matter & GPT-6-luna's read $-$ Claude's read, inside $\pm0.05$ (fails: GPT-6-luna reads better) & \GOrDtwo & \lockref{7477d14}\\
+The theory predicts each text monitor's loss & observed $-$ predicted Brier excess, each of 3 pairs inside $\pm0.02$ & \GTlCsDiff; \GTlCgDiff; \GTlGsDiff & \lockref{162a72c}\\
+\quad the label-free gap separates the regimes & Claude gap $-$ GPT gap (lower bound $>0$; fails) & \GTlEtwo & \lockref{162a72c}\\
 The geometry alone forecasts & within-position AUROC, each closed agent (lower bound $>0.50$) & \GGfClaude; \GGfGpt & \lockref{06b5f36}\\
 GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
@@ -56,27 +59,39 @@ No reviewer, GPT-6-luna, six templates & self reduction (lower bound $>0$) & \GS
 \end{center}
 
 \subsection*{Multiple tests}
-The 15 preregistered endpoints behind the abstract's closed-agent claims form one family. For each, a one-sided $p$-value against its registered null comes from its estimate and its 95\% cluster-bootstrap interval (normal approximation, SE = interval width / 3.92); Holm's step-down then keeps the family-wise error at 0.05 (exploratory). All 15 survive. The weakest, GPT-6-luna's reviewer-free gate against random holds, would not survive a plain Bonferroni cut ($0.05/15$).
-\begin{center}\footnotesize
-\begin{tabular}{@{}lcccc@{}}
+The family is every registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites (26 endpoints). For each, a one-sided $p$-value against its registered bar comes from its estimate and its 95\% cluster-bootstrap interval (normal approximation, SE = interval width / 3.92; for an equivalence endpoint, the larger of its two one-sided $p$-values). Holm's step-down then keeps the family-wise error at 0.05. This check is exploratory: we chose it after the outcomes. Of the 26 endpoints, 20 passed as registered and 17 survive Holm. Three that passed do not survive: the 8-answer read-out over one answer and its non-inferiority to a trained probe (open agents), and GPT-6-luna's reviewer-free gate over random holds.
+\begin{center}\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-\rowcolor{gbhead}\textbf{Endpoint} & \textbf{estimate} & \textbf{null} & \textbf{$p$ (one-sided)} & \textbf{Holm bar}\\
+\rowcolor{gbhead}\textbf{Endpoint} & \textbf{est.} & \textbf{bar} & \textbf{registered} & \textbf{$p$} & \textbf{Holm}\\
 \midrule
-GPT-6-luna, read-out at the call & 0.979 & 0.5 & $<10^{-6}$ & 0.0033\\
-Claude Haiku 5.5, read-out at the call (restarts) & 0.909 & 0.65 & $<10^{-6}$ & 0.0036\\
-GPT-6-luna, pre-call read-out & 0.923 & 0.5 & $<10^{-6}$ & 0.0038\\
-Claude, own sampled actions $-$ its text judge & 0.443 & 0 & $<10^{-6}$ & 0.0042\\
-Claude, geometric monitor & 0.818 & 0.5 & $<10^{-6}$ & 0.0045\\
-Claude, geometric forecast & 0.892 & 0.5 & $<10^{-6}$ & 0.0050\\
-Claude, reviewer-free gate: reduction & 0.473 & 0 & $<10^{-6}$ & 0.0056\\
-Claude, own sampled actions & 0.708 & 0.5 & $<10^{-6}$ & 0.0063\\
-Claude, own sampled actions $-$ GPT text judge & 0.295 & 0 & $<10^{-6}$ & 0.0071\\
-Claude, own sampled actions $-$ self-report & 0.233 & 0 & $<10^{-6}$ & 0.0083\\
-GPT-6-luna, reviewer-free gate: reduction & 0.353 & 0 & $<10^{-6}$ & 0.0100\\
-Claude, reviewer-free gate $-$ random & 0.198 & 0 & $6.5\times10^{-6}$ & 0.0125\\
-GPT-6-luna, geometric forecast & 0.642 & 0.5 & $2.5\times10^{-3}$ & 0.0167\\
-GPT-6-luna, geometric monitor & 0.816 & 0.5 & $2.9\times10^{-3}$ & 0.0250\\
-GPT-6-luna, reviewer-free gate $-$ random & 0.206 & 0 & $9.4\times10^{-3}$ & 0.0500\\
+Read-out at the call: Claude restarts & 0.909 & $>$0.65 & pass & $<10^{-6}$ & \textbf{yes}\\
+GPT-6-luna read-out at the call & 0.979 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude own draws $-$ Claude text judge & 0.443 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometric monitor, Claude & 0.818 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometric forecast, Claude & 0.892 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude reviewer-free gate: reduction & 0.473 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+GPT-6-luna reads Claude's draws $-$ reads transcript & 0.334 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude own sampled actions, within position & 0.708 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude own draws $-$ GPT-6-luna text judge & 0.295 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude reviewer-free gate: success (non-inferiority) & 0.065 & $>$-0.05 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude own draws $-$ self-report & 0.233 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+GPT-6-luna reviewer-free gate: reduction & 0.353 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude reviewer-free gate $-$ random & 0.198 & $>$0 & pass & $6.5\times10^{-6}$ & \textbf{yes}\\
+Self-forecast: own, within position (pooled) & 0.649 & $>$0.5 & pass & $7.9\times10^{-6}$ & \textbf{yes}\\
+GPT-6-luna pre-call read-out & 0.765 & $>$0.5 & pass & $3.0\times10^{-5}$ & \textbf{yes}\\
+Geometric forecast, GPT-6-luna & 0.642 & $>$0.5 & pass & $2.5\times10^{-3}$ & \textbf{yes}\\
+Geometric monitor, GPT-6-luna & 0.816 & $>$0.5 & pass & $2.9\times10^{-3}$ & \textbf{yes}\\
+Read-out at the call: 8 answers $-$ 1 answer (open agents) & 0.036 & $>$0 & pass & $7.2\times10^{-3}$ & no\\
+Read-out at the call: 8 answers $-$ trained probe (non-inferiority) & 0.045 & $>$-0.05 & pass & $7.4\times10^{-3}$ & no\\
+GPT-6-luna reviewer-free gate $-$ random & 0.206 & $>$0 & pass & $9.4\times10^{-3}$ & no\\
+GPT-6-luna reviewer-free gate: success (non-inferiority) & -0.016 & $>$-0.05 & fail & $5.4\times10^{-2}$ & no\\
+GPT-6-luna read $-$ Claude read, equivalence 0.05 & 0.039 & $|\cdot|<$0.05 & fail & $2.6\times10^{-1}$ & no\\
+GPT-6-luna own draws $-$ GPT-6-luna text judge & -0.049 & $>$0 & fail & $7.8\times10^{-1}$ & no\\
+Self-forecast: own $-$ other, within position (pooled) & -0.032 & $>$0 & fail & $8.2\times10^{-1}$ & no\\
+Claude own draws $-$ Gemma-4's draws, within template$|$tool & -0.144 & $>$0 & fail & $1.0\times10^{0}$ & no\\
+Self-forecast: own $-$ other, within template$|$tool (pooled) & -0.190 & $>$0 & fail & $1.0\times10^{0}$ & no\\
 \bottomrule
 \end{tabular}
 \end{center}
