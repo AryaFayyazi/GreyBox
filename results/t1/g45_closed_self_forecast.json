@@ -1,0 +1,42 @@
+{
+ "gpt": {
+  "units": 1134,
+  "violations": 131,
+  "own_template_tool": 0.7618,
+  "other_template_tool": 0.759,
+  "own_position": 0.8362,
+  "other_position": 0.8393
+ },
+ "claude": {
+  "units": 1066,
+  "violations": 208,
+  "own_template_tool": 0.3599,
+  "other_template_tool": 0.742,
+  "own_position": 0.4614,
+  "other_position": 0.5218
+ },
+ "S1_pooled_own_minus_other_template_tool": [
+  -0.1896,
+  -0.2384,
+  -0.1416
+ ],
+ "S2_pooled_own_within_position": [
+  0.6488,
+  0.5695,
+  0.7046
+ ],
+ "S3_pooled_own_minus_other_position": [
+  -0.0318,
+  -0.0997,
+  0.0382
+ ],
+ "pooled_agents": [
+  "gpt",
+  "claude"
+ ],
+ "endpoints": {
+  "S1_lower_gt_0": false,
+  "S2_lower_gt_0.5": true,
+  "S3_lower_gt_0": false
+ }
+}

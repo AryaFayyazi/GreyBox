@@ -28,7 +28,7 @@ GPT-6-luna at its call & within-stratum AUROC (lower bound $>0.5$) & \GGlAt & \t
 Claude Haiku 5.5 on $\tau^2$-bench & within-tool AUROC (lower bound $>0.5$) & \GEeRone & \texttt{101fab0}\\
 \multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{forecasting before the call} (\cref{sec:forecast})}\\*
 GPT-6-luna, beyond position & within-position AUROC (lower bound $>0.50$) & \GCfPos & \texttt{0a3db28}\\
-\quad own answers beat another model's & own $-$ other (lower bound $>0$) & +0.111 [0.041, 0.185] & \texttt{fa82fad}\\
+\quad second fresh set (pooled with Claude Haiku 5.5) & within-position AUROC, pooled (lower bound $>0.50$) & 0.649 [0.570, 0.705] & \texttt{f5c8202}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \texttt{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \texttt{98ceb4e}\\
 A Kalman forecast beats position & forecast $-$ position prior (lower bound $>0$) & +0.21 [0.08, 0.32] & \texttt{f531a75}\\
