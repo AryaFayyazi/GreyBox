@@ -1,0 +1,122 @@
+% Compact full record of every preregistered test (source: docs/PREREGISTRATION_RECORD.md).
+% Outcome marks use the rule of paper/make_record.py (_cls): "pending" > "stopped" > PASS and FAIL/NO DETECTABLE
+% in the recorded outcome text give pass / mixed / fail; neither gives "no bar". Record ids are in the trailing comments only.
+\providecommand{\frPass}{\textcolor{gbaqua}{pass}}
+\providecommand{\frFail}{\textcolor{gborange}{fail}}
+\providecommand{\frMixed}{\textcolor{gbmute}{mixed}}
+\providecommand{\frGroup}[1]{\multicolumn{4}{@{}l@{}}{\cellcolor{gbgroup}\textbf{#1}}\\*}
+
+This appendix lists every preregistered test, passed or failed, in the order run. Lock commits are public (withheld here for anonymous review); details, data and causes of failure are in the repository's record.
+
+Tally (a test passes only if it passes every primary endpoint). Method tests: 55; 23 passed every primary endpoint, 19 mixed (passed some endpoints and failed others), 9 failed, 2 stopped before any outcome, 2 pending. Trained-comparison tests: 32; 15 passed every primary endpoint, 7 mixed, 7 failed, 3 with no pass/fail bar. The seven earlier tests of the observable state in chat (six passed, one mixed) are listed but not counted. Two method tests compare trained monitors; the table lists them with the trained comparisons. No correction for multiple tests is applied. A lock is the public commit that published the preregistration before its test ran; where the record names no commit, the table gives the lock date (2026, PDT). Brackets are 95\% intervals.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.565\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.075\textwidth}@{}}
+\toprule
+\rowcolor{gbhead}\textbf{Test} & \textbf{Primary endpoint and result} & \textbf{Outcome} & \textbf{Lock}\\
+\midrule\endfirsthead
+\toprule
+\rowcolor{gbhead}\textbf{Test} & \textbf{Primary endpoint and result} & \textbf{Outcome} & \textbf{Lock}\\
+\midrule\endhead
+\bottomrule\endlastfoot
+\frGroup{Geometry}
+Observable state, open chat models & Three gains, after one recorded deviation: +0.120 [0.115, 0.126]; +0.057 [0.045, 0.073]; +0.359 [0.310, 0.415] & \frPass & 2026-10-15\\ % L2
+Observable state, Othello & $R^2$ 0.967 [0.967, 0.968] $>$ 0.90; gain in $R^2$ +0.094 [0.086, 0.105] & \frPass & 2026-10-15\\ % L1
+Open-model readouts transfer to Claude Haiku 5.5 & 0.993 [0.983, 0.999]; 0.997 [0.990, 1.000]; 0.935 [0.868, 0.982] & \frPass & 2026-10-15\\ % L3
+Answers vs input text, 8 open models and Claude; exact recovery & Answers beat text on 8/8 models (lower bounds $\geq$ 0.141); Claude split-half 0.950 [0.939, 0.960], vs text +0.438 [0.391, 0.485]; exact Gram recovery, Pearson 1.0 & \frPass & \lockref{ebb89b1}\\ % G
+Yes/no answers vs the model's own replies & Exact answers beat 8 replies on 8/8 models (+0.16 to +0.48); sampled answers beat 1 reply on 7/8; replies saturate on 8/8 & \frPass & \lockref{0163682}\\ % G5
+The geometry is shared across models & No own-model excess, +0.002 [$-$0.001, +0.005] (equivalence $\pm$0.02); an open model's hidden geometry is the better stand-in on 6/7 & \frPass & \lockref{85ed1bb}\\ % G6
+What each API channel reveals & Answers show no own-model excess (+0.001); log-probabilities leak most, +0.221 [0.211, 0.230], and identify the model on 7/8 & \frPass & \lockref{722d5fe}\\ % G7
+Estimated state vs the true hidden state & Filtered $-$ raw answers +0.019 [0.001, 0.038]; forecast 0.116 [0.078, 0.153] (mostly position, exploratory) & \frPass & \lockref{d20c0c0}\\ % G28
+Memory of the state and the filter's noise & Lag-1 autocorrelation 0.132 [0.090, 0.171]; decay 0.119 [0.075, 0.155]; variance 0.31 [0.29, 0.34] of the nominal noise & \frPass & \lockref{38bf06a}\\ % G31c
+Triangulation: a closed model's own hidden geometry & Leave-one-out error 0.061 [0.051, 0.070]; 7 of 8 inside the interval; Claude Haiku 5.5 0.495 [0.437, 0.554] & \frPass & \lockref{a1556ea}\\ % G34
+Does the monitor come from the reconstructed state? & 20\% [13\%, 27\%] of the read-out's AUROC runs through the hidden violation coordinate (pass); within template and label 0.044 [$-$0.008, 0.115] (fail) & \frMixed & \lockref{0cdd2cc}\\ % G35
+With dither, does the read-out follow the hidden state? & Within template $\times$ tool $\times$ step $\times$ label $-$0.077 [$-$0.250, 0.195]; dither $-$ repeats $-$0.041 [$-$0.274, 0.201] & \frFail & \lockref{a5b6e59}\\ % G35b
+Triangulation at the agent's decision & Mean error 0.045 [0.031, 0.065] (pass); inside the interval for 1 of 4 (fail); Claude Haiku 5.5 0.103 [0.085, 0.122] (pass) & \frMixed & \lockref{39e18a1}\\ % G36
+A broader battery (32 questions) at the decision & Spearman with the decision-state geometry, 32 $-$ 8 questions, lower 95\% $>$ 0 & pending & 2026-10-23\\ % G43
+\frGroup{Monitoring at the call}
+The agent's own answers, training-free & 8 answers $-$ 1 answer +0.036 [0.006, 0.064]; $-$ trained probe +0.045 [$-$0.017, 0.135] (margin $-$0.05); Claude restarts 0.909 [0.858, 0.952] & \frPass & \lockref{4ac0466}\\ % G15
+Own answers or another model's & Own $-$ other, four open agents, +0.012 [$-$0.018, 0.040]: no detectable difference & \frFail & \lockref{b295376}\\ % G16
+Read-out on prompt injection (AgentDojo) & Within-suite AUROC: Gemma-4 0.985 [0.964, 0.998]; gpt-oss-20b 0.904 [0.872, 0.932] (bar 0.60) & \frPass & \lockref{e5ad171}\\ % G17
+A closed agent's own answers, tau2-bench & Claude Haiku 5.5, within-tool AUROC 0.704 [0.536, 0.822] (bar 0.50) & \frPass & \lockref{101fab0}\\ % G18
+Own conversation or outside reviewer, same closed model & Own $-$ outside +0.043 [$-$0.136, 0.226]: no detectable difference & \frFail & \lockref{c2388d4}\\ % G19
+Questionnaire or reasoning judge & Two-sided: read-out $-$ Gemma-4 reasoning judge, four open agents, +0.073 [0.021, 0.123] (questionnaire better) & \frPass & \lockref{f92fd86}\\ % G20
+An open model answers about a closed agent & Gemma-4 about Claude's tau2-bench writes, within tool 0.989 [0.954, 1.000] (bar 0.50) & \frPass & \lockref{caf9490}\\ % G21
+One universal questionnaire, two benchmarks & CAPE-Bench 0.890 [0.818, 0.950]; tau2-bench 0.935 [0.841, 0.985] (both pass); reported: universal $-$ tailored, no detectable difference on CAPE-Bench & \frPass & \lockref{0e2e38e}\\ % G22
+Label-free theory: which questions monitor & Spearman of SNR with AUROC 0.745 [0.608, 0.779] (pass); SNR weights $-$ equal +0.008 [$-$0.177, 0.032] (no detectable difference) & \frMixed & \lockref{e4f4f37}\\ % G23
+A closed agent's own answers, with reasoning & Within-tool AUROC 0.568 [0.454, 0.771] (bar 0.50); on $-$ off $-$0.051 [$-$0.246, 0.150] & \frFail & \lockref{3f089ec}\\ % G24
+Label-free theory on the agent's own answers & Spearman of SNR with AUROC 0.580 [0.470, 0.648] (pass); SNR weighting lowers the read-out, $-$0.068 [$-$0.142, $-$0.047] & \frPass & \lockref{e0504a9}\\ % G25
+A closed model reviews its own calls, with reasoning & Within-tool AUROC 0.918 [0.730, 0.990] (bar 0.50); $-$ reviewer without reasoning +0.262 [0.007, 0.478] & \frPass & \lockref{ffef148}\\ % G26
+A label-free signal says where the read-out works & Spearman 0.710 [0.436, 0.870]; cells with SNR $>$ 0 $-$ SNR $\leq$ 0 +0.282 [0.169, 0.406] & \frPass & \lockref{98ceb4e}\\ % G32
+A closed agent's answers, dithered & Dither $-$ 4 answers +0.015 [$-$0.089, 0.104]; dither $-$ 16 repeats +0.034 [$-$0.088, 0.157] & \frFail & \lockref{18f00a8}\\ % G33
+A second closed agent, at its call and before it & GPT-6-luna, within template $\times$ tool: at the call 0.979 [0.946, 0.998]; before it 0.765 [0.650, 0.909] (bar 0.50) & \frPass & \lockref{5a44807}\\ % G38
+Reading along the directions the call can violate & Relevant $-$ full read-out $-$0.014 [$-$0.059, 0.038] (dithered); +0.008 [$-$0.021, 0.026] (earlier answers) & \frFail & \lockref{6e4dbc4}\\ % G41
+\frGroup{Forecasting before the call}
+State tomography and forecasting & Forecast $-$ position prior +0.013 [$-$0.115, 0.155]; filtered $-$ raw $-$0.022 [$-$0.073, 0.030]; the linear dynamics do not fit & \frFail & \lockref{b175ba5}\\ % G27
+State tomography, three more open agents & Forecast $-$ position prior +0.209 [0.080, 0.317] (pass); filtered $-$ raw +0.018 [$-$0.021, 0.062] & \frMixed & \lockref{f531a75}\\ % G27b
+The state before a call, beyond position & Within-step AUROC 0.669 [0.594, 0.764] (pass); same-step agreement with the true state 0.072 [$-$0.004, 0.144] (fail) & \frMixed & \lockref{19e0085}\\ % G30
+Repeats or dither: is the within-step effect measurement-limited? & 16 dithered $-$ 4 answers +0.082 [0.001, 0.147] (pass); dither $-$ 16 repeats +0.006 [$-$0.064, 0.066] (fail); true state +0.053 [$-$0.014, 0.129] (fail) & \frMixed & \lockref{b4cb22a}\\ % G31
+Early warning and the horizon of the state & Early warning 0.498 [0.405, 0.585] (fail); before call $t$ $-$ before call $t{-}1$ +0.163 [0.029, 0.302] (pass) & \frMixed & \lockref{98ceb4e}\\ % G31b
+A closed agent's state before its call, tau2-bench & Claude Haiku 5.5, pre-call within-tool AUROC 0.536 [0.434, 0.682] (bar 0.50); dither $-$ repeats +0.127 [$-$0.045, 0.253] & \frFail & \lockref{3c7596c}\\ % G37
+Own forecast or another model's & GPT-6-luna own $-$ other +0.111 [0.041, 0.185] (pass); three open agents $-$0.030 [$-$0.159, 0.082] (fail) & \frMixed & 2026-10-23\\ % G44
+Is the own advantage specific to forecasting? & (Own $-$ other) before the call $-$ at the call, three open agents, $-$0.045 [$-$0.178, 0.082] & \frFail & 2026-10-23\\ % G44b
+Own or other forecast, two closed agents & Own $-$ other $-$0.190 [$-$0.238, $-$0.142] (fail); own within position 0.649 [0.570, 0.705] (pass); own $-$ other within position $-$0.032 [$-$0.100, 0.038] (fail) & \frMixed & 2026-10-23\\ % G45
+The forecast lives in the agent's policy & Own draws within position 0.708 [0.648, 0.765] (pass); own $-$ other $-$0.144 [$-$0.195, $-$0.094] (fail); own $-$ self-report +0.233 [0.161, 0.312] (pass) & \frMixed & \lockref{ed80043}\\ % G46
+The theory predicts the other model's loss in size & Observed $-$ predicted Brier excess $-$0.046 [$-$0.062, $-$0.032], bar $\pm$0.02 (fail); policy gap 0.095 [0.083, 0.107] (pass) & \frMixed & \lockref{777dc6f}\\ % G46b
+The policy forecast with the exact context & Observed $-$ predicted Brier excess inside $\pm$0.02 (primary); calibration inside $\pm$0.05; own within position, lower $>$ 0.5 & pending & 2026-10-23\\ % G46c
+A closed agent's pre-call state beyond position, confirmed & GPT-6-luna, fresh episodes: within position 0.923 [0.811, 0.992]; within template $\times$ tool 0.840 [0.732, 0.946] (bar 0.50) & \frPass & 2026-10-22\\ % G40
+\frGroup{Prevention}
+Live self-policing through the agent's API & Gate reduction 0.82 [0.76, 0.88] (pass); resampling 0.404 reviews per episode, limit 0.40 (fail); success +10.2 [+6.6, +14.3] points (pass) & \frMixed & \lockref{00da0b9}\\ % G9
+A closed agent polices itself & Decidable: reduction 0.69 [0.51, 0.88]; unchecked fact: 0.07 [0.00, 0.17], as predicted; success $-$0.3 [$-$2.1, +1.6] points & \frPass & \lockref{09caf58}\\ % G10
+The prevention law across agents, first design & Stopped: after 300 Qwen3.8 episodes neither arm had a violation; replaced by the next test & stopped & \lockref{09caf58}\\ % G11
+The prevention law across agents & Law within 0.15 (fail: Muse-Glimmer 0.23 [0.13, 0.35] vs 0.722); Muse $>$ Qwen +0.29 [0.10, 0.50] (pass); success (fail) & \frMixed & \lockref{7a6fa5d}\\ % G11b
+The composition-weighted law & Within 0.15 for 5/5 agents; mean absolute error 0.035 ($\leq$ 0.10) & \frPass & \lockref{47297e1}\\ % G12
+Self-policing against prompt injection & Gemma-4 reduction 0.843 [0.756, 0.912] (pass); law within 0.15: gpt-oss pass, Gemma-4 miss 0.157 (fail); utility pass & \frMixed & \lockref{4000e47}\\ % G13
+Live prevention by the estimated state & Stopped before any episode outcome: the dynamics were unstable and there was no position control; replaced & stopped & \lockref{f531a75}\\ % G29
+Live pre-call gate against a position gate & Gemma-4: reduction $-$0.04 [$-$0.30, 0.16] (fail); pre $-$ position $-$0.24 [$-$0.50, $-$0.03] (fail); success +0.023 [$-$0.007, 0.053] (pass) & \frMixed & \lockref{d696527}\\ % G29b
+Live pre-call gate on a closed agent & GPT-6-luna: reduction 0.636 [0.250, 0.875] (pass); pre $-$ position +0.227 [$-$0.190, 0.625] (fail); success +0.012 [$-$0.083, 0.107] (fail) & \frMixed & 2026-10-22\\ % G39
+Pre-call gate against a position gate, matched review rate & Pre $-$ position +0.313 [0.062, 0.543]; reduction 0.750 [0.605, 0.863]; success 0.000 [$-$0.048, 0.048] & \frPass & 2026-10-22\\ % G39b
+The prevention law for pre-call gates & Pre-call gate: predicted 0.750, observed 0.750 [0.605, 0.863] (pass); position gate: 0.167 vs 0.438, error 0.271 (fail) & \frMixed & 2026-10-22\\ % G42
+Prevention with no reviewer: the agent re-checks a held call & Reduction 0.473 [0.392, 0.554]; self $-$ random holds +0.198 [0.112, 0.290]; success +0.065 [0.033, 0.102] & \frPass & \lockref{94ac458}\\ % G47
+Forecast, then a policy reminder, no reviewer & Reduction 0.778 [0.709, 0.841] (pass); forecast $-$ random timing +0.048 [$-$0.012, 0.106] (fail); success +0.266 [0.171, 0.372] (pass) & \frMixed & \lockref{7c7221b}\\ % G49
+\frGroup{Trained comparisons}
+Resampling vs a white-box probe & Resampling $-$ probe +0.063 [0.033, 0.094] (pass); observable state $-$ probe $-$0.021 [$-$0.054, 0.009] (fail) & \frMixed & 2026-10-15\\ % T1
+When the internals are read & Internals at the decision $-$ resampling at the turn start +0.075 [0.044, 0.106]; all three endpoints pass & \frPass & 2026-10-16\\ % T2
+Resampling with a deployable judge & Judge-scored resampling $-$ turn-start probe $-$0.065 [$-$0.115, $-$0.019] & \frFail & 2026-10-16\\ % T3
+Trained reader vs the agent's internals & Reader $-$ internals +0.015 [0.007, 0.026]; reader $-$ judge +0.085 [0.052, 0.127] & \frPass & 2026-10-16\\ % T4
+Unseen task families & Reader $-$ internals $-$0.007 [$-$0.014, $-$0.0001] (margin $-$0.02) & \frPass & 2026-10-16\\ % T5
+Another open agent & Gemma-trained reader on gpt-oss 0.915 vs judge 0.833, +0.082 [0.043, 0.129] & \frPass & 2026-10-16\\ % T6
+AgentDojo, no transfer training & Reader $-$ zero-shot judge +0.249 [0.136, 0.369] & \frPass & 2026-10-16\\ % T7
+Claude Haiku 5.5 as agent, after a reveal & Not tested: 0 unsafe units under the post-reveal rule & no bar & 2026-10-16\\ % T8
+Closed agent: Claude Haiku 5.5 & Reader 0.991 vs zero-shot judge 0.633, +0.360 [0.302, 0.413] & \frPass & 2026-10-16\\ % T8b
+Reader vs TF-IDF & Unseen families +0.019 [0.007, 0.032] (pass); Claude $-$0.006 [$-$0.027, +0.007] (fail) & \frMixed & 2026-10-16\\ % T9
+Claude Haiku 5.5 on unseen task families & Reader $-$ judge: pooled +0.342 [0.311, 0.371]; within +0.318 [0.265, 0.374] & \frPass & 2026-10-16\\ % T10
+Closed agent: GPT-6-luna & Reader $-$ judge +0.217 [0.174, 0.265]; $-$ tool identity +0.141 [0.111, 0.171]; within tool +0.039 [0.015, 0.066] & \frPass & 2026-10-17\\ % T11
+Labels for a new policy & 40 $-$ 0 labels: 0.0 (fail: 18/18 caught with 0 labels); catch at 40 $\geq$ 0.5 (pass) & \frMixed & 2026-10-17\\ % T12
+AgentDojo with a defense, closed agent & Not tested: 4 injected calls (minimum 10) & no bar & 2026-10-17\\ % T13
+AgentDojo without the defense, closed agent & Reader $-$ zero-shot judge +0.052 [$-$0.026, +0.130] & \frFail & \lockref{4dd5df4}\\ % T13b
+Open-agent labels for a closed agent & Reader $-$ judge +0.136 [0.078, 0.191]; $-$ no labels +0.081 [0.044, 0.121] & \frPass & 2026-10-17\\ % T14
+Replication of the hidden state & Replica $-$ text, variance explained +0.079 [0.075, 0.083]; probe on replica $-$ true state +0.003 [$-$0.002, +0.007] & \frPass & 2026-10-17\\ % T15
+Live prevention, GPT-6-luna & Violating episodes 6.6\% $\rightarrow$ 0.2\%, $-$0.064 [$-$0.088, $-$0.044] & \frPass & \lockref{bb79257}\\ % T16
+Live prevention, Claude Haiku 5.5 & Violating episodes 6.7\% $\rightarrow$ 0.2\%, $-$0.064 [$-$0.087, $-$0.044] & \frPass & 2026-10-17\\ % T16b
+Replication, three architectures & $R^2$ over text: +0.102 [0.093, 0.110]; +0.101 [0.091, 0.111]; +0.061 [0.051, 0.071] & \frPass & 2026-10-17\\ % T17
+Hold for review & Violating episodes 6.7\% $\rightarrow$ 0.0\%, $-$0.067 [$-$0.091, $-$0.044] (pass); goals $-$0.020 [$-$0.051, +0.007] (fail) & \frMixed & 2026-10-17\\ % T16c
+tau2-bench, Claude Haiku 5.5 & Not tested: 9 violations, fewer than the minimum of 15 & no bar & 2026-10-17\\ % T18
+Browser-size readers & Reader $-$ TF-IDF +0.270 [0.134, 0.451] (pass); $-$ 8B reader $-$0.097 [$-$0.115, $-$0.079] (fail) & \frMixed & 2026-10-17\\ % T19
+tau2-bench, two closed agents & TF-IDF $-$ tool +0.487 [0.428, 0.500] (pass); reader $-$ tool +0.238 [$-$0.053, 0.431] (fail) & \frMixed & \lockref{9c55ea1}\\ % T20
+tau2-bench, unseen tasks & Reader $-$ TF-IDF +0.017 [$-$0.514, 0.539]; reader $-$ tool +0.035 [$-$0.230, 0.259] & \frFail & \lockref{4a5c153}\\ % T21
+tau2-bench, reasoning judge & Judge $-$ tool +0.304 [$-$0.084, 0.427]; judge $-$ reader +0.268 [$-$0.074, 0.511] & \frFail & \lockref{1b26040}\\ % T22
+Reasoning judge, frontier agents & Judge $-$ tool +0.266 [0.151, 0.338] (pass); judge $-$ reader +0.120 [$-$0.047, 0.274] (fail) & \frMixed & \lockref{b002a85}\\ % T23
+Monitor-aware agent & Caught, aware $-$ plain +0.136 [+0.050, +0.225]; aware 97.1\% [92.9\%, 100\%] & \frPass & \lockref{0523256}\\ % T24
+Adaptive attacker & Caught 96.3\% $\rightarrow$ 29.1\% [21.6\%, 36.6\%]; reader $-$ TF-IDF $-$0.052 [$-$0.149, +0.037] & \frFail & \lockref{700a2f7}\\ % T25
+Canonical-action monitor & Caught after attack 50.8\% [42.5\%, 59.0\%]; clean catch $-$0.410 [$-$0.493, $-$0.311] & \frFail & \lockref{68da7c6}\\ % T26
+Training against the attack & Caught after attack 59.7\% [51.5\%, 67.9\%]; clean catch $-$0.037 [$-$0.078, +0.016] & \frFail & \lockref{26173e6}\\ % T27
+Cut set again after a prompt change & Violating episodes 6.5\% $\rightarrow$ 0.0\%, $-$0.065 [$-$0.090, $-$0.043]; escalated 4.73\% [3.49\%, 6.10\%] & \frPass & \lockref{62205fc}\\ % T28
+Reading the agent's reasoning, trained monitor & In-agent gain $-$0.005 [$-$0.018, +0.013] (fail); reasoning hurts transfer $-$0.033 [$-$0.046, $-$0.017] (pass); 2 of 4 pass & \frMixed & \lockref{f7db9e3}\\ % G8
+Recreating the decision state for a white-box probe & Recreation $-$ true state +0.063 [0.026, 0.122]; other agents' coordinates +0.009 [$-$0.050, 0.097]; Claude restarts 1.000 & \frPass & \lockref{7c74e29}\\ % G14
+\frGroup{Other}
+Claude Haiku 5.5 refusals vs moderation & 0.923 [0.884, 0.957]; grey box $-$ moderation +0.176 [0.060, 0.287] & \frPass & 2026-10-16\\ % L3b
+Claude Haiku 5.5, one-call grey box & Grey box $-$ 3-level verdict +0.142 [0.081, 0.203]; alarm AP +0.230 [0.161, 0.307] & \frPass & 2026-10-16\\ % L3c
+Claude Haiku 5.5, transcript readout & Grey box $-$ moderation +0.141 [0.082, 0.199]; compliance-risk AP +0.115 [0.076, 0.179] & \frPass & 2026-10-16\\ % L3d
+Claude Haiku 5.5 vs graded moderators & Alarm precision +0.261 [0.215, 0.311] (pass); vs graded Qwen3Guard +0.018 [$-$0.023, 0.062] (fail); multi-turn 0.894 vs 0.906 (fail) & \frMixed & 2026-10-16\\ % L3e
+\end{longtable}}

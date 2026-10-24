@@ -21,6 +21,8 @@
 \usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 \usepackage[capitalize,noabbrev]{cleveref}
 \setlist{nosep,leftmargin=1.1em}
+\newif\ifanonymous\anonymoustrue  % review copy: lock commits withheld; set \anonymousfalse for camera-ready
+\newcommand{\lockref}[1]{\ifanonymous\textit{anon.}\else\texttt{#1}\fi}
 \newcommand{\PENDING}[1]{{\color{gborange}\itshape [Pending: #1.]}}
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
@@ -57,7 +59,7 @@
 \newsavebox{\teaserbox}
 \sbox{\teaserbox}{\begin{minipage}{\textwidth}\centering
 \includegraphics[width=\textwidth]{figures/teaser_v6.pdf}\par\vspace{-2mm}
-\captionof{figure}{\textbf{Reading closed agents through their own APIs, with no training.} (a) An open model's hidden geometry on 1{,}440 held-out contexts. (b) The same contexts, placed only by the model's yes/no answers in exact Fisher--Rao coordinates (Spearman 0.74 between the distances; 0.41--0.74 over eight models). (c) A fixed read-out of an agent's answers to 8 policy questions ranks its violations within each kind of task, about as well as a probe trained on its hidden states. Orange: closed agents. Hollow: GPT-6-luna before its call exists. Below the line: second benchmarks. Claude Haiku 5.5's restarts are one kind of task (all its actions: \cref{tab:g15}). (d) Live prevention against the prediction from offline flag rates (band $\pm0.15$). Diamond: the pre-call gate on GPT-6-luna. 95\% intervals; all preregistered.}
+\captionof{figure}{\textbf{Reading closed agents through their own APIs, with no training.} (a) An open model's hidden geometry on 1{,}440 held-out contexts. (b) The same contexts, placed only by the model's yes/no answers in exact Fisher--Rao coordinates (Spearman 0.74 between the distances; 0.41--0.74 over eight models). (c) A fixed read-out of an agent's answers to 8 policy questions ranks its violations within each kind of task, about as well as a probe trained on its hidden states. Orange: closed agents. Hollow: GPT-6-luna before its call exists. Below the line: second benchmarks. Claude Haiku 5.5's restarts are one kind of task (all its actions: \cref{tab:g15}). (d) Live prevention against the prediction from offline flag rates (band $\pm0.15$; Gemma-4's AgentDojo point misses it by 0.16). Diamond: the pre-call gate on GPT-6-luna. 95\% intervals; all preregistered (failed predictions: \cref{app:prereg}).}
 \label{fig:teaser}
 \end{minipage}}
 
@@ -79,7 +81,7 @@
 
 % =====================================================================================
 \begin{abstract}
-Probes on an agent's hidden states can stop an unsafe action before it runs and catch what monitors of its text miss \citep{fayyazi2026cape}, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and what this buys for safety. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in throw-away copies of the conversation (side branches) give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known noise. On eight open models this geometry tracks each model's hidden geometry better than the input or the replies do, and it is the geometry that models share. Three consequences follow, and we test each in preregistered experiments. \emph{At a proposed call}, the transcript decides the violation, so any capable answerer reads it: a fixed read-out of the agent's own answers ranks violations at AUROC 0.82--0.99 on four open agents, close to a probe on their hidden states, 0.90--0.99 on prompt injection and 0.98 on GPT-6-luna, and another model's answers do as well. \emph{Before the call}, the forecast is the agent's own policy: GPT-6-luna's answers about its next action rank the coming violation among calls at the same step at 0.84 and 0.92 on two fresh sets of episodes; Claude Haiku 5.5's answers about its next action do not (0.47), but its own sampled next actions, read by its own answers, do (0.71 on 492 fresh episodes). \emph{Live}, gates on these reads prevent violations. With no human or other model in the loop, Claude Haiku 5.5's own read-out, holding a call once for it to re-check, cut its violating episodes on unapproved restarts from 67\% to 35\% (random holds: 48\%) and raised task success; a gate on GPT-6-luna's pre-call state cut them from 32\% to 8\%, against 18\% for a gate on the call's step alone, with its effect predicted from offline flag rates. Every test is preregistered, and we release the tool.
+Probes on an agent's hidden states can stop an unsafe action before it runs and catch what monitors of its text miss \citep{fayyazi2026cape}, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and what this buys for safety. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in throw-away copies of the conversation (side branches) give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known noise. On held-out contexts of eight open models, this geometry tracks each model's hidden geometry better than the input or the replies do, and it is shared across models. \emph{At a proposed call}, the transcript decides the violation: a fixed read-out of the agent's answers ranks violations at AUROC 0.82--0.99 on four open agents, close to a probe on their hidden states, and at 0.98 on GPT-6-luna, though another model's answers do as well. \emph{Before the call}, the forecast is the agent's policy: GPT-6-luna's answers about its next action rank the coming violation among calls at the same step (0.92, then 0.84 on new episodes); Claude Haiku 5.5's answers do not (0.47), but its own sampled next actions, read by its own answers, do (0.71). \emph{Live}, with no human in the loop, Claude Haiku 5.5's own read-out, holding a call once for it to re-check, cut its violating episodes on unapproved restarts from 67\% to 35\% (random holds: 48\%), and a gate on GPT-6-luna's pre-call state prevented more than a gate on the step alone. We report every preregistered test, passed or failed, and release the tool.
 \end{abstract}
 
 % =====================================================================================
@@ -237,8 +239,11 @@ On Claude Haiku 5.5, readouts of the observable state trained only on open model
 \end{figure}
 \FloatBarrier
 
-\section{Preregistered tests behind each claim}
+\section{Preregistered tests: those behind each claim, and every test}
 \label{app:prereg}\label{app:record}
 \input{appendix_prereg}
+
+\subsection*{Every preregistered test}
+\input{appendix_fullrecord}
 
 \end{document}
