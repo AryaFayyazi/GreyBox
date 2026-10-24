@@ -86,6 +86,8 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 
 \textbf{When text does not suffice: Claude Haiku 5.5.} Its words do not track its actions, as CAPE found for open agents. On 492 new episodes (\GRoN), its self-report ranks the coming violation among calls at the same position at \GRoReport, while its own sampled actions reach \GRoOwn\ (difference \GRoOwnMinusReport; \cref{fig:saysdoes}). On a second set of 492 episodes with exact contexts, Claude Haiku 5.5 itself reasoning over the full transcript scores \GJdJudge, and its sampled actions \GJdOwn\ (difference \GJdDiff); GPT-6-luna reasoning over the same transcripts reaches \GXjJudge\ (own $-$ it \GXjDiff). Gemma-4 sampling in its seat scores \GRoOther\ at the same position; pooled over positions its draws score \GRoOtherTT\ because they track the step at which Claude violates, so that registered comparison failed. Per decision, the policy read costs \$0.002 and 9\,s, the text monitor \$0.0004 and 3.5\,s (median over 100 decisions). On $\tau^2$-bench airline the policy forecast did not separate from chance (0.605 [0.444, 0.835], 7 tasks): before a write, Claude's draws mostly repeat the write.
 
+\textbf{The geometry alone forecasts.} Placing the agent's 8 sampled next actions in the Fisher--Rao coordinates and averaging their distance from its typical state gives a forecast with no label and no question sign: \GGfClaude\ on Claude Haiku 5.5 and \GGfGpt\ on GPT-6-luna, among calls at the same position. For Claude it matches the signed policy forecast and far exceeds both text monitors.
+
 \textbf{Telling the two cases apart, without labels} (exploratory). Among calls at the same position, the rank agreement between what the agent says about its next action and what its sampled policy forecasts is $-0.01$ for Claude Haiku 5.5 and $+0.25$ for GPT-6-luna.
 
 \textbf{Does the theory predict a reader's loss in size?} For Gemma-4 in Claude's seat, the policies differ (gap \GPgGap), but the predicted loss (0.102) exceeded the observed (0.056): Claude's draws were miscalibrated (0.17 vs 0.21) because our replay dropped refused extra tool calls. Tests with exact contexts and with four readers on GPT-6-luna are preregistered and running (\cref{app:prereg}).
@@ -96,28 +98,6 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \label{sec:prevent-live}
 \textbf{Self-policing.} Before a non-read call runs, a side branch asks the agent whether the call complies with its policy, and a flagged call goes to review. At one state, a gate prevents the share $\tau$ of violating calls that the agent flags. Over many states, it prevents the mean of $\tau$, weighted by where the violations occur (\cref{prop:prevention}).
 
-\begin{table}[t]
-\centering\footnotesize
-\renewcommand{\arraystretch}{1.12}
-\setlength{\tabcolsep}{2.4pt}
-\caption{\textbf{Self-policing through the agent's own API} (held-out scenarios; no other model in the gate, no labels; a held call goes to a reviewer, here CAPE's checker or, on AgentDojo, an injection reviewer). Reduction $=1-$gate/plain; better arm in blue.}
-\label{tab:selfpolice}
-\resizebox{\columnwidth}{!}{\begin{tabular}{@{}l cc >{\columncolor{gbrow}}c cc@{}}
-\toprule
-\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Violations} (\%)} & \textbf{reduction} & \multicolumn{2}{c}{\textbf{Success} (\%)}\\
-\rowcolor{gbhead}\textbf{Agent, set} & plain & gate & \textbf{(95\% CI)} & plain & gate\\
-\midrule
-\multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{CAPE-Bench}: episodes with an executed violation; reached the goal}\\
-Gemma-4, all\textsuperscript{a} & 27.9 & \best{5.0} & \textbf{0.82} {\scriptsize[0.76, 0.88]} & 33.5 & \best{43.7}\\
-Claude Haiku 5.5, decidable\textsuperscript{b} & 2.8 & \best{0.9} & \textbf{0.69} {\scriptsize[0.51, 0.88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
-Claude Haiku 5.5, unchecked\textsuperscript{c} & 100 & 92.9 & 0.07 {\scriptsize[0.00, 0.17]} & & \\
-\multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{AgentDojo}: attacks that succeeded; utility}\\
-Gemma-4\textsuperscript{d} & 11.5 & \best{1.8} & \textbf{0.84} {\scriptsize[0.76, 0.91]} & 84.5 & \best{86.8}\\
-gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{0.50} {\scriptsize[0.42, 0.58]} & 50.5 & 50.8\\
-\bottomrule
-\end{tabular}}\\[2pt]
-\parbox{\columnwidth}{\scriptsize \textsuperscript{a}666 episodes per arm; held when all four answers say it does not comply. \textsuperscript{b}470 scenarios $\times$ 2; held when all three answers say it breaks a rule. \textsuperscript{c}21 mailing-list scenarios $\times$ 2, decided by a fact the agent never checks; predicted not to fall. \textsuperscript{d}Held-out tasks, 2 trials; spotlighting in both arms. Details: \cref{app:agentfigs}.}
-\end{table}
 
 \textbf{Live results.} On unseen scenarios (\cref{tab:selfpolice}), Gemma-4 prevented 82\% of its violating episodes and reached more goals. Claude Haiku 5.5, asked to check its policy rule by rule, prevented 69\% of the violating episodes that its transcript decides (2.8\% of its episodes; 31\% over all scenarios), at no cost in goals. Against prompt injection on AgentDojo, the gate cut attack success by 84\% and 50\%, at no cost in utility.
 

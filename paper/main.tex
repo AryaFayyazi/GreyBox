@@ -81,7 +81,7 @@
 
 % =====================================================================================
 \begin{abstract}
-Probes on an agent's hidden states can stop an unsafe action before it runs, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and when the agent itself is needed to monitor it. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in throw-away copies of the conversation give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known bound on its noise. On eight open models this geometry tracks each model's hidden geometry, and it is shared across models; on two closed agents, a call's distance from the agent's typical state in this geometry flags its violations with no label (AUROC 0.82). Our theory then separates two regimes, and preregistered experiments on two closed agents confirm both. \emph{At a proposed call}, the transcript decides the violation, so any capable reader suffices: a fixed read-out of the agent's answers ranks violations at AUROC 0.82--0.99 on four open agents and 0.98 on GPT-6-luna with no labels, and other models do as well or better. \emph{Before the call}, the forecast is the agent's policy, and text suffices only when the agent's words track its actions. GPT-6-luna's do (its self-report 0.84; a reasoning text monitor 0.78). Claude Haiku 5.5's do not: its self-report (0.47) and the same model reasoning over its transcript (0.45) are at or below chance, a stronger text monitor from another provider reaches only 0.60, while its own sampled next actions, on the same episodes, forecast the violation (0.71 and 0.89). \emph{Live}, with no human in the loop, the agents' own read-outs, holding a call once for it to be re-checked, cut violating episodes from 67\% to 35\% (Claude Haiku 5.5) and from 27\% to 17.5\% (GPT-6-luna), more than random holds. We report every preregistered test, passed or failed, and release the tool.
+Probes on an agent's hidden states can stop an unsafe action before it runs, but they need the weights, and the most capable agents are closed. We ask what a closed agent's own API reveals of its state, with no training and no other model, and when the agent itself is needed to monitor it. An API cannot reveal hidden coordinates (a gauge symmetry), but it reveals geometry: yes/no questions asked in throw-away copies of the conversation give answer laws whose Fisher--Rao distances are exact Euclidean distances in arcsine coordinates, with a known bound on its noise. On eight open models this geometry tracks each model's hidden geometry, and it is shared across models; on two closed agents, a call's distance from the agent's typical state in this geometry flags its violations with no label (AUROC 0.82), and the same distance of its sampled next actions forecasts them before the call. Our theory then separates two regimes, and preregistered experiments on two closed agents confirm both. \emph{At a proposed call}, the transcript decides the violation, so any capable reader suffices: a fixed read-out of the agent's answers ranks violations at AUROC 0.82--0.99 on four open agents and 0.98 on GPT-6-luna with no labels, and other models do as well or better. \emph{Before the call}, the forecast is the agent's policy, and text suffices only when the agent's words track its actions. GPT-6-luna's do (its self-report 0.84; a reasoning text monitor 0.78). Claude Haiku 5.5's do not: its self-report (0.47) and the same model reasoning over its transcript (0.45) are at or below chance, a stronger text monitor from another provider reaches only 0.60, while its own sampled next actions, on the same episodes, forecast the violation (0.71 and 0.89). \emph{Live}, with no human in the loop, the agents' own read-outs, holding a call once for it to be re-checked, cut violating episodes from 67\% to 35\% (Claude Haiku 5.5) and from 27\% to 17.5\% (GPT-6-luna), more than random holds. We report every preregistered test, passed or failed, and release the tool.
 \end{abstract}
 
 % =====================================================================================
@@ -139,6 +139,28 @@ This work monitors closed AI agents before they act, through their own APIs and 
 \section{Agent results: more figures and the closed-agent table}
 \label{app:agentfigs}
 \label{sec:replica}\label{sec:closed}\label{sec:prevent}\label{sec:robust}\label{sec:coverage}
+\begin{table}[htbp]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{2.4pt}
+\caption{\textbf{Self-policing through the agent's own API} (held-out scenarios; no other model in the gate, no labels; a held call goes to a reviewer, here CAPE's checker or, on AgentDojo, an injection reviewer). Reduction $=1-$gate/plain; better arm in blue.}
+\label{tab:selfpolice}
+\resizebox{\columnwidth}{!}{\begin{tabular}{@{}l cc >{\columncolor{gbrow}}c cc@{}}
+\toprule
+\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Violations} (\%)} & \textbf{reduction} & \multicolumn{2}{c}{\textbf{Success} (\%)}\\
+\rowcolor{gbhead}\textbf{Agent, set} & plain & gate & \textbf{(95\% CI)} & plain & gate\\
+\midrule
+\multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{CAPE-Bench}: episodes with an executed violation; reached the goal}\\
+Gemma-4, all\textsuperscript{a} & 27.9 & \best{5.0} & \textbf{0.82} {\scriptsize[0.76, 0.88]} & 33.5 & \best{43.7}\\
+Claude Haiku 5.5, decidable\textsuperscript{b} & 2.8 & \best{0.9} & \textbf{0.69} {\scriptsize[0.51, 0.88]} & \multirow{2}{*}{40.4} & \multirow{2}{*}{40.1}\\
+Claude Haiku 5.5, unchecked\textsuperscript{c} & 100 & 92.9 & 0.07 {\scriptsize[0.00, 0.17]} & & \\
+\multicolumn{6}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{AgentDojo}: attacks that succeeded; utility}\\
+Gemma-4\textsuperscript{d} & 11.5 & \best{1.8} & \textbf{0.84} {\scriptsize[0.76, 0.91]} & 84.5 & \best{86.8}\\
+gpt-oss-20b\textsuperscript{d} & 24.4 & \best{12.2} & \textbf{0.50} {\scriptsize[0.42, 0.58]} & 50.5 & 50.8\\
+\bottomrule
+\end{tabular}}\\[2pt]
+\parbox{\columnwidth}{\scriptsize \textsuperscript{a}666 episodes per arm; held when all four answers say it does not comply. \textsuperscript{b}470 scenarios $\times$ 2; held when all three answers say it breaks a rule. \textsuperscript{c}21 mailing-list scenarios $\times$ 2, decided by a fact the agent never checks; predicted not to fall. \textsuperscript{d}Held-out tasks, 2 trials; spotlighting in both arms. Details: \cref{app:agentfigs}.}
+\end{table}
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.55\textwidth]{figures/says_does.pdf}

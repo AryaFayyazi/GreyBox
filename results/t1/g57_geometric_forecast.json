@@ -1,0 +1,24 @@
+{
+ "claude": {
+  "units": 1587,
+  "violations": 316,
+  "G1_geometric_forecast_within_position": [
+   0.8916,
+   0.8533,
+   0.9237
+  ]
+ },
+ "gpt": {
+  "units": 1134,
+  "violations": 131,
+  "G1_geometric_forecast_within_position": [
+   0.642,
+   0.5391,
+   0.7373
+  ]
+ },
+ "endpoints": {
+  "G1_claude_lower_gt_0.5": true,
+  "G1_gpt_lower_gt_0.5": true
+ }
+}
