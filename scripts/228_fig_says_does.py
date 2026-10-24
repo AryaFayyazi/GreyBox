@@ -64,13 +64,13 @@ def main():
         rows.append(("Gemma-4 sampling\nin Claude's seat", *r["other"], MUTE, "s"))
     rows += [("Claude's own sampled\nactions, own answers", *r["own"], ORANGE, "D"),
              ("ceiling: its sampled\nactions, checker", *r["ceiling"], INK, "|")]
-    fig, ax = plt.subplots(figsize=(3.25, 0.42 * len(rows) + 0.55))
+    fig, ax = plt.subplots(figsize=(3.25, 0.33 * len(rows) + 0.5))
     ys = np.arange(len(rows))[::-1]
     for yy, (lab, m, lo, hi, c, mk) in zip(ys, rows):
         ax.plot([lo, hi], [yy, yy], color=c, lw=1.4, alpha=0.55, solid_capstyle="round")
         face = "white" if mk == "o" and "self-report" in lab and "Claude" in lab else c
         ax.scatter([m], [yy], s=34 if mk != "|" else 60, marker=mk, facecolor=face, edgecolor=c, lw=1.1, zorder=3)
-        ax.text(m, yy + 0.27, f"{m:.2f}", ha="center", va="bottom", fontsize=6.0, color=INK)
+        ax.text(m, yy + 0.22, f"{m:.2f}", ha="center", va="bottom", fontsize=6.0, color=INK)
     ax.axvline(0.5, color=MUTE, lw=0.7, ls=(0, (3, 2)))
     ax.text(0.505, ys[-1] - 0.55, "chance", fontsize=6.0, color=MUTE, va="center")
     ax.set_yticks(ys, [r_[0] for r_ in rows], fontsize=6.2)
@@ -79,9 +79,8 @@ def main():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.grid(axis="x", color=GRID, lw=0.5); ax.set_axisbelow(True)
-    fig.text(0.02, 0.975, "Forecasting the coming violation before the call exists", fontsize=7.2, fontweight="bold", color=INK, va="top")
-    fig.text(0.02, 0.925, f"Claude Haiku 5.5: {n:,} calls, {v} violations, 492 fresh episodes", fontsize=6.0, color=MUTE, va="top")
-    fig.subplots_adjust(left=0.36, right=0.96, top=0.86, bottom=0.18)
+    fig.text(0.02, 0.985, f"Claude Haiku 5.5: {n:,} calls, {v} violations, 492 fresh episodes", fontsize=6.0, color=MUTE, va="top")
+    fig.subplots_adjust(left=0.36, right=0.96, top=0.90, bottom=0.2)
     fig.savefig(ROOT / "paper/figures/says_does.pdf")
     fig.savefig(ROOT / "results/figures/says_does.png", dpi=220)
     print(json.dumps({k: [round(x, 4) for x in v_] for k, v_ in r.items()}))

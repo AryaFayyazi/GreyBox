@@ -1,0 +1,39 @@
+{
+ "units": 1589,
+ "violations": 325,
+ "episodes": 492,
+ "within_template_tool": {
+  "own": 0.7042,
+  "other": 0.8484,
+  "report": 0.358,
+  "ceiling": 0.9254,
+  "other_ceiling": 0.8834
+ },
+ "within_position": {
+  "own": 0.7075,
+  "other": 0.5301,
+  "report": 0.4746,
+  "ceiling": 0.7795,
+  "other_ceiling": 0.5525
+ },
+ "R1_own_within_position": [
+  0.7075,
+  0.6483,
+  0.7645
+ ],
+ "R2_own_minus_other_template_tool": [
+  -0.1442,
+  -0.1953,
+  -0.0937
+ ],
+ "R3_own_minus_report_position": [
+  0.2329,
+  0.1605,
+  0.3122
+ ],
+ "endpoints": {
+  "R1_lower_gt_0.5": true,
+  "R2_lower_gt_0": false,
+  "R3_lower_gt_0": true
+ }
+}

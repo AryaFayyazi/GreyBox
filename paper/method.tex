@@ -63,14 +63,7 @@ With class gap $\delta$ and within-class variance $\sigma_{\mathrm{in}}^2\ge N$,
 \end{proof}
 In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, and a high value supports it (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
 
-\textbf{The state across steps.} Before each call we measure $y_t$, the angles of the agent's answers to $m$ questions about its \emph{next} action. By \cref{thm:geometry}, $y_t=z_t+v_t$: the observable state plus sampling noise whose variance the number of answers fixes ($\approx1/(n+\frac12)$ per question), independent across steps. We model $z_{t+1}=Fz_t+b+\eta_t$ and identify the model from unlabelled runs of the same agent.
-\begin{proposition}[identification through the noise]\label{prop:iv}
-If $v_t$ is independent across steps and of $(z_s,\eta_s)$, and $\mathrm{Cov}(z_t,z_{t-1})$ is invertible, then $F=\mathrm{Cov}(y_{t+1},y_{t-1})\,\mathrm{Cov}(y_t,y_{t-1})^{-1}$ and $\Sigma_z=F^{-1}\mathrm{Cov}(y_{t+1},y_t)$, whatever the law of $v_t$. Regressing $y_{t+1}$ on $y_t$ instead shrinks $F$ by the noise.
-\end{proposition}
-\begin{proof}[Proof sketch]
-The noise at $t\pm1$ is independent of everything at other steps, so $\mathrm{Cov}(y_{t+1},y_{t-1})=F\,\mathrm{Cov}(z_t,z_{t-1})=F\,\mathrm{Cov}(y_t,y_{t-1})$ and $\mathrm{Cov}(y_{t+1},y_t)=F\Sigma_z$.
-\end{proof}
-A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it two- to fivefold) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
+\textbf{The state across steps.} Read before every call, the angles form a noisy time series whose noise the number of answers fixes; a state-space model of it is identified from unlabelled runs (\cref{prop:iv}, \cref{app:agents}).
 
 \textbf{The cut.} A cut on the read-out is set on the agent's own unlabelled traffic and then frozen; its escalation rate is exact and robust to bursts (\cref{prop:frozen}, \cref{app:agents}).
 

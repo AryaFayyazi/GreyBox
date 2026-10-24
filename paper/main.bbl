@@ -5,6 +5,11 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
+\bibitem[Advani et~al.(2026)Advani, Maharjan, and Chaturvedi]{advani2026reading}
+Advani, L., Maharjan, S., and Chaturvedi, I.
+\newblock Reading the plan: Multi-horizon future-action prediction from frozen hidden states in {LLM} agents.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2026.
+
 \bibitem[Amari(2016)]{amari2016information}
 Amari, S.-i.
 \newblock \emph{Information Geometry and Its Applications}.
@@ -53,6 +58,11 @@ Benara, V., Singh, C., Morris, J.~X., Antonello, R., Stoica, I., Huth, A.~G., an
 Bhatt, A., Rushing, C., Kaufman, A., Tracy, T., Georgiev, V., Matolcsi, D., Khan, A., and Shlegeris, B.
 \newblock {Ctrl-Z}: Controlling {AI} agents via resampling.
 \newblock \emph{arXiv preprint arXiv:2504.10374}, 2025.
+
+\bibitem[Binder et~al.(2025)]{binder2025looking}
+Binder, F.~J. et~al.
+\newblock Looking inward: Language models can learn about themselves by introspection.
+\newblock In \emph{International Conference on Learning Representations}, 2025.
 
 \bibitem[Burns et~al.(2023)Burns, Ye, Klein, and Steinhardt]{burns2023ccs}
 Burns, C., Ye, H., Klein, D., and Steinhardt, J.
@@ -105,11 +115,6 @@ Fayyazi, A., Kamal, M., and Pedram, M.
 \bibitem[Finlayson et~al.(2024)Finlayson, Ren, and Swayamdipta]{finlayson2024logits}
 Finlayson, M., Ren, X., and Swayamdipta, S.
 \newblock Logits of {API}-protected {LLM}s leak proprietary information, 2024.
-
-\bibitem[Gao et~al.(2025)Gao, Liang, and Guestrin]{gao2025model}
-Gao, I., Liang, P., and Guestrin, C.
-\newblock Model equality testing: Which model is this {API} serving?
-\newblock In \emph{International Conference on Learning Representations}, 2025.
 
 \bibitem[Goldowsky-Dill et~al.(2025)Goldowsky-Dill, Chughtai, Heimersheim, and Hobbhahn]{goldowskydill2025probes}
 Goldowsky-Dill, N., Chughtai, B., Heimersheim, S., and Hobbhahn, M.
@@ -212,10 +217,6 @@ Walther, A., Nili, H., Ejaz, N., Alink, A., Kriegeskorte, N., and Diedrichsen, J
 Zhao, Y., Pandey, S., and Misra, P.~K.
 \newblock Proxy confidence: Auditing black-box {LLM} agents with a surrogate's log-probabilities.
 \newblock \emph{arXiv preprint arXiv:2610.03894}, 2026.
-
-\bibitem[Zhou \& Klindt(2026)Zhou and Klindt]{zhou2026identifiabilities}
-Zhou, J. and Klindt, D.
-\newblock Complete or sparse: A tale of two identifiabilities, 2026.
 
 \bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyejo, Song, Fredrikson, Kolter, and Hendrycks]{zou2023repe}
 Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., Pan, A., Yin, X., Mazeika, M., Dombrowski, A.-K., Goel, S., Li, N., Byun, M.~J., Wang, Z., Mallen, A., Basart, S., Koyejo, S., Song, D., Fredrikson, M., Kolter, J.~Z., and Hendrycks, D.

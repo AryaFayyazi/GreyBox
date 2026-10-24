@@ -1,0 +1,31 @@
+{
+ "units": 1545,
+ "violations": 325,
+ "mean_f_own": 0.1727,
+ "mean_f_other": 0.2485,
+ "mean_y": 0.2104,
+ "B1_observed_excess": [
+  0.056,
+  0.038,
+  0.0741
+ ],
+ "predicted_excess": [
+  0.1017,
+  0.0899,
+  0.1145
+ ],
+ "B3_observed_minus_predicted": [
+  -0.0457,
+  -0.0618,
+  -0.0315
+ ],
+ "B2_policy_gap": [
+  0.0945,
+  0.0828,
+  0.1073
+ ],
+ "endpoints": {
+  "B3_interval_inside_pm0.02": false,
+  "B2_policy_gap_lower_gt_0": true
+ }
+}
