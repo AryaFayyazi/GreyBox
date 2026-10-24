@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T11:08:52-07:00",
+ "sha256": {
+  "docs/prereg_G52_text_judge_vs_policy.md": "104d9cb8936b3f4309b77abd6aec77b44fea37052668072056483fe1c89225ca",
+  "scripts/237_g52_text_judge_vs_policy.py": "19fe65604c720e2ca6afe39667a530a7ad871f64fdf378ffb75dc09680a4c6f4"
+ }
+}
