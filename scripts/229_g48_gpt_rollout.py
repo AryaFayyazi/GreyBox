@@ -6,7 +6,7 @@ by the agent's own 8 at-call answers (graybox.selfaudit STATE_QUESTIONS and STAT
 question); forecast = scripts/226's (mean read-out over the 8 draws; a draw that ends the episode scores the minimum).
 Self-report = G45's pre-call battery (G27's raw read-out). Units: G45's (non-read calls up to the first unsafe one, in
 template|tool strata holding both classes).
-  stage=own cap=<openai ledger $> (paid) ; stage=analyze -> results/t1/g48_gpt_rollout.json
+  stage=own cap=<openai ledger $> (paid) ; stage=other (GPU: Gemma-4's draws in the seat) ; stage=analyze -> results/t1/g48_gpt_rollout.json
 """
 import asyncio
 import copy
@@ -35,6 +35,8 @@ G45, G44 = G46.G45, G46.G44
 A80 = G45.G40.A80
 OUT = G45.OUT
 OWN = OUT / "g48_gpt_own.jsonl"
+OTHER = OUT / "g48_gpt_other_gemma4.jsonl"
+G46B = _mod("g46b", "scripts/230_g46b_policy_gap.py")
 
 
 def units():
@@ -136,6 +138,13 @@ def stage_own(cap):
     asyncio.run(go())
 
 
+def stage_other():
+    """Gemma-4's 8 draws in GPT-6-luna's seat (scripts/226's other stage on these units; GPU)"""
+    G46.units = units
+    G46.OTHER = OTHER
+    G46.stage_other()
+
+
 def stage_analyze():
     from graybox.stats import within_auroc
     U, _ = units()
@@ -165,10 +174,39 @@ def stage_analyze():
     res["Q3_own_minus_report_template_tool"] = [round(res["within_template_tool"]["own"] - res["within_template_tool"]["report"], 4)] + ci(B["Q3"])
     res["endpoints"] = {"Q1_lower_gt_0.5": res["Q1_own_template_tool"][1] > 0.5, "Q2_lower_gt_0.5": res["Q2_own_position"][1] > 0.5,
                         "Q3_two_sided_reported": True}
+    # the policy-gap identity (scripts/230's formulas), with r known from CAPE's checker on each drawn call
+    so = [G46B.shares(own[k]) for k in ks]
+    fo, ko = np.array([x[0] for x in so]), np.array([x[1] for x in so])
+    ok = ko >= 2
+    C0 = lambda i: float(np.mean(y[i][ok[i]]) - np.mean(fo[i][ok[i]]))  # noqa: E731
+    Bc = [C0(np.concatenate([np.flatnonzero(cl == u) for u in rng.choice(us, len(us))])) for _ in range(B_N)]
+    res["C0_mean_y_minus_mean_f_own"] = [round(C0(np.arange(len(y))), 4)] + ci(Bc)
+    res["endpoints"]["C0_interval_inside_pm0.05"] = res["C0_mean_y_minus_mean_f_own"][1] >= -0.05 and res["C0_mean_y_minus_mean_f_own"][2] <= 0.05
+    if OTHER.exists():
+        oth = {(d["instance_id"], int(d["seed"]), int(d["t"])): d for d in (json.loads(x) for x in open(OTHER))}
+        U["other"] = [G46.forecast(oth[k]) if k in oth else np.nan for k in ks]
+        sx = [G46B.shares(oth[k]) if k in oth else (np.nan, 0) for k in ks]
+        fx, kx = np.array([x[0] for x in sx]), np.array([x[1] for x in sx])
+        both = ok & (kx >= 2)
+
+        def b3(i):
+            j = i[both[i]]
+            obs = np.mean((y[j] - fx[j]) ** 2) - np.mean((y[j] - fo[j]) ** 2)
+            pred = np.mean((fo[j] - fx[j]) ** 2) - 2 * np.mean(fo[j] * (1 - fo[j]) / (ko[j] - 1))
+            gap = np.mean((fo[j] - fx[j]) ** 2) - np.mean(fo[j] * (1 - fo[j]) / (ko[j] - 1)) - np.mean(fx[j] * (1 - fx[j]) / (kx[j] - 1))
+            return obs, pred, obs - pred, gap
+        Bb = np.array([b3(np.concatenate([np.flatnonzero(cl == u) for u in rng.choice(us, len(us))])) for _ in range(B_N)])
+        o, pr, d, g = b3(np.arange(len(y)))
+        res["B_units"] = int(both.sum())
+        for j, (name, v) in enumerate((("B1_observed_excess", o), ("predicted_excess", pr), ("B3_observed_minus_predicted", d), ("B2_policy_gap", g))):
+            res[name] = [round(float(v), 4)] + ci(Bb[:, j])
+        res["other_within_template_tool"] = round(float(W(U.other.values, st2)), 4)
+        res["other_within_position"] = round(float(W(U.other.values, st3)), 4)
+        res["endpoints"]["B3_interval_inside_pm0.02"] = res["B3_observed_minus_predicted"][1] >= -0.02 and res["B3_observed_minus_predicted"][2] <= 0.02
     (ROOT / "results/t1/g48_gpt_rollout.json").write_text(json.dumps(res, indent=1))
     print(json.dumps(res, indent=1))
 
 
 if __name__ == "__main__":
     kw = dict(x.split("=", 1) for x in sys.argv[1:])
-    {"own": lambda: stage_own(kw["cap"]), "analyze": stage_analyze}[kw.get("stage", "analyze")]()
+    {"own": lambda: stage_own(kw["cap"]), "other": stage_other, "analyze": stage_analyze}[kw.get("stage", "analyze")]()

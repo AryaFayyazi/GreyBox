@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T10:02:19-07:00",
+ "sha256": {
+  "docs/prereg_G48_gpt_rollout.md": "9b8e472bf580bc9a72e9e98acb6afafad9785a3b804f272b2f6d36da80b4663d",
+  "scripts/229_g48_gpt_rollout.py": "7378daaa2cfc36bf1f92bbf90b2cc9520aac5191483b35e9fd317a2b3be23147"
+ }
+}
