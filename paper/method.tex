@@ -70,7 +70,7 @@ If $v_t$ is independent across steps and of $(z_s,\eta_s)$, and $\mathrm{Cov}(z_
 \begin{proof}[Proof sketch]
 The noise at $t\pm1$ is independent of everything at other steps, so $\mathrm{Cov}(y_{t+1},y_{t-1})=F\,\mathrm{Cov}(z_t,z_{t-1})=F\,\mathrm{Cov}(y_t,y_{t-1})$ and $\mathrm{Cov}(y_{t+1},y_t)=F\Sigma_z$.
 \end{proof}
-A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it about threefold) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
+A Kalman filter (with the noise taken from the data: for nearly deterministic answers the nominal value overstates it two- to fivefold) then gives the estimated state $\mathbb{E}[z_t\mid y_{\le t}]$, measured before the call is proposed, and the forecast $\mathbb{E}[z_t\mid y_{<t}]$ from earlier steps alone; the gap between the noise that \cref{prop:iv} implies and the theory's noise tests the model.
 
 \textbf{The cut.} A cut on the read-out is set on the agent's own unlabelled traffic and then frozen; its escalation rate is exact and robust to bursts (\cref{prop:frozen}, \cref{app:agents}).
 
