@@ -1,0 +1,52 @@
+{
+ "cut": [
+  0.4272159893046978,
+  0.22
+ ],
+ "units": 492,
+ "violating_episodes": {
+  "none": 0.6667,
+  "self": 0.3516,
+  "random": 0.4837
+ },
+ "success": {
+  "none": 0.1463,
+  "self": 0.2114,
+  "random": 0.2215
+ },
+ "holds_per_call": {
+  "none": 0.0,
+  "self": 0.227,
+  "random": 0.177
+ },
+ "holds_per_episode": {
+  "none": 0.0,
+  "random": 0.907,
+  "self": 1.185
+ },
+ "self_reduction": [
+  0.4726,
+  0.3918,
+  0.5538
+ ],
+ "random_reduction": [
+  0.2744,
+  0.1908,
+  0.3479
+ ],
+ "self_minus_random": [
+  0.1982,
+  0.1115,
+  0.2897
+ ],
+ "success_self_minus_none": [
+  0.065,
+  0.0325,
+  0.1016
+ ],
+ "endpoints": {
+  "P1_self_reduction_lower_gt_0": true,
+  "P2_self_minus_random_lower_gt_0": true,
+  "P3_success_lower_gt_-0.05": true
+ }
+}

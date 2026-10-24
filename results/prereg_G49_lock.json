@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-23T22:25:25-07:00",
+ "sha256": {
+  "docs/prereg_G49_forecast_steer.md": "684d5c49f395291ab404e092e3cae128e7a81d79bf58f2652f086bd40c6d1c2c",
+  "scripts/231_g49_forecast_steer.py": "a3a1175b71f545c46d7ad9c40e3e68047695eaf8653ce95a43d1a73b9cb6fafe"
+ }
+}
