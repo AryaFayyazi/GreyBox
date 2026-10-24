@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T12:01:46-07:00",
+ "sha256": {
+  "docs/prereg_G54_gpt_text_judge.md": "e8c12f7b4a2121411d9d2d66278282d42ead29a75e143772ba1fde1e9ff7841f",
+  "scripts/239_g54_gpt_text_judge.py": "feacb8c603430978a337794311cf313cd742fd9e13ebfcf35fdfd05918966639"
+ }
+}
