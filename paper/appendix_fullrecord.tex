@@ -8,7 +8,7 @@
 
 This appendix lists every preregistered test, passed or failed, in the order run. Lock commits are public (withheld here for anonymous review); details, data and causes of failure are in the repository's record.
 
-Tally (a test passes only if it passes every primary endpoint). Method tests: 61; 24 passed every primary endpoint, 20 mixed (passed some endpoints and failed others), 11 failed, 2 stopped before any outcome, 4 pending. Trained-comparison tests: 32; 15 passed every primary endpoint, 7 mixed, 7 failed, 3 with no pass/fail bar. The seven earlier tests of the observable state in chat (six passed, one mixed) are listed but not counted. Two method tests compare trained monitors; the table lists them with the trained comparisons. No correction for multiple tests is applied. A lock is the public commit that published the preregistration before its test ran; where the record names no commit, the table gives the lock date (2026, PDT). Brackets are 95\% intervals.
+Tally (a test passes only if it passes every primary endpoint). Method tests: 64; 27 passed every primary endpoint, 20 mixed (passed some endpoints and failed others), 11 failed, 2 stopped before any outcome, 4 pending. Trained-comparison tests: 32; 15 passed every primary endpoint, 7 mixed, 7 failed, 3 with no pass/fail bar. The seven earlier tests of the observable state in chat (six passed, one mixed) are listed but not counted. Two method tests compare trained monitors; the table lists them with the trained comparisons. No correction for multiple tests is applied. A lock is the public commit that published the preregistration before its test ran; where the record names no commit, the table gives the lock date (2026, PDT). Brackets are 95\% intervals.
 
 {\scriptsize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.12}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.565\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.075\textwidth}@{}}
@@ -36,6 +36,7 @@ Triangulation at the agent's decision & Mean error 0.045 [0.031, 0.065] (pass); 
 A broader battery (32 questions) at the decision & Spearman with the decision-state geometry, 32 $-$ 8 questions, lower 95\% $>$ 0 & pending & 2026-10-23\\ % G43
 \frGroup{Monitoring at the call}
 The agent's own answers, training-free & 8 answers $-$ 1 answer +0.036 [0.006, 0.064]; $-$ trained probe +0.045 [$-$0.017, 0.135] (margin $-$0.05); Claude restarts 0.909 [0.858, 0.952] & \frPass & \lockref{4ac0466}\\ % G15
+Monitoring by the reconstructed geometry alone & Fisher--Rao distance from the typical state, no label or sign, within stratum: Claude 0.818 [0.792, 0.844], GPT-6-luna 0.816 [0.537, 0.986] & \frPass & \lockref{975acdb}\\ % G56
 Own answers or another model's & Own $-$ other, four open agents, +0.012 [$-$0.018, 0.040]: no detectable difference & \frFail & \lockref{b295376}\\ % G16
 Read-out on prompt injection (AgentDojo) & Within-suite AUROC: Gemma-4 0.985 [0.964, 0.998]; gpt-oss-20b 0.904 [0.872, 0.932] (bar 0.60) & \frPass & \lockref{e5ad171}\\ % G17
 A closed agent's own answers, tau2-bench & Claude Haiku 5.5, within-tool AUROC 0.704 [0.536, 0.822] (bar 0.50) & \frPass & \lockref{101fab0}\\ % G18
@@ -69,6 +70,8 @@ The policy forecast on an external benchmark ($\tau^2$-bench) & Claude Haiku 5.5
 A reasoning text monitor vs the agent's own policy & Own draws $-$ the same model reasoning over the transcript, within position, +0.443 [0.368, 0.523] (own 0.891, judge 0.448) & \frPass & \lockref{ea8c84e}\\ % G52
 Each reader's loss predicted by the policy gap & Mean over three more open readers of observed $-$ predicted, bar $\pm$0.02 & pending & \lockref{3b1c1dc}\\ % G53
 A reasoning text monitor vs the agent's own policy, GPT-6-luna & Own draws $-$ GPT-6-luna reasoning over the transcript, within position, $-$0.049 [$-$0.178, 0.071] (own 0.729, judge 0.777) & \frFail & \lockref{5134669}\\ % G54
+A different provider's text monitor on Claude's transcripts & Own draws $-$ GPT-6-luna reasoning over Claude's transcripts, within position, +0.295 [0.213, 0.380] (judge 0.596) & \frPass & \lockref{bd6e082}\\ % G55
+Forecasting by the reconstructed geometry alone & Mean Fisher--Rao distance of the sampled next actions from the typical state, within position: Claude 0.892 [0.853, 0.924], GPT-6-luna 0.642 [0.539, 0.737] & \frPass & \lockref{06b5f36}\\ % G57
 A closed agent's pre-call state beyond position, confirmed & GPT-6-luna, fresh episodes: within position 0.923 [0.811, 0.992]; within template $\times$ tool 0.840 [0.732, 0.946] (bar 0.50) & \frPass & 2026-10-22\\ % G40
 \frGroup{Prevention}
 Live self-policing through the agent's API & Gate reduction 0.82 [0.76, 0.88] (pass); resampling 0.404 reviews per episode, limit 0.40 (fail); success +10.2 [+6.6, +14.3] points (pass) & \frMixed & \lockref{00da0b9}\\ % G9
