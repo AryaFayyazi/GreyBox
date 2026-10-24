@@ -1,0 +1,38 @@
+{
+ "claude": {
+  "calls": 1765,
+  "violations": 370,
+  "strata": 1,
+  "M1_geometric_within_stratum": [
+   0.8176,
+   0.7918,
+   0.8442
+  ],
+  "signed_readout_within_stratum": 0.8937,
+  "M2_geometric_minus_readout": [
+   -0.0761,
+   -0.0899,
+   -0.0631
+  ]
+ },
+ "gpt": {
+  "calls": 832,
+  "violations": 379,
+  "strata": 5,
+  "M1_geometric_within_stratum": [
+   0.8164,
+   0.5368,
+   0.9857
+  ],
+  "signed_readout_within_stratum": 0.9902,
+  "M2_geometric_minus_readout": [
+   -0.1737,
+   -0.459,
+   -0.0039
+  ]
+ },
+ "endpoints": {
+  "M1_claude_lower_gt_0.5": true,
+  "M1_gpt_lower_gt_0.5": true
+ }
+}

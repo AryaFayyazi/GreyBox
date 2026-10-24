@@ -26,7 +26,7 @@ Parts (a)--(c) are classical information geometry \citep{amari2016information}; 
 \begin{proposition}[triangulation]\label{prop:triang}
 On the vector of all context-pair distances, let the hidden geometry of model $m$ be $H_m=\lambda_mC+e_m$ and the answer geometry of answerer $a$ be $A_a=\kappa_aC+f_a$ (standardized; the parts $e_m$, $f_a$ uncorrelated with $C$ and across models). Then $\rho(H_a,H_b)=\lambda_a\lambda_b$ and $\rho(A_a,H_b)=\kappa_a\lambda_b$ for $a\neq b$, and the unseen agreement is $\rho(A_c,H_c)=\kappa_c\lambda_c+\rho(f_c,e_c)$. Open models identify the $\lambda_b$; a closed model's answers against them identify $\kappa_c$.
 \end{proposition}
-With no own-model excess ($\rho(f_c,e_c)=0$; tested in \cref{sec:geom-results}) and $\lambda_c$ in the range of open models, $\kappa_c\cdot\mathrm{median}(\lambda)$ estimates the closed model's own agreement. Leaving each open model out, as if closed, tests the estimator against the truth.
+With no own-model excess ($\rho(f_c,e_c)=0$) and $\lambda_c$ in the open models' range, $\kappa_c\cdot\mathrm{median}(\lambda)$ estimates the closed model's own agreement; leaving each open model out tests the estimator.
 
 Where an API returns full log-probabilities, the final state's geometry is recovered exactly, not estimated (\cref{thm:exact}, \cref{app:exact}, after \citet[App.~H]{carlini2024stealing}); closed APIs do not return them, so the grey box does not use this.
 
@@ -53,7 +53,7 @@ So at the call any capable reader can match the agent (\cref{cor:action}); befor
 
 \textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $m$ yes/no questions about the call in side branches. Their angles $\vartheta_t\in[0,\pi]^m$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
 \begin{equation}\label{eq:readout} s_t=\frac1m\sum_{j=1}^{m}\sigma_j\,\vartheta_{tj},\qquad \sigma_j\in\{-1,+1\}. \end{equation}
-Here $\sigma_j=-1$ for the question ``does it comply'' and $+1$ for the others. No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
+Here $\sigma_j=-1$ for the question ``does it comply'' and $+1$ for the others. The read-out is one projection of the observable geometry. The geometry alone also gives a monitor: a call's Fisher--Rao distance from the agent's typical state, $g_t=\|\vartheta_t-\tilde\vartheta\|$ with $\tilde\vartheta$ the median of the agent's own unlabelled calls (\cref{thm:geometry}). It needs no sign: rewording a question to its negation maps $\vartheta_j$ to $\pi-\vartheta_j$ and leaves $g_t$ unchanged. No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
 \begin{proposition}[a label-free ceiling]\label{prop:snrceil}
 Let $N$ be the sampling-noise variance of $s_t$ and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
 $\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$, with $\mathrm{SNR}^+=\max(\mathrm{SNR},0)$; at a true $\mathrm{SNR}\le0$ the read-out cannot rank violations.
@@ -61,7 +61,7 @@ $\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$, with $\ma
 \begin{proof}[Proof sketch]
 With class gap $\delta$ and within-class variance $\sigma_{\mathrm{in}}^2\ge N$, $\mathrm{Var}(s_t)=\sigma_{\mathrm{in}}^2+p(1-p)\delta^2$, so $p(1-p)\delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_{\mathrm{in}}^2$; and $\mathrm{AUROC}=\Phi(\delta/\sqrt2\sigma_{\mathrm{in}})$.
 \end{proof}
-In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a high value supports a setting, and a low value flags it without ruling it out (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
+In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers; it overstates the noise near $P(\textsc{yes})\in\{0,1\}$, so the nominal SNR is conservative: a high value supports a setting, and a low value flags it without ruling it out. More answers lower the noise and raise the ceiling.
 
 \textbf{The state across steps.} Read before every call, the angles form a noisy time series whose noise the number of answers fixes; a state-space model of it is identified from unlabelled runs (\cref{prop:iv}, \cref{app:agents}).
 
