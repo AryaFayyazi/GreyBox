@@ -1,0 +1,19 @@
+{
+ "units": 360,
+ "violations": 50,
+ "P1_forecast_within_tool": [
+  0.6049,
+  0.4436,
+  0.8346
+ ],
+ "at_call_readout_within_tool": 0.7169,
+ "forecast_minus_at_call": [
+  -0.112,
+  -0.241,
+  0.0419
+ ],
+ "share_draws_tool_calls": 0.9781,
+ "endpoints": {
+  "P1_lower_gt_0.5": false
+ }
+}

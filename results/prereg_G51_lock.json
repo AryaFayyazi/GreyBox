@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T11:01:08-07:00",
+ "sha256": {
+  "docs/prereg_G51_gpt_selfgate.md": "ef4c96fdfa3ae46b02ac7109a999a660e322436fb9d8ceb889973e3e58126565",
+  "scripts/235_g51_gpt_selfgate.py": "549296e51d420098d084233c16a40591dd30a1ef41ad55ba8fd2a15095caae4f"
+ }
+}
