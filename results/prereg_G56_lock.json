@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T12:32:39-07:00",
+ "sha256": {
+  "docs/prereg_G56_geometric_monitor.md": "333c87a03c294fb3325c5b867d26b01cb95a41d786135d5a660f67c4d8f8d8fb",
+  "scripts/241_g56_geometric_monitor.py": "023ea1941162cdff08bd75d6c553da7b3f4468be142a38ba5e8685a55cf8cb1d"
+ }
+}
