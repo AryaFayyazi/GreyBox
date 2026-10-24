@@ -11,13 +11,13 @@ We first test the reconstruction where the truth is visible: on open models, who
 \label{fig:geometry}
 \end{figure}
 
-\textbf{Answers beat the input and the replies.} On every model, the answer geometry matches the hidden geometry better than a sentence embedding of the input does (gains \GOneGain; every lower bound at least \GOneGainLow; \cref{fig:geometry}a, \cref{tab:geometry}). The model's own replies, the other output that an API gives, do little better than the input (\GFiveRep). Agreement rises with the number of questions (from 8 to 88: \GOneMore), and 8 sampled answers per question keep \GOneKeep\ of the exact agreement. On 1{,}000 fresh contexts of four new kinds, answers beat the input on 6 of 8 models.
+\textbf{Answers beat the input and the replies.} On every model, the answer geometry matches the hidden geometry better than a sentence embedding of the input does (gains \GOneGain; every lower bound at least \GOneGainLow; \cref{fig:geometry}a, \cref{tab:geometry}). The model's own replies, the other output that an API gives, do little better than the input (\GFiveRep). Agreement rises with the number of questions (from 8 to 88: \GOneMore), and 8 sampled answers per question keep \GOneKeep\ of the exact agreement. On 1{,}000 fresh contexts of four new kinds, answers beat the input on 6 of 8 models. Raw $P(\textsc{yes})$ ranks about as well as the exact angles; what the angles add is a known noise, which the read-out's label-free ceiling uses (\cref{sec:monitor}).
 
 \textbf{The geometry is shared across models.} A model's answers match another model's hidden geometry exactly as well as its own. On 1{,}000 fresh contexts, the mean own-model excess is \GSixExcess, inside the equivalence band of $\pm0.02$ that we fixed in advance (\cref{fig:geometry}b); the hidden geometries of different models also agree with each other (\GSixHH). So what the answers reveal is the geometry that models share, in line with converging representations \citep{huh2024platonic,picozzi2026information}. This finding drives the rest of the paper: the shared part is what any model's answers can read.
 
 \textbf{A closed model reveals the same shared geometry.} Claude Haiku 5.5 answered 24 questions, 8 times each, on 192 held-out contexts. Two independent halves of its answers give the same geometry (Spearman \GTwoSplit; bound fixed in advance: 0.7), which carries \GTwoText\ beyond the input embedding. Its answers agree with open models' hidden geometries at \GTwoOpen.
 
-\textbf{Its own hidden geometry, by triangulation.} Its hidden states are not visible. If, as on open models, no part of its answers is specific to its own state, triangulation (\cref{prop:triang}) estimates its own agreement at 0.49 (bootstrap interval [0.44, 0.55]; [0.32, 0.53] over the range of open models' loadings). Leaving each open model out as if closed, the same estimate predicts the true agreement to within \GVtMae\ on average (\GVtInside\ of 8 inside the predicted interval).
+\textbf{Its own hidden geometry, by triangulation.} Its hidden states are not visible. If, as on open models, no part of its answers is specific to its own state, triangulation (\cref{prop:triang}) estimates its own agreement at 0.49 (bootstrap interval [0.44, 0.55]; [0.32, 0.53] over the range of open models' loadings). Leaving each open model out as if closed, the same estimate predicts the true agreement to within \GVtMae\ on average (\GVtInside\ of 8 inside the predicted interval); a model-blind estimate, the mean of the other open models, does as well (0.053), but it gives every closed model the same value, while triangulation uses the closed model's own answers.
 
 % =====================================================================================
 \section{Monitoring, forecasting and preventing violations}
@@ -62,12 +62,14 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}Closed: no trained probe exists; a trained reader of the call text scores 1.000 here. \textsuperscript{b}Pooled; its mailing-list sends are decided by a fact that it never checked, and they are not flagged. \textsuperscript{c}Exploratory: a probe on the true states, with its components and regularisation chosen afterwards by cross-validation on the development calls. \textsuperscript{d}Gemma-4 with reasoning on reads the same conversation and gives one holistic violation probability (mean of 4). \textsuperscript{e}New task families.}
 \end{table}
 
-\textbf{With no label, the read-out tells where it works.} Its variance beyond its known sampling noise is its SNR (\cref{prop:snrceil}). Over 29 cells (agent, benchmark and stratum), the SNR predicts the AUROC (Spearman 0.71): cells with SNR $>0$ score 0.96 on average, cells with SNR $\le0$ score 0.68. The same holds question by question (mean Spearman 0.58). Claude Haiku 5.5 has the lowest SNR: its four answers agree on 96--97\% of questions.
+\textbf{With no label, the read-out tells where it works.} This is where the geometry's coordinates pay off: their sampling noise is known (\cref{thm:geometry}), so the read-out's variance beyond that noise, its SNR, needs no label (\cref{prop:snrceil}). Over 29 cells (agent, benchmark and stratum), the SNR predicts the AUROC (Spearman 0.71): cells with SNR $>0$ score 0.96 on average, cells with SNR $\le0$ score 0.68. The same holds question by question (mean Spearman 0.58). Claude Haiku 5.5 has the lowest SNR: its four answers agree on 96--97\% of questions.
 
 \textbf{At the call, another answerer does as well, as the theory implies.} The transcript and the call decide the violation (\cref{cor:action}), and the answers read a geometry that models share. So another model that answers the same questions about the same call should match the agent. It does on open agents (own $-$ other +0.012 [$-$0.018, 0.040]), and it does better on Claude Haiku 5.5 ($-$0.09 on restarts; $-$0.29 on $\tau^2$ with reasoning on). Monitoring at the call thus works through the agent's own API, but it does not need the agent; before the call, the forecast is the agent's policy (\cref{sec:forecast}).
 
 \subsection{Carrying to new benchmarks and closed agents}
 \label{sec:carry}
+\textbf{Breadth.} Beyond CAPE-Bench, we use two external benchmarks, AgentDojo and Sierra's $\tau^2$-bench airline, and two closed agents from two providers; GPT-6-luna's results span six CAPE-Bench templates.
+
 \textbf{Prompt injection.} On AgentDojo \citep{debenedetti2024agentdojo}, the violation is a call that carries out an instruction hidden in a tool output. With 8 questions written from that policy before any answer existed, the same read-out ranks the open agents' injected calls within suite, on held-out tasks with no defense, at \GSvGemma\ (Gemma-4) and \GSvGpt\ (gpt-oss-20b).
 
 \textbf{GPT-6-luna.} Through its own API, its answers to the same 8 questions rank its CAPE-Bench violations within template and tool at \GGlAt\ (\GGlN). Its single answer scores 0.795.
@@ -78,7 +80,7 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 
 \subsection{Forecasting before the call}
 \label{sec:forecast}
-\textbf{The pre-call state.} Before each step's call, the agent answers 8 questions about its next action; the call does not exist yet.
+\textbf{The pre-call state.} Before each step's call, the agent answers 8 questions about its next action. The call does not exist yet, so no reader of the call's text can help, and comparing calls at the same step removes the call's position.
 
 \textbf{GPT-6-luna's state forecasts the coming violation.} On 252 fresh episodes (1{,}047 calls, 68 violations), its pre-call answers ranked the coming violation at 0.84 within template and tool, where position alone scores 0.78, and at 0.92 among calls at the same position (9 strata, 27 violations). A second fresh set of 504 episodes over six templates (\GFfGptN) gave \GFfGptPos\ [0.673, 0.939] among calls at the same position (the per-agent value of a preregistered pooled test).
 
