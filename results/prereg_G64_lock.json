@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T14:15:01-07:00",
+ "sha256": {
+  "scripts/253_g64_text_policy_agreement.py": "fdc8465b0efa130c82ee726793b13be040f953a4d4c6978380b3b656b2ea324c",
+  "docs/prereg_G64_text_policy_agreement.md": "5b34994d95c0245946dc386361e9165b6512d9a1fe347b3998eaf281a396971b"
+ }
+}
