@@ -37,7 +37,7 @@ Where an API returns full log-probabilities, the final state's geometry is recov
 Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ and $Z^-_t$ are all tokens before the call, hidden ones included. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$: no monitor of the agent's internals has a lower Bayes risk than the best monitor of $(V_t,A_t)$.
 \end{corollary}
 So a monitor needs the transcript and the call, not the weights; the question is what to compute from them.
-\begin{proposition}[the forecast needs the agent]\label{prop:selfforecast}
+\begin{proposition}[the forecast is the agent's policy]\label{prop:selfforecast}
 Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$; let $\bar\pi(a\mid V_t)$ be this policy averaged over the hidden states consistent with $V_t$, and $r(a,V_t)=P(Y\mid a,V_t)$. The Bayes forecast is $f=\sum_a\bar\pi(a\mid V_t)\,r(a,V_t)$. A reader that forecasts with another policy $\pi'$, $f'=\sum_a\pi'(a\mid V_t)\,r(a,V_t)$, has squared-loss excess risk
 \[ \E(Y-f')^2-\E(Y-f)^2=\E\,\Delta^2\le\E\,\|\bar\pi-\pi'\|_1^2, \]
 with $\Delta=\sum_a(\bar\pi-\pi')(a\mid V_t)\,r(a,V_t)$. The excess is zero once the call $A_t$ is visible.

@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-23T23:43:58-07:00",
+ "sha256": {
+  "docs/prereg_G46c_exact_context.md": "3c0422d64b3095fdd5648ba36c8472610f7c8dbd8953fd6846271da19886c49f",
+  "scripts/232_g46c_exact_context.py": "0d55b388440f02613bddc5c6ec82a933481506291eb02145451de8d369fa8fb5"
+ }
+}
