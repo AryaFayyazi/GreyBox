@@ -1,4 +1,4 @@
-This appendix lists the preregistered test behind each claim. Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock (withheld for anonymous review); for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code.
+This appendix lists the preregistered test behind each claim. Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock (withheld for anonymous review); for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code. Rows marked $^\dagger$ are secondary: they analysed data that already existed, locked before the analysis but registered on the same day after related results were known.
 
 \begin{center}
 \footnotesize
@@ -36,12 +36,12 @@ Claude Haiku 5.5's own sampled policy & within-position AUROC (lower bound $>0.5
 \quad better than another provider's text monitor & own $-$ GPT-6-luna judge, within position (lower bound $>0$) & \GXjDiff & \lockref{bd6e082}\\
 \quad sampling is what matters & GPT-6-luna reading the draws $-$ reading the transcript (lower bound $>0$) & \GOrDone & \lockref{7477d14}\\
 \quad\quad the reader does not matter & GPT-6-luna's read $-$ Claude's read, inside $\pm0.05$ (fails: GPT-6-luna reads better) & \GOrDtwo & \lockref{7477d14}\\
-The theory predicts each text monitor's loss & observed $-$ predicted Brier excess, each of 3 pairs inside $\pm0.02$ & \GTlCsDiff; \GTlCgDiff; \GTlGsDiff & \lockref{162a72c}\\
-\quad the label-free gap separates the regimes & Claude gap $-$ GPT gap (lower bound $>0$; fails) & \GTlEtwo & \lockref{162a72c}\\
-\quad a rank-based label-free check separates them & within-step agreement, GPT-6-luna $-$ Claude (lower bound $>0$) & \GTaDiff & \lockref{55d0123}\\
-\quad with no label at all & observed $-$ predicted inside $\pm0.02$ (fails; recalibrated reader also fails) & \GNlDiff & \lockref{b3f954a}\\
-Across steps, draws add to the best text monitor & judge + draws $-$ judge (lower bound $>0$) & \GAdDiff & \lockref{77888b7}\\
-The geometry alone forecasts & within-position AUROC, each closed agent (lower bound $>0.50$) & \GGfClaude; \GGfGpt & \lockref{06b5f36}\\
+The theory predicts each text monitor's loss & observed $-$ predicted Brier excess, each of 3 pairs inside $\pm0.02$ & \GTlCsDiff; \GTlCgDiff; \GTlGsDiff & \lockref{162a72c}$^\dagger$\\
+\quad the label-free gap separates the regimes & Claude gap $-$ GPT gap (lower bound $>0$; fails) & \GTlEtwo & \lockref{162a72c}$^\dagger$\\
+\quad a rank-based label-free check separates them & within-step agreement, GPT-6-luna $-$ Claude (lower bound $>0$) & \GTaDiff & \lockref{55d0123}$^\dagger$\\
+\quad with no label at all & observed $-$ predicted inside $\pm0.02$ (fails; recalibrated reader also fails) & \GNlDiff & \lockref{b3f954a}$^\dagger$\\
+Across steps, draws add to the best text monitor & judge + draws $-$ judge (lower bound $>0$) & \GAdDiff & \lockref{77888b7}$^\dagger$\\
+The geometry alone forecasts & within-position AUROC, each closed agent (lower bound $>0.50$) & \GGfClaude; \GGfGpt & \lockref{06b5f36}$^\dagger$\\
 GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \lockref{98ceb4e}\\
