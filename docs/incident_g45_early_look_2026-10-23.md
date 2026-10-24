@@ -14,3 +14,10 @@ What this does and does not change:
   that a position gate does not hold.
 - From here, G45's Claude episodes serve as development data for any later test on Claude Haiku 5.5; that test runs on
   fresh seeds and is locked before its data exist.
+
+## Second early look: partial G46 other-model data (2026-10-23, about 20:40 PDT)
+While testing the figure script scripts/228_fig_says_does.py, it read the partly written Gemma-4 draw file
+(outputs/g45/g46_other_gemma4.jsonl, 320 of 1,589 units) and printed within-position AUROCs on those units: self-report
+0.432, own draws 0.696, Gemma-4 draws 0.509, ceiling 0.809. G46 and G46b were locked and published before (ed80043,
+777dc6f); their analysis code is unchanged and runs on the complete data. G46b's Brier quantities were not computed.
+The figure script now waits for the complete file.

@@ -51,3 +51,7 @@ the action must average over the actions. \emph{Canonical form.} If moreover $Y=
 action, the same steps with $\kappa(A_t)$ in place of $A_t$ show that $(V_t,\kappa(A_t))$ is sufficient, and every monitor of
 $(V_t,\kappa(A_t))$ is invariant to any change of $A_t$ that keeps $\kappa(A_t)$. The premise is about the label. In our attacked family it held: the checker labels a send by its recipient.
 
+
+\textbf{\Cref{prop:selfforecast} (the forecast needs the agent).} Let $f=\E[Y\mid V_t]=\sum_a\bar\pi(a\mid V_t)\,r(a,V_t)$. For any forecast $f'$ that is a function of $V_t$ (and of randomness independent of $Y$ given $V_t$), $\E[(Y-f)(f-f')]=\E\big[(f-f')\,\E[Y-f\mid V_t]\big]=0$, so $\E(Y-f')^2=\E(Y-f)^2+\E(f-f')^2$. With $f'=\sum_a\pi'(a\mid V_t)\,r(a,V_t)$, $f-f'=\Delta$, and $|\Delta|\le\sum_a|\bar\pi-\pi'|(a\mid V_t)\,r(a,V_t)\le\|\bar\pi-\pi'\|_1$ because $0\le r\le1$. Once $A_t$ is visible, both readers forecast $r(A_t,V_t)$ and the excess is zero.
+
+\textbf{\Cref{cor:rollout} (reading the policy by sampling).} Given $V_t$, the draws $a_k$ are i.i.d.\ from $\bar\pi(\cdot\mid V_t)$ and independent of $Y$, so $\E[\hat f\mid V_t]=f$ and $\Var(\hat f\mid V_t)=\Var_{\bar\pi}[r(a,V_t)]/M$. By the decomposition above, $\E(Y-\hat f)^2-\E(Y-f)^2=\E(f-\hat f)^2=\E\,\Var_{\bar\pi}[r(a,V_t)]/M$, and $\Var[r]\le\frac14$ for $r\in[0,1]$. When $r$ is a $\{0,1\}$ label, $f(1-f)/M$ is estimated without bias by $\hat f(1-\hat f)/(M-1)$; this gives the predicted loss of another reader used in \cref{sec:forecast}.
