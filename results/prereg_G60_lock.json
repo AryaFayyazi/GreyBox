@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T13:36:00-07:00",
+ "sha256": {
+  "scripts/248_g60_text_monitor_loss.py": "741dedc3865fadfb99931b6ea20eca83702387ec1232b64b920ae6ce9f42995d",
+  "docs/prereg_G60_text_monitor_loss.md": "91a39fbfdc2ae66a51759522d5bffbd69cb79210fa3047cb11a8f5f52bdc6be3"
+ }
+}
