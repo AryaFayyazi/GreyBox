@@ -367,8 +367,9 @@ One row per test with a failed endpoint, a stop, or no test (too few cases). Int
 | G51 | Reviewer-free self-hold on GPT-6-luna, six templates: no cost in success? | P3: success self − none −0.016 [−0.056, 0.028] against a bar of −0.05 (P1 and P2 passed: 27.0% → 17.5% vs random 23.0%). | Narrow miss; held allowed calls sometimes ended an episode without the agent re-proposing them. |
 | G54 | On GPT-6-luna, does its sampled policy forecast better than itself as a reasoning text monitor? | J1: −0.049 [−0.178, 0.071] (judge 0.777, policy 0.729, self-report 0.836). | GPT-6-luna's words track its actions, so text suffices for it; on Claude Haiku 5.5 they do not (G52: judge 0.448, policy 0.891). |
 | G44b | Is the agent's advantage specific to forecasting? | D1: −0.045 [−0.178, 0.082]. | It holds for the closed agent and Qwen3.8, not for gpt-oss-20b or Muse-Glimmer. |
+| G58 | When GPT-6-luna reads Claude Haiku 5.5's sampled next actions, does the reader not matter (GPT read − Claude read inside ±0.05)? | D2: +0.039 [0.005, 0.072]; the upper bound passes +0.05. D1 passed: GPT-6-luna reading the draws 0.930 vs reading the transcript 0.596, +0.334 [0.235, 0.421]. | The reader matters only at the margin, and in the other direction: GPT-6-luna reasons, Claude's own reads ran with reasoning off. Sampling the agent's policy is what forecasts. |
 
-44 rows (1 L, 17 T, 26 G). Two G tests count as mixed by the word rule, but every primary endpoint passed. G17's text
+45 rows (1 L, 17 T, 27 G). Two G tests count as mixed by the word rule, but every primary endpoint passed. G17's text
 reports server errors. G22's "no detectable difference" is a reported, not a primary, comparison. G20 counts as "no
 bar", but its J1 passed.
 

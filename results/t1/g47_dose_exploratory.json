@@ -1,0 +1,21 @@
+{
+ "units": 492,
+ "reduction_per_hold_rate": {
+  "self": 2.082,
+  "random": 1.548
+ },
+ "self_minus_random_reduction_per_hold_rate": [
+  0.534,
+  0.1709,
+  0.9261
+ ],
+ "violating_episodes_removed_per_hold": {
+  "self": 0.2659,
+  "random": 0.2018
+ },
+ "self_minus_random_removed_per_hold": [
+  0.0641,
+  0.0156,
+  0.1108
+ ]
+}

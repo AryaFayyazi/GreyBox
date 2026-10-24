@@ -63,8 +63,6 @@ With class gap $\delta$ and within-class variance $\sigma_{\mathrm{in}}^2\ge N$,
 \end{proof}
 In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers; it overstates the noise near $P(\textsc{yes})\in\{0,1\}$, so the nominal SNR is conservative: a high value supports a setting, and a low value flags it without ruling it out. More answers lower the noise and raise the ceiling.
 
-\textbf{The state across steps.} Read before every call, the angles form a noisy time series whose noise the number of answers fixes; a state-space model of it is identified from unlabelled runs (\cref{prop:iv}, \cref{app:agents}).
-
-\textbf{The cut.} A cut on the read-out is set on the agent's own unlabelled traffic and then frozen; its escalation rate is exact and robust to bursts (\cref{prop:frozen}, \cref{app:agents}).
+\textbf{The cut.} A cut on the read-out is set on the agent's own unlabelled traffic and then frozen (\cref{prop:frozen}); a state-space model of the angles across steps is in \cref{app:agents}.
 
 \textbf{Metrics.} For geometries: Spearman correlation between two distance matrices over all pairs of contexts (no fitted parameter). For monitors: the \emph{within-stratum AUROC}, the AUROC over pairs of a violating and a safe call from the same stratum, where a stratum is a template (a CAPE-Bench task family), a tool, or an AgentDojo suite, and, where stated, the call's \emph{position} (its ordinal among the episode's calls); and the share of violations caught when exactly $\beta$ of the actions are escalated. Intervals are 95\% percentile intervals from a bootstrap over contexts, scenarios or episodes. Proofs are in \cref{app:proofs}.

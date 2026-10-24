@@ -1,0 +1,25 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "gpt_reads_claude_draws_within_position": [
+  0.9296,
+  0.8922,
+  0.9627
+ ],
+ "claude_reads_own_draws_within_position": 0.8906,
+ "gpt_reads_transcript_only_within_position": 0.5958,
+ "D1_draws_read_by_gpt_minus_transcript_only": [
+  0.3338,
+  0.2349,
+  0.4212
+ ],
+ "D2_draws_read_by_gpt_minus_read_by_claude": [
+  0.039,
+  0.0047,
+  0.0721
+ ],
+ "endpoints": {
+  "D1_lower_gt_0": true,
+  "D2_interval_inside_pm0.05": false
+ }
+}

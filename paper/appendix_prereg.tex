@@ -32,6 +32,10 @@ GPT-6-luna, beyond position & within-position AUROC (lower bound $>0.50$) & \GCf
 Claude Haiku 5.5's own sampled policy & within-position AUROC (lower bound $>0.50$) & \GRoOwn & \lockref{ed80043}\\
 \quad better than its self-report & own $-$ self-report (lower bound $>0$) & \GRoOwnMinusReport & \lockref{ed80043}\\
 \quad better than a reasoning text monitor & own $-$ judge, within position (lower bound $>0$) & \GJdDiff & \lockref{ea8c84e}\\
+\quad better than another provider's text monitor & own $-$ GPT-6-luna judge, within position (lower bound $>0$) & \GXjDiff & \lockref{bd6e082}\\
+\quad sampling is what matters & GPT-6-luna reading the draws $-$ reading the transcript (lower bound $>0$) & \GOrDone & \lockref{7477d14}\\
+\quad\quad the reader does not matter & GPT-6-luna's read $-$ Claude's read, inside $\pm0.05$ (fails: GPT-6-luna reads better) & \GOrDtwo & \lockref{7477d14}\\
+The geometry alone forecasts & within-position AUROC, each closed agent (lower bound $>0.50$) & \GGfClaude; \GGfGpt & \lockref{06b5f36}\\
 GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \lockref{98ceb4e}\\
@@ -49,4 +53,30 @@ No reviewer, GPT-6-luna, six templates & self reduction (lower bound $>0$) & \GS
 \quad more than random holds & self $-$ random (lower bound $>0$) & \GSgGDiff & \lockref{987e809}\\
 \bottomrule
 \end{longtable}
+\end{center}
+
+\subsection*{Multiple tests}
+The 15 preregistered endpoints behind the abstract's closed-agent claims form one family. For each, a one-sided $p$-value against its registered null comes from its estimate and its 95\% cluster-bootstrap interval (normal approximation, SE = interval width / 3.92); Holm's step-down then keeps the family-wise error at 0.05 (exploratory). All 15 survive. The weakest, GPT-6-luna's reviewer-free gate against random holds, would not survive a plain Bonferroni cut ($0.05/15$).
+\begin{center}\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\rowcolor{gbhead}\textbf{Endpoint} & \textbf{estimate} & \textbf{null} & \textbf{$p$ (one-sided)} & \textbf{Holm bar}\\
+\midrule
+GPT-6-luna, read-out at the call & 0.979 & 0.5 & $<10^{-6}$ & 0.0033\\
+Claude Haiku 5.5, read-out at the call (restarts) & 0.909 & 0.65 & $<10^{-6}$ & 0.0036\\
+GPT-6-luna, pre-call read-out & 0.923 & 0.5 & $<10^{-6}$ & 0.0038\\
+Claude, own sampled actions $-$ its text judge & 0.443 & 0 & $<10^{-6}$ & 0.0042\\
+Claude, geometric monitor & 0.818 & 0.5 & $<10^{-6}$ & 0.0045\\
+Claude, geometric forecast & 0.892 & 0.5 & $<10^{-6}$ & 0.0050\\
+Claude, reviewer-free gate: reduction & 0.473 & 0 & $<10^{-6}$ & 0.0056\\
+Claude, own sampled actions & 0.708 & 0.5 & $<10^{-6}$ & 0.0063\\
+Claude, own sampled actions $-$ GPT text judge & 0.295 & 0 & $<10^{-6}$ & 0.0071\\
+Claude, own sampled actions $-$ self-report & 0.233 & 0 & $<10^{-6}$ & 0.0083\\
+GPT-6-luna, reviewer-free gate: reduction & 0.353 & 0 & $<10^{-6}$ & 0.0100\\
+Claude, reviewer-free gate $-$ random & 0.198 & 0 & $6.5\times10^{-6}$ & 0.0125\\
+GPT-6-luna, geometric forecast & 0.642 & 0.5 & $2.5\times10^{-3}$ & 0.0167\\
+GPT-6-luna, geometric monitor & 0.816 & 0.5 & $2.9\times10^{-3}$ & 0.0250\\
+GPT-6-luna, reviewer-free gate $-$ random & 0.206 & 0 & $9.4\times10^{-3}$ & 0.0500\\
+\bottomrule
+\end{tabular}
 \end{center}

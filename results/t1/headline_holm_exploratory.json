@@ -1,0 +1,202 @@
+{
+ "family_size": 15,
+ "all_survive_holm": true,
+ "largest_p": 0.009376576031352446,
+ "rows": [
+  {
+   "endpoint": "G38 A1 GPT-6-luna read-out at the call",
+   "estimate": 0.979,
+   "ci": [
+    0.9458,
+    0.9977
+   ],
+   "null": 0.5,
+   "z": 36.18,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0033333333333333335,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G15 T3 Claude restarts read-out",
+   "estimate": 0.9087,
+   "ci": [
+    0.8577,
+    0.9524
+   ],
+   "null": 0.65,
+   "z": 10.71,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0035714285714285718,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G40 C1 GPT-6-luna pre-call read-out",
+   "estimate": 0.9228,
+   "ci": [
+    0.8106,
+    0.9916
+   ],
+   "null": 0.5,
+   "z": 9.16,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0038461538461538464,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G52 J1 own draws minus Claude text judge",
+   "estimate": 0.4429,
+   "ci": [
+    0.3682,
+    0.5228
+   ],
+   "null": 0.0,
+   "z": 11.23,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.004166666666666667,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G56 M1 geometric monitor, Claude",
+   "estimate": 0.8176,
+   "ci": [
+    0.7918,
+    0.8442
+   ],
+   "null": 0.5,
+   "z": 23.76,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.004545454545454546,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G57 G1 geometric forecast, Claude",
+   "estimate": 0.8916,
+   "ci": [
+    0.8533,
+    0.9237
+   ],
+   "null": 0.5,
+   "z": 21.8,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.005,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G47 P1 Claude self-gate reduction",
+   "estimate": 0.4726,
+   "ci": [
+    0.3918,
+    0.5538
+   ],
+   "null": 0.0,
+   "z": 11.44,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.005555555555555556,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G46 R1 Claude own draws",
+   "estimate": 0.7075,
+   "ci": [
+    0.6483,
+    0.7645
+   ],
+   "null": 0.5,
+   "z": 7.0,
+   "p_one_sided": 1.2798095916366492e-12,
+   "holm_threshold": 0.00625,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G55 J1 own draws minus GPT text judge",
+   "estimate": 0.2948,
+   "ci": [
+    0.2126,
+    0.38
+   ],
+   "null": 0.0,
+   "z": 6.9,
+   "p_one_sided": 2.5400237468886644e-12,
+   "holm_threshold": 0.0071428571428571435,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G46 R3 own draws minus self-report",
+   "estimate": 0.2329,
+   "ci": [
+    0.1605,
+    0.3122
+   ],
+   "null": 0.0,
+   "z": 6.02,
+   "p_one_sided": 8.815825847108272e-10,
+   "holm_threshold": 0.008333333333333333,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G51 P1 GPT-6-luna self-gate reduction",
+   "estimate": 0.3529,
+   "ci": [
+    0.2222,
+    0.4762
+   ],
+   "null": 0.0,
+   "z": 5.45,
+   "p_one_sided": 2.5709747775159997e-08,
+   "holm_threshold": 0.01,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G47 P2 Claude self-gate minus random",
+   "estimate": 0.1982,
+   "ci": [
+    0.1115,
+    0.2897
+   ],
+   "null": 0.0,
+   "z": 4.36,
+   "p_one_sided": 6.504456498468425e-06,
+   "holm_threshold": 0.0125,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G57 G1 geometric forecast, GPT-6-luna",
+   "estimate": 0.642,
+   "ci": [
+    0.5391,
+    0.7373
+   ],
+   "null": 0.5,
+   "z": 2.81,
+   "p_one_sided": 0.002488827408893446,
+   "holm_threshold": 0.016666666666666666,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G56 M1 geometric monitor, GPT-6-luna",
+   "estimate": 0.8164,
+   "ci": [
+    0.5368,
+    0.9857
+   ],
+   "null": 0.5,
+   "z": 2.76,
+   "p_one_sided": 0.0028640820111793808,
+   "holm_threshold": 0.025,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "G51 P2 GPT-6-luna self-gate minus random",
+   "estimate": 0.2059,
+   "ci": [
+    0.0447,
+    0.3881
+   ],
+   "null": 0.0,
+   "z": 2.35,
+   "p_one_sided": 0.009376576031352446,
+   "holm_threshold": 0.05,
+   "rejected_holm": true
+  }
+ ]
+}
