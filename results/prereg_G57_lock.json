@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T12:36:11-07:00",
+ "sha256": {
+  "docs/prereg_G57_geometric_forecast.md": "eee149b71b52a1f470704131ad85977dfb90abe5d0ccaf1e63f7044290b98606",
+  "scripts/242_g57_geometric_forecast.py": "8202dc0b8076dc10677d50008e4595f0b1b639b9c195d19ea35e39f4ded12892"
+ }
+}
