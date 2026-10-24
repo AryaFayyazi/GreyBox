@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T14:13:55-07:00",
+ "sha256": {
+  "scripts/252_g63_loss_calibrated_reader.py": "a75119cef3f02f16d4806caa5daa4b7d47518154850217c0cdfefdae4af2c68f",
+  "docs/prereg_G63_loss_calibrated_reader.md": "4f0084773c6da17ea23fb827755724ed99750165769e15ae1681eb934520fd4b"
+ }
+}
