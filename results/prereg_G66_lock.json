@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T15:19:31-07:00",
+ "sha256": {
+  "scripts/256_g66_geometry_replication.py": "c832c769830785d90a44431764bcf1b3456d9add6a9c59d1299274cf1cfda492",
+  "docs/prereg_G66_geometry_replication.md": "6f793bb87a880fdd0fa66b7b96822f18ee29dcbc23d2f3f7f8adaa9e3cb96111"
+ }
+}
