@@ -3,21 +3,6 @@
 We first test the reconstruction where the truth is visible: on open models, whose hidden states we store.
 \textbf{Data.} 4{,}800 contexts of six kinds (3{,}360 development, 1{,}440 confirmation). Two more sets of 1{,}000 fresh contexts add four new kinds: news, programming, jailbreaks and prompt injections. We ask 88 questions about the message, on eight open chat models from six families. The ground truth is each model's residual stream at the last prompt token, at a layer chosen on development data. All results are on held-out contexts (\cref{app:details}).
 
-\begin{table}[t]
-\centering\footnotesize
-\renewcommand{\arraystretch}{1.12}
-\setlength{\tabcolsep}{2.4pt}
-\caption{\textbf{Which observable carries the state?} Spearman correlation of each geometry with the model's own hidden geometry, over all pairs of 1{,}440 held-out contexts; no parameter is fit. Answers: Fisher--Rao distances over 88 questions, exact (log-probabilities) or from 8 answers sampled from the model's own probabilities. Replies: mean embedding of 8 sampled replies. Text: embedding of the input. Best per row in blue; last column: answers $-$ text, 95\% interval.}
-\label{tab:geometry}
-\begin{tabular}{@{}l cc cc l@{}}
-\toprule
-\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Answers} (ours)} & & & \\
-\rowcolor{gbhead}\textbf{Model} & exact & 8 samples & \textbf{Replies} & \textbf{Text} & \textbf{answers $-$ text}\\
-\midrule
-\GTABLE
-\bottomrule
-\end{tabular}
-\end{table}
 
 \begin{figure}[t]
 \centering
@@ -26,7 +11,7 @@ We first test the reconstruction where the truth is visible: on open models, who
 \label{fig:geometry}
 \end{figure}
 
-\textbf{Answers beat the input and the replies.} On every model, the answer geometry matches the hidden geometry better than a sentence embedding of the input does (gains \GOneGain; every lower bound at least \GOneGainLow; \cref{tab:geometry}). The model's own replies, the other output that an API gives, do little better than the input (\GFiveRep). Agreement rises with the number of questions (from 8 to 88: \GOneMore), and 8 sampled answers per question keep \GOneKeep\ of the exact agreement. On 1{,}000 fresh contexts of four new kinds, answers beat the input on 6 of 8 models.
+\textbf{Answers beat the input and the replies.} On every model, the answer geometry matches the hidden geometry better than a sentence embedding of the input does (gains \GOneGain; every lower bound at least \GOneGainLow; \cref{fig:geometry}a, \cref{tab:geometry}). The model's own replies, the other output that an API gives, do little better than the input (\GFiveRep). Agreement rises with the number of questions (from 8 to 88: \GOneMore), and 8 sampled answers per question keep \GOneKeep\ of the exact agreement. On 1{,}000 fresh contexts of four new kinds, answers beat the input on 6 of 8 models.
 
 \textbf{The geometry is shared across models.} A model's answers match another model's hidden geometry exactly as well as its own. On 1{,}000 fresh contexts, the mean own-model excess is \GSixExcess, inside the equivalence band of $\pm0.02$ that we fixed in advance (\cref{fig:geometry}b); the hidden geometries of different models also agree with each other (\GSixHH). So what the answers reveal is the geometry that models share, in line with converging representations \citep{huh2024platonic,picozzi2026information}. This finding drives the rest of the paper: the shared part is what any model's answers can read.
 

@@ -107,3 +107,20 @@ Exact recovery: sampled sequences & 0 (a check with seed 100 gave the same resul
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Agreement of each observable with the hidden geometry}
+\begin{table}[htbp]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{2.4pt}
+\caption{\textbf{Which observable carries the state?} Spearman correlation of each geometry with the model's own hidden geometry, over all pairs of 1{,}440 held-out contexts; no parameter is fit. Answers: Fisher--Rao distances over 88 questions, exact (log-probabilities) or from 8 answers sampled from the model's own probabilities. Replies: mean embedding of 8 sampled replies. Text: embedding of the input. Best per row in blue; last column: answers $-$ text, 95\% interval.}
+\label{tab:geometry}
+\begin{tabular}{@{}l cc cc l@{}}
+\toprule
+\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Answers} (ours)} & & & \\
+\rowcolor{gbhead}\textbf{Model} & exact & 8 samples & \textbf{Replies} & \textbf{Text} & \textbf{answers $-$ text}\\
+\midrule
+\GTABLE
+\bottomrule
+\end{tabular}
+\end{table}
