@@ -1,0 +1,47 @@
+{
+ "cut": [
+  0.4272159893046977,
+  0.38892385147891756
+ ],
+ "units": 492,
+ "violating_episodes": {
+  "none": 0.6789,
+  "forecast": 0.1504,
+  "random": 0.1829
+ },
+ "success": {
+  "none": 0.1321,
+  "forecast": 0.3984,
+  "random": 0.3862
+ },
+ "reminders_per_turn": {
+  "none": 0.0,
+  "forecast": 0.309,
+  "random": 0.391
+ },
+ "F1_forecast_reduction": [
+  0.7784,
+  0.7087,
+  0.8405
+ ],
+ "random_reduction": [
+  0.7305,
+  0.6812,
+  0.7768
+ ],
+ "F2_forecast_minus_random": [
+  0.0479,
+  -0.0122,
+  0.1064
+ ],
+ "F3_success_forecast_minus_none": [
+  0.2663,
+  0.1707,
+  0.372
+ ],
+ "endpoints": {
+  "F1_lower_gt_0": true,
+  "F2_lower_gt_0": false,
+  "F3_lower_gt_-0.05": true
+ }
+}

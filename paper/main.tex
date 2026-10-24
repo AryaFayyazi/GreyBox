@@ -94,7 +94,7 @@ Probes on an agent's hidden states can stop an unsafe action before it runs and 
 % =====================================================================================
 \section{The tool}
 \label{sec:tool}
-We release a Python package and a website (links in the camera-ready version). For any agent behind a chat API, the package returns the observable state and the fixed read-out of each proposed call, holds a call on the agent's own answers, and measures a model's answer geometry. On Claude Haiku 5.5, the 32 one-word answers per call cost \$0.0058 with prompt caching (\cref{app:tool}).
+We release a Python package and a website (links in the camera-ready version). For any agent behind a chat API, the package returns the observable state and the fixed read-out of each proposed call, holds a call on the agent's own answers, and measures a model's answer geometry. On Claude Haiku 5.5, a call's 32 one-word answers cost \$0.006 (\cref{app:tool}).
 
 % =====================================================================================
 \section{Related work}
@@ -111,7 +111,7 @@ We release a Python package and a website (links in the camera-ready version). F
 
 % =====================================================================================
 \section{Conclusion}
-A closed agent's API reveals the geometry of its state, and that geometry is shared across models. At a proposed call the transcript decides the violation, so a fixed read-out of the agent's own answers monitors it with no training. Before the call the forecast is the agent's policy: what an agent says about its next action can mislead, but its own sampled actions, read by its own answers, forecast the violation. Read through the API alone, these states prevented violations live, with no human in the loop.
+A closed agent's API reveals the geometry of its state, and that geometry is shared across models. At a proposed call the transcript decides the violation, so a fixed read-out of the agent's own answers monitors it with no training. Before the call the forecast is the agent's policy: what an agent says about its next action can mislead, but its own sampled actions, read by its own answers, forecast the violation. Through the API alone, these reads prevented violations live with no human in the loop.
 
 \section*{Impact Statement}
 This work monitors closed AI agents before they act, through their own APIs and with no training. The intended effect is safer deployment: in our tests, a gate on the agent's own answers prevented 82\% of an open agent's violating episodes and 69\% of those that a closed agent's transcript decides. We see four risks. (1) False confidence: the read-out cannot see a violation decided by a fact the agent never checked, and its questions cover the kinds of violation they were written for; a new policy needs new questions. (2) Holding calls costs time and, for trained gates, task success (1.8 and 5.8 points). (3) An agent that knows the questions, or an attacker who queries a score, may learn to answer them falsely; the questions and scores should stay hidden from the agent, and self-policing is no defense against a model that colludes with itself. (4) Reading a model's state from outside could help an attacker study a closed model; the method uses only ordinary answers and recovers geometry, not weights or private data. The code is released under the MIT license, and the browser tool does not upload the user's logs.
