@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T10:04:19-07:00",
+ "sha256": {
+  "docs/prereg_G50_tau2_policy_forecast.md": "326c6005ed2239452a8a4c0d266e26098d283ae517300fb8b9717021a3a5ee18",
+  "scripts/234_g50_tau2_policy_forecast.py": "7f9b41ae1c17f3ed2e76d4cf31fd9be130527907689ffd0f34230f03615ad92e"
+ }
+}
