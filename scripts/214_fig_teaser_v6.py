@@ -139,7 +139,7 @@ def panel_decision(ax):
 
 FS_TAG = 6.0                                                    # (d): point tags
 TAG_D = {  # (d): (agent, test) -> tag position (data units), alignment, tag; placed clear of points, whiskers and text
-    ("Qwen3.8", "g12"): (0.075, -0.04, "left", "Qwen3.8"), ("gpt-oss", "g12"): (0.19, 0.12, "left", "gpt-oss"),
+    ("Qwen3.8", "g12"): (-0.035, -0.215, "left", "Qwen\n3.8"), ("gpt-oss", "g12"): (0.19, 0.12, "left", "gpt-oss"),
     ("Muse-Glimmer", "g12"): (0.215, 0.36, "right", "Muse"), ("Claude Haiku 5.5", "g12"): (0.425, 0.27, "left", "Claude"),
     ("Gemma-4", "g12"): (0.62, 0.66, "right", "Gemma-4"), ("gpt-oss", "g13"): (0.625, 0.425, "left", "gpt-oss\n(AD)"),
     ("Gemma-4", "g13"): (1.06, 0.565, "right", "Gemma-4\n(AD)"), "g42": (0.69, 0.81, "right", "GPT-6-luna,\npre-call")}
@@ -158,13 +158,20 @@ def panel_law(ax):
         tx, ty, ha, tag = TAG_D[(name, kind)]
         ax.text(tx, ty, tag, fontsize=FS_TAG, color=INK, ha=ha, va="center", linespacing=0.95, zorder=5)
     g42 = json.loads((ROOT / "results/t1/g42_gate_law.json").read_text())
+    # the failed predictions of the same law (full-record policy): the earlier law's misses and the position gate
+    g11b = json.loads((ROOT / "results/t1/g11b_selfpolicing_law.json").read_text())
+    miss = [(g11b[k]["predicted"], *g11b[k]["reduction"]) for k in ("museglimmer", "qwen38")]
+    miss.append((g42["predicted"]["position"], g42["observed"]["position"], *g42["observed_ci"]["position"]))
+    for x_, y_, lo_, hi_ in miss:
+        whisker(ax, [x_], [y_], yerr=[[y_ - lo_], [hi_ - y_]], col=MUTE)
+        ax.scatter([x_], [y_], s=24, marker="X", facecolor="white", edgecolor=MUTE, lw=0.8, zorder=3)
     x, y = g42["predicted"]["pre"], g42["observed"]["pre"]   # the pre-call gate on a closed agent
     lo, hi = g42["observed_ci"]["pre"]
     whisker(ax, [x], [y], yerr=[[y - lo], [hi - y]], col=ORANGE)
     ax.scatter([x], [y], s=34, marker="D", color=ORANGE, edgecolor="white", lw=0.7, zorder=4)
     tx, ty, ha, tag = TAG_D["g42"]
     ax.text(tx, ty, tag, fontsize=FS_TAG, color=INK, ha=ha, va="center", linespacing=0.95, zorder=5)
-    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.12, 1.05)
+    ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.3, 1.05)
     ax.set_xticks([0, 0.5, 1.0], ["0", "0.5", "1"]); ax.set_yticks([0, 0.5, 1.0], ["0", "0.5", "1"])
     ax.set_xlabel("predicted from offline flag rates", fontsize=FS_LAB, color=INK, labelpad=2)
     ax.set_ylabel("observed live reduction", fontsize=FS_LAB, color=INK, labelpad=1)
@@ -175,8 +182,9 @@ def panel_law(ax):
     dot = dict(ls="", marker="o", ms=5.2, mec="white", mew=0.7)
     h = [(Line2D([], [], mfc=BLUE, **dot), Line2D([], [], mfc=ORANGE, **dot)),   # open agents and Claude (orange: closed)
          Line2D([], [], ls="", marker="s", ms=4.8, mfc=BLUE, mec="white", mew=0.7),
-         Line2D([], [], ls="", marker="D", ms=4.6, mfc=ORANGE, mec="white", mew=0.7)]
-    lab = ["violations", "injections", "GPT-6-luna, pre-call gate"]
+         Line2D([], [], ls="", marker="D", ms=4.6, mfc=ORANGE, mec="white", mew=0.7),
+         Line2D([], [], ls="", marker="X", ms=5.0, mfc="white", mec=MUTE, mew=0.8)]
+    lab = ["violations", "injections", "GPT-6-luna, pre-call gate", "failed predictions"]
     return h, lab
 
 

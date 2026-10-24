@@ -56,12 +56,12 @@ So at the call any capable reader can match the agent (\cref{cor:action}); befor
 Here $\sigma_j=-1$ for the question ``does it comply'' and $+1$ for the others. No label is used and nothing is fit. Self-policing is the one-question case: hold the call when the agent's own answers say that it does not comply.
 \begin{proposition}[a label-free ceiling]\label{prop:snrceil}
 Let $N$ be the sampling-noise variance of $s_t$ and $\mathrm{SNR}=\mathrm{Var}(s_t)/N-1$; neither uses a label. If the noise is independent of $Y$ and $s_t$ is Gaussian with equal variance in the two classes, then for a violation rate $p$,
-$\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$, with $\mathrm{SNR}^+=\max(\mathrm{SNR},0)$; at $\mathrm{SNR}\le0$ the read-out cannot rank violations.
+$\mathrm{AUROC}(s_t)\le\Phi\big(\sqrt{\mathrm{SNR}^+/(2p(1-p))}\big)$, with $\mathrm{SNR}^+=\max(\mathrm{SNR},0)$; at a true $\mathrm{SNR}\le0$ the read-out cannot rank violations.
 \end{proposition}
 \begin{proof}[Proof sketch]
 With class gap $\delta$ and within-class variance $\sigma_{\mathrm{in}}^2\ge N$, $\mathrm{Var}(s_t)=\sigma_{\mathrm{in}}^2+p(1-p)\delta^2$, so $p(1-p)\delta^2\le\mathrm{SNR}\cdot N\le\mathrm{SNR}\cdot\sigma_{\mathrm{in}}^2$; and $\mathrm{AUROC}=\Phi(\delta/\sqrt2\sigma_{\mathrm{in}})$.
 \end{proof}
-In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a low value flags a setting, and a high value supports it (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
+In practice we use the nominal noise $\frac1{m^2}\sum_j(n_j+\frac12)^{-1}$ for $n_j$ parsed answers. It is exact at $P(\textsc{yes})=\frac12$ and overstates the noise near 0 or 1 (with 4 answers at $P=0.01$ the exact variance is 0.013, not 0.222), so the nominal SNR is conservative: a high value supports a setting, and a low value flags it without ruling it out (\cref{sec:monitor}). More answers lower $N$ and raise the ceiling: 16 answers instead of 4 raised the pre-call ranking from 0.65 to 0.73.
 
 \textbf{The state across steps.} Read before every call, the angles form a noisy time series whose noise the number of answers fixes; a state-space model of it is identified from unlabelled runs (\cref{prop:iv}, \cref{app:agents}).
 

@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def f3(x):
-    return f"{x:.3f}".replace("-", "$-$")
+    from decimal import ROUND_HALF_UP, Decimal
+    return str(Decimal(repr(float(x))).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)).replace("-", "$-$")
 
 
 def ci(v, sign=True):

@@ -56,9 +56,10 @@ def g46_rows():
 
 def main():
     r, n, v = g46_rows()
-    g40 = json.loads((ROOT / "results/t1/g40_gpt_precall_confirm.json").read_text())
-    c1 = g40["C1_within_template_tool_position"]
-    rows = [("GPT-6-luna:\nits self-report", c1[0], c1[1], c1[2], BLUE, "o"),
+    pa = json.loads((ROOT / "results/t1/g45_per_agent_ci.json").read_text())
+    go, gx = pa["own_within_position"]["gpt"], pa["other_within_position"]["gpt"]
+    rows = [("GPT-6-luna:\nits self-report", go[0], go[1], go[2], BLUE, "o"),
+            ("Gemma-4 answering\nin GPT-6-luna's seat", gx[0], gx[1], gx[2], MUTE, "o"),
             ("Claude Haiku 5.5:\nits self-report", *r["report"], ORANGE, "o")]
     if "other" in r:
         rows.append(("Gemma-4 sampling\nin Claude's seat", *r["other"], MUTE, "s"))
@@ -79,7 +80,7 @@ def main():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.grid(axis="x", color=GRID, lw=0.5); ax.set_axisbelow(True)
-    fig.text(0.02, 0.985, f"Claude Haiku 5.5: {n:,} calls, {v} violations, 492 fresh episodes", fontsize=6.0, color=MUTE, va="top")
+    fig.text(0.02, 0.985, f"new episodes: GPT-6-luna 1,134 calls; Claude Haiku 5.5 {n:,} calls", fontsize=6.0, color=MUTE, va="top")
     fig.subplots_adjust(left=0.36, right=0.96, top=0.90, bottom=0.2)
     fig.savefig(ROOT / "paper/figures/says_does.pdf")
     fig.savefig(ROOT / "results/figures/says_does.png", dpi=220)
