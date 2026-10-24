@@ -36,7 +36,7 @@ Where an API returns full log-probabilities, the final state's geometry is recov
 \begin{corollary}[the transcript suffices]\label{cor:action}
 Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ and $Z^-_t$ are all tokens before the call, hidden ones included. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$: no monitor of the agent's internals has a lower Bayes risk than the best monitor of $(V_t,A_t)$.
 \end{corollary}
-So a monitor needs the transcript and the call, not the weights; the question is what to compute from them.
+The premise is about the label, and it is testable: it holds when facts shown in the transcript decide the violation (CAPE-Bench is built this way, and so are most $\tau^2$ writes), and it fails when a fact the agent never checked decides it, where no monitor of the transcript, the agent's internals included, can see it (\cref{sec:carry}). Where it holds, a monitor needs the transcript and the call, not the weights.
 \begin{proposition}[the forecast is the agent's policy]\label{prop:selfforecast}
 Before step $t$ the agent acts by $A_t\sim\pi(\cdot\mid V_t,Z^-_t)$; let $\bar\pi(a\mid V_t)$ be this policy averaged over the hidden states consistent with $V_t$, and $r(a,V_t)=P(Y\mid a,V_t)$. The Bayes forecast is $f=\sum_a\bar\pi(a\mid V_t)\,r(a,V_t)$. A reader that forecasts with another policy $\pi'$, $f'=\sum_a\pi'(a\mid V_t)\,r(a,V_t)$, has squared-loss excess risk
 \[ \E(Y-f')^2-\E(Y-f)^2=\E\,\Delta^2\le\E\,\|\bar\pi-\pi'\|_1^2, \]
@@ -48,7 +48,7 @@ $f=\E[Y\mid V_t]$, so $\E(Y-f')^2=\E(Y-f)^2+\E(f-f')^2$; and $|f-f'|\le\|\bar\pi
 \begin{corollary}[reading the policy by sampling]\label{cor:rollout}
 Let $a_1,\dots,a_M$ be next actions drawn from the agent in side branches, so $a_k\sim\bar\pi(\cdot\mid V_t)$ i.i.d., and $\hat f=\frac1M\sum_k r(a_k,V_t)$. Then $\E(Y-\hat f)^2-\E(Y-f)^2=\E\,\Var_{\bar\pi}[r(a,V_t)]/M\le 1/(4M)$.
 \end{corollary}
-So sampling the agent reads its own policy, and with it the Bayes forecast; a self-report or another model's draws are readers with another policy and pay the excess of \cref{prop:selfforecast}. In practice $r$ is not known: we replace it by the read-out of each drawn call, the agent's own answers at that call.
+The corollary is elementary (a Monte Carlo mean); its point is that sampling the agent reads its own policy, and with it the Bayes forecast; a self-report or another model's draws are readers with another policy and pay the excess of \cref{prop:selfforecast}. In practice $r$ is not known: we replace it by the read-out of each drawn call, the agent's own answers at that call.
 So at the call any capable reader can match the agent (\cref{cor:action}); before it, a reader loses exactly as much as its policy differs from the agent's on violating actions. Another model's answers can forecast well only where it would act like the agent (tested in \cref{sec:forecast}).
 
 \textbf{The observable state at the decision.} At a proposed call we ask the agent, through its own API, $m$ yes/no questions about the call in side branches. Their angles $\vartheta_t\in[0,\pi]^m$ are its observable state, in the coordinates of \cref{thm:geometry}. The score is a fixed read-out, the mean angle in each question's violation direction:
