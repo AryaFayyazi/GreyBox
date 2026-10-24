@@ -1,0 +1,56 @@
+{
+ "pairs": {
+  "claude_self": {
+   "units": 1587,
+   "violations": 316,
+   "observed_excess": [
+    -0.0166,
+    -0.0318,
+    -0.0008
+   ],
+   "predicted_excess": [
+    0.2092,
+    0.1942,
+    0.2244
+   ],
+   "observed_minus_predicted": [
+    -0.2257,
+    -0.2463,
+    -0.2059
+   ],
+   "calibration_y_minus_f": [
+    -0.1948,
+    -0.2107,
+    -0.1793
+   ]
+  },
+  "claude_gpt": {
+   "units": 1587,
+   "violations": 316,
+   "observed_excess": [
+    -0.0706,
+    -0.0874,
+    -0.0535
+   ],
+   "predicted_excess": [
+    0.1435,
+    0.1312,
+    0.1566
+   ],
+   "observed_minus_predicted": [
+    -0.2141,
+    -0.2374,
+    -0.1902
+   ],
+   "calibration_y_minus_f": [
+    -0.1948,
+    -0.2108,
+    -0.1791
+   ]
+  }
+ },
+ "endpoints": {
+  "L1_claude_self_inside_pm0.02": false,
+  "L1_claude_gpt_inside_pm0.02": false
+ }
+}

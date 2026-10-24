@@ -27,7 +27,7 @@ def agreement(q, f, st, i):
     num = den = 0.0
     for s in np.unique(st[i]):
         j = i[st[i] == s]
-        if len(j) >= 5 and np.std(q[j]) > 0 and np.std(f[j]) > 0:
+        if len(j) >= 5 and len(np.unique(q[j])) > 1 and len(np.unique(f[j])) > 1:   # deviation: was np.std(.) > 0 (float noise)
             num += len(j) * spearmanr(q[j], f[j])[0]
             den += len(j)
     return num / den if den else np.nan

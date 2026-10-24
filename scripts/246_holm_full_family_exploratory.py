@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Exploratory multiplicity check (not preregistered), replacing scripts/245's family of passing endpoints. The family:
-EVERY registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites (28 endpoints).
+EVERY registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites, and of the
+tests that bear on those claims (G62). Open-agent endpoints are left out. (Revised 2026-10-24 14:20 after review: the first
+version mixed in two open-agent G15 endpoints and predated G59-G62.)
 One-sided p against the registered bar (a superiority null, a non-inferiority margin, or for an equivalence endpoint the
 larger of its two one-sided p's), from the stored estimate and 95% cluster-bootstrap interval (normal approximation,
 SE = width / 3.92); then Holm's step-down at family-wise 0.05. -> results/t1/holm_full_family_exploratory.json"""
@@ -14,9 +16,7 @@ g15, g45, g46 = J("g15_training_free"), J("g45_closed_self_forecast"), J("g46_ro
 g56, g57, g58 = J("g56_geometric_monitor"), J("g57_geometric_forecast"), J("g58_other_reads_draws")
 g47, g51, g38 = J("g47_selfgate"), J("g51_gpt_selfgate"), J("g38_gpt_readout")
 # (name, [estimate, lower, upper], kind, bar): kind "gt" tests estimate > bar; "eq" tests |estimate| < bar
-F = [("Read-out at the call: 8 answers - 1 answer (open agents)", g15["T1_mean8_minus_complies"], "gt", 0.0),
-     ("Read-out at the call: 8 answers - trained probe (non-inferiority)", g15["T2_mean8_minus_white_box"], "gt", -0.05),
-     ("Read-out at the call: Claude restarts", [g15["claude"]["restart_mean8"]] + g15["claude"]["restart_mean8_ci"], "gt", 0.65),
+F = [("Read-out at the call: Claude restarts", [g15["claude"]["restart_mean8"]] + g15["claude"]["restart_mean8_ci"], "gt", 0.65),
      ("GPT-6-luna read-out at the call", g38["A1_at_call"], "gt", 0.5),
      ("GPT-6-luna pre-call read-out", g38["P1_pre_call"], "gt", 0.5),
      ("Self-forecast: own - other, within template|tool (pooled)", g45["S1_pooled_own_minus_other_template_tool"], "gt", 0.0),
@@ -34,6 +34,19 @@ F = [("Read-out at the call: 8 answers - 1 answer (open agents)", g15["T1_mean8_
      ("Geometric forecast, GPT-6-luna", g57["gpt"]["G1_geometric_forecast_within_position"], "gt", 0.5),
      ("GPT-6-luna reads Claude's draws - reads transcript", g58["D1_draws_read_by_gpt_minus_transcript_only"], "gt", 0.0),
      ("GPT-6-luna read - Claude read, equivalence 0.05", g58["D2_draws_read_by_gpt_minus_read_by_claude"], "eq", 0.05),
+     ("Claude own draws - self-report, same calls", J("g59_selfreport_exact")["S1_own_draws_minus_self_report"], "gt", 0.0),
+     ("Loss predicted, Claude's judge", J("g60_text_monitor_loss")["pairs"]["claude_self"]["observed_minus_predicted"], "eq", 0.02),
+     ("Loss predicted, GPT-6-luna judging Claude", J("g60_text_monitor_loss")["pairs"]["claude_gpt"]["observed_minus_predicted"], "eq", 0.02),
+     ("Loss predicted, GPT-6-luna judging itself", J("g60_text_monitor_loss")["pairs"]["gpt_self"]["observed_minus_predicted"], "eq", 0.02),
+     ("Label-free gap, Claude - GPT-6-luna", J("g60_text_monitor_loss")["E2_claude_self_gap_minus_gpt_self_gap"], "gt", 0.0),
+     ("Draws add to GPT-6-luna's judge, across steps", J("g61_draws_add_to_text")["A1_gpt_judge+draws_minus_gpt_judge"], "gt", 0.0),
+     ("Draws add to Claude's judge, across steps", J("g61_draws_add_to_text")["A2_claude_judge+draws_minus_claude_judge"], "gt", 0.0),
+     ("Draws add to position, across steps", J("g61_draws_add_to_text")["A3_position+draws_minus_position"], "gt", 0.0),
+     ("Loss predicted with no label, Claude's judge", J("g62_loss_no_labels")["pairs"]["claude_self"]["observed_minus_predicted"], "eq", 0.02),
+     ("Loss predicted with no label, GPT-6-luna judging Claude", J("g62_loss_no_labels")["pairs"]["claude_gpt"]["observed_minus_predicted"], "eq", 0.02),
+     ("Loss predicted, recalibrated reader, Claude's judge", J("g63_loss_calibrated_reader")["pairs"]["claude_self"]["observed_minus_predicted"], "eq", 0.02),
+     ("Loss predicted, recalibrated reader, GPT-6-luna judging Claude", J("g63_loss_calibrated_reader")["pairs"]["claude_gpt"]["observed_minus_predicted"], "eq", 0.02),
+     ("Text-policy agreement, GPT-6-luna - Claude", J("g64_text_policy_agreement")["A1_gpt_minus_claude"], "gt", 0.0),
      ("Claude reviewer-free gate: reduction", g47["self_reduction"], "gt", 0.0),
      ("Claude reviewer-free gate - random", g47["self_minus_random"], "gt", 0.0),
      ("Claude reviewer-free gate: success (non-inferiority)", g47["success_self_minus_none"], "gt", -0.05),

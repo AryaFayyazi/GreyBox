@@ -211,12 +211,12 @@ def panel_prevent(ax, lab_w):
             (0.0, "own read-out", b["self"], ORANGE)]
     for yy, lab, v, col in rows:
         ax.barh([yy], [100 * v], height=0.62, color=col, lw=0, zorder=2)
-        ax.text(100 * v + 1.5, yy, f"{100 * v:.0f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
+        ax.text(100 * v + 1.5, yy, f"{100 * v:.1f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
     set_rows(ax, 7.05)
     header(ax, 7.05, "Claude Haiku 5.5", dx=-lab_w)
     header(ax, 3.0, "GPT-6-luna", dx=-lab_w)
-    ax.set_xlim(0, 80)
+    ax.set_xlim(0, 92)
     ax.set_xticks([0, 25, 50, 75], ["0", "25", "50", "75%"])
     ax.set_xlabel("violating episodes, live", fontsize=FS_LAB, color=INK, labelpad=1.5)
     return {lab: v for _, lab, v, _ in rows}, s, b

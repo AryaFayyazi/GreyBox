@@ -1,0 +1,33 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "across_steps_auroc": {
+  "draws": 0.8011,
+  "gpt_judge": 0.9039,
+  "claude_judge": 0.6302,
+  "position": 0.8212,
+  "gpt_judge+draws": 0.9628,
+  "claude_judge+draws": 0.7478,
+  "position+draws": 0.9459
+ },
+ "A1_gpt_judge+draws_minus_gpt_judge": [
+  0.0589,
+  0.0443,
+  0.0734
+ ],
+ "A2_claude_judge+draws_minus_claude_judge": [
+  0.1176,
+  0.0926,
+  0.1438
+ ],
+ "A3_position+draws_minus_position": [
+  0.1247,
+  0.0944,
+  0.1545
+ ],
+ "endpoints": {
+  "A1_lower_gt_0": true,
+  "A2_lower_gt_0": true,
+  "A3_lower_gt_0": true
+ }
+}

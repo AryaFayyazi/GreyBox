@@ -1,10 +1,8 @@
 {
- "family_size": 26,
- "registered_passes": 20,
- "rejected_holm": 17,
+ "family_size": 37,
+ "registered_passes": 26,
+ "rejected_holm": 25,
  "passed_but_not_holm": [
-  "Read-out at the call: 8 answers - 1 answer (open agents)",
-  "Read-out at the call: 8 answers - trained probe (non-inferiority)",
   "GPT-6-luna reviewer-free gate - random"
  ],
  "rows": [
@@ -19,7 +17,7 @@
    "bar": 0.65,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0019230769230769232,
+   "holm_threshold": 0.0013513513513513514,
    "rejected_holm": true
   },
   {
@@ -33,7 +31,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.002,
+   "holm_threshold": 0.001388888888888889,
    "rejected_holm": true
   },
   {
@@ -47,7 +45,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0020833333333333333,
+   "holm_threshold": 0.0014285714285714286,
    "rejected_holm": true
   },
   {
@@ -61,7 +59,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.002173913043478261,
+   "holm_threshold": 0.0014705882352941176,
    "rejected_holm": true
   },
   {
@@ -75,7 +73,35 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.002272727272727273,
+   "holm_threshold": 0.0015151515151515152,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Claude own draws - self-report, same calls",
+   "estimate": 0.4173,
+   "ci": [
+    0.3698,
+    0.4731
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0015625,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Draws add to Claude's judge, across steps",
+   "estimate": 0.1176,
+   "ci": [
+    0.0926,
+    0.1438
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0016129032258064516,
    "rejected_holm": true
   },
   {
@@ -89,7 +115,35 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.002380952380952381,
+   "holm_threshold": 0.0016666666666666668,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Draws add to position, across steps",
+   "estimate": 0.1247,
+   "ci": [
+    0.0944,
+    0.1545
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 2.220446049250313e-16,
+   "holm_threshold": 0.001724137931034483,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Draws add to GPT-6-luna's judge, across steps",
+   "estimate": 0.0589,
+   "ci": [
+    0.0443,
+    0.0734
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 1.0547118733938987e-15,
+   "holm_threshold": 0.0017857142857142859,
    "rejected_holm": true
   },
   {
@@ -103,7 +157,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.0811351813799774e-12,
-   "holm_threshold": 0.0025,
+   "holm_threshold": 0.001851851851851852,
    "rejected_holm": true
   },
   {
@@ -117,7 +171,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 1.2798095916366492e-12,
-   "holm_threshold": 0.002631578947368421,
+   "holm_threshold": 0.0019230769230769232,
    "rejected_holm": true
   },
   {
@@ -131,7 +185,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5400237468886644e-12,
-   "holm_threshold": 0.002777777777777778,
+   "holm_threshold": 0.002,
    "rejected_holm": true
   },
   {
@@ -145,7 +199,7 @@
    "bar": -0.05,
    "registered_pass": true,
    "p_one_sided": 3.42560979582629e-11,
-   "holm_threshold": 0.0029411764705882353,
+   "holm_threshold": 0.0020833333333333333,
    "rejected_holm": true
   },
   {
@@ -159,7 +213,21 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 8.815825847108272e-10,
-   "holm_threshold": 0.003125,
+   "holm_threshold": 0.002173913043478261,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Loss predicted, GPT-6-luna judging Claude",
+   "estimate": -0.0001,
+   "ci": [
+    -0.0068,
+    0.0065
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": true,
+   "p_one_sided": 2.242104613081608e-09,
+   "holm_threshold": 0.002272727272727273,
    "rejected_holm": true
   },
   {
@@ -173,7 +241,21 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5709747775159997e-08,
-   "holm_threshold": 0.0033333333333333335,
+   "holm_threshold": 0.002380952380952381,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Loss predicted, Claude's judge",
+   "estimate": 0.0031,
+   "ci": [
+    -0.0033,
+    0.009
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": true,
+   "p_one_sided": 3.6018224403022714e-08,
+   "holm_threshold": 0.0025,
    "rejected_holm": true
   },
   {
@@ -187,7 +269,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 6.504456498468425e-06,
-   "holm_threshold": 0.0035714285714285718,
+   "holm_threshold": 0.002631578947368421,
    "rejected_holm": true
   },
   {
@@ -201,7 +283,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 7.889857542353607e-06,
-   "holm_threshold": 0.0038461538461538464,
+   "holm_threshold": 0.002777777777777778,
    "rejected_holm": true
   },
   {
@@ -215,7 +297,21 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 3.044985220623797e-05,
-   "holm_threshold": 0.004166666666666667,
+   "holm_threshold": 0.0029411764705882353,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Loss predicted, GPT-6-luna judging itself",
+   "estimate": -0.007,
+   "ci": [
+    -0.0152,
+    0.0
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": true,
+   "p_one_sided": 0.00040023591224913613,
+   "holm_threshold": 0.003125,
    "rejected_holm": true
   },
   {
@@ -229,7 +325,21 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.002488827408893446,
-   "holm_threshold": 0.004545454545454546,
+   "holm_threshold": 0.0033333333333333335,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Text-policy agreement, GPT-6-luna - Claude",
+   "estimate": 0.1271,
+   "ci": [
+    0.0224,
+    0.2018
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0027413623879780635,
+   "holm_threshold": 0.0035714285714285718,
    "rejected_holm": true
   },
   {
@@ -243,36 +353,8 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0028640820111793808,
-   "holm_threshold": 0.005,
+   "holm_threshold": 0.0038461538461538464,
    "rejected_holm": true
-  },
-  {
-   "endpoint": "Read-out at the call: 8 answers - 1 answer (open agents)",
-   "estimate": 0.0358,
-   "ci": [
-    0.0061,
-    0.0635
-   ],
-   "kind": "gt",
-   "bar": 0.0,
-   "registered_pass": true,
-   "p_one_sided": 0.007245056438849318,
-   "holm_threshold": 0.005555555555555556,
-   "rejected_holm": false
-  },
-  {
-   "endpoint": "Read-out at the call: 8 answers - trained probe (non-inferiority)",
-   "estimate": 0.0446,
-   "ci": [
-    -0.0169,
-    0.1352
-   ],
-   "kind": "gt",
-   "bar": -0.05,
-   "registered_pass": true,
-   "p_one_sided": 0.007382748645233028,
-   "holm_threshold": 0.00625,
-   "rejected_holm": false
   },
   {
    "endpoint": "GPT-6-luna reviewer-free gate - random",
@@ -285,7 +367,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.009376576031352446,
-   "holm_threshold": 0.0071428571428571435,
+   "holm_threshold": 0.004166666666666667,
    "rejected_holm": false
   },
   {
@@ -299,7 +381,7 @@
    "bar": -0.05,
    "registered_pass": false,
    "p_one_sided": 0.05449142098849985,
-   "holm_threshold": 0.008333333333333333,
+   "holm_threshold": 0.004545454545454546,
    "rejected_holm": false
   },
   {
@@ -313,7 +395,35 @@
    "bar": 0.05,
    "registered_pass": false,
    "p_one_sided": 0.2611634716704137,
-   "holm_threshold": 0.01,
+   "holm_threshold": 0.005,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Loss predicted, recalibrated reader, Claude's judge",
+   "estimate": -0.0161,
+   "ci": [
+    -0.0296,
+    -0.0041
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": false,
+   "p_one_sided": 0.27440995146230496,
+   "holm_threshold": 0.005555555555555556,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Label-free gap, Claude - GPT-6-luna",
+   "estimate": -0.0077,
+   "ci": [
+    -0.036,
+    0.0195
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": false,
+   "p_one_sided": 0.7067296657764968,
+   "holm_threshold": 0.00625,
    "rejected_holm": false
   },
   {
@@ -327,7 +437,7 @@
    "bar": 0.0,
    "registered_pass": false,
    "p_one_sided": 0.7778965108801432,
-   "holm_threshold": 0.0125,
+   "holm_threshold": 0.0071428571428571435,
    "rejected_holm": false
   },
   {
@@ -341,7 +451,21 @@
    "bar": 0.0,
    "registered_pass": false,
    "p_one_sided": 0.8169915325313264,
-   "holm_threshold": 0.016666666666666666,
+   "holm_threshold": 0.008333333333333333,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Loss predicted, recalibrated reader, GPT-6-luna judging Claude",
+   "estimate": -0.0456,
+   "ci": [
+    -0.0629,
+    -0.03
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": false,
+   "p_one_sided": 0.9988566034936988,
+   "holm_threshold": 0.01,
    "rejected_holm": false
   },
   {
@@ -355,7 +479,7 @@
    "bar": 0.0,
    "registered_pass": false,
    "p_one_sided": 0.9999999867884045,
-   "holm_threshold": 0.025,
+   "holm_threshold": 0.0125,
    "rejected_holm": false
   },
   {
@@ -369,6 +493,34 @@
    "bar": 0.0,
    "registered_pass": false,
    "p_one_sided": 0.9999999999999919,
+   "holm_threshold": 0.016666666666666666,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Loss predicted with no label, Claude's judge",
+   "estimate": -0.2257,
+   "ci": [
+    -0.2463,
+    -0.2059
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": false,
+   "p_one_sided": 1.0,
+   "holm_threshold": 0.025,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Loss predicted with no label, GPT-6-luna judging Claude",
+   "estimate": -0.2141,
+   "ci": [
+    -0.2374,
+    -0.1902
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": false,
+   "p_one_sided": 1.0,
    "holm_threshold": 0.05,
    "rejected_holm": false
   }

@@ -1,0 +1,26 @@
+{
+ "claude": {
+  "units": 1587,
+  "agreement": [
+   0.0593,
+   0.002,
+   0.1332
+  ]
+ },
+ "gpt": {
+  "units": 1134,
+  "agreement": [
+   0.1864,
+   0.1117,
+   0.2381
+  ]
+ },
+ "A1_gpt_minus_claude": [
+  0.1271,
+  0.0224,
+  0.2018
+ ],
+ "endpoints": {
+  "A1_lower_gt_0": true
+ }
+}
