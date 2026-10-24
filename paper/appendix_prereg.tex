@@ -29,6 +29,10 @@ Claude Haiku 5.5 on $\tau^2$-bench & within-tool AUROC (lower bound $>0.5$) & \G
 \multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{forecasting before the call} (\cref{sec:forecast})}\\*
 GPT-6-luna, beyond position & within-position AUROC (lower bound $>0.50$) & \GCfPos & \lockref{0a3db28}\\
 \quad second fresh set (pooled with Claude Haiku 5.5) & within-position AUROC, pooled (lower bound $>0.50$) & 0.649 [0.570, 0.705] & \lockref{f5c8202}\\
+Claude Haiku 5.5's own sampled policy & within-position AUROC (lower bound $>0.50$) & \GRoOwn & \lockref{ed80043}\\
+\quad better than its self-report & own $-$ self-report (lower bound $>0$) & \GRoOwnMinusReport & \lockref{ed80043}\\
+\quad better than a reasoning text monitor & own $-$ judge, within position (lower bound $>0$) & \GJdDiff & \lockref{ea8c84e}\\
+GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \lockref{98ceb4e}\\
 A Kalman forecast beats position & forecast $-$ position prior (lower bound $>0$) & +0.21 [0.08, 0.32] & \lockref{f531a75}\\
@@ -41,6 +45,8 @@ Pre-call gate on GPT-6-luna & pre $-$ position at matched rate (lower bound $>0$
 \quad its effect predicted & $|$predicted $-$ observed$|\le0.15$ & \GLwPred\ vs \GLwObs & \lockref{ce78acd}\\
 No reviewer: the agent's own read-out holds its calls & self reduction (lower bound $>0$) & \GSgRed & \lockref{94ac458}\\
 \quad more than random holds & self $-$ random (lower bound $>0$) & \GSgDiff & \lockref{94ac458}\\
+No reviewer, GPT-6-luna, six templates & self reduction (lower bound $>0$) & \GSgGRed & \lockref{987e809}\\
+\quad more than random holds & self $-$ random (lower bound $>0$) & \GSgGDiff & \lockref{987e809}\\
 \bottomrule
 \end{longtable}
 \end{center}
