@@ -1,0 +1,38 @@
+{
+ "units": 1134,
+ "violations": 131,
+ "judge_unparsed": 0,
+ "own_within_position": [
+  0.7286,
+  0.6129,
+  0.8283
+ ],
+ "judge_within_position": [
+  0.7772,
+  0.6305,
+  0.8874
+ ],
+ "J1_own_minus_judge_position": [
+  -0.0486,
+  -0.1783,
+  0.0707
+ ],
+ "report_minus_judge_position": [
+  0.059,
+  -0.055,
+  0.1848
+ ],
+ "within_template_tool": {
+  "own": 0.6814,
+  "judge": 0.7758,
+  "report": 0.7618
+ },
+ "judge_tokens": {
+  "in_mean": 678.0,
+  "out_mean": 472.7,
+  "sec_median": 5.37
+ },
+ "endpoints": {
+  "J1_lower_gt_0": false
+ }
+}

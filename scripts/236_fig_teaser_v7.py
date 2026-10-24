@@ -178,22 +178,23 @@ CLAUDE_SAYS = (0.4746, 0.4323, 0.5109)          # g46 within_position.report; in
 
 
 def panel_forecast(ax):
-    g45, g46, g52 = J("g45_per_agent_ci.json"), J("g46_rollout_forecast.json"), J("g52_text_judge_vs_policy.json")
+    g45, g46, g52, g54 = J("g45_per_agent_ci.json"), J("g46_rollout_forecast.json"), J("g52_text_judge_vs_policy.json"), J("g54_gpt_text_judge.json")
     assert abs(g46["within_position"]["report"] - CLAUDE_SAYS[0]) < 1e-4
     gpt = g45["own_within_position"]["gpt"]
     judge, does = g52["judge_within_position"], g52["own_within_position"]   # exact contexts (G46c units)
     style(ax)
-    rows = [(3.6, "says", *gpt, True, ORANGE), (2.0, "says", *CLAUDE_SAYS, True, ORANGE),
+    gj = g54["judge_within_position"]
+    rows = [(4.6, "says", *gpt, True, ORANGE), (3.6, "text judge", *gj, True, MUTE), (2.0, "says", *CLAUDE_SAYS, True, ORANGE),
             (1.0, "text judge", *judge, True, MUTE), (0.0, "does", *does, False, ORANGE)]
     for yy, lab, m, lo, hi, hollow, col in rows:
         dot_row(ax, yy, m, lo, hi, col, hollow=hollow, val_dx=0.07)
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
-    set_rows(ax, 4.55)
-    header(ax, 4.55, "GPT-6-luna", dx=-0.45)
+    set_rows(ax, 5.55)
+    header(ax, 5.55, "GPT-6-luna", dx=-0.45)
     header(ax, 2.95, "Claude Haiku 5.5", dx=-0.45)
     auroc_axis(ax, "AUROC among calls at one position", chance_label=True)
     ax.set_xlim(0.33, 1.0)
-    return {"GPT says": gpt, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude does": does}
+    return {"GPT says": gpt, "GPT text judge": gj, "Claude says": CLAUDE_SAYS, "Claude text judge": judge, "Claude does": does}
 
 
 # ---------------------------------------------------------------- (d)
@@ -251,7 +252,7 @@ def main():
     vd, s, b = panel_prevent(axd, lab_d)
     heads = [(xa, "a", "What the API reveals", "its answers redraw its hidden map"),
              (xb0, "b", "Monitor at the call", "its own answers rank its violations"),
-             (xc0, "c", "Forecast before the call", "what it says vs what it does"),
+             (xc0, "c", "Forecast before the call", "text works only if words track actions"),
              (xd0, "d", "Prevent before harm", "its own read-out holds risky calls")]
     for x0, k, title, sub in heads:
         fig.text(x0 / W, (H - 0.04) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
