@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-24T11:24:14-07:00",
+ "sha256": {
+  "docs/prereg_G53_many_readers.md": "7a36c3742436da898ffc0bee3ad948e7ef1fbaf526bd99023e417f2f6098b5f7",
+  "scripts/238_g53_many_readers.py": "7c214314bc5b174fa43c7d0e4704a77402ddc718213758fe258ad47f476c75a7"
+ }
+}
