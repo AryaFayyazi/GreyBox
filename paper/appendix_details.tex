@@ -73,7 +73,7 @@ The browser tool runs the same model. On 302 real agent steps it gives the same 
 \textbf{Statistics.}
 \begin{itemize}
 \item AUROC is computed within strata (template and tool, or suite) and averaged with weights by the number of positive--negative pairs.
-\item Intervals are percentile intervals from 1{,}000 bootstrap resamples of scenarios or episodes. The seeds are fixed in each preregistration.
+\item Intervals are percentile intervals from 1{,}000 or 2{,}000 bootstrap resamples of scenarios or episodes, as each preregistration fixes. The seeds are fixed in each preregistration.
 \item Each preregistration (the document and its analysis code) is locked by its SHA-256 hash before its data exist. One script checks every lock and every number in this paper again from the saved results.
 \end{itemize}
 
