@@ -26,12 +26,23 @@ Preregistered results (hash-locked, locks published before the data; held-out da
   two closed models: Claude Haiku 5.5 (0.909 on unapproved restarts, where its single answer scores 0.32; 0.704 on τ²-bench
   airline, G18) and GPT-6-luna (0.979 [0.946, 0.998], where its single answer scores 0.795; G38). With no label, the
   read-out's variance beyond its sampling noise tells where it works (Spearman 0.71 over 29 settings; G32).
-- **Forecast.** Before its call exists, GPT-6-luna's answers about its next action rank the coming violation at 0.765
-  [0.650, 0.909] (G38), and at 0.923 [0.811, 0.992] among calls at the same position, where position cannot help (G40: preregistered, 252 fresh episodes). Live, at an equal review rate, a gate on that state cut its violating episodes from 31.8% to 7.9% (a 75% reduction, against 44% for a gate on position; difference +0.31 [0.06, 0.54]; success unchanged; G39b), and the offline share of violating calls it holds predicted the 75% exactly (G42). On Gemma-4, whose pre-call read-out ranks weakly, such a gate did not prevent (G29b). Before its τ²-bench writes, Claude Haiku 5.5's pre-call answers did not rank the coming violation (0.536; G37). On three open agents, the pre-call answers rank the coming call among calls at the same step at 0.669 [0.594, 0.764] (G30); the state has a short memory (G31c) and the deciding fact enters at the call's step (G31b), and a forecast from earlier steps beats position on them (+0.21 [0.08, 0.32]; G27b).
+- **Forecast.** Before the call, the forecast is the agent's policy, which its API supplies by sampling. GPT-6-luna's
+  words track its actions: its self-report forecasts as well as its sampled actions (G54). Claude Haiku 5.5, on
+  unapproved production restarts, says one thing and does another. Among calls at the same step, its self-report
+  (0.47) and two reasoning text monitors (0.45, 0.60) are near chance; its own 8 sampled next actions forecast the
+  violation at 0.891 (G52, G55, G59). Across steps they lift the best text monitor from 0.90 to 0.96 (G61). From checked
+  samples, the theory predicts the loss of a forecaster that does not sample, inside ±0.02 (G46c, G60).
+  **Replicated (G65, G66):** on 492 fresh episodes, in a test registered with its Holm correction before any episode
+  existed, all 8 endpoints passed (own draws 0.875 [0.831, 0.913]; own − self-report +0.405 [0.356, 0.457]), and the
+  label-free geometry alone flagged (0.806) and forecast (0.866) the violations.
 - **Prevent.** As a gate, the agent's own answer prevented 82% of an open agent's violating episodes (G9) and 69% of
-  those that Claude Haiku 5.5's transcript decides (G10; 31% of all); in a later test, a law fixed in advance predicted
-  the prevention of five agents (mean error 0.035; G12); against prompt injection it cut attack success by 84% and 50% (G13). G39 tests a live gate on a closed
-  agent's pre-call state against a gate on position.
+  those that Claude Haiku 5.5's transcript decides (G10; 31% of all), with CAPE's checker reviewing held calls; a law
+  fixed in advance predicted the prevention of five agents (mean error 0.035; G12); against prompt injection it cut
+  attack success by 84% and 50% (G13). Live, at an equal review rate, a gate on GPT-6-luna's pre-call state cut its
+  violating episodes from 31.8% to 7.9% (a 75% reduction, against 44% for a gate on position; G39b). With no reviewer at all,
+  holding a call once when the agent's own read-out flags it cut violating episodes from 67% to 35% (Claude Haiku 5.5;
+  random holds 48%; G47) and from 27% to 17.5% (GPT-6-luna; random holds 23%; G51). G67 repeats G47 on fresh seeds
+  with the random arm's dose matched.
 - **Comparisons, not the method.** Another model answering the same questions does about as well on open agents
   (G16), and with reasoning on it reaches 0.989 on Claude Haiku 5.5's τ²-bench writes (G21): the questions read the geometry
   that models share. The method itself uses only the agent's own API.
