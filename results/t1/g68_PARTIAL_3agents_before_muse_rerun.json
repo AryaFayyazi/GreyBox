@@ -1,0 +1,62 @@
+{
+ "agents": {
+  "gemma4": {
+   "units": 289,
+   "violations": 94,
+   "templates": 13,
+   "says_report": 0.6741,
+   "does_own": 0.7806,
+   "checker_ceiling": 0.7769,
+   "own_minus_report": [
+    0.1065,
+    -0.0102,
+    0.2402
+   ]
+  },
+  "gptoss20b": {
+   "units": 136,
+   "violations": 82,
+   "templates": 11,
+   "says_report": 0.6816,
+   "does_own": 0.7598,
+   "checker_ceiling": 0.8771,
+   "own_minus_report": [
+    0.0782,
+    -0.1986,
+    0.253
+   ]
+  },
+  "qwen38": {
+   "units": 41,
+   "violations": 23,
+   "templates": 4,
+   "says_report": 0.8571,
+   "does_own": 0.9,
+   "checker_ceiling": 0.8571,
+   "own_minus_report": [
+    0.0429,
+    -0.0695,
+    0.1745
+   ]
+  }
+ },
+ "P1_pooled_own_minus_report": [
+  0.0759,
+  -0.0244,
+  0.1579
+ ],
+ "P2_pooled_own": [
+  0.8135,
+  0.7222,
+  0.8868
+ ],
+ "endpoints": {
+  "P1_lower_gt_0": false,
+  "P2_lower_gt_0.5": true,
+  "agents_with_own_gt_report": 3
+ },
+ "holm_pass": {
+  "P2": true,
+  "P1": false
+ }
+}
