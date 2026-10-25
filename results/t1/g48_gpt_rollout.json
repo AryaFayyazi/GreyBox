@@ -30,11 +30,35 @@
   "Q1_lower_gt_0.5": true,
   "Q2_lower_gt_0.5": true,
   "Q3_two_sided_reported": true,
-  "C0_interval_inside_pm0.05": true
+  "C0_interval_inside_pm0.05": true,
+  "B3_interval_inside_pm0.02": true
  },
  "C0_mean_y_minus_mean_f_own": [
   0.0151,
   0.0076,
   0.0229
- ]
+ ],
+ "B_units": 1032,
+ "B1_observed_excess": [
+  0.0199,
+  0.011,
+  0.0298
+ ],
+ "predicted_excess": [
+  0.0177,
+  0.0106,
+  0.0257
+ ],
+ "B3_observed_minus_predicted": [
+  0.0022,
+  -0.0042,
+  0.0081
+ ],
+ "B2_policy_gap": [
+  0.0175,
+  0.0105,
+  0.0256
+ ],
+ "other_within_template_tool": 0.7371,
+ "other_within_position": 0.7772
 }
