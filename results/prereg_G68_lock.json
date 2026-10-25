@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-24T22:32:45-07:00",
+ "sha256": {
+  "scripts/260_g68_open_says_does.py": "087e0a86e3332ab1ec2ca336b79ac5da4c7cfef72407e893dc5d0f1b9298d9bb",
+  "docs/prereg_G68_open_says_does.md": "2b8fbac83adeaa72e16c0cd3c7c680a6723d8239e5736d38ade1ababf9120cf9",
+  "scripts/g68_gpu.sh": "8fcafe5ad2ccf32dcbc6ecbf03fa686e2a29f2a6bb05df48ff9bfad16c363ea7"
+ }
+}
