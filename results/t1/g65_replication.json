@@ -1,0 +1,97 @@
+{
+ "units": 1582,
+ "violations": 344,
+ "episodes": 492,
+ "values": {
+  "self_report": 0.4696,
+  "claude_judge": 0.5462,
+  "gpt_judge": 0.6142,
+  "own_draws": 0.8745,
+  "gpt_reads_draws": 0.9162,
+  "gpt_judge_across_steps": 0.9171,
+  "gpt_judge_plus_draws_across_steps": 0.9608
+ },
+ "endpoints": {
+  "P1_own_minus_report": {
+   "estimate": 0.4049,
+   "ci": [
+    0.356,
+    0.4571
+   ],
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_pass": true
+  },
+  "P2_own_minus_claude_judge": {
+   "estimate": 0.3283,
+   "ci": [
+    0.2541,
+    0.4009
+   ],
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_pass": true
+  },
+  "P5_own_within_position": {
+   "estimate": 0.8745,
+   "ci": [
+    0.8312,
+    0.9125
+   ],
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_pass": true
+  },
+  "P7_gpt_reads_draws_minus_gpt_judge": {
+   "estimate": 0.3019,
+   "ci": [
+    0.2282,
+    0.3723
+   ],
+   "registered_pass": true,
+   "p_one_sided": 1.1102230246251565e-16,
+   "holm_pass": true
+  },
+  "P6a_loss_claude_judge_obs_minus_pred": {
+   "estimate": 0.0024,
+   "ci": [
+    -0.0023,
+    0.0071
+   ],
+   "registered_pass": true,
+   "p_one_sided": 1.2828627049543684e-13,
+   "holm_pass": true
+  },
+  "P3_own_minus_gpt_judge": {
+   "estimate": 0.2603,
+   "ci": [
+    0.1854,
+    0.3333
+   ],
+   "registered_pass": true,
+   "p_one_sided": 2.5725532815101815e-12,
+   "holm_pass": true
+  },
+  "P4_gpt_judge_plus_draws_minus_gpt_judge_across_steps": {
+   "estimate": 0.0436,
+   "ci": [
+    0.0291,
+    0.0583
+   ],
+   "registered_pass": true,
+   "p_one_sided": 2.2885054962173967e-09,
+   "holm_pass": true
+  },
+  "P6b_loss_gpt_judge_obs_minus_pred": {
+   "estimate": -0.003,
+   "ci": [
+    -0.0099,
+    0.003
+   ],
+   "registered_pass": true,
+   "p_one_sided": 1.434296503788346e-07,
+   "holm_pass": true
+  }
+ },
+ "primary_P1_pass": true
+}

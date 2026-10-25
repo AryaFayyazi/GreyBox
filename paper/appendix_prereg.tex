@@ -1,4 +1,4 @@
-This appendix lists the preregistered test behind each claim. Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock (withheld for anonymous review); for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code. Rows marked $^\dagger$ are secondary: they analysed data that already existed, locked before the analysis but registered on the same day after related results were known.
+This appendix lists the preregistered test behind each claim. Each claim below rests on a registered endpoint of a test whose document and code we hash-locked before its data existed. The commit is the public commit that first contains the lock (withheld for anonymous review); for the later tests it precedes the run. The full record of every test, with its lock file, data and outcome, is public with the code. Rows marked $^\dagger$ are secondary: they analysed data that already existed, locked before the analysis but registered on the same day after related results were known. Each of their positive results was then replicated on fresh episodes, with tests registered before any of those episodes existed.
 
 \begin{center}
 \footnotesize
@@ -43,6 +43,15 @@ The theory predicts each text monitor's loss & observed $-$ predicted Brier exce
 \quad with no label at all & observed $-$ predicted inside $\pm0.02$ (fails; recalibrated reader also fails) & \GNlDiff & \lockref{b3f954a}$^\dagger$\\
 Across steps, draws add to the best text monitor & judge + draws $-$ judge (lower bound $>0$) & \GAdDiff & \lockref{77888b7}$^\dagger$\\
 The geometry alone forecasts & within-position AUROC, each closed agent (lower bound $>0.50$) & \GGfClaude; \GGfGpt & \lockref{06b5f36}$^\dagger$\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{replication on fresh episodes} (registered before any episode; Holm over the 8 fixed in advance)}\\*
+Own sampled actions beat the self-report (primary) & own $-$ self-report (lower bound $>0$) & \GRpOne & \lockref{c486fe5}\\
+\quad beat Claude's text monitor & own $-$ judge (lower bound $>0$) & \GRpTwo & \lockref{c486fe5}\\
+\quad beat GPT-6-luna's text monitor & own $-$ judge (lower bound $>0$) & \GRpThree & \lockref{c486fe5}\\
+\quad forecast at all & AUROC within position (lower bound $>0.5$) & \GRpFive & \lockref{c486fe5}\\
+\quad add to the best text monitor across steps & judge + draws $-$ judge (lower bound $>0$) & \GRpFour & \lockref{c486fe5}\\
+\quad predict each text monitor's loss & observed $-$ predicted, inside $\pm0.02$ & \GRpSixA; \GRpSixB & \lockref{c486fe5}\\
+\quad sampling, not the reader & another reader of the draws $-$ of the transcript (lower bound $>0$) & \GRpSeven & \lockref{c486fe5}\\
+The geometry alone flags and forecasts & monitor; forecast (each lower bound $>0.5$) & 0.806 [0.777, 0.834]; 0.866 [0.820, 0.905] & \lockref{d9cf2f6}\\
 GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \lockref{98ceb4e}\\

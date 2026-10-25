@@ -17,7 +17,7 @@ def c(v):
 
 
 g52, g55, g57, g58, g59, g61 = J("g52_text_judge_vs_policy"), J("g55_gpt_judges_claude"), J("g57_geometric_forecast"), J("g58_other_reads_draws"), J("g59_selfreport_exact"), J("g61_draws_add_to_text")
-g45, g54, bs, g65 = J("g45_per_agent_ci"), J("g54_gpt_text_judge"), J("forecasters_both_strata_exploratory"), J("g65_replication")
+g45, g54, bs, g65, g66 = J("g45_per_agent_ci"), J("g54_gpt_text_judge"), J("forecasters_both_strata_exploratory"), J("g65_replication"), J("g66_geometry_replication")
 rv = (g65 or {}).get("values", {})
 R = lambda k: rv.get(k) if g65 else None  # noqa: E731
 gb = bs["gpt"]["scores"]
@@ -26,9 +26,9 @@ rows = [
     ("says: self-report", (c(g59["self_report_within_position"]), c(R("self_report")), c(g45["own_within_position"]["gpt"]))),
     ("text: the agent reasoning over its transcript", (c(g52["judge_within_position"]), c(R("claude_judge")), c(g54["judge_within_position"]))),
     ("text: GPT-6-luna reasoning over it", (c(g55["gpt_judge_within_position"]), c(R("gpt_judge")), "=")),
-    ("does: own sampled actions, own read", (c(g52["own_within_position"]), c(R("own_draws")), c(g54["own_within_position"]))),
+    ("does: own sampled actions, own read", (c(g52["own_within_position"]), c([g65["endpoints"]["P5_own_within_position"]["estimate"]] + g65["endpoints"]["P5_own_within_position"]["ci"]) if g65 else "--", c(g54["own_within_position"]))),
     ("does: same actions, read by GPT-6-luna", (c(g58["gpt_reads_claude_draws_within_position"]), c(R("gpt_reads_draws")), "--")),
-    ("does: same actions, geometry only", (c(g57["claude"]["G1_geometric_forecast_within_position"]), "--", c(g57["gpt"]["G1_geometric_forecast_within_position"]))),
+    ("does: same actions, geometry only", (c(g57["claude"]["G1_geometric_forecast_within_position"]), c(g66["forecast"]["G1_geometric_forecast_within_position"]) if g66 else "--", c(g57["gpt"]["G1_geometric_forecast_within_position"]))),
     ("\\multicolumn{4}{@{}l}{\\cellcolor{gbgroup}\\scriptsize\\textsc{across steps}}", None),
     ("the step alone", (c(g61["across_steps_auroc"]["position"]), "--", c(gb["position alone"]["within_template_tool"]))),
     ("best text monitor", (c(g61["across_steps_auroc"]["gpt_judge"]), c(R("gpt_judge_across_steps")), c(gb["GPT-6-luna text judge"]["within_template_tool"]))),

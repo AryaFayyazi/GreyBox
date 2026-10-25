@@ -1,0 +1,25 @@
+{
+ "monitor": {
+  "calls": 1739,
+  "violations": 380,
+  "M1_geometric_within_stratum": [
+   0.8055,
+   0.7767,
+   0.8335
+  ],
+  "signed_readout_within_stratum": 0.8851
+ },
+ "forecast": {
+  "units": 1582,
+  "violations": 344,
+  "G1_geometric_forecast_within_position": [
+   0.8655,
+   0.8199,
+   0.905
+  ]
+ },
+ "endpoints": {
+  "M1_lower_gt_0.5": true,
+  "G1_lower_gt_0.5": true
+ }
+}
