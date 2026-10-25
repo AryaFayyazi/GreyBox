@@ -12,7 +12,7 @@
       AUROC among calls at the same position. GPT says: g45_per_agent_ci.json own_within_position.gpt; Claude says:
       g46_rollout_forecast.json within_position.report = 0.4746, interval [0.4323, 0.5109] from scripts/228's
       cluster bootstrap (not stored in a results file); Claude does: g46 R1_own_within_position.
-  (d) Prevent, with no human: violating episodes (%), live. Claude: g47_selfgate.json violating_episodes;
+  (d) Prevent, with no human: violating episodes (%), live. Claude: g67_matched_dose.json violating_episodes (G67, random holds at a matched dose);
       GPT-6-luna: g51_gpt_selfgate.json violating_episodes (the same reviewer-free hold, six templates).
 Drawn at print size (6.75 in = ICML text width; no tight bbox), so every font size is a true point size.
   python scripts/236_fig_teaser_v7.py  -> paper/figures/teaser_v7.pdf, results/figures/teaser_v7.png
@@ -202,7 +202,7 @@ def panel_forecast(ax):
 
 # ---------------------------------------------------------------- (d)
 def panel_prevent(ax, lab_w):
-    s, b = J("g47_selfgate.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
+    s, b = J("g67_matched_dose.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
     style(ax)
     grey = tint(MUTE, 0.35)
     rows = [(6.0, "no gate", s["none"], grey), (5.0, "random holds", s["random"], grey),

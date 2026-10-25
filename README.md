@@ -40,9 +40,10 @@ Preregistered results (hash-locked, locks published before the data; held-out da
   fixed in advance predicted the prevention of five agents (mean error 0.035; G12); against prompt injection it cut
   attack success by 84% and 50% (G13). Live, at an equal review rate, a gate on GPT-6-luna's pre-call state cut its
   violating episodes from 31.8% to 7.9% (a 75% reduction, against 44% for a gate on position; G39b). With no reviewer at all,
-  holding a call once when the agent's own read-out flags it cut violating episodes from 67% to 35% (Claude Haiku 5.5;
-  random holds 48%; G47) and from 27% to 17.5% (GPT-6-luna; random holds 23%; G51). G67 repeats G47 on fresh seeds
-  with the random arm's dose matched.
+  holding a call once when the agent's own read-out flags it cut violating episodes from 67.9% to 35.2% on Claude
+  Haiku 5.5, against 42.9% for random holds at the same dose (G67: fresh seeds, registered before any episode; self −
+  random +0.114 [0.035, 0.200]; success +0.081; all endpoints survive Holm), and from 27% to 17.5% on GPT-6-luna (random
+  holds 23%; G51; that difference does not survive Holm).
 - **Comparisons, not the method.** Another model answering the same questions does about as well on open agents
   (G16), and with reasoning on it reaches 0.989 on Claude Haiku 5.5's τ²-bench writes (G21): the questions read the geometry
   that models share. The method itself uses only the agent's own API.

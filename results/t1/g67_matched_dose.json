@@ -1,0 +1,63 @@
+{
+ "cut": [
+  0.4272159893046978,
+  0.3
+ ],
+ "units": 492,
+ "violating_episodes": {
+  "none": 0.6789,
+  "self": 0.3516,
+  "random": 0.4289
+ },
+ "success": {
+  "none": 0.1504,
+  "self": 0.2317,
+  "random": 0.248
+ },
+ "holds_per_call": {
+  "none": 0.0,
+  "self": 0.214,
+  "random": 0.234
+ },
+ "holds_per_episode": {
+  "none": 0.0,
+  "random": 1.248,
+  "self": 1.118
+ },
+ "self_reduction": [
+  0.482,
+  0.3906,
+  0.5728
+ ],
+ "random_reduction": [
+  0.3683,
+  0.2853,
+  0.4474
+ ],
+ "self_minus_random": [
+  0.1138,
+  0.0351,
+  0.2
+ ],
+ "success_self_minus_none": [
+  0.0813,
+  0.0386,
+  0.1301
+ ],
+ "endpoints": {
+  "Q1_self_minus_random_lower_gt_0": true,
+  "Q2_dose_matched_within_0.03": true,
+  "Q3_self_reduction_lower_gt_0": true,
+  "Q4_success_lower_gt_-0.05": true
+ },
+ "p_one_sided": {
+  "Q1_self_minus_random": 0.003413,
+  "Q3_self_reduction": 0.0,
+  "Q4_success_self_minus_none": 0.0
+ },
+ "holm_pass": {
+  "Q3_self_reduction": true,
+  "Q4_success_self_minus_none": true,
+  "Q1_self_minus_random": true
+ }
+}
