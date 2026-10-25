@@ -1,0 +1,28 @@
+{
+ "g46c_exact": {
+  "units": 1587,
+  "violations": 316,
+  "within_template_tool": {
+   "own": 0.8011,
+   "other_gemma4": 0.8199,
+   "own_minus_other": [
+    -0.0188,
+    -0.0682,
+    0.0287
+   ]
+  },
+  "within_position": {
+   "own": 0.8906,
+   "other_gemma4": 0.5384,
+   "own_minus_other": [
+    0.3522,
+    0.2807,
+    0.4234
+   ]
+  }
+ },
+ "g65_across_steps": {
+  "own_draws": 0.7852,
+  "step_alone": 0.8316
+ }
+}
