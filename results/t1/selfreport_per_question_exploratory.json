@@ -78,5 +78,32 @@
   ],
   "violating_calls_with_no_answer_pointing_to_violation": 0.9419,
   "safe_calls_with_no_answer_pointing_to_violation": 0.6648
+ },
+ "gpt6luna_contrast": {
+  "calls": 2063,
+  "violating_calls": 131,
+  "answers": 65863,
+  "share_pointing_to_violation_on_violating_calls": [
+   0.416,
+   0.3683,
+   0.3874,
+   0.2505,
+   0.1832,
+   0.2366,
+   0.1606,
+   0.2672
+  ],
+  "share_pointing_to_violation_on_safe_calls": [
+   0.5663,
+   0.5879,
+   0.4881,
+   0.1458,
+   0.3265,
+   0.079,
+   0.1557,
+   0.1416
+  ],
+  "violating_calls_with_no_answer_pointing_to_violation": 0.0382,
+  "safe_calls_with_no_answer_pointing_to_violation": 0.03
  }
 }

@@ -51,6 +51,25 @@ def main():
                      "share_pointing_to_violation_on_violating_calls": sh(v), "share_pointing_to_violation_on_safe_calls": sh(~v),
                      "violating_calls_with_no_answer_pointing_to_violation": round(float((vp[v].sum(1) == 0).mean()), 4),
                      "safe_calls_with_no_answer_pointing_to_violation": round(float((vp[~v].sum(1) == 0).mean()), 4)}
+    # GPT-6-luna, for contrast: G48's units (G45's episodes), the same 8 questions; answers stored as 1 = "no" (scripts/213)
+    G48 = _mod("g48", "scripts/229_g48_gpt_rollout.py")
+    reads, C, Y = G48.G45.T11.READS, [], []
+    for e in (json.loads(x) for x in open(G48.OUT / "gpt.jsonl")):
+        for x in e["turns"]:
+            if x["kind"] != "call":
+                break
+            if x["tool"] not in reads:
+                C.append([[sum(a for a in q if a is not None), sum(a is not None for a in q)] for q in x["pre"]]); Y.append(int(x["unsafe_action"]))
+                if x["unsafe_action"]:
+                    break
+    C, v = np.array(C, float), np.array(Y, bool)
+    no, n = C[:, :, 0], C[:, :, 1]
+    vp = np.stack([no[:, j] if G44.SG[j] > 0 else n[:, j] - no[:, j] for j in range(8)], 1)
+    out["gpt6luna_contrast"] = {"calls": int(len(v)), "violating_calls": int(v.sum()), "answers": int(n.sum()),
+                                "share_pointing_to_violation_on_violating_calls": [round(float(vp[v, j].sum() / n[v, j].sum()), 4) for j in range(8)],
+                                "share_pointing_to_violation_on_safe_calls": [round(float(vp[~v, j].sum() / n[~v, j].sum()), 4) for j in range(8)],
+                                "violating_calls_with_no_answer_pointing_to_violation": round(float((vp[v].sum(1) == 0).mean()), 4),
+                                "safe_calls_with_no_answer_pointing_to_violation": round(float((vp[~v].sum(1) == 0).mean()), 4)}
     (ROOT / "results/t1/selfreport_per_question_exploratory.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
 
