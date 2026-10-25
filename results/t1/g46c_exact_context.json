@@ -1,0 +1,42 @@
+{
+ "units": 1587,
+ "violations": 316,
+ "multi_tool_use_turn_share": 0.2716,
+ "C0_mean_y_minus_mean_f_own": [
+  0.0038,
+  -0.0051,
+  0.0124
+ ],
+ "R1_own_within_position": [
+  0.8906,
+  0.8545,
+  0.9267
+ ],
+ "B_units": 1539,
+ "B1_observed_excess": [
+  0.1259,
+  0.1066,
+  0.1441
+ ],
+ "predicted_excess": [
+  0.1219,
+  0.1052,
+  0.1389
+ ],
+ "B3_observed_minus_predicted": [
+  0.004,
+  -0.0026,
+  0.0104
+ ],
+ "B2_policy_gap": [
+  0.1111,
+  0.0948,
+  0.1277
+ ],
+ "endpoints": {
+  "C0_interval_inside_pm0.05": true,
+  "R1_lower_gt_0.5": true,
+  "B3_interval_inside_pm0.02": true,
+  "B2_lower_gt_0": true
+ }
+}

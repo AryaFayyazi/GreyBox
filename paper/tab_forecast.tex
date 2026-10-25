@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\caption{\textbf{Forecasting the coming violation before the call}, every forecaster on the same calls (AUROC; 95\% interval where measured). Claude Haiku 5.5: unapproved production restarts with exact contexts, the original set and a prospective replication on fresh episodes (registered before any episode existed). ``='': same model as the row above.}
+\label{tab:forecast}
+\resizebox{\columnwidth}{!}{\begin{tabular}{@{}lccc@{}}
+\toprule
+\rowcolor{gbhead} & \multicolumn{2}{c}{\textbf{Claude Haiku 5.5}} & \textbf{GPT-6-luna}\\
+\rowcolor{gbhead}\textbf{Forecaster} & original (1{,}587) & replication (--) & (1{,}134)\\
+\midrule
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{among calls at the same step}}\\
+says: self-report & 0.47 {\tiny[0.44, 0.50]} & -- & \best{0.84} {\tiny[0.67, 0.94]}\\
+text: the agent reasoning over its transcript & 0.45 {\tiny[0.38, 0.52]} & -- & 0.78 {\tiny[0.63, 0.89]}\\
+text: GPT-6-luna reasoning over it & 0.60 {\tiny[0.53, 0.67]} & -- & =\\
+does: own sampled actions, own read & 0.89 {\tiny[0.85, 0.93]} & -- & 0.73 {\tiny[0.61, 0.83]}\\
+does: same actions, read by GPT-6-luna & \best{0.93} {\tiny[0.89, 0.96]} & -- & --\\
+does: same actions, geometry only & 0.89 {\tiny[0.85, 0.92]} & -- & 0.64 {\tiny[0.54, 0.74]}\\
+\multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{across steps}}\\
+the step alone & 0.82 & -- & \best{0.78}\\
+best text monitor & 0.90 & -- & \best{0.78}\\
+best text monitor + own sampled actions & \best{0.96} & -- & --\\
+\bottomrule
+\end{tabular}}
+\end{table}

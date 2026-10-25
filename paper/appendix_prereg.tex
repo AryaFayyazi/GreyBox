@@ -36,6 +36,7 @@ Claude Haiku 5.5's own sampled policy & within-position AUROC (lower bound $>0.5
 \quad better than another provider's text monitor & own $-$ GPT-6-luna judge, within position (lower bound $>0$) & \GXjDiff & \lockref{bd6e082}\\
 \quad sampling is what matters & GPT-6-luna reading the draws $-$ reading the transcript (lower bound $>0$) & \GOrDone & \lockref{7477d14}\\
 \quad\quad the reader does not matter & GPT-6-luna's read $-$ Claude's read, inside $\pm0.05$ (fails: GPT-6-luna reads better) & \GOrDtwo & \lockref{7477d14}\\
+The theory predicts another model's loss (exact contexts) & observed $-$ predicted Brier excess inside $\pm0.02$ & +0.004 [$-$0.003, 0.010] & \lockref{f6fd952}\\
 The theory predicts each text monitor's loss & observed $-$ predicted Brier excess, each of 3 pairs inside $\pm0.02$ & \GTlCsDiff; \GTlCgDiff; \GTlGsDiff & \lockref{162a72c}$^\dagger$\\
 \quad the label-free gap separates the regimes & Claude gap $-$ GPT gap (lower bound $>0$; fails) & \GTlEtwo & \lockref{162a72c}$^\dagger$\\
 \quad a rank-based label-free check separates them & within-step agreement, GPT-6-luna $-$ Claude (lower bound $>0$) & \GTaDiff & \lockref{55d0123}$^\dagger$\\
