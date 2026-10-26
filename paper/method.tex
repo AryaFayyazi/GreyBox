@@ -4,7 +4,7 @@
 
 \subsection{Setting}
 \label{sec:setting}
-A language model reads a context $x$ (tokens) and reaches an internal state $s(x)$, a deterministic function of the tokens. An outside observer sees only outputs: sampled text and, on some APIs, the log-probabilities of the next token. A \emph{battery} $Q=(q_1,\dots,q_m)$ of yes/no questions is asked in \emph{side branches} (\cref{fig:method}): each question is appended to a copy of $x$ in its own call, the copy is then discarded, so the model's real conversation never sees it, and the answers are independent given $x$. The \emph{observable state} is $\Psi_Q(x)=\big(P(\textsc{yes}\mid x\oplus q_j)\big)_j$, and the answers follow the product law $P_x=\bigotimes_j\mathrm{Bernoulli}(\Psi_{q_j}(x))$. Where a model is open, its hidden state $h(x)\in\mathbb{R}^d$ at a layer is the ground truth that we test against.
+A language model reads a context $x$ (tokens) and reaches an internal state $s(x)$, a deterministic function of the tokens. An outside observer sees only outputs: sampled text and, on some APIs, the log-probabilities of the next token. A \emph{battery} $Q=(q_1,\dots,q_m)$ of yes/no questions is asked in \emph{side branches} (\cref{fig:method}): each question is appended to a copy of $x$ in its own call, the copy is then discarded, so the model's real conversation never sees it, and the answers are independent given $x$. The \emph{observable state} is $\Psi_Q(x)=\big(P(\textsc{yes}\mid x\oplus q_j)\big)_j$, and the answers follow the product law $P_x=\bigotimes_j\mathrm{Bernoulli}(\Psi_{q_j}(x))$. Where a model is open, its hidden state $h(x)\in\mathbb{R}^d$ at a layer is the ground truth.
 
 \subsection{What cannot be read: a gauge symmetry}
 \begin{proposition}[gauge]\label{prop:gauge}
@@ -26,13 +26,13 @@ Parts (a)--(c) are classical information geometry \citep{amari2016information}; 
 \begin{proposition}[triangulation]\label{prop:triang}
 On the vector of all context-pair distances, let the hidden geometry of model $m$ be $H_m=\lambda_mC+e_m$ and the answer geometry of answerer $a$ be $A_a=\kappa_aC+f_a$ (standardized; the parts $e_m$, $f_a$ uncorrelated with $C$ and across models). Then $\rho(H_a,H_b)=\lambda_a\lambda_b$ and $\rho(A_a,H_b)=\kappa_a\lambda_b$ for $a\neq b$, and the unseen agreement is $\rho(A_c,H_c)=\kappa_c\lambda_c+\rho(f_c,e_c)$. Open models identify the $\lambda_b$; a closed model's answers against them identify $\kappa_c$.
 \end{proposition}
-With no own-model excess ($\rho(f_c,e_c)=0$) and $\lambda_c$ in the open models' range, $\kappa_c\cdot\mathrm{median}(\lambda)$ estimates the closed model's own agreement; leaving each open model out tests the estimator.
+With no own-model excess ($\rho(f_c,e_c)=0$) and $\lambda_c$ in the open models' range, $\kappa_c\cdot\mathrm{median}(\lambda)$ estimates the closed model's own agreement; leave-one-out tests it.
 
 Where an API returns full log-probabilities, the final state's geometry is recovered exactly, not estimated (\cref{thm:exact}, \cref{app:exact}, after \citet[App.~H]{carlini2024stealing}); closed APIs do not return them, so the grey box does not use this.
 
 \subsection{From the geometry to monitoring agents}
 \label{sec:agents-theory}
-\textbf{Setting.} At step $t$ of an episode the operator holds the visible tokens $V_t$ (instructions, task, earlier calls and their results) and sees the proposed call $A_t$; $Y\in\{0,1\}$ marks a policy violation. A monitor scores $(V_t,A_t)$ and holds the call when the score passes a cut; its budget $\beta$ is the share of calls it holds.
+\textbf{Setting.} At step $t$ of an episode the operator holds the visible tokens $V_t$ (instructions, task, earlier calls and their results) and sees the proposed call $A_t$; $Y\in\{0,1\}$ marks a policy violation. A monitor scores $(V_t,A_t)$ and holds the call when the score passes a cut; its budget $\beta$ is the share it holds.
 \begin{corollary}[the transcript suffices]\label{cor:action}
 Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ and $Z^-_t$ are all tokens before the call, hidden ones included. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$: no monitor of the agent's internals has a lower Bayes risk than the best monitor of $(V_t,A_t)$.
 \end{corollary}
