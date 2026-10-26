@@ -21,14 +21,14 @@ This appendix lists the limits of the method and of the evidence.
 Tests before the call registered one of two strata: within template and tool, across the call's step, or within template, tool and step. Across steps, a forecast mixes \emph{when} an agent violates with \emph{which} call violates: the step alone ranks Claude Haiku 5.5's violations at 0.82. Within a step, only the second remains. \Cref{tab:bothstrata} scores every forecaster on the same calls under both (exploratory). On Claude Haiku 5.5, the text judges track the step (GPT-6-luna's judge 0.90 across steps) but are near or below chance within a step, where only its sampled actions forecast. On GPT-6-luna, its self-report and its text judge forecast within a step as well as or better than its sampled actions.
 \begin{table}[htbp]
 \centering\footnotesize
-\caption{\textbf{Forecasters before the call, on the same calls.} AUROC within template and tool (across steps) and within template, tool and step. Exploratory. Best per column and agent in blue.}
+\caption{\textbf{Forecasters before the call, on the same calls.} AUROC within template and tool (across steps) and within template, tool and step. Exploratory. Best per column and agent in blue. $\times$: undefined (the step is constant within a step).}
 \label{tab:bothstrata}
 \begin{tabular}{@{}lcc@{}}
 \toprule
 \rowcolor{gbhead}\textbf{Forecaster} & \textbf{across steps} & \textbf{within a step}\\
 \midrule
 \multicolumn{3}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{Claude Haiku 5.5 (restarts; 1{,}587 calls, 316 violations; exact contexts)}}\\
-position alone & 0.821 & --\\
+position alone & 0.821 & $\times$\\
 self-report & 0.354 & 0.473\\
 Claude text judge & 0.630 & 0.448\\
 GPT-6-luna text judge & 0.904 & 0.596\\
@@ -36,7 +36,7 @@ own draws, own read & 0.801 & 0.891\\
 own draws, GPT-6-luna read & \best{0.914} & \best{0.930}\\
 own draws, geometry & 0.713 & 0.892\\
 \multicolumn{3}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{GPT-6-luna (six templates; 1{,}134 calls, 131 violations)}}\\
-position alone & \best{0.782} & --\\
+position alone & \best{0.782} & $\times$\\
 self-report & 0.762 & \best{0.836}\\
 GPT-6-luna text judge & 0.776 & 0.777\\
 own draws, own read & 0.681 & 0.729\\

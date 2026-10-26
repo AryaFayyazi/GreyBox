@@ -1,7 +1,7 @@
 \begin{table}[t]
 \centering\footnotesize
 \setlength{\tabcolsep}{2.5pt}
-\caption{\textbf{Forecasting the coming violation before the call}, every forecaster on the same calls (AUROC; 95\% interval where measured). Claude Haiku 5.5: unapproved production restarts with exact contexts, the original set and a prospective replication on fresh episodes (registered before any episode existed). ``='': same model as the row above. $^*$Exploratory (descriptive, not registered); the other model is Gemma-4, sampling from Claude's exact contexts.}
+\caption{\textbf{Forecasting the coming violation before the call}, every forecaster on the same calls (AUROC; 95\% interval where measured). Claude Haiku 5.5: unapproved restarts, exact contexts; the original set and a replication on fresh episodes, registered before any existed. ``='': as the row above. n.r.: not run. $^*$Descriptive, not a registered endpoint; the other model is Gemma-4, sampling from the agent's exact contexts.}
 \label{tab:forecast}
 \resizebox{\columnwidth}{!}{\begin{tabular}{@{}lccc@{}}
 \toprule
@@ -13,15 +13,15 @@ says: self-report & 0.47 {\tiny[0.44, 0.50]} & 0.47 & \best{0.84} {\tiny[0.67, 0
 text: the agent reasoning over its transcript & 0.45 {\tiny[0.38, 0.52]} & 0.55 & 0.78 {\tiny[0.63, 0.89]}\\
 text: GPT-6-luna reasoning over it & 0.60 {\tiny[0.53, 0.67]} & 0.61 & =\\
 does: own sampled actions, own read & 0.89 {\tiny[0.85, 0.93]} & 0.87 {\tiny[0.83, 0.91]} & 0.73 {\tiny[0.61, 0.83]}\\
-does: same actions, read by GPT-6-luna & \best{0.93} {\tiny[0.89, 0.96]} & \best{0.92} & --\\
-other: Gemma-4 sampling from its contexts$^*$ & 0.54 & -- & --\\
+does: same actions, read by GPT-6-luna & \best{0.93} {\tiny[0.89, 0.96]} & \best{0.92} & =\\
+other: Gemma-4 sampling from its contexts$^*$ & 0.54 & n.r. & 0.78$^*$\\
 does: same actions, geometry only & 0.89 {\tiny[0.85, 0.92]} & 0.87 {\tiny[0.82, 0.91]} & 0.64 {\tiny[0.54, 0.74]}\\
 \multicolumn{4}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{across steps}}\\
 the step alone & 0.82 & 0.83$^*$ & \best{0.78}\\
 own sampled actions alone & 0.80 & 0.79$^*$ & 0.68\\
-Gemma-4 sampling from its contexts$^*$ & 0.82 & -- & --\\
+Gemma-4 sampling from its contexts$^*$ & 0.82 & n.r. & 0.74$^*$\\
 best text monitor & 0.90 & 0.92 & \best{0.78}\\
-best text monitor + own sampled actions & \best{0.96} & \best{0.96} & --\\
+best text monitor + own sampled actions & \best{0.96} & \best{0.96} & 0.73$^*$\\
 \bottomrule
 \end{tabular}}
 \end{table}

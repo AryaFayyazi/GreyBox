@@ -1,0 +1,69 @@
+{
+ "dry_run_labels_permuted_within_strata": false,
+ "C1_gpt_judge_plus_draws_across_steps": {
+  "auroc": 0.7279,
+  "ci": [
+   0.6226,
+   0.8318
+  ],
+  "units": 1134,
+  "positives": 131
+ },
+ "C1_ref_gpt_judge_across_steps": {
+  "auroc": 0.7758,
+  "ci": [
+   0.6721,
+   0.8725
+  ],
+  "units": 1134,
+  "positives": 131
+ },
+ "C2_gpt_other_gemma4_within_step": {
+  "auroc": 0.7772,
+  "ci": [
+   0.6877,
+   0.8529
+  ],
+  "units": 1134,
+  "positives": 131
+ },
+ "C2_gpt_other_gemma4_across_steps": {
+  "auroc": 0.7371,
+  "ci": [
+   0.6422,
+   0.8241
+  ],
+  "units": 1134,
+  "positives": 131
+ },
+ "C3_gemma4_cape_gate": {
+  "auroc": 0.9858,
+  "ci": [
+   0.9628,
+   0.9967
+  ],
+  "units": 816,
+  "positives": 216,
+  "matched": 816
+ },
+ "C3_gptoss20b_cape_gate": {
+  "auroc": 0.9348,
+  "ci": [
+   0.9107,
+   0.9574
+  ],
+  "units": 821,
+  "positives": 221,
+  "matched": 819
+ },
+ "C4_gpt_agentdojo_tfidf": {
+  "auroc": 0.9154,
+  "ci": [
+   0.8442,
+   0.9798
+  ],
+  "units": 3925,
+  "positives": 36,
+  "C": 10
+ }
+}

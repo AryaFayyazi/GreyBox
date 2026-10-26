@@ -49,21 +49,21 @@ gpt-oss-20b & 599 & 0.822 & 0.758 & 0.755 & 0.772 & \best{0.841}\\
 Qwen3.8-27B & 373 & \best{0.951} & 0.894 & 0.780 & 0.826 & 0.950\\
 Muse-Glimmer-30B & 600 & 0.929 & 0.935 & 0.880 & 0.941 & \best{0.972}\\
 \multicolumn{7}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{closed agents} on CAPE-Bench (no probe can exist)}\\
-Claude, restarts\textsuperscript{a} & 149 & 0.909 & 0.323 & \best{1.000} & -- & --\\
-Claude, all\textsuperscript{b} & 495 & 0.475 & 0.306 & \best{0.693} & -- & --\\
-GPT-6-luna & 560 & \best{0.979} & 0.795 & -- & -- & --\\
+Claude, restarts\textsuperscript{a} & 149 & 0.909 & 0.323 & \best{1.000} & $\times$ & $\times$\\
+Claude, all\textsuperscript{b} & 495 & 0.475 & 0.306 & \best{0.693} & $\times$ & $\times$\\
+GPT-6-luna & 560 & \best{0.979} & 0.795 & n.r. & $\times$ & $\times$\\
 \multicolumn{7}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{AgentDojo} (within suite) \textsc{and $\tau^2$-bench} (within tool)}\\
-Gemma-4, injection & 816 & \best{0.985} & 0.975 & -- & -- & --\\
-gpt-oss-20b, injection & 821 & \best{0.904} & 0.900 & -- & -- & --\\
-Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
+Gemma-4, injection & 816 & 0.985 & 0.975 & n.r. & \best{0.986}\textsuperscript{f} & n.r.\\
+gpt-oss-20b, injection & 821 & 0.904 & 0.900 & n.r. & \best{0.935}\textsuperscript{f} & n.r.\\
+Claude, airline writes & 360 & \best{0.704} & 0.555 & n.r. & $\times$ & $\times$\\
 \bottomrule
 \end{tabular}}\\[2pt]
-\parbox{\columnwidth}{\scriptsize \textsuperscript{a}A trained reader of the call text scores 1.000 here. \textsuperscript{b}Pooled; mailing-list sends are decided by a fact it never checked. \textsuperscript{c}Exploratory: components and regularisation chosen by cross-validation. \textsuperscript{d}Gemma-4 with reasoning, one holistic probability per conversation. \textsuperscript{e}New task families.}
+\parbox{\columnwidth}{\scriptsize \textsuperscript{a}A trained reader of the call text scores 1.000 here. \textsuperscript{b}Pooled; mailing-list sends are decided by a fact it never checked. \textsuperscript{c}Exploratory: components and regularisation chosen by cross-validation. \textsuperscript{d}Gemma-4 with reasoning, one holistic probability per conversation. \textsuperscript{e}New task families. \textsuperscript{f}CAPE's AgentDojo gate, fit on development traces. $\times$: impossible without weights. n.r.: not run.}
 \end{table}
 
 \textbf{With no label, the read-out's SNR predicts where it works.} This is where the geometry's coordinates pay off: their sampling noise is known (\cref{thm:geometry}), so the read-out's variance beyond that noise, its SNR, needs no label (\cref{prop:snrceil}). Over 29 cells (agent, benchmark and stratum), the SNR predicts the AUROC (Spearman 0.71): cells with SNR $>0$ score 0.96 on average, cells with SNR $\le0$ score 0.68 (the nominal noise is conservative, so a low SNR flags a setting without ruling it out).
 
-\textbf{At the call, another answerer does as well, as the theory implies.} The transcript decides the violation (\cref{cor:action}) and the answers read a geometry that models share, so another model answering about the same call should match the agent: on open agents it does (own $-$ other +0.012 [$-$0.018, 0.040]), and on Claude Haiku 5.5 it does better ($-$0.09 on restarts; $-$0.28 on $\tau^2$ with reasoning on). Reasoning may help at the call: Claude reviewing its own $\tau^2$ writes with reasoning on reaches 0.918 on 180 writes, against 0.699 for our read-out with reasoning off (difference not significant).
+\textbf{At the call, another answerer does as well, as the theory implies.} The transcript decides the violation (\cref{cor:action}) and the answers read a geometry that models share, so another model answering about the same call should match the agent: on open agents it does (own $-$ other +0.012 [$-$0.018, 0.040]), and on Claude Haiku 5.5 it does better ($-$0.09 on restarts; $-$0.28 on $\tau^2$ with reasoning on). Reasoning may help: with it on, Claude reviewing its own $\tau^2$ writes reaches 0.918, against 0.699 for our read-out (180 writes; not significant).
 
 \textbf{Other benchmarks and closed agents.}\label{sec:carry} On AgentDojo \citep{debenedetti2024agentdojo}, 8 questions written from the injection policy before any answer existed rank the open agents' injected calls at \GSvGemma\ and \GSvGpt. GPT-6-luna's answers rank its violations at \GGlAt. Claude Haiku 5.5's rank its unapproved restarts at \GFtClosedAFixed, but pooled score 0.475: a fact it never checked decides its mailing-list sends; on $\tau^2$-bench, \GEeRone.
 
@@ -72,17 +72,15 @@ Claude, airline writes & 360 & \best{0.704} & 0.555 & -- & -- & --\\
 \input{tab_forecast}
 \textbf{The pre-call state.} Before each call, the agent answers 8 questions about its next action (its self-report); \cref{tab:forecast} compares every forecaster on the same calls, at the same step.
 
-\textbf{When text suffices: GPT-6-luna.} Its words track its actions: its self-report (0.84) and a text monitor (0.78) forecast as well as its sampled actions (0.73), a reading made after the data (the registered opposite expectation failed).
+\textbf{When text suffices: GPT-6-luna.} Its words track its actions: its self-report (0.84) and a text monitor (0.78) forecast as well as its sampled actions (0.73), and so does Gemma-4 sampling from its contexts (0.78; descriptive); read after the data, as the registered opposite expectation failed.
 
 \textbf{When text does not suffice: Claude Haiku 5.5.} Claude Haiku 5.5 rarely violates (2 of 24 CAPE-Bench templates; 1.5--1.6\% on AgentDojo and $\tau^2$), and on one template it violates nearly always; its tests use the other, unapproved production restarts (41 scenarios), with exact contexts.
 
 Among calls at the same step, its self-report and both reasoning text monitors are near chance or weak; only its sampled next actions forecast which call violates (\cref{tab:forecast}; own $-$ self-report \GSeDiff; own $-$ GPT-6-luna's judge \GXjDiff). Its words are nearly constant: before every violating call, each answer to whether it would comply said yes, and before 93\% (94\% fresh) of them none of its 32 answers admitted a violation; its rare admissions came before safe calls (descriptive). Gemma-4 sampling from Claude's contexts does not (0.54 at the same step).
 
-Across steps, Gemma-4's draws tie Claude's own (0.82 vs 0.80; exploratory; the registered test on rebuilt contexts found Gemma-4's draws better, $-$0.14 [$-$0.20, $-$0.09]), and Claude's draws alone (0.80) score below the step alone (0.82): across steps, other readers track \emph{when} Claude violates; within a step, only its own policy tells \emph{which} call (+0.35 [0.28, 0.42]; exploratory). The sampled actions still add to the best text monitor across steps (0.90 to 0.96). 
+Across steps, Gemma-4's draws tie Claude's own (0.82 vs 0.80; exploratory; the registered test on rebuilt contexts found Gemma-4's draws better, $-$0.14 [$-$0.20, $-$0.09]), and Claude's draws alone (0.80) score below the step alone (0.82): across steps, other readers track \emph{when} Claude violates; within a step, only its own policy tells \emph{which} call (+0.35 [0.28, 0.42]; exploratory). The sampled actions still add to the best text monitor across steps (0.90 to 0.96; on GPT-6-luna they do not, 0.78 to 0.73, descriptive). 
 
-\textbf{The registered results replicated.} On 492 fresh episodes (\GRpN\ calls), in a test registered with its Holm correction before any episode existed, all 8 endpoints passed: own draws $-$ self-report \GRpOne\ (primary), $-$ the two text monitors \GRpTwo\ and \GRpThree, lift across steps \GRpFour\ (the lift was first found on existing data, secondary). 
-
-The policy read costs \$0.002 per decision (median 9\,s). On $\tau^2$-bench the forecast was not above chance (0.61 [0.44, 0.84]).
+\textbf{The registered results replicated.} On 492 fresh episodes (\GRpN\ calls), in a test registered with its Holm correction before any episode existed, all 8 endpoints passed: own draws $-$ self-report \GRpOne\ (primary), $-$ the two text monitors \GRpTwo\ and \GRpThree, lift across steps \GRpFour\ (the lift was first found on existing data, secondary). The policy read costs \$0.002 per decision (median 9\,s). On $\tau^2$-bench the forecast was not above chance (0.61 [0.44, 0.84]).
 
 \textbf{Sampling, not the reader, matters.} GPT-6-luna reading Claude's sampled calls beats reading the transcript (\GOrDone; fresh \GRpSeven), and Claude's own reads (equivalence failed).
 
@@ -100,12 +98,12 @@ The policy read costs \$0.002 per decision (median 9\,s). On $\tau^2$-bench the 
 
 \textbf{Live results} (checker as reviewer; \cref{tab:selfpolice}). Gemma-4 prevented 82\% of its violating episodes, Claude Haiku 5.5 69\% of those its transcript decides (31\% over all), and on AgentDojo attack success fell by 84\% and 50\%, with no loss in goals or utility.
 
-\textbf{The effect is predictable.} Offline flag rates, weighted by where each agent violates, predicted five agents' live reductions within the registered 0.15 (mean error 0.035; \cref{fig:law}); an earlier form failed, and on AgentDojo the law missed Gemma-4 by 0.16.
+\textbf{The effect is predictable.} Offline flag rates, weighted by where each agent violates, predicted five agents' live reductions within 0.15 (mean error 0.035; \cref{fig:law}); an earlier form failed, and it missed AgentDojo Gemma-4 by 0.16.
 
 \textbf{A gate on the pre-call state.} On fresh GPT-6-luna episodes, at an equal review rate (checker as reviewer), a gate on the pre-call read-out cut violating episodes from 31.7\% to 7.9\%, a gate on the step to 17.9\% (\GLbPmP; success 18.7\% vs 27.8\% with the step gate). The law predicted the first exactly (0.75) but under-predicted the step gate (0.17 vs 0.44); an earlier design at unequal rates did not separate the gates, and on Gemma-4 a pre-call gate did not prevent.
 
-\textbf{Prevention with no reviewer.} A flagged call is held once and the agent told to re-check; an identical re-proposal runs. Holding the calls Claude's signed read-out flags cut violating episodes from 67.9\% to 35.2\%, against 42.9\% for random holds at a matched dose (+0.114 [0.035, 0.200]; success +0.081; Holm). 
+\textbf{Prevention with no reviewer.} A flagged call is held once and the agent told to re-check; an identical re-proposal runs. Holding the calls Claude's signed read-out flags cut violating episodes from 67.9\% to 35.2\%, against 42.9\% for random holds at a matched dose (+0.114 [0.035, 0.200]). 
 
 \textbf{The geometry alone gates, beyond random holds.} A gate on the distance from the agent's typical state (cut set on unlabelled calls; no label, no question sign) cut Claude's violating episodes from 65.9\% to 44.9\% on 492 fresh units, but at a matched dose random holds did about as well (48.2\%; +0.033 [$-$0.035, 0.100], failed). Claude's answers are nearly unanimous, so distances tie: half of the violating calls sat at the cut, where that gate held by a coin (exploratory). Registered with the tie removed (hold at or above the cut), the gate left 20.1\% of episodes violating against 32.3\% for random holds at the same dose (0.32 vs 0.30 holds per call; +0.122 [0.071, 0.177]). Holds stack on a policy reminder: 21.1\% with the reminder, 10.8\% with both (0.49 [0.34, 0.62]).
 
-On GPT-6-luna (six templates) it cut them from \GSgGNone\ to \GSgGSelf, against \GSgGRand\ for random holds (\GSgGDiff; success \GSgGSucc, lower bound just below the registered $-0.05$); where an unchecked fact decides the violation, nothing changed (\cref{cor:action}). Forecast-timed reminders did no better than random ones (\GFsFc\ vs \GFsRand).
+On GPT-6-luna (six templates) it cut them from \GSgGNone\ to \GSgGSelf, against \GSgGRand\ for random holds (\GSgGDiff; success \GSgGSucc, lower bound just below the registered $-0.05$); where an unchecked fact decides the violation, nothing changed (\cref{cor:action}). Forecast-timed reminders did no better than random (\GFsFc\ vs \GFsRand).
