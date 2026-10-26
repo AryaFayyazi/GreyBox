@@ -34,12 +34,14 @@ def _mod(name, file):
 G68 = _mod("g68", "scripts/260_g68_open_says_does.py")
 T2 = _mod("t2", "scripts/60_decision_point.py")
 OUTF = G68.G27.OUT / "g74_gemma4.jsonl"
+_G68_UNITS = G68.units                                          # kept before stage_draws repoints G68.units
 
 
 def units():
     V, _ = T2.units()
     V = V.reset_index(drop=True).assign(row=np.arange(len(V)))
-    used = set(zip(G68.units("gemma4").episode_id, G68.units("gemma4").event_id.astype(int)))
+    g68u = _G68_UNITS("gemma4")
+    used = set(zip(g68u.episode_id, g68u.event_id.astype(int)))
     V = V[[(e, int(v)) not in used for e, v in zip(V.episode_id, V.event_id)]]
     rng = np.random.default_rng(SEED)
     viol = V.index[V.y.values == 1]
