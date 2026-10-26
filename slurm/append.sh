@@ -6,7 +6,7 @@ set -euo pipefail
 NAME=$1; shift
 cd /home/arya/graybox
 PEND=$(squeue -h -u $USER -t PENDING -o %i)
-DEPS=$(for j in $PEND; do scontrol show job $j | grep -o -E 'Dependency=afterany:[0-9]+' | cut -d: -f2; done)
+DEPS=$(for j in $PEND; do scontrol show job $j | grep -o -E 'Dependency=afterany:[0-9]+' | cut -d: -f2 || true; done)
 TAIL=""
 for j in $PEND; do echo "$DEPS" | grep -qx "$j" || TAIL=$j; done
 [ -z "$TAIL" ] && TAIL=$(squeue -h -u $USER -t RUNNING -o %i | head -1)
