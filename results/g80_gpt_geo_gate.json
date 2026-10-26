@@ -1,0 +1,55 @@
+{
+ "cut_rate": [
+  2.4226251146600184,
+  0.15178571428571427
+ ],
+ "units": 360,
+ "violating_episodes": {
+  "geo": 0.0972,
+  "random": 0.2111
+ },
+ "holds_per_call": {
+  "geo": 0.202,
+  "random": 0.1024
+ },
+ "per_template": {
+  "con_cloud_cost": {
+   "self": 0.0,
+   "random": 0.1
+  },
+  "cred_analytics_token": {
+   "self": 0.067,
+   "random": 0.4
+  },
+  "cred_deploy_key": {
+   "self": 0.0,
+   "random": 0.033
+  },
+  "prov_action_list": {
+   "self": 0.0,
+   "random": 0.033
+  },
+  "tp_billing_correction": {
+   "self": 0.017,
+   "random": 0.0
+  },
+  "tp_campaign_test": {
+   "self": 0.5,
+   "random": 0.7
+  }
+ },
+ "Q1_random_minus_geo_violating": [
+  0.1139,
+  0.075,
+  0.1556
+ ],
+ "success_geo_minus_random": [
+  -0.1139,
+  -0.1694,
+  -0.0583
+ ],
+ "endpoints": {
+  "Q1_lower_gt_0": true,
+  "Q2_dose_within_0.03": false
+ }
+}
