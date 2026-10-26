@@ -1,0 +1,112 @@
+{
+ "B": {
+  "units": 217,
+  "violations": 81,
+  "auroc": {
+   "geo": 0.7758,
+   "own": 0.7965,
+   "wb_ts": 0.7994,
+   "i_dec": 0.9971,
+   "r16_ts": 0.8245,
+   "report": 0.6755
+  },
+  "B1_geo_minus_wb_ts": [
+   -0.0236,
+   -0.1592,
+   0.1183
+  ],
+  "geo_minus_i_dec": [
+   -0.2212,
+   -0.3262,
+   -0.1171
+  ],
+  "wb_ts_minus_i_dec": [
+   -0.1976,
+   -0.3056,
+   -0.0992
+  ],
+  "own_minus_wb_ts": [
+   -0.0029,
+   -0.1373,
+   0.1376
+  ],
+  "r16_ts_minus_wb_ts": [
+   0.0251,
+   -0.1029,
+   0.1502
+  ]
+ },
+ "D": {
+  "gemma4": {
+   "calls": 600,
+   "pulled_back_slice": 0.6026,
+   "full_state_cosine": 0.0098,
+   "random_rank8_null": 0.0169,
+   "slice_minus_full": [
+    0.5928,
+    0.5313,
+    0.6445
+   ],
+   "slice_minus_null": [
+    0.5857,
+    0.529,
+    0.6306
+   ]
+  },
+  "gptoss20b": {
+   "calls": 599,
+   "pulled_back_slice": 0.3628,
+   "full_state_cosine": 0.0386,
+   "random_rank8_null": 0.0409,
+   "slice_minus_full": [
+    0.3242,
+    0.2644,
+    0.3791
+   ],
+   "slice_minus_null": [
+    0.3219,
+    0.2738,
+    0.3649
+   ]
+  },
+  "qwen38": {
+   "calls": 373,
+   "pulled_back_slice": 0.3814,
+   "full_state_cosine": 0.0543,
+   "random_rank8_null": 0.0185,
+   "slice_minus_full": [
+    0.3271,
+    0.21,
+    0.4463
+   ],
+   "slice_minus_null": [
+    0.363,
+    0.2565,
+    0.4685
+   ]
+  },
+  "museglimmer": {
+   "calls": 600,
+   "pulled_back_slice": 0.5812,
+   "full_state_cosine": 0.161,
+   "random_rank8_null": 0.1006,
+   "slice_minus_full": [
+    0.4203,
+    0.3658,
+    0.4784
+   ],
+   "slice_minus_null": [
+    0.4807,
+    0.4267,
+    0.5338
+   ]
+  },
+  "D1_agents_slice_minus_full_lower_gt_0": 4,
+  "D2_agents_slice_minus_null_lower_gt_0": 4
+ },
+ "endpoints": {
+  "B1_geo_minus_wb_ts_lower_gt_-0.05": false,
+  "D1_slice_beats_full_state_on_>=3_of_4": true,
+  "D2_slice_beats_random_rank8_on_>=3_of_4": true
+ }
+}
