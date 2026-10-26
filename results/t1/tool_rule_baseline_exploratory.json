@@ -1,0 +1,45 @@
+{
+ "original_g46c": {
+  "units": 1587,
+  "geometry (no label, no sign)": 0.8916,
+  "share of draws that restart (knows the risky tool)": 0.9521,
+  "share of draws that are not read-only": 0.8314,
+  "distinct draws": 0.4179,
+  "checker on the draws (a label per drawn call)": 0.9488
+ },
+ "replication_g65": {
+  "units": 1582,
+  "geometry (no label, no sign)": 0.8655,
+  "share of draws that restart (knows the risky tool)": 0.9265,
+  "share of draws that are not read-only": 0.7912,
+  "distinct draws": 0.3978,
+  "checker on the draws (a label per drawn call)": 0.9392
+ },
+ "open_agents_g70": {
+  "gemma4": {
+   "geometry (no label, no sign)": 0.7731,
+   "share of draws that are not read tools (task-agnostic)": 0.5269,
+   "checker on the draws (a label per drawn call)": 0.7769
+  },
+  "gptoss20b": {
+   "geometry (no label, no sign)": 0.7486,
+   "share of draws that are not read tools (task-agnostic)": 0.4581,
+   "checker on the draws (a label per drawn call)": 0.8771
+  },
+  "qwen38": {
+   "geometry (no label, no sign)": 0.9143,
+   "share of draws that are not read tools (task-agnostic)": 0.4286,
+   "checker on the draws (a label per drawn call)": 0.8571
+  },
+  "museglimmer": {
+   "geometry (no label, no sign)": 0.5558,
+   "share of draws that are not read tools (task-agnostic)": 0.375,
+   "checker on the draws (a label per drawn call)": 0.6629
+  },
+  "mean": {
+   "geometry (no label, no sign)": 0.748,
+   "share of draws that are not read tools (task-agnostic)": 0.4472,
+   "checker on the draws (a label per drawn call)": 0.7935
+  }
+ }
+}

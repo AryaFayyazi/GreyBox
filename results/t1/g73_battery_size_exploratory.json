@@ -1,0 +1,62 @@
+{
+ "contexts": 400,
+ "claude_unanimous_cells": 0.9231,
+ "models": {
+  "gemma3_4b": {
+   "own_88_exact": 0.3242,
+   "own_24_exact": 0.1,
+   "own_24_sampled8": 0.1047,
+   "claude_24_sampled8": 0.1043,
+   "claude_vs_open_24_answer_geometry": 0.4984
+  },
+  "gptoss20b": {
+   "own_88_exact": 0.2286,
+   "own_24_exact": 0.3101,
+   "own_24_sampled8": 0.3131,
+   "claude_24_sampled8": 0.4758,
+   "claude_vs_open_24_answer_geometry": 0.4503
+  },
+  "llama31_8b": {
+   "own_88_exact": 0.634,
+   "own_24_exact": 0.326,
+   "own_24_sampled8": 0.2878,
+   "claude_24_sampled8": 0.1686,
+   "claude_vs_open_24_answer_geometry": 0.5626
+  },
+  "mistral7b": {
+   "own_88_exact": 0.5042,
+   "own_24_exact": 0.3036,
+   "own_24_sampled8": 0.3128,
+   "claude_24_sampled8": 0.1214,
+   "claude_vs_open_24_answer_geometry": 0.5476
+  },
+  "olmo3_7b": {
+   "own_88_exact": 0.4859,
+   "own_24_exact": 0.3746,
+   "own_24_sampled8": 0.3547,
+   "claude_24_sampled8": 0.3034,
+   "claude_vs_open_24_answer_geometry": 0.4982
+  },
+  "phi4mini": {
+   "own_88_exact": 0.4263,
+   "own_24_exact": 0.2695,
+   "own_24_sampled8": 0.2303,
+   "claude_24_sampled8": 0.1928,
+   "claude_vs_open_24_answer_geometry": 0.55
+  },
+  "qwen25_7b": {
+   "own_88_exact": 0.6769,
+   "own_24_exact": 0.2379,
+   "own_24_sampled8": 0.2266,
+   "claude_24_sampled8": 0.1683,
+   "claude_vs_open_24_answer_geometry": 0.6259
+  },
+  "qwen3_8b": {
+   "own_88_exact": 0.6405,
+   "own_24_exact": 0.3286,
+   "own_24_sampled8": 0.3183,
+   "claude_24_sampled8": 0.3002,
+   "claude_vs_open_24_answer_geometry": 0.6117
+  }
+ }
+}

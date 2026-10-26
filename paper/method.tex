@@ -32,7 +32,7 @@ Where an API returns full log-probabilities, the final state's geometry is recov
 
 \subsection{From the geometry to monitoring agents}
 \label{sec:agents-theory}
-\textbf{Setting.} At step $t$ of an episode the operator holds the visible tokens $V_t$ (instructions, task, earlier calls and their results) and sees the proposed call $A_t$; $Y\in\{0,1\}$ marks a policy violation. A monitor scores $(V_t,A_t)$ and holds the call when the score passes a cut; its budget $\beta$ is the share it holds.
+\textbf{Setting.} At step $t$ of an episode the operator holds the visible tokens $V_t$ (instructions, task, earlier calls and their results) and sees the proposed call $A_t$; $Y\in\{0,1\}$ marks a policy violation. A monitor scores $(V_t,A_t)$ and holds the call when the score passes a cut; $\beta$ is the share held.
 \begin{corollary}[the transcript suffices]\label{cor:action}
 Let $Y=g(A_t,V_t,W)$, where the world facts $W$ satisfy $W\indep Z^-_t\mid V_t$ and $Z^-_t$ are all tokens before the call, hidden ones included. Then $P(Y\mid Z^-_t,A_t)=P(Y\mid V_t,A_t)$: no monitor of the agent's internals has a lower Bayes risk than the best monitor of $(V_t,A_t)$.
 \end{corollary}
