@@ -1,0 +1,75 @@
+{
+ "agents": {
+  "gemma4": {
+   "units": 289,
+   "violations": 94,
+   "templates": 13,
+   "says_report": 0.6741,
+   "does_own": 0.7806,
+   "checker_ceiling": 0.7769,
+   "own_minus_report": [
+    0.1065,
+    -0.01,
+    0.2347
+   ]
+  },
+  "gptoss20b": {
+   "units": 136,
+   "violations": 82,
+   "templates": 11,
+   "says_report": 0.6816,
+   "does_own": 0.7598,
+   "checker_ceiling": 0.8771,
+   "own_minus_report": [
+    0.0782,
+    -0.2033,
+    0.25
+   ]
+  },
+  "qwen38": {
+   "units": 41,
+   "violations": 23,
+   "templates": 4,
+   "says_report": 0.8571,
+   "does_own": 0.9,
+   "checker_ceiling": 0.8571,
+   "own_minus_report": [
+    0.0429,
+    -0.0682,
+    0.1834
+   ]
+  },
+  "museglimmer": {
+   "units": 226,
+   "violations": 93,
+   "templates": 6,
+   "says_report": 0.4688,
+   "does_own": 0.6194,
+   "checker_ceiling": 0.6629,
+   "own_minus_report": [
+    0.1506,
+    -0.0305,
+    0.2947
+   ]
+  }
+ },
+ "P1_pooled_own_minus_report": [
+  0.0945,
+  0.0012,
+  0.1642
+ ],
+ "P2_pooled_own": [
+  0.765,
+  0.6932,
+  0.8273
+ ],
+ "endpoints": {
+  "P1_lower_gt_0": true,
+  "P2_lower_gt_0.5": true,
+  "agents_with_own_gt_report": 4
+ },
+ "holm_pass": {
+  "P2": true,
+  "P1": true
+ }
+}

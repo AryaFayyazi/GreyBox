@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-25T17:37:34-07:00",
+ "sha256": {
+  "scripts/262_g70_open_geometry_vs_whitebox.py": "dd9fb60cf9601120b3fa30a46ce6262cfbcf15cc81a527cb392bde64f0811621",
+  "docs/prereg_G70_open_geometry_vs_whitebox.md": "27a2af15898c50d7bc99cf3fc0744ecd1a9ac0a6d0e609ebf40a6aff7be6b57e"
+ }
+}
