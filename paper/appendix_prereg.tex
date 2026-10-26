@@ -53,6 +53,10 @@ Own sampled actions beat the self-report (primary) & own $-$ self-report (lower 
 \quad predict each text monitor's loss & observed $-$ predicted, inside $\pm0.02$ & \GRpSixA; \GRpSixB & \lockref{c486fe5}\\
 \quad sampling, not the reader & another reader of the draws $-$ of the transcript (lower bound $>0$) & \GRpSeven & \lockref{c486fe5}\\
 The geometry alone flags and forecasts & monitor; forecast (each lower bound $>0.5$) & 0.806 [0.777, 0.834]; 0.866 [0.820, 0.905] & \lockref{d9cf2f6}\\
+The geometry alone forecasts on four open agents & mean AUROC (lower bound $>0.5$) & 0.748 [0.678, 0.815] & \lockref{44d56b3}$^\dagger$\\
+\quad against a probe on the stored state & geometric $-$ probe (lower $>-0.10$; fails) & $-$0.156 [$-$0.277, $-$0.042] & \lockref{44d56b3}$^\dagger$\\
+The answers estimate a slice of the decision state & slice $-$ full state; slice $-$ random rank 8 (lower $>0$, $\ge$3 of 4) & 4 of 4; 4 of 4 & \lockref{dbdff1c}$^\dagger$\\
+\quad the fair white box at turn start & geometric $-$ turn-start probe (lower $>-0.05$; fails) & $-$0.024 [$-$0.159, 0.118] & \lockref{dbdff1c}$^\dagger$\\
 GPT-6-luna's own sampled policy, six templates & within-template AUROC (lower bound $>0.50$) & 0.681 [0.575, 0.778] & \lockref{a1a411e}\\
 Open agents, within a step & pooled AUROC (lower bound $>0.5$) & 0.669 [0.594, 0.764] & \lockref{19e0085}\\
 The deciding fact enters at the call's step & step $-$ earlier step (lower bound $>0$; secondary) & +0.16 [0.03, 0.30] & \lockref{98ceb4e}\\
