@@ -1,0 +1,29 @@
+{
+ "units": 492,
+ "violating_episodes": {
+  "geo": 0.2012,
+  "random": 0.3232
+ },
+ "success": {
+  "geo": 0.313,
+  "random": 0.2764
+ },
+ "holds_per_call": {
+  "geo": 0.3206,
+  "random": 0.2969
+ },
+ "R1_random_minus_geo_violating": [
+  0.122,
+  0.0711,
+  0.1768
+ ],
+ "success_geo_minus_random": [
+  0.0366,
+  -0.002,
+  0.0772
+ ],
+ "endpoints": {
+  "R1_geo_beats_random_lower_gt_0": true,
+  "R2_dose_matched_within_0.03": true
+ }
+}

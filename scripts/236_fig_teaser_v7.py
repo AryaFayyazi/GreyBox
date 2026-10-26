@@ -12,7 +12,7 @@
       AUROC among calls at the same position. GPT says: g45_per_agent_ci.json own_within_position.gpt; Claude says:
       g46_rollout_forecast.json within_position.report = 0.4746, interval [0.4323, 0.5109] from scripts/228's
       cluster bootstrap (not stored in a results file); Claude does: g46 R1_own_within_position.
-  (d) Prevent, with no human: violating episodes (%), live. Claude: g67_matched_dose.json (G67: signed read-out vs random holds at a matched dose);
+  (d) Prevent, with no human: violating episodes (%), live. Claude: g76 (geometry-only gate vs random holds at a matched dose) with G72's no-gate rate;
       GPT-6-luna: g51_gpt_selfgate.json violating_episodes (the same reviewer-free hold, six templates).
 Drawn at print size (6.75 in = ICML text width; no tight bbox), so every font size is a true point size.
   python scripts/236_fig_teaser_v7.py  -> paper/figures/teaser_v7.pdf, results/figures/teaser_v7.png
@@ -226,11 +226,12 @@ def panel_forecast(ax):
 
 # ---------------------------------------------------------------- (d)
 def panel_prevent(ax, lab_w):
-    s, b = J("g67_matched_dose.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
+    s, b = J("g76_geo_vs_random_nocoin.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
+    s0 = J("g72_layers_stack.json")["violating_episodes"]["none"]          # no-gate rate: G72's fresh units
     style(ax)
     grey = tint(MUTE, 0.35)
-    rows = [(6.0, "no gate", s["none"], grey), (5.0, "random holds", s["random"], grey),
-            (4.0, "own read-out", s["self"], ORANGE),
+    rows = [(6.0, "no gate", s0, grey), (5.0, "random holds", s["random"], grey),
+            (4.0, "geometry gate", s["geo"], ORANGE),
             (2.0, "no gate", b["none"], grey), (1.0, "random holds", b["random"], grey),
             (0.0, "own read-out", b["self"], ORANGE)]
     for yy, lab, v, col in rows:
@@ -280,7 +281,7 @@ def main():
     heads = [(xa, "a", "Estimate the geometry", "its answers redraw its hidden map"),
              (xb0, "b", "Read its decision state", "its answers track a slice of it"),
              (xc0, "c", "Forecast before the call", "text works only if words track actions"),
-             (xd0, "d", "Prevent before harm", "its own read-out holds risky calls")]
+             (xd0, "d", "Prevent before harm", "its geometry holds risky calls")]
     for x0, k, title, sub in heads:
         fig.text(x0 / W, (H - 0.04) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
         fig.text(x0 / W, (H - 0.20) / H, sub, fontsize=FS_SUB, color=MUTE, va="top")
