@@ -1,0 +1,40 @@
+{
+ "units": 865,
+ "violations": 265,
+ "auroc": {
+  "geo": 0.8051,
+  "own": 0.8349,
+  "wb_ts": 0.831,
+  "i_dec": 0.9733,
+  "r16_ts": 0.9001
+ },
+ "F1_geo_minus_wb_ts": [
+  -0.026,
+  -0.0764,
+  0.0255
+ ],
+ "F2_own_minus_wb_ts": [
+  0.0038,
+  -0.0446,
+  0.0532
+ ],
+ "wb_ts_minus_i_dec": [
+  -0.1422,
+  -0.1831,
+  -0.0988
+ ],
+ "geo_minus_i_dec": [
+  -0.1682,
+  -0.2185,
+  -0.1149
+ ],
+ "r16_ts_minus_wb_ts": [
+  0.0691,
+  0.0209,
+  0.1185
+ ],
+ "endpoints": {
+  "F1_geo_noninferior_to_wb_ts": false,
+  "F2_own_noninferior_to_wb_ts": true
+ }
+}

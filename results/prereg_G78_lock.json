@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-26T12:41:32-07:00",
+ "sha256": {
+  "scripts/270_g78_claude_full_battery.py": "9b3b81c6dd802edbdcd414035fd41232f7e00b1e8ec9cd3bdac81679e6102d9b",
+  "docs/prereg_G78_claude_full_battery.md": "e29025955b42c52497d515c12980c77b8b3b86fb31965ba2cacfbe001b4cb06a"
+ }
+}
