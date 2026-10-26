@@ -1,0 +1,113 @@
+{
+ "agents": {
+  "gemma4": {
+   "units": 289,
+   "violations": 94,
+   "geometric": 0.7731,
+   "own_signed": 0.7806,
+   "self_report": 0.6741,
+   "units_with_state": 217,
+   "violations_with_state": 81,
+   "probe_train_units": 4544,
+   "w_eligible": true,
+   "on_state_units": {
+    "geo": 0.7758,
+    "own": 0.7965,
+    "probe": 0.9705,
+    "report": 0.6755
+   },
+   "geometric_ci": [
+    0.6762,
+    0.8681
+   ]
+  },
+  "gptoss20b": {
+   "units": 136,
+   "violations": 82,
+   "geometric": 0.7486,
+   "own_signed": 0.7598,
+   "self_report": 0.6816,
+   "units_with_state": 100,
+   "violations_with_state": 82,
+   "probe_train_units": 2789,
+   "w_eligible": true,
+   "on_state_units": {
+    "geo": 0.7013,
+    "own": 0.6883,
+    "probe": 0.8182,
+    "report": 0.6753
+   },
+   "geometric_ci": [
+    0.5117,
+    0.9
+   ]
+  },
+  "qwen38": {
+   "units": 41,
+   "violations": 23,
+   "geometric": 0.9143,
+   "own_signed": 0.9,
+   "self_report": 0.8571,
+   "units_with_state": 28,
+   "violations_with_state": 23,
+   "probe_train_units": 2286,
+   "w_eligible": false,
+   "on_state_units": {
+    "geo": 1.0,
+    "own": 0.9286,
+    "probe": 0.4286,
+    "report": 0.9286
+   },
+   "geometric_ci": [
+    0.7692,
+    1.0
+   ]
+  },
+  "museglimmer": {
+   "units": 226,
+   "violations": 93,
+   "geometric": 0.5558,
+   "own_signed": 0.6194,
+   "self_report": 0.4688,
+   "units_with_state": 100,
+   "violations_with_state": 93,
+   "probe_train_units": 2527,
+   "w_eligible": false,
+   "on_state_units": {
+    "geo": 0.7391,
+    "own": 0.8261,
+    "probe": 0.9565,
+    "report": 0.3913
+   },
+   "geometric_ci": [
+    0.4433,
+    0.6832
+   ]
+  }
+ },
+ "G1_pooled_geometric_forecast": [
+  0.748,
+  0.6782,
+  0.8149
+ ],
+ "W1_geometric_minus_probe": {
+  "eligible_agents": [
+   "gemma4",
+   "gptoss20b"
+  ],
+  "estimate": [
+   -0.1558,
+   -0.2773,
+   -0.0417
+  ]
+ },
+ "endpoints": {
+  "G1_lower_gt_0.5": true,
+  "W1_lower_gt_minus_0.10": false,
+  "agents_geometric_lower_gt_0.5": 3
+ },
+ "holm_pass": {
+  "G1": true,
+  "W1": false
+ }
+}
