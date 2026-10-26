@@ -173,6 +173,30 @@ def panel_monitor(ax, lab_w):
     return {r[1]: r[2:5] for r in rows}
 
 
+def panel_slice(ax, lab_w):
+    """(b) G71-D: the 8 policy answers' geometry against the agent's decision state, per open agent: the slice the
+    questions pull back (cross-fit linear map, no label), the full state, and random rank-8 slices (results/t1/g71_*)."""
+    D = J("g71_fair_whitebox_and_slice.json")["D"]
+    names = (("gemma4", "Gemma-4"), ("gptoss20b", "gpt-oss-20b"), ("qwen38", "Qwen3.8"), ("museglimmer", "Muse-Glimmer"))
+    style(ax)
+    vals = {}
+    for k, (a, name) in enumerate(names[::-1]):
+        y = k
+        sl, fu, rn = D[a]["pulled_back_slice"], D[a]["full_state_cosine"], D[a]["random_rank8_null"]
+        ax.plot([min(fu, rn), sl], [y, y], color=tint(BLUE, 0.35), lw=1.0, zorder=1)
+        ax.scatter([rn], [y], s=14, facecolor="white", edgecolor=MUTE, lw=0.8, zorder=2)
+        ax.scatter([fu], [y], s=14, facecolor=MUTE, edgecolor=MUTE, lw=0.8, zorder=3)
+        ax.scatter([sl], [y], s=26, facecolor=BLUE, edgecolor=BLUE, zorder=4)
+        ax.text(sl + 0.03, y, f"{sl:.2f}", fontsize=FS_TICK, color=INK, va="center")
+        ax.text(0, y, name, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
+        vals[name] = (sl, fu, rn)
+    set_rows(ax, len(names) - 0.25)
+    ax.set_xlim(-0.02, 0.75)
+    ax.set_xticks([0, 0.25, 0.5])
+    ax.set_xlabel("Spearman with decision state", fontsize=FS_TICK, color=MUTE)
+    return vals
+
+
 # ---------------------------------------------------------------- (c)
 CLAUDE_SAYS = (0.4746, 0.4323, 0.5109)          # g46 within_position.report; interval: scripts/228's cluster bootstrap
 
@@ -250,11 +274,11 @@ def main():
     axb = fig.add_axes(box(xb, BOT, wb, TOP - BOT))
     axc = fig.add_axes(box(xc, BOT, wc, TOP - BOT))
     axd = fig.add_axes(box(xd, BOT, wd, TOP - BOT))
-    vb = panel_monitor(axb, lab_b)
+    vb = panel_slice(axb, lab_b)
     vc = panel_forecast(axc)
     vd, s, b = panel_prevent(axd, lab_d)
-    heads = [(xa, "a", "What the API reveals", "its answers redraw its hidden map"),
-             (xb0, "b", "Monitor at the call", "its own answers rank its violations"),
+    heads = [(xa, "a", "Estimate the geometry", "its answers redraw its hidden map"),
+             (xb0, "b", "Read its decision state", "its answers estimate a slice of it"),
              (xc0, "c", "Forecast before the call", "text works only if words track actions"),
              (xd0, "d", "Prevent before harm", "its own read-out holds risky calls")]
     for x0, k, title, sub in heads:
