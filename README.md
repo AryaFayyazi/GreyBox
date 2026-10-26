@@ -230,6 +230,17 @@ X, eigenvalues = mds(D, 2)                  # coordinates, up to a rigid motion
 ```
 Theory and proofs: `docs/theory_infogeom.md` (with Correction 1, after the lock).
 
+## Explorer: browse a closed agent's decisions in its estimated geometry
+The counterpart of a neuron explorer for a model without weights. Each yes/no question is one axis of the estimated
+geometry; each decision before a tool call is placed by the angles of the agent's own sampled next actions. The page
+shows a map of decisions, the sampled actions at each decision read on every axis, an episode timeline of risk, and the
+axes ranked by how well each forecasts violations (when labels are given). Nothing is trained; numpy only.
+```bash
+graybox-explore decisions.jsonl --questions questions.json -o explorer.html
+```
+One JSON line per decision: `{"episode", "step", "call", "label"?, "stratum"?, "draws": [{"action", "counts": [[yes, valid], ...], "label"?}]}`;
+questions: `[{"q": text, "sign": +1 if yes points toward a violation, else -1}]`. The output is one self-contained HTML file.
+
 ## Self-policing: the agent's own API as the monitor (no other model, no labels)
 
 Before a proposed tool call runs, ask the agent itself, in a side branch that its conversation never sees, whether

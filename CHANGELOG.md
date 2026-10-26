@@ -2,6 +2,15 @@
 
 The package is `greybox-monitor` on PyPI; you import `graybox`.
 
+## 0.13.0 (2026-10-26)
+**Added**
+- `graybox.explore` and `graybox-explore`: a self-contained HTML explorer of an agent's decisions in its estimated
+  geometry, from its API alone (the counterpart of a neuron explorer for a closed model). A map of decisions placed by the
+  angles of the agent's own sampled next actions; each decision's sampled actions read on every question-axis; an
+  episode timeline of risk; the question-axes ranked by within-stratum AUROC when labels are given. Its two scores are
+  the paper's statistics: the geometry risk (G57: mean distance from the agent's typical state, no label, no question
+  sign) and the signed forecast (G46's read-out). numpy only.
+
 ## 0.12.0 (2026-10-22)
 **Added**
 - `graybox.tomography`: state tomography of an agent through its own API (numpy only; no labels, no other model).

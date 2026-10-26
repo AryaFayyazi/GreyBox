@@ -1,0 +1,291 @@
+<title>__GB_TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working instrument. Map on the left, the selected decision on the right, the axes list and the episode strip below. */
+:root{
+  --bg:#f3f4f1; --panel:#fbfbf9; --ink:#1c2220; --mute:#626c67; --rule:#d9ddd7;
+  --risk:#b35c00; --risk-soft:#f3dcc2; --safe:#2f6283; --safe-soft:#d3e2ec; --focus:#1c2220;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Public Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --panel:#181d1b; --ink:#e4e9e6; --mute:#9aa49f; --rule:#2c3330;
+  --risk:#f0a24a; --risk-soft:#4a3218; --safe:#7fb2d4; --safe-soft:#1d3342; --focus:#e4e9e6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --panel:#181d1b; --ink:#e4e9e6; --mute:#9aa49f; --rule:#2c3330;
+  --risk:#f0a24a; --risk-soft:#4a3218; --safe:#7fb2d4; --safe-soft:#1d3342; --focus:#e4e9e6; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px;border-bottom:1px solid var(--rule);padding-bottom:14px}
+h1{font:700 26px/1.1 var(--f-display);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--mute);max-width:68ch;margin:6px 0 0}
+.kpis{display:flex;gap:22px;flex-wrap:wrap}
+.kpi{display:flex;flex-direction:column}
+.kpi b{font:600 20px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.kpi span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;min-width:0}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+h2{font:600 13px/1 var(--f-display);letter-spacing:.07em;text-transform:uppercase;margin:0;color:var(--mute)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{font:500 12px var(--f-body);background:transparent;color:var(--mute);border:0;padding:5px 9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+#map{width:100%;aspect-ratio:4/3;max-width:100%;display:block;cursor:crosshair;border-radius:4px;background:var(--bg)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:8px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.call{font-family:var(--f-mono);font-size:13px;background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;overflow-x:auto;white-space:pre}
+.pill{display:inline-block;font:600 11px var(--f-body);letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.pill.v{background:var(--risk-soft);color:var(--risk)} .pill.s{background:var(--safe-soft);color:var(--safe)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.fact span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.fact b{font:600 17px var(--f-display);font-variant-numeric:tabular-nums}
+.draws{display:flex;flex-direction:column;gap:10px}
+.draw{border-top:1px solid var(--rule);padding-top:10px}
+.drawhead{display:flex;gap:8px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.drawhead .mono{overflow-wrap:anywhere;min-width:0}
+.strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;margin-top:6px}
+.cellq{height:26px;border-radius:2px;position:relative;background:var(--bg);border:1px solid var(--rule)}
+.cellq i{position:absolute;bottom:0;left:0;right:0;border-radius:1px}
+.qnums{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;font:500 10px var(--f-mono);color:var(--mute);text-align:center;margin-top:2px}
+.timeline{display:flex;gap:6px;flex-wrap:wrap}
+.tstep{font:500 12px var(--f-mono);border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:4px;padding:5px 8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:92px;text-align:left}
+.tstep[aria-current="true"]{border-color:var(--ink)}
+.tstep .bar{height:4px;border-radius:2px;background:var(--rule);overflow:hidden}
+.tstep .bar i{display:block;height:100%;background:var(--risk)}
+.axes{display:flex;flex-direction:column;gap:8px}
+.ax{display:grid;grid-template-columns:28px minmax(0,1fr) 64px;gap:10px;align-items:center;border-top:1px solid var(--rule);padding-top:8px}
+.ax .n{font:600 13px var(--f-mono);color:var(--mute)}
+.ax .q{font-size:13px}
+.ax .s{font:600 13px var(--f-display);font-variant-numeric:tabular-nums;text-align:right}
+.ax .meter{grid-column:2/4;height:5px;background:var(--rule);border-radius:3px;overflow:hidden}
+.ax .meter i{display:block;height:100%;background:var(--ink)}
+.search{display:flex;gap:8px;align-items:center}
+.search input{font:13px var(--f-mono);padding:6px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink);width:min(260px,100%)}
+.note{font-size:12.5px;color:var(--mute);max-width:72ch}
+.empty{color:var(--mute);padding:30px 0;text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+<div class="wrap">
+<header>
+  <div>
+    <h1>__GB_TITLE__</h1>
+    <p class="sub">__GB_SUB__</p>
+  </div>
+  <div class="kpis" id="kpis"></div>
+</header>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-map">
+    <div class="ph">
+      <h2 id="h-map">Decision map</h2>
+      <div class="seg" role="group" aria-label="Colour points by">
+        <button id="c-label" aria-pressed="true">Actual call</button>
+        <button id="c-geo" aria-pressed="false">Geometry risk</button>
+        <button id="c-fc" aria-pressed="false">Signed forecast</button>
+      </div>
+    </div>
+    <canvas id="map" tabindex="0" aria-label="Map of decisions in the estimated geometry"></canvas>
+    <div class="legend" id="legend"></div>
+    <div class="search" style="margin-top:10px">
+      <label for="q" class="note">Find a call</label>
+      <input id="q" type="search" placeholder="restart-service" autocomplete="off">
+      <span class="note" id="qcount"></span>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-dec">
+    <div class="ph"><h2 id="h-dec">Decision</h2><span class="note" id="dec-id"></span></div>
+    <div id="decision"><p class="empty">Pick a point on the map.</p></div>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="h-ep">
+  <div class="ph"><h2 id="h-ep">Episode timeline</h2><span class="note">bar = geometry risk of the agent's sampled next actions at that step</span></div>
+  <div class="timeline" id="timeline"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-ax">
+  <div class="ph"><h2 id="h-ax">Question-axes</h2><span class="note">the API's counterpart of neurons: each question is one coordinate of the estimated geometry</span></div>
+  <div class="axes" id="axes"></div>
+  <p class="note" style="margin-top:12px" id="axnote"></p>
+</section>
+</div>
+<script type="application/json" id="gbdata">__GB_DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("gbdata").textContent);
+  const Q = D.questions, C = D.centre;
+  const $ = (id) => document.getElementById(id);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // flatten decisions that have a map position
+  const P = [];
+  D.episodes.forEach((e, ei) => e.steps.forEach((s, si) => { if (s.xy) P.push({ ei, si, s }); }));
+  const units = [];
+  D.episodes.forEach((e) => e.steps.forEach((s) => { if (s.u) units.push(s); }));
+
+  // within-stratum AUROC (Mann-Whitney per stratum, pooled over pairs)
+  function auroc(items, score) {
+    const by = {};
+    items.forEach((s) => { (by[s.st] = by[s.st] || []).push(s); });
+    let num = 0, den = 0;
+    Object.values(by).forEach((g) => {
+      const pos = g.filter((s) => s.y === 1).map(score), neg = g.filter((s) => s.y === 0).map(score);
+      pos.forEach((a) => neg.forEach((b) => { num += a > b ? 1 : a === b ? 0.5 : 0; den += 1; }));
+    });
+    return den ? num / den : NaN;
+  }
+  const signedAxis = (j) => (s) => {
+    const v = (s.draws || []).filter((d) => d.th).map((d) => Q[j].sign * d.th[j]);
+    return v.length ? v.reduce((a, b) => a + b, 0) / (s.draws.length) : -9;
+  };
+
+  // header numbers
+  const fmt = (v) => (isNaN(v) ? "–" : v.toFixed(2));
+  const nViol = units.filter((s) => s.y === 1).length;
+  const kp = [[D.episodes.length.toLocaleString(), "episodes"], [units.length.toLocaleString(), "labelled calls"],
+              [nViol.toLocaleString(), "violating"], [fmt(auroc(units, (s) => s.geo ?? 0)), "geometry alone (AUROC)"],
+              [fmt(auroc(units, (s) => s.fc ?? -9)), "signed forecast (AUROC)"]];
+  $("kpis").innerHTML = kp.map(([b, t]) => `<div class="kpi"><b>${b}</b><span>${t}</span></div>`).join("");
+
+  // map
+  const cv = $("map"), ctx = cv.getContext("2d");
+  let mode = "label", sel = null, hits = new Set(), view = null;
+  const xs = P.map((p) => p.s.xy[0]), ys = P.map((p) => p.s.xy[1]);
+  const xr = [Math.min(...xs), Math.max(...xs)], yr = [Math.min(...ys), Math.max(...ys)];
+  const geoMax = Math.max(...P.map((p) => p.s.geo || 0)) || 1;
+  const fcs = P.map((p) => p.s.fc).filter((v) => v != null), fcr = [Math.min(...fcs), Math.max(...fcs)];
+  function size() {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    view = { w: r.width, h: r.height, pad: 18 };
+  }
+  const px = (x) => view.pad + (x - xr[0]) / (xr[1] - xr[0] || 1) * (view.w - 2 * view.pad);
+  const py = (y) => view.h - view.pad - (y - yr[0]) / (yr[1] - yr[0] || 1) * (view.h - 2 * view.pad);
+  function mix(a, b, t) {
+    const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const A = h(a), B = h(b);
+    return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",")})`;
+  }
+  function colour(s) {
+    const risk = css("--risk"), safe = css("--safe");
+    if (mode === "label") return s.u ? (s.y === 1 ? risk : safe) : css("--mute");
+    const t = mode === "geo" ? (s.geo || 0) / geoMax : ((s.fc ?? fcr[0]) - fcr[0]) / (fcr[1] - fcr[0] || 1);
+    return mix(safe, risk, Math.max(0, Math.min(1, t)));
+  }
+  function draw() {
+    if (!view) size();
+    ctx.clearRect(0, 0, view.w, view.h);
+    ctx.strokeStyle = css("--rule"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px(0), view.pad / 2); ctx.lineTo(px(0), view.h - view.pad / 2);
+    ctx.moveTo(view.pad / 2, py(0)); ctx.lineTo(view.w - view.pad / 2, py(0)); ctx.stroke();
+    const order = P.slice().sort((a, b) => (a.s.y === 1) - (b.s.y === 1));
+    order.forEach((p) => {
+      ctx.globalAlpha = hits.size && !hits.has(p) ? 0.12 : 0.75;
+      ctx.fillStyle = colour(p.s);
+      ctx.beginPath(); ctx.arc(px(p.s.xy[0]), py(p.s.xy[1]), 3, 0, 6.283); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (sel) {
+      ctx.strokeStyle = css("--ink"); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px(sel.s.xy[0]), py(sel.s.xy[1]), 7, 0, 6.283); ctx.stroke();
+    }
+    ctx.fillStyle = css("--mute"); ctx.font = "11px " + css("--f-mono");
+    ctx.fillText(`axis 1 · ${(D.var[0] * 100).toFixed(0)}% of variance`, view.pad, view.h - 4);
+  }
+  function legend() {
+    const L = mode === "label"
+      ? [["--risk", "call violated (checker)"], ["--safe", "call was safe"], ["--mute", "read call, not scored"]]
+      : [["--safe", "low"], ["--risk", "high " + (mode === "geo" ? "distance from typical state" : "signed forecast")]];
+    $("legend").innerHTML = L.map(([c, t]) => `<span><i class="dot" style="background:var(${c})"></i>${t}</span>`).join("");
+  }
+  function nearest(ev) {
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    let best = null, bd = 1e9;
+    P.forEach((p) => { const d = (px(p.s.xy[0]) - x) ** 2 + (py(p.s.xy[1]) - y) ** 2; if (d < bd) { bd = d; best = p; } });
+    return bd < 400 ? best : null;
+  }
+  cv.addEventListener("click", (ev) => { const p = nearest(ev); if (p) select(p.ei, p.si); });
+  cv.addEventListener("keydown", (ev) => {
+    if (!sel) return;
+    const e = D.episodes[sel.ei];
+    if (ev.key === "ArrowRight" && sel.si < e.steps.length - 1) select(sel.ei, sel.si + 1);
+    if (ev.key === "ArrowLeft" && sel.si > 0) select(sel.ei, sel.si - 1);
+  });
+  ["label", "geo", "fc"].forEach((m) => $("c-" + m).addEventListener("click", () => {
+    mode = m; ["label", "geo", "fc"].forEach((k) => $("c-" + k).setAttribute("aria-pressed", String(k === m))); legend(); draw();
+  }));
+  $("q").addEventListener("input", () => {
+    const t = $("q").value.trim().toLowerCase();
+    hits = new Set(t ? P.filter((p) => p.s.act.toLowerCase().includes(t) || (p.s.draws || []).some((d) => d.a.toLowerCase().includes(t))) : []);
+    $("qcount").textContent = t ? `${hits.size} decisions` : "";
+    draw();
+  });
+
+  // decision view
+  function strip(th) {
+    if (!th) return `<div class="note">This draw ends the turn without a tool call.</div>`;
+    const cells = th.map((v, j) => {
+      const dev = Q[j].sign * (v - C[j]);                 // > 0: toward a violation on this axis
+      const h = Math.min(100, Math.abs(dev) / Math.PI * 100 * 2);
+      const col = dev > 0 ? "var(--risk)" : "var(--safe)";
+      return `<div class="cellq" title="Q${j + 1}: angle ${v.toFixed(2)} (typical ${C[j].toFixed(2)})"><i style="height:${h}%;background:${col}"></i></div>`;
+    }).join("");
+    return `<div class="strip">${cells}</div><div class="qnums">${th.map((_, j) => "Q" + (j + 1)).join("</span><span>").replace(/^/, "<span>") + "</span>"}</div>`;
+  }
+  function select(ei, si) {
+    const e = D.episodes[ei], s = e.steps[si];
+    sel = s.xy ? { ei, si, s } : sel;
+    $("dec-id").textContent = `${e.id} · step ${s.t}`;
+    const label = s.u ? (s.y === 1 ? `<span class="pill v">violated</span>` : `<span class="pill s">safe</span>`) : `<span class="note">read call, not scored</span>`;
+    let html = `<div class="ph" style="margin-bottom:6px"><span class="note">The call the agent actually made</span>${label}</div><div class="call">${esc(s.act)}</div>`;
+    if (s.draws) {
+      const groups = {};
+      s.draws.forEach((d) => { const k = d.a; (groups[k] = groups[k] || { d, n: 0 }).n += 1; });
+      html += `<div class="facts">
+        <div class="fact"><span>Geometry risk</span><b>${(s.geo ?? 0).toFixed(2)}</b></div>
+        <div class="fact"><span>Signed forecast</span><b>${(s.fc ?? 0).toFixed(2)}</b></div>
+        <div class="fact"><span>Distinct actions</span><b>${Object.keys(groups).length} of ${s.draws.length}</b></div></div>
+        <p class="note" style="margin:0 0 6px">What it would do next: its own 8 sampled actions, each read on the 8 question-axes. Bars rise toward the violating side of each axis (amber) or the safe side (blue), measured from the agent's typical state.</p>
+        <div class="draws">` + Object.values(groups).sort((a, b) => b.n - a.n).map(({ d, n }) => `
+          <div class="draw"><div class="drawhead"><span class="mono">${esc(d.a)}</span>
+          <span>${n}× ${d.th ? (d.bad ? `<span class="pill v">checker: violates</span>` : `<span class="pill s">checker: safe</span>`) : ""}</span></div>${strip(d.th)}</div>`).join("") + `</div>`;
+    } else html += `<p class="note">No sampled actions were drawn at this step.</p>`;
+    $("decision").innerHTML = html;
+    timeline(ei, si);
+    draw();
+  }
+  function timeline(ei, si) {
+    const e = D.episodes[ei];
+    $("timeline").innerHTML = e.steps.map((s, k) => `
+      <button class="tstep" aria-current="${k === si}" data-k="${k}" title="${esc(s.act)}">
+        <span>step ${s.t}${s.u ? (s.y === 1 ? " · violated" : " · safe") : ""}</span>
+        <span class="bar"><i style="width:${Math.round(100 * (s.geo || 0) / geoMax)}%"></i></span></button>`).join("");
+    $("timeline").querySelectorAll(".tstep").forEach((b) => b.addEventListener("click", () => select(ei, +b.dataset.k)));
+  }
+
+  // axes list
+  const ax = Q.map((q, j) => ({ j, q: q.q, sign: q.sign, a: auroc(units, signedAxis(j)) })).sort((a, b) => b.a - a.a);
+  $("axnote").textContent = units.length ? `Score: how well each axis alone, read on the agent's sampled next actions (angle signed by the question's wording), ranks which calls violate, within each stratum (AUROC on ${units.length.toLocaleString()} labelled calls). Angles are 2·arcsin√P(yes) from the sampled answers. No label was used to build any coordinate.` : "No labels were given, so the axes are not scored. Angles are 2·arcsin√P(yes) from the sampled answers.";
+  $("axes").innerHTML = ax.map((x) => `
+    <div class="ax"><span class="n">Q${x.j + 1}</span><span class="q">${esc(x.q)} <span class="note">(${x.sign > 0 ? "yes" : "no"} = toward violation)</span></span>
+    <span class="s">${isNaN(x.a) ? "–" : x.a.toFixed(2)}</span><span class="meter"><i style="width:${Math.max(0, (x.a - 0.5) * 200)}%"></i></span></div>`).join("");
+
+  // start on a violating decision with clear spread, so the first view shows what the tool does
+  let start = P.find((p) => p.s.u && p.s.y === 1 && (p.s.draws || []).some((d) => d.bad) && new Set(p.s.draws.map((d) => d.a)).size > 1) || P[0];
+  legend(); size(); select(start.ei, start.si);
+  new ResizeObserver(() => { size(); draw(); }).observe(cv);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
