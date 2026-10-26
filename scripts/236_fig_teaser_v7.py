@@ -235,7 +235,7 @@ def panel_prevent(ax, lab_w):
             (0.0, "own read-out", b["self"], ORANGE)]
     for yy, lab, v, col in rows:
         ax.barh([yy], [100 * v], height=0.62, color=col, lw=0, zorder=2)
-        ax.text(100 * v + 1.5, yy, f"{100 * v:.1f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
+        ax.text(100 * v + 1.5, yy, f"{float(np.round(100 * v + 1e-9, 1)):.1f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
     set_rows(ax, 8.05)
     header(ax, 8.05, "Claude Haiku 5.5", dx=-lab_w)
@@ -278,9 +278,9 @@ def main():
     vc = panel_forecast(axc)
     vd, s, b = panel_prevent(axd, lab_d)
     heads = [(xa, "a", "Estimate the geometry", "its answers redraw its hidden map"),
-             (xb0, "b", "Read its decision state", "its answers estimate a slice of it"),
+             (xb0, "b", "Read its decision state", "its answers track a slice of it"),
              (xc0, "c", "Forecast before the call", "text works only if words track actions"),
-             (xd0, "d", "Prevent before harm", "the geometry holds risky calls")]
+             (xd0, "d", "Prevent before harm", "its state holds risky calls")]
     for x0, k, title, sub in heads:
         fig.text(x0 / W, (H - 0.04) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
         fig.text(x0 / W, (H - 0.20) / H, sub, fontsize=FS_SUB, color=MUTE, va="top")

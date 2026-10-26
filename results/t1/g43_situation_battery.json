@@ -1,0 +1,46 @@
+{
+ "gemma4": {
+  "calls": 200,
+  "rho_32": 0.2905,
+  "rho_8": 0.0236,
+  "rho_40": 0.2518
+ },
+ "gptoss20b": {
+  "calls": 200,
+  "rho_32": 0.19,
+  "rho_8": 0.034,
+  "rho_40": 0.1776
+ },
+ "qwen38": {
+  "calls": 200,
+  "rho_32": 0.0875,
+  "rho_8": 0.016,
+  "rho_40": 0.0841
+ },
+ "museglimmer": {
+  "calls": 200,
+  "rho_32": 0.1499,
+  "rho_8": 0.1635,
+  "rho_40": 0.181
+ },
+ "S1_pooled_rho32_minus_rho8": [
+  0.1202,
+  0.0837,
+  0.1562
+ ],
+ "S2_pooled_rho32": [
+  0.1795,
+  0.155,
+  0.2038
+ ],
+ "pooled_agents": [
+  "gemma4",
+  "gptoss20b",
+  "qwen38",
+  "museglimmer"
+ ],
+ "endpoints": {
+  "S1_lower_gt_0": true,
+  "S2_lower_gt_0.2": false
+ }
+}
