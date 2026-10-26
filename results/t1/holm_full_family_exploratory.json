@@ -1,7 +1,7 @@
 {
- "family_size": 37,
- "registered_passes": 26,
- "rejected_holm": 25,
+ "family_size": 56,
+ "registered_passes": 44,
+ "rejected_holm": 43,
  "passed_but_not_holm": [
   "GPT-6-luna reviewer-free gate - random"
  ],
@@ -17,7 +17,7 @@
    "bar": 0.65,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0013513513513513514,
+   "holm_threshold": 0.0008928571428571429,
    "rejected_holm": true
   },
   {
@@ -31,7 +31,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.001388888888888889,
+   "holm_threshold": 0.0009090909090909091,
    "rejected_holm": true
   },
   {
@@ -45,7 +45,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0014285714285714286,
+   "holm_threshold": 0.000925925925925926,
    "rejected_holm": true
   },
   {
@@ -59,7 +59,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0014705882352941176,
+   "holm_threshold": 0.0009433962264150943,
    "rejected_holm": true
   },
   {
@@ -73,7 +73,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0015151515151515152,
+   "holm_threshold": 0.0009615384615384616,
    "rejected_holm": true
   },
   {
@@ -87,7 +87,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0015625,
+   "holm_threshold": 0.000980392156862745,
    "rejected_holm": true
   },
   {
@@ -101,7 +101,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0016129032258064516,
+   "holm_threshold": 0.001,
    "rejected_holm": true
   },
   {
@@ -115,7 +115,105 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0016666666666666668,
+   "holm_threshold": 0.0010204081632653062,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: own draws - self-report",
+   "estimate": 0.4049,
+   "ci": [
+    0.356,
+    0.4571
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0010416666666666667,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: own draws - Claude text judge",
+   "estimate": 0.3283,
+   "ci": [
+    0.2541,
+    0.4009
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0010638297872340426,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: own draws within position",
+   "estimate": 0.8745,
+   "ci": [
+    0.8312,
+    0.9125
+   ],
+   "kind": "gt",
+   "bar": 0.5,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0010869565217391304,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometric monitor replicated, Claude",
+   "estimate": 0.8055,
+   "ci": [
+    0.7767,
+    0.8335
+   ],
+   "kind": "gt",
+   "bar": 0.5,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0011111111111111111,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometric forecast replicated, Claude",
+   "estimate": 0.8655,
+   "ci": [
+    0.8199,
+    0.905
+   ],
+   "kind": "gt",
+   "bar": 0.5,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0011363636363636365,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Matched dose: self reduction",
+   "estimate": 0.482,
+   "ci": [
+    0.3906,
+    0.5728
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.0,
+   "holm_threshold": 0.0011627906976744186,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: GPT-6-luna reads draws - its judge",
+   "estimate": 0.3019,
+   "ci": [
+    0.2282,
+    0.3723
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 1.1102230246251565e-16,
+   "holm_threshold": 0.0011904761904761906,
    "rejected_holm": true
   },
   {
@@ -129,7 +227,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.220446049250313e-16,
-   "holm_threshold": 0.001724137931034483,
+   "holm_threshold": 0.0012195121951219512,
    "rejected_holm": true
   },
   {
@@ -143,7 +241,49 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.0547118733938987e-15,
-   "holm_threshold": 0.0017857142857142859,
+   "holm_threshold": 0.00125,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: loss predicted, Claude's judge",
+   "estimate": 0.0024,
+   "ci": [
+    -0.0023,
+    0.0071
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": true,
+   "p_one_sided": 1.071365218763276e-13,
+   "holm_threshold": 0.001282051282051282,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Claude's geometry, all 88 questions - strongest text",
+   "estimate": 0.2079,
+   "ci": [
+    0.154,
+    0.2653
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 1.219024881038422e-13,
+   "holm_threshold": 0.0013157894736842105,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometry gate on reminder: reduction",
+   "estimate": 0.4904,
+   "ci": [
+    0.3448,
+    0.6168
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 7.885914143912487e-13,
+   "holm_threshold": 0.0013513513513513514,
    "rejected_holm": true
   },
   {
@@ -157,7 +297,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.0811351813799774e-12,
-   "holm_threshold": 0.001851851851851852,
+   "holm_threshold": 0.001388888888888889,
    "rejected_holm": true
   },
   {
@@ -171,7 +311,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 1.2798095916366492e-12,
-   "holm_threshold": 0.0019230769230769232,
+   "holm_threshold": 0.0014285714285714286,
    "rejected_holm": true
   },
   {
@@ -185,7 +325,21 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5400237468886644e-12,
-   "holm_threshold": 0.002,
+   "holm_threshold": 0.0014705882352941176,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: own draws - GPT-6-luna text judge",
+   "estimate": 0.2603,
+   "ci": [
+    0.1854,
+    0.3333
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 2.6167401578902627e-12,
+   "holm_threshold": 0.0015151515151515152,
    "rejected_holm": true
   },
   {
@@ -199,7 +353,35 @@
    "bar": -0.05,
    "registered_pass": true,
    "p_one_sided": 3.42560979582629e-11,
-   "holm_threshold": 0.0020833333333333333,
+   "holm_threshold": 0.0015625,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometry gate: reduction",
+   "estimate": 0.3179,
+   "ci": [
+    0.2197,
+    0.411
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 3.653705116235528e-11,
+   "holm_threshold": 0.0016129032258064516,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometry gate on reminder: success (non-inferiority)",
+   "estimate": 0.2093,
+   "ci": [
+    0.1362,
+    0.2967
+   ],
+   "kind": "gt",
+   "bar": -0.05,
+   "registered_pass": true,
+   "p_one_sided": 1.201736488098959e-10,
+   "holm_threshold": 0.0016666666666666668,
    "rejected_holm": true
   },
   {
@@ -213,7 +395,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 8.815825847108272e-10,
-   "holm_threshold": 0.002173913043478261,
+   "holm_threshold": 0.001724137931034483,
    "rejected_holm": true
   },
   {
@@ -227,7 +409,35 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 2.242104613081608e-09,
-   "holm_threshold": 0.002272727272727273,
+   "holm_threshold": 0.0017857142857142859,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: draws add to GPT-6-luna's judge across steps",
+   "estimate": 0.0436,
+   "ci": [
+    0.0291,
+    0.0583
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 2.4117336461237926e-09,
+   "holm_threshold": 0.001851851851851852,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Matched dose: success (non-inferiority)",
+   "estimate": 0.0813,
+   "ci": [
+    0.0386,
+    0.1301
+   ],
+   "kind": "gt",
+   "bar": -0.05,
+   "registered_pass": true,
+   "p_one_sided": 9.270408496409033e-09,
+   "holm_threshold": 0.0019230769230769232,
    "rejected_holm": true
   },
   {
@@ -241,7 +451,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5709747775159997e-08,
-   "holm_threshold": 0.002380952380952381,
+   "holm_threshold": 0.002,
    "rejected_holm": true
   },
   {
@@ -255,7 +465,35 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 3.6018224403022714e-08,
-   "holm_threshold": 0.0025,
+   "holm_threshold": 0.0020833333333333333,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Replication: loss predicted, GPT-6-luna's judge",
+   "estimate": -0.003,
+   "ci": [
+    -0.0099,
+    0.003
+   ],
+   "kind": "eq",
+   "bar": 0.02,
+   "registered_pass": true,
+   "p_one_sided": 1.1964780788353835e-07,
+   "holm_threshold": 0.002173913043478261,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Geometry gate - random, tie held",
+   "estimate": 0.122,
+   "ci": [
+    0.0711,
+    0.1768
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 3.02687526343437e-06,
+   "holm_threshold": 0.002272727272727273,
    "rejected_holm": true
   },
   {
@@ -269,7 +507,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 6.504456498468425e-06,
-   "holm_threshold": 0.002631578947368421,
+   "holm_threshold": 0.002380952380952381,
    "rejected_holm": true
   },
   {
@@ -283,7 +521,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 7.889857542353607e-06,
-   "holm_threshold": 0.002777777777777778,
+   "holm_threshold": 0.0025,
    "rejected_holm": true
   },
   {
@@ -297,7 +535,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 3.044985220623797e-05,
-   "holm_threshold": 0.0029411764705882353,
+   "holm_threshold": 0.002631578947368421,
    "rejected_holm": true
   },
   {
@@ -311,7 +549,7 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 0.00040023591224913613,
-   "holm_threshold": 0.003125,
+   "holm_threshold": 0.002777777777777778,
    "rejected_holm": true
   },
   {
@@ -325,7 +563,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.002488827408893446,
-   "holm_threshold": 0.0033333333333333335,
+   "holm_threshold": 0.0029411764705882353,
    "rejected_holm": true
   },
   {
@@ -339,7 +577,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0027413623879780635,
-   "holm_threshold": 0.0035714285714285718,
+   "holm_threshold": 0.003125,
    "rejected_holm": true
   },
   {
@@ -353,7 +591,21 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0028640820111793808,
-   "holm_threshold": 0.0038461538461538464,
+   "holm_threshold": 0.0033333333333333335,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Matched dose: self - random",
+   "estimate": 0.1138,
+   "ci": [
+    0.0351,
+    0.2
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 0.003412632940850757,
+   "holm_threshold": 0.0035714285714285718,
    "rejected_holm": true
   },
   {
@@ -367,7 +619,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.009376576031352446,
-   "holm_threshold": 0.004166666666666667,
+   "holm_threshold": 0.0038461538461538464,
    "rejected_holm": false
   },
   {
@@ -381,6 +633,20 @@
    "bar": -0.05,
    "registered_pass": false,
    "p_one_sided": 0.05449142098849985,
+   "holm_threshold": 0.004166666666666667,
+   "rejected_holm": false
+  },
+  {
+   "endpoint": "Geometry gate - random, tie at random",
+   "estimate": 0.0325,
+   "ci": [
+    -0.0346,
+    0.0996
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": false,
+   "p_one_sided": 0.17122656296094962,
    "holm_threshold": 0.004545454545454546,
    "rejected_holm": false
   },

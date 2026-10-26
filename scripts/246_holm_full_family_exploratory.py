@@ -2,7 +2,9 @@
 """Exploratory multiplicity check (not preregistered), replacing scripts/245's family of passing endpoints. The family:
 EVERY registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites, and of the
 tests that bear on those claims (G62). Open-agent endpoints are left out. (Revised 2026-10-24 14:20 after review: the first
-version mixed in two open-agent G15 endpoints and predated G59-G62.)
+version mixed in two open-agent G15 endpoints and predated G59-G62. Revised 2026-10-26 after review round 18: adds every
+CI-based endpoint of the later closed-agent tests G65-G67, G72, G75, G76 and G78; count endpoints (G73 E1, G78 P2) and
+dose checks have no interval and stay out.)
 One-sided p against the registered bar (a superiority null, a non-inferiority margin, or for an equivalence endpoint the
 larger of its two one-sided p's), from the stored estimate and 95% cluster-bootstrap interval (normal approximation,
 SE = width / 3.92); then Holm's step-down at family-wise 0.05. -> results/t1/holm_full_family_exploratory.json"""
@@ -53,6 +55,27 @@ F = [("Read-out at the call: Claude restarts", [g15["claude"]["restart_mean8"]] 
      ("GPT-6-luna reviewer-free gate: reduction", g51["P1_self_reduction"], "gt", 0.0),
      ("GPT-6-luna reviewer-free gate - random", g51["P2_self_minus_random"], "gt", 0.0),
      ("GPT-6-luna reviewer-free gate: success (non-inferiority)", g51["P3_success_self_minus_none"], "gt", -0.05)]
+g65, g66, g67, g72 = J("g65_replication")["endpoints"], J("g66_geometry_replication"), J("g67_matched_dose"), J("g72_layers_stack")
+E = lambda d: [d["estimate"]] + d["ci"] if isinstance(d, dict) else d  # noqa: E731
+F += [("Replication: own draws - self-report", E(g65["P1_own_minus_report"]), "gt", 0.0),
+      ("Replication: own draws - Claude text judge", E(g65["P2_own_minus_claude_judge"]), "gt", 0.0),
+      ("Replication: own draws - GPT-6-luna text judge", E(g65["P3_own_minus_gpt_judge"]), "gt", 0.0),
+      ("Replication: draws add to GPT-6-luna's judge across steps", E(g65["P4_gpt_judge_plus_draws_minus_gpt_judge_across_steps"]), "gt", 0.0),
+      ("Replication: own draws within position", E(g65["P5_own_within_position"]), "gt", 0.5),
+      ("Replication: loss predicted, Claude's judge", E(g65["P6a_loss_claude_judge_obs_minus_pred"]), "eq", 0.02),
+      ("Replication: loss predicted, GPT-6-luna's judge", E(g65["P6b_loss_gpt_judge_obs_minus_pred"]), "eq", 0.02),
+      ("Replication: GPT-6-luna reads draws - its judge", E(g65["P7_gpt_reads_draws_minus_gpt_judge"]), "gt", 0.0),
+      ("Geometric monitor replicated, Claude", g66["monitor"]["M1_geometric_within_stratum"], "gt", 0.5),
+      ("Geometric forecast replicated, Claude", g66["forecast"]["G1_geometric_forecast_within_position"], "gt", 0.5),
+      ("Matched dose: self - random", g67["self_minus_random"], "gt", 0.0),
+      ("Matched dose: self reduction", g67["self_reduction"], "gt", 0.0),
+      ("Matched dose: success (non-inferiority)", g67["success_self_minus_none"], "gt", -0.05),
+      ("Geometry gate on reminder: reduction", g72["P1_remind_geo_vs_remind"], "gt", 0.0),
+      ("Geometry gate: reduction", g72["P2_geo_vs_none"], "gt", 0.0),
+      ("Geometry gate on reminder: success (non-inferiority)", g72["P3_success_remind_geo_minus_none"], "gt", -0.05),
+      ("Geometry gate - random, tie at random", J("g75_geo_vs_random")["R1_random_minus_geo_violating"], "gt", 0.0),
+      ("Geometry gate - random, tie held", J("g76_geo_vs_random_nocoin")["R1_random_minus_geo_violating"], "gt", 0.0),
+      ("Claude's geometry, all 88 questions - strongest text", J("g78_claude_full_battery")["P1_mean_claude_minus_strongest"], "gt", 0.0)]
 P = lambda z: 0.5 * (1 - erf(z / sqrt(2)))  # noqa: E731
 rows = []
 for name, (est, lo, hi), kind, bar in F:

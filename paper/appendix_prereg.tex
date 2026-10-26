@@ -86,7 +86,7 @@ No reviewer, GPT-6-luna, six templates & self reduction (lower bound $>0$) & \GS
 \end{center}
 
 \subsection*{Multiple tests}
-The family is every registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites, and of the tests that bear on those claims (37 endpoints; open-agent endpoints are left out). For each, a one-sided $p$-value against its registered bar comes from its estimate and its 95\% cluster-bootstrap interval (normal approximation, SE = interval width / 3.92; for an equivalence endpoint, the larger of its two one-sided $p$-values). Holm's step-down then keeps the family-wise error at 0.05. This check is exploratory: we chose it after the outcomes, and revised it after review (a first version mixed in two open-agent endpoints). Of the 37 endpoints, 26 passed as registered and 25 survive Holm; the one that passed but does not survive is GPT-6-luna's reviewer-free gate over random holds.
+The family is every registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites, and of the tests that bear on those claims (56 endpoints, through G78; open-agent endpoints, count endpoints and dose checks are left out). For each, a one-sided $p$-value against its registered bar comes from its estimate and its 95\% cluster-bootstrap interval (normal approximation, SE = interval width / 3.92; for an equivalence endpoint, the larger of its two one-sided $p$-values). Holm's step-down then keeps the family-wise error at 0.05. This check is exploratory: we chose it after the outcomes, and revised it after review (a first version mixed in two open-agent endpoints). Of the 56 endpoints, 44 passed as registered and 43 survive Holm; the one that passed but does not survive is GPT-6-luna's reviewer-free gate over random holds.
 \begin{center}\scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lccccc@{}}
@@ -101,16 +101,33 @@ Geometric forecast, Claude & 0.892 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude own draws $-$ self-report, same calls & 0.417 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Draws add to Claude's judge, across steps & 0.118 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude reviewer-free gate: reduction & 0.473 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: own draws $-$ self-report & 0.405 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: own draws $-$ Claude text judge & 0.328 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: own draws within position & 0.875 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometric monitor replicated, Claude & 0.805 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometric forecast replicated, Claude & 0.866 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
+Matched dose: self reduction & 0.482 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: GPT-6-luna reads draws $-$ its judge & 0.302 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Draws add to position, across steps & 0.125 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Draws add to GPT-6-luna's judge, across steps & 0.059 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: loss predicted, Claude's judge & 0.002 & $|\cdot|<$0.02 & pass & $<10^{-6}$ & \textbf{yes}\\
+Claude's geometry, all 88 questions $-$ strongest text & 0.208 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometry gate on reminder: reduction & 0.490 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 GPT-6-luna reads Claude's draws $-$ reads transcript & 0.334 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude own sampled actions, within position & 0.708 & $>$0.5 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude own draws $-$ GPT-6-luna text judge & 0.295 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: own draws $-$ GPT-6-luna text judge & 0.260 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude reviewer-free gate: success (non-inferiority) & 0.065 & $>$-0.05 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometry gate: reduction & 0.318 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometry gate on reminder: success (non-inferiority) & 0.209 & $>$-0.05 & pass & $<10^{-6}$ & \textbf{yes}\\
 Claude own draws $-$ self-report & 0.233 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Loss predicted, GPT-6-luna judging Claude & -0.000 & $|\cdot|<$0.02 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: draws add to GPT-6-luna's judge across steps & 0.044 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
+Matched dose: success (non-inferiority) & 0.081 & $>$-0.05 & pass & $<10^{-6}$ & \textbf{yes}\\
 GPT-6-luna reviewer-free gate: reduction & 0.353 & $>$0 & pass & $<10^{-6}$ & \textbf{yes}\\
 Loss predicted, Claude's judge & 0.003 & $|\cdot|<$0.02 & pass & $<10^{-6}$ & \textbf{yes}\\
+Replication: loss predicted, GPT-6-luna's judge & -0.003 & $|\cdot|<$0.02 & pass & $<10^{-6}$ & \textbf{yes}\\
+Geometry gate $-$ random, tie held & 0.122 & $>$0 & pass & $3.0\times10^{-6}$ & \textbf{yes}\\
 Claude reviewer-free gate $-$ random & 0.198 & $>$0 & pass & $6.5\times10^{-6}$ & \textbf{yes}\\
 Self-forecast: own, within position (pooled) & 0.649 & $>$0.5 & pass & $7.9\times10^{-6}$ & \textbf{yes}\\
 GPT-6-luna pre-call read-out & 0.765 & $>$0.5 & pass & $3.0\times10^{-5}$ & \textbf{yes}\\
@@ -118,18 +135,20 @@ Loss predicted, GPT-6-luna judging itself & -0.007 & $|\cdot|<$0.02 & pass & $4.
 Geometric forecast, GPT-6-luna & 0.642 & $>$0.5 & pass & $2.5\times10^{-3}$ & \textbf{yes}\\
 Text-policy agreement, GPT-6-luna $-$ Claude & 0.127 & $>$0 & pass & $2.7\times10^{-3}$ & \textbf{yes}\\
 Geometric monitor, GPT-6-luna & 0.816 & $>$0.5 & pass & $2.9\times10^{-3}$ & \textbf{yes}\\
+Matched dose: self $-$ random & 0.114 & $>$0 & pass & $3.4\times10^{-3}$ & \textbf{yes}\\
 GPT-6-luna reviewer-free gate $-$ random & 0.206 & $>$0 & pass & $9.4\times10^{-3}$ & no\\
-GPT-6-luna reviewer-free gate: success (non-inferiority) & -0.016 & $>$-0.05 & fail & $5.4\times10^{-2}$ & no\\
-GPT-6-luna read $-$ Claude read, equivalence 0.05 & 0.039 & $|\cdot|<$0.05 & fail & $2.6\times10^{-1}$ & no\\
-Loss predicted, recalibrated reader, Claude's judge & -0.016 & $|\cdot|<$0.02 & fail & $2.7\times10^{-1}$ & no\\
-Label-free gap, Claude $-$ GPT-6-luna & -0.008 & $>$0 & fail & $7.1\times10^{-1}$ & no\\
-GPT-6-luna own draws $-$ GPT-6-luna text judge & -0.049 & $>$0 & fail & $7.8\times10^{-1}$ & no\\
-Self-forecast: own $-$ other, within position (pooled) & -0.032 & $>$0 & fail & $8.2\times10^{-1}$ & no\\
-Loss predicted, recalibrated reader, GPT-6-luna judging Claude & -0.046 & $|\cdot|<$0.02 & fail & $1.0\times10^{0}$ & no\\
-Claude own draws $-$ Gemma-4's draws, within template$|$tool & -0.144 & $>$0 & fail & $1.0\times10^{0}$ & no\\
-Self-forecast: own $-$ other, within template$|$tool (pooled) & -0.190 & $>$0 & fail & $1.0\times10^{0}$ & no\\
-Loss predicted with no label, Claude's judge & -0.226 & $|\cdot|<$0.02 & fail & $1.0\times10^{0}$ & no\\
-Loss predicted with no label, GPT-6-luna judging Claude & -0.214 & $|\cdot|<$0.02 & fail & $1.0\times10^{0}$ & no\\
+GPT-6-luna reviewer-free gate: success (non-inferiority) & -0.016 & $>$-0.05 & fail & 0.05 & no\\
+Geometry gate $-$ random, tie at random & 0.033 & $>$0 & fail & 0.17 & no\\
+GPT-6-luna read $-$ Claude read, equivalence 0.05 & 0.039 & $|\cdot|<$0.05 & fail & 0.26 & no\\
+Loss predicted, recalibrated reader, Claude's judge & -0.016 & $|\cdot|<$0.02 & fail & 0.27 & no\\
+Label-free gap, Claude $-$ GPT-6-luna & -0.008 & $>$0 & fail & 0.71 & no\\
+GPT-6-luna own draws $-$ GPT-6-luna text judge & -0.049 & $>$0 & fail & 0.78 & no\\
+Self-forecast: own $-$ other, within position (pooled) & -0.032 & $>$0 & fail & 0.82 & no\\
+Loss predicted, recalibrated reader, GPT-6-luna judging Claude & -0.046 & $|\cdot|<$0.02 & fail & 1.00 & no\\
+Claude own draws $-$ Gemma-4's draws, within template|tool & -0.144 & $>$0 & fail & 1.00 & no\\
+Self-forecast: own $-$ other, within template|tool (pooled) & -0.190 & $>$0 & fail & 1.00 & no\\
+Loss predicted with no label, Claude's judge & -0.226 & $|\cdot|<$0.02 & fail & 1.00 & no\\
+Loss predicted with no label, GPT-6-luna judging Claude & -0.214 & $|\cdot|<$0.02 & fail & 1.00 & no\\
 \bottomrule
 \end{tabular}
 \end{center}
