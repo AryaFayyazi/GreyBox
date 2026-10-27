@@ -1,7 +1,7 @@
 {
- "family_size": 62,
- "registered_passes": 48,
- "rejected_holm": 46,
+ "family_size": 64,
+ "registered_passes": 50,
+ "rejected_holm": 48,
  "passed_but_not_holm": [
   "Matched dose: self - random",
   "GPT-6-luna reviewer-free gate - random"
@@ -18,7 +18,7 @@
    "bar": 0.65,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008064516129032258,
+   "holm_threshold": 0.00078125,
    "rejected_holm": true
   },
   {
@@ -32,7 +32,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.000819672131147541,
+   "holm_threshold": 0.0007936507936507937,
    "rejected_holm": true
   },
   {
@@ -46,7 +46,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008333333333333334,
+   "holm_threshold": 0.0008064516129032258,
    "rejected_holm": true
   },
   {
@@ -60,7 +60,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008474576271186442,
+   "holm_threshold": 0.000819672131147541,
    "rejected_holm": true
   },
   {
@@ -74,7 +74,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008620689655172415,
+   "holm_threshold": 0.0008333333333333334,
    "rejected_holm": true
   },
   {
@@ -88,7 +88,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008771929824561404,
+   "holm_threshold": 0.0008474576271186442,
    "rejected_holm": true
   },
   {
@@ -102,7 +102,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0008928571428571429,
+   "holm_threshold": 0.0008620689655172415,
    "rejected_holm": true
   },
   {
@@ -116,7 +116,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0009090909090909091,
+   "holm_threshold": 0.0008771929824561404,
    "rejected_holm": true
   },
   {
@@ -130,7 +130,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.000925925925925926,
+   "holm_threshold": 0.0008928571428571429,
    "rejected_holm": true
   },
   {
@@ -144,7 +144,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0009433962264150943,
+   "holm_threshold": 0.0009090909090909091,
    "rejected_holm": true
   },
   {
@@ -158,7 +158,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0009615384615384616,
+   "holm_threshold": 0.000925925925925926,
    "rejected_holm": true
   },
   {
@@ -172,7 +172,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.000980392156862745,
+   "holm_threshold": 0.0009433962264150943,
    "rejected_holm": true
   },
   {
@@ -186,7 +186,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.001,
+   "holm_threshold": 0.0009615384615384616,
    "rejected_holm": true
   },
   {
@@ -200,7 +200,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0010204081632653062,
+   "holm_threshold": 0.000980392156862745,
    "rejected_holm": true
   },
   {
@@ -214,7 +214,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0010416666666666667,
+   "holm_threshold": 0.001,
    "rejected_holm": true
   },
   {
@@ -228,7 +228,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 0.0,
-   "holm_threshold": 0.0010638297872340426,
+   "holm_threshold": 0.0010204081632653062,
    "rejected_holm": true
   },
   {
@@ -242,7 +242,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.1102230246251565e-16,
-   "holm_threshold": 0.0010869565217391304,
+   "holm_threshold": 0.0010416666666666667,
    "rejected_holm": true
   },
   {
@@ -256,7 +256,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.220446049250313e-16,
-   "holm_threshold": 0.0011111111111111111,
+   "holm_threshold": 0.0010638297872340426,
    "rejected_holm": true
   },
   {
@@ -270,7 +270,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.0547118733938987e-15,
-   "holm_threshold": 0.0011363636363636365,
+   "holm_threshold": 0.0010869565217391304,
    "rejected_holm": true
   },
   {
@@ -284,7 +284,7 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 1.071365218763276e-13,
-   "holm_threshold": 0.0011627906976744186,
+   "holm_threshold": 0.0011111111111111111,
    "rejected_holm": true
   },
   {
@@ -298,7 +298,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.219024881038422e-13,
-   "holm_threshold": 0.0011904761904761906,
+   "holm_threshold": 0.0011363636363636365,
    "rejected_holm": true
   },
   {
@@ -312,7 +312,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 7.885914143912487e-13,
-   "holm_threshold": 0.0012195121951219512,
+   "holm_threshold": 0.0011627906976744186,
    "rejected_holm": true
   },
   {
@@ -326,7 +326,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.0811351813799774e-12,
-   "holm_threshold": 0.00125,
+   "holm_threshold": 0.0011904761904761906,
    "rejected_holm": true
   },
   {
@@ -340,7 +340,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 1.2798095916366492e-12,
-   "holm_threshold": 0.001282051282051282,
+   "holm_threshold": 0.0012195121951219512,
    "rejected_holm": true
   },
   {
@@ -354,7 +354,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5400237468886644e-12,
-   "holm_threshold": 0.0013157894736842105,
+   "holm_threshold": 0.00125,
    "rejected_holm": true
   },
   {
@@ -368,7 +368,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.6167401578902627e-12,
-   "holm_threshold": 0.0013513513513513514,
+   "holm_threshold": 0.001282051282051282,
    "rejected_holm": true
   },
   {
@@ -382,7 +382,7 @@
    "bar": -0.05,
    "registered_pass": true,
    "p_one_sided": 3.42560979582629e-11,
-   "holm_threshold": 0.001388888888888889,
+   "holm_threshold": 0.0013157894736842105,
    "rejected_holm": true
   },
   {
@@ -396,7 +396,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 3.653705116235528e-11,
-   "holm_threshold": 0.0014285714285714286,
+   "holm_threshold": 0.0013513513513513514,
    "rejected_holm": true
   },
   {
@@ -410,7 +410,7 @@
    "bar": -0.05,
    "registered_pass": true,
    "p_one_sided": 1.201736488098959e-10,
-   "holm_threshold": 0.0014705882352941176,
+   "holm_threshold": 0.001388888888888889,
    "rejected_holm": true
   },
   {
@@ -424,7 +424,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 8.815825847108272e-10,
-   "holm_threshold": 0.0015151515151515152,
+   "holm_threshold": 0.0014285714285714286,
    "rejected_holm": true
   },
   {
@@ -438,7 +438,7 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 2.242104613081608e-09,
-   "holm_threshold": 0.0015625,
+   "holm_threshold": 0.0014705882352941176,
    "rejected_holm": true
   },
   {
@@ -452,7 +452,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.4117336461237926e-09,
-   "holm_threshold": 0.0016129032258064516,
+   "holm_threshold": 0.0015151515151515152,
    "rejected_holm": true
   },
   {
@@ -466,7 +466,7 @@
    "bar": -0.05,
    "registered_pass": true,
    "p_one_sided": 9.270408496409033e-09,
-   "holm_threshold": 0.0016666666666666668,
+   "holm_threshold": 0.0015625,
    "rejected_holm": true
   },
   {
@@ -480,7 +480,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 1.5162202882113007e-08,
-   "holm_threshold": 0.001724137931034483,
+   "holm_threshold": 0.0016129032258064516,
    "rejected_holm": true
   },
   {
@@ -494,7 +494,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 2.5709747775159997e-08,
-   "holm_threshold": 0.0017857142857142859,
+   "holm_threshold": 0.0016666666666666668,
    "rejected_holm": true
   },
   {
@@ -508,7 +508,7 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 3.6018224403022714e-08,
-   "holm_threshold": 0.001851851851851852,
+   "holm_threshold": 0.001724137931034483,
    "rejected_holm": true
   },
   {
@@ -522,7 +522,7 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 1.1964780788353835e-07,
-   "holm_threshold": 0.0019230769230769232,
+   "holm_threshold": 0.0017857142857142859,
    "rejected_holm": true
   },
   {
@@ -536,7 +536,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 3.02687526343437e-06,
-   "holm_threshold": 0.002,
+   "holm_threshold": 0.001851851851851852,
    "rejected_holm": true
   },
   {
@@ -550,7 +550,7 @@
    "bar": 0.0,
    "registered_pass": true,
    "p_one_sided": 6.504456498468425e-06,
-   "holm_threshold": 0.0020833333333333333,
+   "holm_threshold": 0.0019230769230769232,
    "rejected_holm": true
   },
   {
@@ -564,7 +564,21 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 7.889857542353607e-06,
-   "holm_threshold": 0.002173913043478261,
+   "holm_threshold": 0.002,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Persistent geometry gate - random at its dose, Claude new worlds",
+   "estimate": 0.1846,
+   "ci": [
+    0.1,
+    0.2692
+   ],
+   "kind": "gt",
+   "bar": 0.0,
+   "registered_pass": true,
+   "p_one_sided": 9.480593810229365e-06,
+   "holm_threshold": 0.0020833333333333333,
    "rejected_holm": true
   },
   {
@@ -578,7 +592,7 @@
    "bar": 0.5,
    "registered_pass": true,
    "p_one_sided": 3.044985220623797e-05,
-   "holm_threshold": 0.002272727272727273,
+   "holm_threshold": 0.002173913043478261,
    "rejected_holm": true
   },
   {
@@ -592,6 +606,20 @@
    "bar": 0.02,
    "registered_pass": true,
    "p_one_sided": 0.00040023591224913613,
+   "holm_threshold": 0.002272727272727273,
+   "rejected_holm": true
+  },
+  {
+   "endpoint": "Persistent geometry gate: success (non-inferiority)",
+   "estimate": 0.0231,
+   "ci": [
+    -0.0538,
+    0.1
+   ],
+   "kind": "gt",
+   "bar": -0.1,
+   "registered_pass": true,
+   "p_one_sided": 0.0008518913412159379,
    "holm_threshold": 0.002380952380952381,
    "rejected_holm": true
   },

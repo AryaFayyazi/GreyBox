@@ -3,7 +3,7 @@
 EVERY registered endpoint, passed or failed, of every closed-agent test whose result the abstract cites, and of the
 tests that bear on those claims (G62). Open-agent endpoints are left out. (Revised 2026-10-24 14:20 after review: the first
 version mixed in two open-agent G15 endpoints and predated G59-G62. Revised 2026-10-26 after review round 18: adds every
-CI-based endpoint of the later closed-agent tests G65-G67, G72, G75, G76 and G78, then G79, G80 and G80b; count endpoints (G73 E1, G78 P2) and
+CI-based endpoint of the later closed-agent tests G65-G67, G72, G75, G76 and G78, then G79, G80, G80b and G81; count endpoints (G73 E1, G78 P2) and
 dose checks have no interval and stay out.)
 One-sided p against the registered bar (a superiority null, a non-inferiority margin, or for an equivalence endpoint the
 larger of its two one-sided p's), from the stored estimate and 95% cluster-bootstrap interval (normal approximation,
@@ -83,6 +83,9 @@ F += [("New worlds: geometric forecast, Claude", g79["forecast"]["F1_geometric"]
       ("New worlds: geometry gate - random, Claude", g79["gate"]["P1_random_minus_geo_violating"], "gt", 0.0),
       ("GPT-6-luna geometry gate - random (dose unmatched)", g80["Q1_random_minus_geo_violating"], "gt", 0.0),
       ("GPT-6-luna geometry gate - random at its dose", g80b["R1_random_matched_minus_geo"], "gt", 0.0)]
+g81 = J("g81_persistent_gate")
+F += [("Persistent geometry gate - random at its dose, Claude new worlds", g81["S1_random_minus_geo_violating"], "gt", 0.0),
+      ("Persistent geometry gate: success (non-inferiority)", g81["success_geo_minus_random"], "gt", -0.10)]
 P = lambda z: 0.5 * (1 - erf(z / sqrt(2)))  # noqa: E731
 rows = []
 for name, (est, lo, hi), kind, bar in F:

@@ -1,0 +1,74 @@
+{
+ "new_kinds": {
+  "contexts": 79,
+  "kinds": [
+   "code",
+   "injection",
+   "jailbreak_bench",
+   "news"
+  ],
+  "claude_agreement": {
+   "gemma3_4b": 0.4532,
+   "gptoss20b": 0.2556,
+   "llama31_8b": 0.5747,
+   "mistral7b": 0.4023,
+   "olmo3_7b": 0.3661,
+   "phi4mini": 0.3213,
+   "qwen25_7b": 0.3947,
+   "qwen3_8b": 0.5535
+  },
+  "claude_minus_strongest_per_model": {
+   "gemma3_4b": -0.1146,
+   "gptoss20b": -0.1819,
+   "llama31_8b": 0.2346,
+   "mistral7b": 0.0704,
+   "olmo3_7b": 0.0181,
+   "phi4mini": -0.1071,
+   "qwen25_7b": 0.057,
+   "qwen3_8b": 0.1569
+  },
+  "models_claude_ahead": 5,
+  "mean_claude_minus_strongest": [
+   0.0167,
+   -0.0596,
+   0.1026
+  ]
+ },
+ "original_kinds_fresh": {
+  "contexts": 121,
+  "kinds": [
+   "benign",
+   "boolq",
+   "gsm8k",
+   "harmful",
+   "sst2",
+   "wiki"
+  ],
+  "claude_agreement": {
+   "gemma3_4b": 0.7076,
+   "gptoss20b": 0.4207,
+   "llama31_8b": 0.7906,
+   "mistral7b": 0.7415,
+   "olmo3_7b": 0.6341,
+   "phi4mini": 0.6311,
+   "qwen25_7b": 0.6937,
+   "qwen3_8b": 0.7284
+  },
+  "claude_minus_strongest_per_model": {
+   "gemma3_4b": 0.3873,
+   "gptoss20b": 0.0724,
+   "llama31_8b": 0.4739,
+   "mistral7b": 0.4714,
+   "olmo3_7b": 0.3469,
+   "phi4mini": 0.3405,
+   "qwen25_7b": 0.3845,
+   "qwen3_8b": 0.3971
+  },
+  "models_claude_ahead": 8,
+  "mean_claude_minus_strongest": [
+   0.3593,
+   0.3046,
+   0.4035
+  ]
+ }
+}

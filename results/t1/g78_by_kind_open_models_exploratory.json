@@ -1,0 +1,22 @@
+{
+ "new": {
+  "gemma3_4b": -0.24,
+  "gptoss20b": -0.147,
+  "llama31_8b": 0.2,
+  "mistral7b": 0.153,
+  "olmo3_7b": 0.086,
+  "phi4mini": -0.016,
+  "qwen25_7b": 0.283,
+  "qwen3_8b": 0.282
+ },
+ "orig": {
+  "gemma3_4b": 0.17,
+  "gptoss20b": 0.054,
+  "llama31_8b": 0.411,
+  "mistral7b": 0.5,
+  "olmo3_7b": 0.33,
+  "phi4mini": 0.339,
+  "qwen25_7b": 0.411,
+  "qwen3_8b": 0.373
+ }
+}
