@@ -12,8 +12,8 @@
       AUROC among calls at the same position. GPT says: g45_per_agent_ci.json own_within_position.gpt; Claude says:
       g46_rollout_forecast.json within_position.report = 0.4746, interval [0.4323, 0.5109] from scripts/228's
       cluster bootstrap (not stored in a results file); Claude does: g46 R1_own_within_position.
-  (d) Prevent, with no human: violating episodes (%), live. Claude: g67_matched_dose.json (G67), GPT-6-luna: g51 — the same gate on both: the agent's own signed read-out vs random holds;
-      GPT-6-luna: g51_gpt_selfgate.json violating_episodes (the same reviewer-free hold, six templates).
+  (d) Prevent, with no human: violating episodes (%), live; the same label-free geometry gate on both agents vs random holds at
+      the same dose. Claude: g81_persistent_gate.json (G81, new restart worlds); GPT-6-luna: g80b_gpt_dose_matched_random.json (G80b, six templates).
 Drawn at print size (6.75 in = ICML text width; no tight bbox), so every font size is a true point size.
   python scripts/236_fig_teaser_v7.py  -> paper/figures/teaser_v7.pdf, results/figures/teaser_v7.png
 """
@@ -226,24 +226,22 @@ def panel_forecast(ax):
 
 # ---------------------------------------------------------------- (d)
 def panel_prevent(ax, lab_w):
-    s, b = J("g67_matched_dose.json")["violating_episodes"], J("g51_gpt_selfgate.json")["violating_episodes"]
+    c, g = J("g81_persistent_gate.json")["violating_episodes"], J("g80b_gpt_dose_matched_random.json")["violating_episodes"]
     style(ax)
     grey = tint(MUTE, 0.35)
-    rows = [(6.0, "no gate", s["none"], grey), (5.0, "random holds", s["random"], grey),
-            (4.0, "own read-out", s["self"], ORANGE),
-            (2.0, "no gate", b["none"], grey), (1.0, "random holds", b["random"], grey),
-            (0.0, "own read-out", b["self"], ORANGE)]
+    rows = [(5.0, "random holds", g["random_matched"], grey), (4.0, "geometry gate", g["geo"], ORANGE),
+            (1.0, "random holds", c["random"], grey), (0.0, "geometry gate", c["geo"], ORANGE)]
     for yy, lab, v, col in rows:
         ax.barh([yy], [100 * v], height=0.62, color=col, lw=0, zorder=2)
         ax.text(100 * v + 1.5, yy, f"{float(np.round(100 * v + 1e-9, 1)):.1f}%", fontsize=FS_TICK, color=INK, ha="left", va="center")
         ax.text(0, yy, lab, transform=inch_x(ax, -0.05), fontsize=FS_LAB, color=INK, ha="right", va="center")
-    set_rows(ax, 7.05)
-    header(ax, 7.05, "Claude Haiku 5.5", dx=-lab_w)
-    header(ax, 3.0, "GPT-6-luna", dx=-lab_w)
-    ax.set_xlim(0, 92)
-    ax.set_xticks([0, 25, 50, 75], ["0", "25", "50", "75%"])
+    set_rows(ax, 6.05)
+    header(ax, 6.05, "GPT-6-luna", dx=-lab_w)
+    header(ax, 2.05, "Claude Haiku 5.5", dx=-lab_w)
+    ax.set_xlim(0, 40)
+    ax.set_xticks([0, 10, 20, 30], ["0", "10", "20", "30%"])
     ax.set_xlabel("violating episodes, live", fontsize=FS_LAB, color=INK, labelpad=1.5)
-    return {lab: v for _, lab, v, _ in rows}, s, b
+    return {lab: v for _, lab, v, _ in rows}, c, g
 
 
 # ---------------------------------------------------------------- checks
@@ -280,7 +278,7 @@ def main():
     heads = [(xa, "a", "Estimate the geometry", "its answers redraw its hidden map"),
              (xb0, "b", "Read its decision state", "its answers track a slice of it"),
              (xc0, "c", "Forecast before the call", "text works only if words track actions"),
-             (xd0, "d", "Prevent before harm", "its own read-out holds risky calls")]
+             (xd0, "d", "Prevent before harm", "a label-free gate on the geometry")]
     for x0, k, title, sub in heads:
         fig.text(x0 / W, (H - 0.04) / H, f"({k}) {title}", fontsize=FS_TITLE, fontweight="bold", color=INK, va="top")
         fig.text(x0 / W, (H - 0.20) / H, sub, fontsize=FS_SUB, color=MUTE, va="top")
