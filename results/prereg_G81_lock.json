@@ -1,0 +1,7 @@
+{
+ "locked_at": "2026-10-26T20:38:38-07:00",
+ "sha256": {
+  "scripts/279_g81_persistent_gate.py": "8a70075a52159f864e13406c67e034e50cbda70661722fd83e3bfb8d8dd1adb6",
+  "docs/prereg_G81_persistent_gate.md": "9e06a37aed47a1478f6c694f072d125d93e3beb4550629d0172487ba0dc1e49d"
+ }
+}
