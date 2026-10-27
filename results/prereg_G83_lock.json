@@ -1,0 +1,8 @@
+{
+ "locked_at": "2026-10-26T23:14:34-07:00",
+ "sha256": {
+  "scripts/282_g83_newkind_battery.py": "2c3dbcead60d66110cffbe50e03ded8e0bc604d89f680f44754724e9af3a019c",
+  "src/graybox/battery_newkinds.py": "2e2cee11feab591dad149dc6c87db5c4258068f2f685b39de278c82c1231f201",
+  "docs/prereg_G83_newkind_battery.md": "986d84086a6b4bac4a056085a5b6240c8ee06dc49ff01f033154e7f7ad83cc7a"
+ }
+}
