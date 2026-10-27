@@ -1,5 +1,5 @@
 % Compact full record of every preregistered test (source: docs/PREREGISTRATION_RECORD.md).
-% Outcome marks use the rule of paper/make_record.py (_cls): "pending" > "stopped" > PASS and FAIL/NO DETECTABLE
+% Outcome marks are set by hand from each test's registered primary endpoints (pass = every primary passes); paper/make_record.py's keyword rule (_cls), applied to the record, gives a different split because rows mention earlier failures
 % in the recorded outcome text give pass / mixed / fail; neither gives "no bar". Record ids are in the trailing comments only.
 \providecommand{\frPass}{\textcolor{gbaqua}{pass}}
 \providecommand{\frFail}{\textcolor{gborange}{fail}}
@@ -25,7 +25,7 @@ Observable state, Othello & $R^2$ 0.967 [0.967, 0.968] $>$ 0.90; gain in $R^2$ +
 Open-model readouts transfer to Claude Haiku 5.5 & 0.993 [0.983, 0.999]; 0.997 [0.990, 1.000]; 0.935 [0.868, 0.982] & \frPass & 2026-10-15\\ % L3
 Answers vs input text, 8 open models and Claude; exact recovery & Answers beat text on 8/8 models (lower bounds $\geq$ 0.141); Claude split-half 0.950 [0.939, 0.960], vs text +0.438 [0.391, 0.485]; exact Gram recovery, Pearson 1.0 & \frPass & \lockref{ebb89b1}\\ % G
 Yes/no answers vs the model's own replies & Exact answers beat 8 replies on 8/8 models (+0.16 to +0.48); sampled answers beat 1 reply on 7/8; replies saturate on 8/8 & \frPass & \lockref{0163682}\\ % G5
-The geometry is shared across models & No own-model excess, +0.002 [$-$0.001, +0.005] (equivalence $\pm$0.02); an open model's hidden geometry is the better stand-in on 6/7 & \frPass & \lockref{85ed1bb}\\ % G6
+The geometry is shared across models & No own-model excess, +0.002 [$-$0.001, +0.006] (equivalence $\pm$0.02); an open model's hidden geometry is the better stand-in on 6/7 & \frPass & \lockref{85ed1bb}\\ % G6
 What each API channel reveals & Answers show no own-model excess (+0.001); log-probabilities leak most, +0.221 [0.211, 0.230], and identify the model on 7/8 & \frPass & \lockref{722d5fe}\\ % G7
 Estimated state vs the true hidden state & Filtered $-$ raw answers +0.019 [0.001, 0.038]; forecast 0.116 [0.078, 0.153] (mostly position, exploratory) & \frPass & \lockref{d20c0c0}\\ % G28
 Memory of the state and the filter's noise & Lag-1 autocorrelation 0.132 [0.090, 0.171]; decay 0.119 [0.075, 0.155]; variance 0.31 [0.29, 0.34] of the nominal noise & \frPass & \lockref{38bf06a}\\ % G31c
