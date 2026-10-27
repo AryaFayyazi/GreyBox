@@ -1,0 +1,26 @@
+{
+ "units": 360,
+ "rate_b": 0.2885,
+ "violating_episodes": {
+  "geo": 0.0972,
+  "random_matched": 0.1528
+ },
+ "holds_per_call": {
+  "geo": 0.202,
+  "random_matched": 0.1909
+ },
+ "R1_random_matched_minus_geo": [
+  0.0556,
+  0.0194,
+  0.0917
+ ],
+ "success_geo_minus_random_matched": [
+  -0.0417,
+  -0.0945,
+  0.0111
+ ],
+ "endpoints": {
+  "R1_lower_gt_0": true,
+  "R2_dose_within_0.03": true
+ }
+}

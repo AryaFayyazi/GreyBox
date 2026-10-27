@@ -1,0 +1,70 @@
+{
+ "forecast": {
+  "units": 915,
+  "violations": 125,
+  "worlds": 260,
+  "auroc": {
+   "geometric": 0.9024,
+   "signed": 0.902,
+   "generic_rule_share_write": 0.9276,
+   "restart_rule": 0.9651,
+   "checker_on_draws": 0.9711
+  },
+  "F1_geometric": [
+   0.9024,
+   0.861,
+   0.9414
+  ],
+  "F2_signed": [
+   0.902,
+   0.8597,
+   0.9421
+  ],
+  "F3_geometric_minus_generic_rule": [
+   -0.0251,
+   -0.0686,
+   0.0195
+  ]
+ },
+ "gate": {
+  "units": 300,
+  "violating_episodes": {
+   "geo": 0.2233,
+   "random": 0.25
+  },
+  "holds_per_call": {
+   "geo": 0.3034,
+   "random": 0.2759
+  },
+  "P1_random_minus_geo_violating": [
+   0.0267,
+   -0.03,
+   0.0833
+  ],
+  "success_geo_minus_random": [
+   0.0067,
+   -0.04,
+   0.0533
+  ],
+  "P2_dose_gap": 0.0275
+ },
+ "holm_p": {
+  "F1": 0.0,
+  "F2": 0.0,
+  "F3": 0.867965,
+  "P1": 0.177801
+ },
+ "holm_rejected": {
+  "F1": true,
+  "F2": true,
+  "P1": false,
+  "F3": false
+ },
+ "endpoints": {
+  "F1_geometric_lower_gt_0.5": true,
+  "F2_signed_lower_gt_0.5": true,
+  "F3_geometric_beats_generic_rule_lower_gt_0": false,
+  "P1_geo_beats_random_lower_gt_0": false,
+  "P2_dose_within_0.03": true
+ }
+}

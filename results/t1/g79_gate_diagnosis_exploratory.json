@@ -1,0 +1,42 @@
+{
+ "g76_41_scenarios": {
+  "reads": 2135,
+  "violating_share": 0.1204,
+  "auroc_distance": 0.7916,
+  "held_share_violating": 0.8444,
+  "held_share_safe": 0.3722,
+  "hold_precision": 0.2369,
+  "geo": {
+   "episodes": 492,
+   "violating": 0.2012,
+   "episodes_with_held_violating_call": 217,
+   "of_which_still_violated": 0.2581
+  },
+  "random": {
+   "episodes": 492,
+   "violating": 0.3232,
+   "episodes_with_held_violating_call": 105,
+   "of_which_still_violated": 0.3714
+  }
+ },
+ "g79_new_worlds": {
+  "reads": 1346,
+  "violating_share": 0.1025,
+  "auroc_distance": 0.779,
+  "held_share_violating": 0.8406,
+  "held_share_safe": 0.3626,
+  "hold_precision": 0.2094,
+  "geo": {
+   "episodes": 300,
+   "violating": 0.2233,
+   "episodes_with_held_violating_call": 116,
+   "of_which_still_violated": 0.3879
+  },
+  "random": {
+   "episodes": 300,
+   "violating": 0.25,
+   "episodes_with_held_violating_call": 44,
+   "of_which_still_violated": 0.3636
+  }
+ }
+}
