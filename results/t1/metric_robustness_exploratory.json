@@ -1,0 +1,149 @@
+{
+ "contexts": 1000,
+ "mean": {
+  "hidden_cosine": {
+   "angles_euclidean (ours)": 0.4895,
+   "angles_cosine": 0.4805,
+   "raw_p_euclidean": 0.4897,
+   "text_cosine": 0.1941,
+   "text_euclidean": 0.1941
+  },
+  "hidden_euclidean": {
+   "angles_euclidean (ours)": 0.4864,
+   "angles_cosine": 0.4838,
+   "raw_p_euclidean": 0.4867,
+   "text_cosine": 0.1974,
+   "text_euclidean": 0.1974
+  }
+ },
+ "per_model": {
+  "gemma3_4b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.3379,
+    "angles_cosine": 0.2713,
+    "raw_p_euclidean": 0.3465,
+    "text_cosine": 0.1973,
+    "text_euclidean": 0.1973
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.2539,
+    "angles_cosine": 0.2658,
+    "raw_p_euclidean": 0.2614,
+    "text_cosine": 0.222,
+    "text_euclidean": 0.222
+   }
+  },
+  "gptoss20b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.2237,
+    "angles_cosine": 0.2143,
+    "raw_p_euclidean": 0.2256,
+    "text_cosine": 0.2331,
+    "text_euclidean": 0.2331
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.2191,
+    "angles_cosine": 0.2102,
+    "raw_p_euclidean": 0.2217,
+    "text_cosine": 0.2337,
+    "text_euclidean": 0.2337
+   }
+  },
+  "llama31_8b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.6441,
+    "angles_cosine": 0.6777,
+    "raw_p_euclidean": 0.6445,
+    "text_cosine": 0.1527,
+    "text_euclidean": 0.1527
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.5867,
+    "angles_cosine": 0.5748,
+    "raw_p_euclidean": 0.5911,
+    "text_cosine": 0.1854,
+    "text_euclidean": 0.1854
+   }
+  },
+  "mistral7b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.5341,
+    "angles_cosine": 0.5006,
+    "raw_p_euclidean": 0.5381,
+    "text_cosine": 0.1653,
+    "text_euclidean": 0.1653
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.5251,
+    "angles_cosine": 0.4875,
+    "raw_p_euclidean": 0.5278,
+    "text_cosine": 0.1658,
+    "text_euclidean": 0.1658
+   }
+  },
+  "olmo3_7b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.4845,
+    "angles_cosine": 0.4969,
+    "raw_p_euclidean": 0.4818,
+    "text_cosine": 0.2198,
+    "text_euclidean": 0.2198
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.5536,
+    "angles_cosine": 0.6093,
+    "raw_p_euclidean": 0.548,
+    "text_cosine": 0.1679,
+    "text_euclidean": 0.1679
+   }
+  },
+  "phi4mini": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.4285,
+    "angles_cosine": 0.4171,
+    "raw_p_euclidean": 0.4347,
+    "text_cosine": 0.1956,
+    "text_euclidean": 0.1956
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.4526,
+    "angles_cosine": 0.419,
+    "raw_p_euclidean": 0.4611,
+    "text_cosine": 0.2193,
+    "text_euclidean": 0.2193
+   }
+  },
+  "qwen25_7b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.638,
+    "angles_cosine": 0.6514,
+    "raw_p_euclidean": 0.6357,
+    "text_cosine": 0.1819,
+    "text_euclidean": 0.1819
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.6351,
+    "angles_cosine": 0.6273,
+    "raw_p_euclidean": 0.6329,
+    "text_cosine": 0.1815,
+    "text_euclidean": 0.1815
+   }
+  },
+  "qwen3_8b": {
+   "hidden_cosine": {
+    "angles_euclidean (ours)": 0.6254,
+    "angles_cosine": 0.6149,
+    "raw_p_euclidean": 0.6107,
+    "text_cosine": 0.2071,
+    "text_euclidean": 0.2071
+   },
+   "hidden_euclidean": {
+    "angles_euclidean (ours)": 0.6652,
+    "angles_cosine": 0.6766,
+    "raw_p_euclidean": 0.6495,
+    "text_cosine": 0.2037,
+    "text_euclidean": 0.2037
+   }
+  }
+ }
+}
