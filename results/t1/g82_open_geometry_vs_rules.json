@@ -1,0 +1,56 @@
+{
+ "agents": {
+  "gemma4": {
+   "units": 300,
+   "violations": 150,
+   "templates": 14,
+   "geo": 0.8721,
+   "rule": 0.466,
+   "checker": 0.8964,
+   "signed": 0.899
+  },
+  "gptoss20b": {
+   "units": 300,
+   "violations": 150,
+   "templates": 14,
+   "geo": 0.7068,
+   "rule": 0.5689,
+   "checker": 0.879,
+   "signed": 0.8091
+  },
+  "qwen38": {
+   "units": 289,
+   "violations": 139,
+   "templates": 11,
+   "geo": 0.844,
+   "rule": 0.2348,
+   "checker": 0.8685,
+   "signed": 0.8585
+  },
+  "museglimmer": {
+   "units": 300,
+   "violations": 150,
+   "templates": 8,
+   "geo": 0.6515,
+   "rule": 0.3222,
+   "checker": 0.7689,
+   "signed": 0.718
+  }
+ },
+ "P1_mean_geo_minus_rule": [
+  0.3706,
+  0.3014,
+  0.4369
+ ],
+ "P2_mean_geo": [
+  0.7686,
+  0.7219,
+  0.8133
+ ],
+ "reported_mean_checker": 0.8532,
+ "endpoints": {
+  "P1_lower_gt_0": true,
+  "P2_lower_gt_0.5": true,
+  "all_four_agents": true
+ }
+}
