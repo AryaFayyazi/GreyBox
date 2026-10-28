@@ -1,0 +1,44 @@
+{
+ "per_agent": {
+  "gemma4": {
+   "geo": 0.8721,
+   "rule_registered": 0.466,
+   "rule_signfree": 0.4681,
+   "rule_best_direction": 0.534
+  },
+  "gptoss20b": {
+   "geo": 0.7068,
+   "rule_registered": 0.5689,
+   "rule_signfree": 0.4311,
+   "rule_best_direction": 0.5689
+  },
+  "qwen38": {
+   "geo": 0.844,
+   "rule_registered": 0.2348,
+   "rule_signfree": 0.7652,
+   "rule_best_direction": 0.7652
+  },
+  "museglimmer": {
+   "geo": 0.6515,
+   "rule_registered": 0.3222,
+   "rule_signfree": 0.5444,
+   "rule_best_direction": 0.6778
+  }
+ },
+ "mean": {
+  "geo": 0.7686,
+  "rule_registered": 0.398,
+  "rule_signfree": 0.5522,
+  "rule_best_direction": 0.6365
+ },
+ "geo_minus_signfree_rule": [
+  0.2164,
+  0.1558,
+  0.2772
+ ],
+ "geo_minus_best_direction_rule": [
+  0.1321,
+  0.0673,
+  0.198
+ ]
+}
