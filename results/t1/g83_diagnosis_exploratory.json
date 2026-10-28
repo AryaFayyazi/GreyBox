@@ -1,0 +1,243 @@
+{
+ "mean": {
+  "rho_24": 0.2463,
+  "rho_88": 0.4555,
+  "rho_112": 0.441,
+  "share_24_near_deterministic": 0.4219,
+  "mean_sq_dist_share_from_24": 0.1706
+ },
+ "per_model": {
+  "gemma3_4b": {
+   "rho_24": 0.2509,
+   "rho_88": 0.2833,
+   "rho_112": 0.2945,
+   "share_24_near_deterministic": 0.583,
+   "within_kind_88_112_24": {
+    "code": [
+     0.3034,
+     0.3225,
+     0.223
+    ],
+    "injection": [
+     0.1593,
+     0.1781,
+     0.1445
+    ],
+    "jailbreak_bench": [
+     0.6402,
+     0.6444,
+     0.3456
+    ],
+    "news": [
+     0.4787,
+     0.5122,
+     0.388
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.208
+  },
+  "gptoss20b": {
+   "rho_24": 0.394,
+   "rho_88": 0.3007,
+   "rho_112": 0.3266,
+   "share_24_near_deterministic": 0.0,
+   "within_kind_88_112_24": {
+    "code": [
+     0.1866,
+     0.1982,
+     0.1871
+    ],
+    "injection": [
+     0.3154,
+     0.3153,
+     0.2193
+    ],
+    "jailbreak_bench": [
+     0.1306,
+     0.128,
+     0.0986
+    ],
+    "news": [
+     0.0848,
+     0.0668,
+     0.0151
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.174
+  },
+  "llama31_8b": {
+   "rho_24": 0.3095,
+   "rho_88": 0.5902,
+   "rho_112": 0.5664,
+   "share_24_near_deterministic": 0.292,
+   "within_kind_88_112_24": {
+    "code": [
+     0.3879,
+     0.4287,
+     0.4772
+    ],
+    "injection": [
+     0.2433,
+     0.2394,
+     0.1302
+    ],
+    "jailbreak_bench": [
+     0.8118,
+     0.8123,
+     0.5363
+    ],
+    "news": [
+     0.3216,
+     0.3175,
+     0.1823
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.187
+  },
+  "mistral7b": {
+   "rho_24": 0.3559,
+   "rho_88": 0.4613,
+   "rho_112": 0.4576,
+   "share_24_near_deterministic": 0.542,
+   "within_kind_88_112_24": {
+    "code": [
+     0.3038,
+     0.3583,
+     0.3094
+    ],
+    "injection": [
+     0.2622,
+     0.2565,
+     0.1045
+    ],
+    "jailbreak_bench": [
+     0.2151,
+     0.2153,
+     0.1513
+    ],
+    "news": [
+     0.2352,
+     0.2463,
+     0.1705
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.172
+  },
+  "olmo3_7b": {
+   "rho_24": 0.153,
+   "rho_88": 0.4546,
+   "rho_112": 0.4225,
+   "share_24_near_deterministic": 0.083,
+   "within_kind_88_112_24": {
+    "code": [
+     0.1685,
+     0.173,
+     0.0916
+    ],
+    "injection": [
+     0.2519,
+     0.2703,
+     0.2297
+    ],
+    "jailbreak_bench": [
+     0.7025,
+     0.6856,
+     0.3145
+    ],
+    "news": [
+     0.1394,
+     0.1227,
+     0.0365
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.162
+  },
+  "phi4mini": {
+   "rho_24": 0.1509,
+   "rho_88": 0.4024,
+   "rho_112": 0.3781,
+   "share_24_near_deterministic": 0.25,
+   "within_kind_88_112_24": {
+    "code": [
+     0.3635,
+     0.4102,
+     0.4266
+    ],
+    "injection": [
+     0.2474,
+     0.2475,
+     0.1037
+    ],
+    "jailbreak_bench": [
+     0.735,
+     0.7323,
+     0.5775
+    ],
+    "news": [
+     0.378,
+     0.3958,
+     0.2795
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.166
+  },
+  "qwen25_7b": {
+   "rho_24": 0.2671,
+   "rho_88": 0.5509,
+   "rho_112": 0.5236,
+   "share_24_near_deterministic": 0.875,
+   "within_kind_88_112_24": {
+    "code": [
+     0.3732,
+     0.3538,
+     0.0939
+    ],
+    "injection": [
+     0.2733,
+     0.2802,
+     0.1981
+    ],
+    "jailbreak_bench": [
+     0.6864,
+     0.6687,
+     0.3419
+    ],
+    "news": [
+     0.4009,
+     0.4238,
+     0.2469
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.167
+  },
+  "qwen3_8b": {
+   "rho_24": 0.0888,
+   "rho_88": 0.6004,
+   "rho_112": 0.5587,
+   "share_24_near_deterministic": 0.75,
+   "within_kind_88_112_24": {
+    "code": [
+     0.251,
+     0.2997,
+     0.2791
+    ],
+    "injection": [
+     0.3759,
+     0.3956,
+     0.2201
+    ],
+    "jailbreak_bench": [
+     0.7341,
+     0.7194,
+     0.3118
+    ],
+    "news": [
+     0.4725,
+     0.4785,
+     0.2418
+    ]
+   },
+   "mean_sq_dist_share_from_24": 0.129
+  }
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "contexts": 400,
+ "per_model": {
+  "gemma3_4b": {
+   "rho_88": 0.2833,
+   "rho_112": 0.2945,
+   "strongest_text": 0.5696
+  },
+  "gptoss20b": {
+   "rho_88": 0.3007,
+   "rho_112": 0.3266,
+   "strongest_text": 0.348
+  },
+  "llama31_8b": {
+   "rho_88": 0.5902,
+   "rho_112": 0.5664,
+   "strongest_text": 0.4214
+  },
+  "mistral7b": {
+   "rho_88": 0.4613,
+   "rho_112": 0.4576,
+   "strongest_text": 0.3162
+  },
+  "olmo3_7b": {
+   "rho_88": 0.4546,
+   "rho_112": 0.4225,
+   "strongest_text": 0.4567
+  },
+  "phi4mini": {
+   "rho_88": 0.4024,
+   "rho_112": 0.3781,
+   "strongest_text": 0.4103
+  },
+  "qwen25_7b": {
+   "rho_88": 0.5509,
+   "rho_112": 0.5236,
+   "strongest_text": 0.3354
+  },
+  "qwen3_8b": {
+   "rho_88": 0.6004,
+   "rho_112": 0.5587,
+   "strongest_text": 0.4124
+  }
+ },
+ "E1_mean_rho112_minus_rho88": [
+  -0.0145,
+  -0.0183,
+  -0.0104
+ ],
+ "E2_mean_rho112_minus_strongest_text": [
+  0.0322,
+  0.0065,
+  0.0548
+ ],
+ "endpoints": {
+  "E1_lower_gt_0": false,
+  "E2_lower_gt_0": true
+ }
+}
