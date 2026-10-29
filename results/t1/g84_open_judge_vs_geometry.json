@@ -1,0 +1,77 @@
+{
+ "dry_run_random_judge_permuted_labels": false,
+ "agents": {
+  "gemma4": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.8721,
+   "signed": 0.899,
+   "judge": 0.6331,
+   "judge_parsed_share": 1.0,
+   "judge_too_long": 0,
+   "judge_truncated_samples": 0,
+   "geo_minus_judge": 0.239
+  },
+  "gptoss20b": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.7068,
+   "signed": 0.8091,
+   "judge": 0.7184,
+   "judge_parsed_share": 1.0,
+   "judge_too_long": 0,
+   "judge_truncated_samples": 0,
+   "geo_minus_judge": -0.0116
+  },
+  "qwen38": {
+   "units": 289,
+   "violations": 139,
+   "geo": 0.844,
+   "signed": 0.8585,
+   "judge": 0.6619,
+   "judge_parsed_share": 1.0,
+   "judge_too_long": 0,
+   "judge_truncated_samples": 0,
+   "geo_minus_judge": 0.1821
+  },
+  "museglimmer": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.6515,
+   "signed": 0.718,
+   "judge": 0.5768,
+   "judge_parsed_share": 1.0,
+   "judge_too_long": 0,
+   "judge_truncated_samples": 0,
+   "geo_minus_judge": 0.0747
+  }
+ },
+ "P1_mean_geo_minus_judge": [
+  0.121,
+  0.0468,
+  0.1901
+ ],
+ "P2_mean_signed_minus_judge": [
+  0.1736,
+  0.1062,
+  0.2366
+ ],
+ "mean_judge": [
+  0.6476,
+  0.594,
+  0.7024
+ ],
+ "one_sided_p": {
+  "P1": 0.0005,
+  "P2": 0.0
+ },
+ "endpoints": {
+  "P1_lower_gt_0": true,
+  "P2_lower_gt_0": true,
+  "all_four_agents": true
+ },
+ "holm_pass": {
+  "P2": true,
+  "P1": true
+ }
+}
