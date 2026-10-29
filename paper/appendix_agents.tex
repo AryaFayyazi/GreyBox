@@ -200,7 +200,7 @@ This appendix reports monitors that are \emph{trained}, as comparisons for the t
 \newcommand{\ci}[1]{{\scriptsize\textcolor{gbmute}{[#1]}}}
 \newcommand{\sota}[1]{\textbf{#1}}
 \newcommand{\snd}[1]{\underline{#1}}
-\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels. $^\ddagger$Exploratory: Qwen3-32B with reasoning, given the policy, checking each rule (3 samples), run on the closed agents only. $^\S$T17's probe on the agent's own decision states, on the row's 2{,}432 held-out-scenario actions. $^\P$CAPE's gate, on the 1{,}805 calls where it was logged. $\times$: impossible without weights. n.r.: not run.}
+\caption{\textbf{Detecting violations before the action runs.} Within-template AUROC (within suite on AgentDojo); nothing is fit on a test agent. The internals need the agent's weights; the other monitors read the transcript and the action. Bold: best; underline: second. Last column: the preregistered contrast (I: reader $-$ internals; NI: non-inferiority to internals; J: reader $-$ judge; J$_\text{tool}$: within tool), with its 95\% interval. $^\dagger$Exploratory, on held-out scenarios; internals: a probe trained on the agent's own states and labels. $^\ddagger$Exploratory: Qwen3-32B with reasoning, given the policy, checking each rule (3 samples); on the open agents, on the 70B judge's units. $^\|$On Gemma-4's 3{,}496 fresh calls, the 70B judge's units in both rows. $^\S$T17's probe on the agent's own decision states, on the row's 2{,}432 held-out-scenario actions. $^\P$CAPE's gate, on the 1{,}805 calls where it was logged. $\times$: impossible without weights. n.r.: not run.}
 \label{tab:main}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}llr cccc>{\columncolor{gbrow}}c l@{}}
 \toprule
@@ -209,16 +209,16 @@ This appendix reports monitors that are \emph{trained}, as comparisons for the t
 \textbf{Setting} & \textbf{Agent} & \textbf{Actions} & \makecell{Agent's\\internals} & \makecell{70B judge\\(zero-shot)} & \makecell{Reasoning\\judge, rules\textsuperscript{$\ddagger$}} & \makecell{TF-IDF\\(same labels)} & \makecell{\textbf{Reader}\\\textbf{probe}} & \makecell{\textbf{Preregistered}\\\textbf{contrast}} \\
 \midrule
 \rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Open agents: the training agent, then three other architectures}}\\
-Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & n.r. & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
-Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & n.r. & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
-Mixture of experts & gpt-oss-20b & 5{,}229 & 0.900$^\S$ & 0.833 & n.r. & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
-Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & n.r. & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
-Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & n.r. & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
+Same scenarios & Gemma-4 & 12{,}128 & 0.979 & 0.910 & 0.914$^\|$ & \snd{0.992} & \sota{0.994} & I\enspace$+0.015$ \ci{0.007, 0.026}\\
+Unseen task families & Gemma-4 & 12{,}128 & \sota{0.976} & 0.910 & 0.914$^\|$ & 0.950 & \snd{0.969} & NI\enspace$-0.007$ \ci{$-0.014$, 0.000}\\
+Mixture of experts & gpt-oss-20b & 5{,}229 & 0.900$^\S$ & 0.833 & 0.826 & \sota{0.943} & \snd{0.915} & J\enspace$+0.082$ \ci{0.043, 0.129}\\
+Hybrid attention\textsuperscript{$\dagger$} & Qwen3.8-27B & 2{,}378 & 0.955 & 0.835 & 0.647 & \snd{0.966} & \sota{0.972} & J\enspace$+0.135$ \ci{0.035, 0.258}\\
+Dense\textsuperscript{$\dagger$} & Muse-Glimmer & 2{,}657 & 0.929 & 0.911 & 0.885 & \snd{0.960} & \sota{0.968} & J\enspace$+0.059$ \ci{0.017, 0.131}\\
 \rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{Closed agents, through their APIs (reasoning off)}}\\
 CAPE-Bench & Claude Haiku 5.5 & 3{,}128 & $\times$ & 0.633 & 0.710 & \sota{0.997} & \snd{0.991} & J\enspace$+0.360$ \ci{0.302, 0.413}\\
 CAPE-Bench & GPT-6-luna & 3{,}627 & $\times$ & 0.942 & 0.791 & \snd{0.968} & \sota{0.995} & J$_\text{tool}$\enspace$+0.039$ \ci{0.015, 0.066}\\
 \rowcolor{gbhead}\multicolumn{9}{@{}l}{\textit{A new benchmark: AgentDojo prompt injection, a policy absent from training}}\\
-No AgentDojo labels & two open & 3{,}455 & 0.577$^\P$ & \snd{0.537} & n.r. & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
+No AgentDojo labels & two open & 3{,}455 & 0.577$^\P$ & 0.537 & \snd{0.665} & 0.503 & \sota{0.781} & J\enspace$+0.249$ \ci{0.136, 0.369}\\
 Labels of open agents only & GPT-6-luna & 3{,}925 & $\times$ & 0.787 & n.r. & \snd{0.915} & \sota{0.922} & J\enspace$+0.136$ \ci{0.078, 0.191}\\
 \bottomrule
 \end{tabular}}

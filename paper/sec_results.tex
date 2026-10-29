@@ -31,7 +31,7 @@ We first test the reconstruction where the truth is visible: on open models, who
 \label{sec:monitor}
 \textbf{The read-out.} At each proposed call, the agent answers 8 yes/no questions about it through its own API, 4 times each (\cref{app:questions}), scored by the fixed read-out (\cref{eq:readout}).
 
-\textbf{It ranks violations about as well as a probe on the hidden states.} On held-out calls, the within-template AUROC is \GFtFixed\ (\cref{tab:g15}). A probe trained on true decision states (it needs weights and labels) scores \GFtTrainedWB; the mean difference is \GFtTtwo. The read-out beats the agent's single self-audit answer by \GFtTone. On the open agents, it also beats a Gemma-4 judge that reasons, by \GTwJone. On Claude Haiku 5.5, whose answers we take with reasoning off, the judge is better (\cref{tab:g15}). The read-out reads the slice of the state its questions pull back (\cref{sec:geom-results}), not the full state: on open agents about 20\% [13, 27] of its ranking power runs through the hidden violation direction, the rest through the transcript, which any monitor can see.
+\textbf{It ranks violations about as well as a probe on the hidden states.} On held-out calls, the within-template AUROC is \GFtFixed\ (\cref{tab:g15}). A probe trained on true decision states (it needs weights and labels) scores \GFtTrainedWB; the mean difference is \GFtTtwo. The read-out beats the agent's single self-audit answer by \GFtTone. On the open agents' CAPE-Bench calls, it also beats a Gemma-4 judge that reasons, by \GTwJone. Elsewhere the judge is as good or better: on Claude Haiku 5.5, whose answers we take with reasoning off, on GPT-6-luna and on AgentDojo, and most on Claude's $\tau^2$ writes (0.95 vs 0.70; descriptive, \cref{tab:g15}). The read-out reads the slice of the state its questions pull back (\cref{sec:geom-results}), not the full state: on open agents about 20\% [13, 27] of its ranking power runs through the hidden violation direction, the rest through the transcript, which any monitor can see.
 
 \begin{table}[t]
 \centering\footnotesize
@@ -51,11 +51,11 @@ Muse-Glimmer-30B & 600 & 0.929 & 0.935 & 0.880 & 0.941 & \best{0.972}\\
 \multicolumn{7}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{closed agents} on CAPE-Bench (no probe can exist)}\\
 Claude, restarts\textsuperscript{a} & 149 & 0.909 & 0.323 & \best{1.000} & $\times$ & $\times$\\
 Claude, all\textsuperscript{b} & 495 & 0.475 & 0.306 & \best{0.693} & $\times$ & $\times$\\
-GPT-6-luna & 560 & \best{0.979} & 0.795 & n.r. & $\times$ & $\times$\\
+GPT-6-luna & 560 & 0.979 & 0.795 & \best{0.991} & $\times$ & $\times$\\
 \multicolumn{7}{@{}l}{\cellcolor{gbgroup}\scriptsize\textsc{AgentDojo} (within suite) \textsc{and $\tau^2$-bench} (within tool)}\\
-Gemma-4, injection & 816 & 0.985 & 0.975 & n.r. & \best{0.986}\textsuperscript{f} & n.r.\\
-gpt-oss-20b, injection & 821 & 0.904 & 0.900 & n.r. & \best{0.935}\textsuperscript{f} & n.r.\\
-Claude, airline writes & 360 & \best{0.704} & 0.555 & n.r. & $\times$ & $\times$\\
+Gemma-4, injection & 816 & 0.985 & 0.975 & 0.984 & \best{0.986}\textsuperscript{f} & n.r.\\
+gpt-oss-20b, injection & 821 & 0.904 & 0.900 & \best{0.952} & 0.935\textsuperscript{f} & n.r.\\
+Claude, airline writes & 360 & 0.704 & 0.555 & \best{0.953} & $\times$ & $\times$\\
 \bottomrule
 \end{tabular}}\\[2pt]
 \parbox{\columnwidth}{\scriptsize \textsuperscript{a}A trained reader of the call text scores 1.000 here. \textsuperscript{b}Pooled; mailing-list sends are decided by a fact it never checked. \textsuperscript{c}Exploratory: components and regularisation chosen by cross-validation. \textsuperscript{d}Gemma-4 with reasoning, one holistic probability per conversation. \textsuperscript{e}New task families. \textsuperscript{f}CAPE's AgentDojo gate, fit on development traces. $\times$: impossible without weights. n.r.: not run.}

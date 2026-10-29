@@ -65,5 +65,118 @@
   "units": 3925,
   "positives": 36,
   "C": 10
+ },
+ "J_gpt": {
+  "auroc": 0.9912,
+  "ci": [
+   0.969,
+   1.0
+  ],
+  "units": 560,
+  "positives": 66,
+  "parsed_share": 0.9915
+ },
+ "J_adgemma4": {
+  "auroc": 0.9839,
+  "ci": [
+   0.968,
+   0.9954
+  ],
+  "units": 816,
+  "positives": 216,
+  "parsed_share": 0.9939
+ },
+ "J_adgptoss20b": {
+  "auroc": 0.9524,
+  "ci": [
+   0.9301,
+   0.9708
+  ],
+  "units": 821,
+  "positives": 221,
+  "parsed_share": 0.9945
+ },
+ "J_tau2": {
+  "auroc": 0.9527,
+  "ci": [
+   0.8987,
+   0.9928
+  ],
+  "units": 360,
+  "positives": 50,
+  "parsed_share": 0.8361
+ },
+ "O65_within_step": {
+  "auroc": 0.5895,
+  "ci": [
+   0.5215,
+   0.6509
+  ],
+  "units": 1582,
+  "positives": 344
+ },
+ "O65_across_steps": {
+  "auroc": 0.844,
+  "ci": [
+   0.8191,
+   0.8687
+  ],
+  "units": 1582,
+  "positives": 344
+ },
+ "R_gemma4": {
+  "auroc": 0.9142,
+  "ci": [
+   0.8771,
+   0.9453
+  ],
+  "units": 3496,
+  "positives": 346,
+  "parsed_any": 3496,
+  "truncated_samples": 3
+ },
+ "R_gptoss20b": {
+  "auroc": 0.8256,
+  "ci": [
+   0.7719,
+   0.8717
+  ],
+  "units": 5229,
+  "positives": 729,
+  "parsed_any": 5229,
+  "truncated_samples": 0
+ },
+ "R_qwen38": {
+  "auroc": 0.6466,
+  "ci": [
+   0.4729,
+   0.8397
+  ],
+  "units": 2378,
+  "positives": 73,
+  "parsed_any": 2378,
+  "truncated_samples": 0
+ },
+ "R_museglimmer": {
+  "auroc": 0.8849,
+  "ci": [
+   0.7889,
+   0.9477
+  ],
+  "units": 2657,
+  "positives": 335,
+  "parsed_any": 2657,
+  "truncated_samples": 0
+ },
+ "R_agentdojo": {
+  "auroc": 0.665,
+  "ci": [
+   0.6218,
+   0.7034
+  ],
+  "units": 3455,
+  "positives": 125,
+  "parsed_any": 3455,
+  "truncated_samples": 0
  }
 }
