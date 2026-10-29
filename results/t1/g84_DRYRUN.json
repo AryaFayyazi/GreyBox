@@ -1,0 +1,65 @@
+{
+ "dry_run_random_judge_permuted_labels": true,
+ "agents": {
+  "gemma4": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.4831,
+   "signed": 0.4738,
+   "judge": 0.516,
+   "geo_minus_judge": -0.0329
+  },
+  "gptoss20b": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.4918,
+   "signed": 0.4851,
+   "judge": 0.4638,
+   "geo_minus_judge": 0.028
+  },
+  "qwen38": {
+   "units": 289,
+   "violations": 139,
+   "geo": 0.608,
+   "signed": 0.6105,
+   "judge": 0.5269,
+   "geo_minus_judge": 0.0811
+  },
+  "museglimmer": {
+   "units": 300,
+   "violations": 150,
+   "geo": 0.4947,
+   "signed": 0.501,
+   "judge": 0.4526,
+   "geo_minus_judge": 0.0421
+  }
+ },
+ "P1_mean_geo_minus_judge": [
+  0.0296,
+  -0.0389,
+  0.0994
+ ],
+ "P2_mean_signed_minus_judge": [
+  0.0278,
+  -0.0419,
+  0.0967
+ ],
+ "mean_judge": [
+  0.4898,
+  0.4394,
+  0.5391
+ ],
+ "one_sided_p": {
+  "P1": 0.2007,
+  "P2": 0.2159
+ },
+ "endpoints": {
+  "P1_lower_gt_0": false,
+  "P2_lower_gt_0": false,
+  "all_four_agents": true
+ },
+ "holm_pass": {
+  "P1": false,
+  "P2": false
+ }
+}
